@@ -8,3 +8,77 @@ body {
   background-color: #f1f3f6;
   font-family: 'DM Sans', sans-serif;
 }
+
+@layer base {
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  html.dark input:not([type="checkbox"]):not([type="radio"]),
+  html.dark select,
+  html.dark textarea {
+    @apply bg-slate-800 border-slate-600 text-slate-100 placeholder:text-slate-500;
+  }
+
+  html.dark .text-gray-900 {
+    @apply text-slate-100;
+  }
+
+  html.dark .text-gray-800 {
+    @apply text-slate-200;
+  }
+
+  html.dark .text-gray-700 {
+    @apply text-slate-300;
+  }
+
+  html.dark .text-gray-600 {
+    @apply text-slate-400;
+  }
+
+  html.dark .text-gray-500 {
+    @apply text-slate-400;
+  }
+
+  html.dark .text-gray-400 {
+    @apply text-slate-500;
+  }
+
+  html.dark .bg-white {
+    @apply bg-slate-900;
+  }
+
+  html.dark .bg-gray-50 {
+    @apply bg-slate-800;
+  }
+
+  html.dark .bg-gray-100 {
+    @apply bg-slate-900;
+  }
+
+  html.dark .border-gray-100 {
+    @apply border-slate-700;
+  }
+
+  html.dark .border-gray-200 {
+    @apply border-slate-600;
+  }
+
+  html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+    @apply border-slate-700;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

@@ -1,112 +1,477 @@
+import { useMemo, useState } from "react";
+import { addMonths, format, parseISO } from "date-fns";
 import Card from "../components/Card";
+import { Modal } from "../components/Modal.jsx";
+import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { getEffectiveLendingStatus } from "../utils/lendingStatus.js";
+import { todayYmd } from "../utils/dates.js";
+import { lendingTrustByPerson, trustSummaryLine, trustScoreForLendingEntry, trustBadgeClass } from "../engines/lendingTrust.js";
+import LendingDetailModal from "../components/LendingDetailModal.jsx";
+import LendingFormFields from "../components/lending/LendingFormFields.jsx";
 
-const lendings = [
-  { name: "Harsha", amount: 2000, date: "20 Apr", status: "pending", avatar: "H", note: "Borrowed for medical" },
-  { name: "Rahul", amount: 5000, date: "10 Apr", status: "paid", avatar: "R", note: "Travel expenses" },
-  { name: "Priya", amount: 1500, date: "28 Apr", status: "pending", avatar: "P", note: "Shopping split" },
-  { name: "Kiran", amount: 3000, date: "5 Apr", status: "paid", avatar: "K", note: "Bike repair" },
-];
+const emptyLendingForm = () => ({
+  personName: "",
+  type: "lent",
+  totalAmount: "",
+  dueDate: "",
+  startDate: "",
+  endDate: "",
+  interestRate: "0",
+  interestType: "simple",
+  repaymentFrequency: "monthly",
+  repaymentType: "monthly",
+  relationshipTag: "Other",
+  notes: "",
+});
 
-const avatarColors = {
-  H: "bg-violet-100 text-violet-600",
-  R: "bg-blue-100 text-blue-600",
-  P: "bg-pink-100 text-pink-600",
-  K: "bg-teal-100 text-teal-600",
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const lendingStatusStyle = {
+  pending: { label: "Pending", classes: "bg-amber-100 text-amber-700 border-amber-200" },
+  overdue: { label: "Overdue", classes: "bg-red-100 text-red-700 border-red-200" },
+  complete: { label: "Settled", classes: "bg-emerald-100 text-emerald-700 border-emerald-200" },
 };
 
+function avatarFor(name) {
+  const s = String(name || "?").trim();
+  return (s[0] || "?").toUpperCase();
+}
+
 const Lending = () => {
-  const totalLent = lendings.reduce((sum, l) => sum + l.amount, 0);
-  const totalPending = lendings
-    .filter((l) => l.status === "pending")
-    .reduce((sum, l) => sum + l.amount, 0);
-  const totalRecovered = lendings
-    .filter((l) => l.status === "paid")
-    .reduce((sum, l) => sum + l.amount, 0);
+  const { lendings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } = useCommitTrack();
+  const [showAdd, setShowAdd] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [paymentFor, setPaymentFor] = useState(null);
+  const [form, setForm] = useState(emptyLendingForm);
+  const [payAmount, setPayAmount] = useState("");
+  const [payDate, setPayDate] = useState(() => todayYmd());
+  const [formErrors, setFormErrors] = useState({});
+  const [detailFor, setDetailFor] = useState(null);
+
+  const sorted = useMemo(
+    () =>
+      [...lendings].sort((a, b) => {
+        const da = a.dueDate || "";
+        const db = b.dueDate || "";
+        if (da !== db) return da.localeCompare(db);
+        return String(a.personName).localeCompare(String(b.personName));
+      }),
+    [lendings]
+  );
+
+  const trustRows = useMemo(() => lendingTrustByPerson(lendings), [lendings]);
+
+  const totals = useMemo(() => {
+    let lentOut = 0;
+    let borrowedIn = 0;
+    let recovered = 0;
+    let repaid = 0;
+    for (const l of lendings) {
+      const total = Number(l.totalAmount) || 0;
+      const rem = Number(l.remainingAmount) || 0;
+      const paid = total - rem;
+      if (l.type === "lent") {
+        lentOut += rem;
+        recovered += paid;
+      } else {
+        borrowedIn += rem;
+        repaid += paid;
+      }
+    }
+    return { lentOut, borrowedIn, recovered, repaid };
+  }, [lendings]);
+
+  const resetForm = () => {
+    setForm(emptyLendingForm());
+    setFormErrors({});
+  };
+
+  const validateForm = () => {
+    const errs = {};
+    if (!form.personName.trim()) errs.personName = "Name is required";
+    if (!form.totalAmount || Number(form.totalAmount) <= 0) errs.totalAmount = "Enter a valid amount";
+    if (!form.dueDate) errs.dueDate = "Due date is required";
+    if (form.interestRate === "" || Number.isNaN(Number(form.interestRate))) {
+      errs.interestRate = "Interest rate is required";
+    } else if (Number(form.interestRate) < 0 || Number(form.interestRate) > 60) {
+      errs.interestRate = "Rate must be 0–60%";
+    }
+    return errs;
+  };
+
+  const lendingPayload = () => {
+    const start = form.startDate || form.dueDate;
+    let end = form.endDate;
+    if (!end && start) {
+      try {
+        end = format(addMonths(parseISO(`${start}T12:00:00`), 12), "yyyy-MM-dd");
+      } catch {
+        end = form.dueDate;
+      }
+    }
+    return {
+      personName: form.personName.trim(),
+      type: form.type,
+      totalAmount: Number(form.totalAmount),
+      principalAmount: Number(form.totalAmount),
+      dueDate: form.dueDate,
+      startDate: start,
+      endDate: end,
+      interestRate: Number(form.interestRate),
+      interestType: form.interestType,
+      repaymentFrequency: form.repaymentFrequency,
+      repaymentType: form.repaymentType,
+      relationshipTag: form.relationshipTag,
+      notes: form.notes.trim(),
+    };
+  };
+
+  const submitAdd = () => {
+    const errs = validateForm();
+    if (Object.keys(errs).length) {
+      setFormErrors(errs);
+      return;
+    }
+    addLending(lendingPayload());
+    resetForm();
+    setShowAdd(false);
+  };
+
+  const submitEdit = () => {
+    if (!editing) return;
+    const errs = validateForm();
+    if (Object.keys(errs).length) {
+      setFormErrors(errs);
+      return;
+    }
+    updateLending(editing.id, lendingPayload());
+    resetForm();
+    setEditing(null);
+  };
+
+  const openEdit = (l) => {
+    setEditing(l);
+    setForm({
+      personName: l.personName,
+      type: l.type,
+      totalAmount: String(l.principalAmount ?? l.totalAmount),
+      dueDate: l.dueDate || "",
+      startDate: l.startDate || l.dueDate || "",
+      endDate: l.endDate || "",
+      interestRate: String(l.interestRate ?? 0),
+      interestType: l.interestType || "simple",
+      repaymentFrequency: l.repaymentFrequency || l.repaymentType || "monthly",
+      repaymentType: l.repaymentType || "monthly",
+      relationshipTag: l.relationshipTag || "Other",
+      notes: l.notes || "",
+    });
+    setFormErrors({});
+  };
+
+  const openPayment = (l) => {
+    setPaymentFor(l);
+    setPayAmount("");
+    setPayDate(todayYmd());
+  };
+
+  const submitPayment = () => {
+    if (!paymentFor) return;
+    const amt = Number(payAmount);
+    if (!amt || amt <= 0) return;
+    addLendingPayment(paymentFor.id, { amount: amt, date: payDate });
+    setPaymentFor(null);
+  };
+
+  const payRemaining = () => {
+    if (!paymentFor) return;
+    const rem = Number(paymentFor.remainingAmount) || 0;
+    if (rem <= 0) return;
+    addLendingPayment(paymentFor.id, { amount: rem, date: payDate });
+    setPaymentFor(null);
+  };
+
+  const inputClass = (field) =>
+    `w-full px-4 py-3 rounded-xl border bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
+      formErrors[field] ? "border-red-300" : "border-gray-200"
+    }`;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">
-          Tracker
-        </p>
-        <h1
-          className="text-3xl font-bold text-gray-900 mt-1"
-          style={{ fontFamily: "'Sora', sans-serif" }}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Tracker</p>
+          <h1 className="text-3xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
+            Lending
+          </h1>
+          <p className="text-xs text-gray-500 mt-1 max-w-xs">
+            Track money you lent or borrowed. Payments stay on this device.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            resetForm();
+            setShowAdd(true);
+          }}
+          className="shrink-0 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
         >
-          Lending
-        </h1>
+          + Add
+        </button>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card className="text-center p-4">
-          <p className="text-xs text-gray-400 mb-1">Total Lent</p>
+          <p className="text-xs text-gray-400 mb-1">You lent (outstanding)</p>
           <p className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totalLent.toLocaleString()}
+            ₹{totals.lentOut.toLocaleString()}
           </p>
         </Card>
-        <Card className="text-center p-4 bg-amber-50 border-amber-100">
-          <p className="text-xs text-amber-500 mb-1">Pending</p>
-          <p className="text-lg font-bold text-amber-600" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totalPending.toLocaleString()}
+        <Card className="text-center p-4 bg-violet-50 border-violet-100">
+          <p className="text-xs text-violet-600 mb-1">You borrowed (due)</p>
+          <p className="text-lg font-bold text-violet-800" style={{ fontFamily: "'Sora', sans-serif" }}>
+            ₹{totals.borrowedIn.toLocaleString()}
           </p>
         </Card>
         <Card className="text-center p-4 bg-emerald-50 border-emerald-100">
-          <p className="text-xs text-emerald-500 mb-1">Recovered</p>
-          <p className="text-lg font-bold text-emerald-600" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totalRecovered.toLocaleString()}
+          <p className="text-xs text-emerald-600 mb-1">Recovered (lent)</p>
+          <p className="text-lg font-bold text-emerald-700" style={{ fontFamily: "'Sora', sans-serif" }}>
+            ₹{totals.recovered.toLocaleString()}
+          </p>
+        </Card>
+        <Card className="text-center p-4 bg-slate-50 border-slate-100">
+          <p className="text-xs text-slate-500 mb-1">Repaid (borrowed)</p>
+          <p className="text-lg font-bold text-slate-700" style={{ fontFamily: "'Sora', sans-serif" }}>
+            ₹{totals.repaid.toLocaleString()}
           </p>
         </Card>
       </div>
 
-      {/* Lending List */}
+      {sorted.length === 0 && (
+        <Card className="text-center py-10 text-sm text-gray-500">
+          No lending entries yet. Tap Add to record one.
+        </Card>
+      )}
+
       <div className="space-y-3">
-        {lendings.map((item) => (
-          <Card
-            key={item.name}
-            className={`flex items-center justify-between ${
-              item.status === "pending" ? "" : "opacity-75"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              {/* Avatar */}
-              <div
-                className={`w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold ${
-                  avatarColors[item.avatar]
-                }`}
-              >
-                {item.avatar}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800">{item.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-gray-400">{item.note}</span>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-xs text-gray-400">{item.date}</span>
+        {sorted.map((item) => {
+          const eff = getEffectiveLendingStatus(item, todayStr);
+          const cfg = lendingStatusStyle[eff] || lendingStatusStyle.pending;
+          const letter = avatarFor(item.personName);
+          const trust = trustScoreForLendingEntry(item);
+          return (
+            <Card key={item.id} className={eff === "overdue" ? "border-red-100 bg-red-50/50" : ""}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold bg-indigo-100 text-indigo-700 shrink-0">
+                    {letter}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-semibold text-gray-800">{item.personName}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${trustBadgeClass(trust)}`}>
+                        {trust}/100
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {item.type === "lent" ? "You lent" : "You borrowed"} · Due {formatDate(item.dueDate)}
+                    </p>
+                    {item.notes ? <p className="text-xs text-gray-400 mt-1">{item.notes}</p> : null}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
+                    ₹{Number(item.totalAmount).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Left ₹{Number(item.remainingAmount).toLocaleString()}
+                  </p>
+                  <span
+                    className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${cfg.classes}`}
+                  >
+                    {cfg.label}
+                  </span>
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col items-end gap-1.5">
-              <p
-                className="font-bold text-gray-800"
-                style={{ fontFamily: "'Sora', sans-serif" }}
-              >
-                ₹{item.amount.toLocaleString()}
-              </p>
-              {item.status === "pending" ? (
-                <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-semibold">
-                  Pending
-                </span>
-              ) : (
-                <span className="text-xs bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
-                  Paid back
-                </span>
-              )}
-            </div>
-          </Card>
-        ))}
+
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+                {eff !== "complete" && (
+                  <button
+                    type="button"
+                    onClick={() => openPayment(item)}
+                    className="flex-1 min-w-[100px] py-2 text-xs font-semibold bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+                  >
+                    Payment
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setDetailFor(item)}
+                  className="px-3 py-2 text-xs font-semibold border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50"
+                >
+                  Details
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openEdit(item)}
+                  className="px-3 py-2 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteLending(item.id)}
+                  className="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+            </Card>
+          );
+        })}
       </div>
+
+      {trustRows.length > 0 && (
+        <Card className="space-y-2">
+          <h2 className="text-base font-semibold text-gray-800">Relationship notes (local)</h2>
+          <p className="text-xs text-gray-500">Based on repayments vs due dates. Private to this device.</p>
+          {trustRows.slice(0, 8).map((row) => (
+            <p key={row.personKey} className="text-xs text-gray-700 border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+              {trustSummaryLine(row)}
+            </p>
+          ))}
+        </Card>
+      )}
+
+      {showAdd && (
+        <Modal
+          title="Add lending entry"
+          onClose={() => {
+            setShowAdd(false);
+            resetForm();
+          }}
+          footer={
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl text-gray-600 bg-white"
+                onClick={() => {
+                  setShowAdd(false);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-xl"
+                onClick={submitAdd}
+              >
+                Save
+              </button>
+            </div>
+          }
+        >
+                    <div className="space-y-4">
+            <LendingFormFields form={form} setForm={setForm} formErrors={formErrors} inputClass={inputClass} />
+          </div>
+        </Modal>
+      )}
+
+      {editing && (
+        <Modal
+          title="Edit lending entry"
+          onClose={() => {
+            setEditing(null);
+            resetForm();
+          }}
+          footer={
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl"
+                onClick={() => {
+                  setEditing(null);
+                  resetForm();
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-xl"
+                onClick={submitEdit}
+              >
+                Save
+              </button>
+            </div>
+          }
+        >
+                    <div className="space-y-4">
+            <LendingFormFields form={form} setForm={setForm} formErrors={formErrors} inputClass={inputClass} />
+          </div>
+        </Modal>
+      )}
+
+      {detailFor && <LendingDetailModal lending={detailFor} onClose={() => setDetailFor(null)} />}
+
+      {paymentFor && (
+        <Modal
+          title="Record repayment"
+          onClose={() => setPaymentFor(null)}
+          footer={
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={submitPayment}
+                className="flex-1 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-xl"
+              >
+                Add amount
+              </button>
+              <button
+                type="button"
+                onClick={payRemaining}
+                disabled={Number(paymentFor.remainingAmount) <= 0}
+                className="flex-1 py-2.5 text-sm font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl disabled:opacity-40"
+              >
+                Simulate UPI pay (₹{Number(paymentFor.remainingAmount).toLocaleString()})
+              </button>
+            </div>
+          }
+        >
+          <div>
+            <p className="text-sm text-gray-600">
+              <span className="font-semibold">{paymentFor.personName}</span> — remaining{" "}
+              <span className="font-bold">₹{Number(paymentFor.remainingAmount).toLocaleString()}</span>
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Amount (₹)</label>
+              <input
+                type="number"
+                min="0"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+                value={payAmount}
+                onChange={(e) => setPayAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+              <input
+                type="date"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+                value={payDate}
+                onChange={(e) => setPayDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

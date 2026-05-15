@@ -1,76 +1,91 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContext.jsx";
 import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
-import Commitments from "./pages/Commitments";
-import Add from "./pages/Add";
-import Lending from "./pages/Lending";
-import Profile from "./pages/Profile";
+import Onboarding from "./pages/Onboarding.jsx";
+import ModeRoute from "./components/ModeRoute.jsx";
+import NotificationSync from "./components/NotificationSync.jsx";
+import ThemeSync from "./components/ThemeSync.jsx";
 
-// Seed data shown on first load (before user adds anything)
-const SEED_COMMITMENTS = [
-  { id: 1, name: "Bike EMI", amount: 2500, dueDate: "2026-05-20", status: "pending" },
-  { id: 2, name: "Netflix", amount: 199, dueDate: "2026-05-05", status: "paid" },
-  { id: 3, name: "Electricity Bill", amount: 1400, dueDate: "2026-05-01", status: "overdue" },
-];
+const Home = lazy(() => import("./pages/Home"));
+const Commitments = lazy(() => import("./pages/Commitments"));
+const Add = lazy(() => import("./pages/Add"));
+const Lending = lazy(() => import("./pages/Lending"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Tools = lazy(() => import("./pages/Tools"));
 
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem("commitments");
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  // First visit: save seed data and return it
-  localStorage.setItem("commitments", JSON.stringify(SEED_COMMITMENTS));
-  return SEED_COMMITMENTS;
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-16 text-sm text-gray-500" role="status">
+      Loading…
+    </div>
+  );
+}
+
+function OnboardingShell() {
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 max-w-lg mx-auto py-8">
+      <ThemeSync />
+      <Routes>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="*" element={<Navigate to="/onboarding" replace />} />
+      </Routes>
+    </div>
+  );
+}
+
+function MainShell() {
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-slate-950">
+      <ThemeSync />
+      <Navbar />
+      <NotificationSync />
+      <main className="md:pt-20 pb-24 md:pb-8 px-4 max-w-2xl mx-auto">
+        <div className="pt-6">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/commitments" element={<Commitments />} />
+              <Route path="/add" element={<Add />} />
+              <Route
+                path="/lending"
+                element={
+                  <ModeRoute path="/lending">
+                    <Lending />
+                  </ModeRoute>
+                }
+              />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/onboarding" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function AppShell() {
+  const { settings } = useCommitTrack();
+  const onboarded = Boolean(settings?.onboardingComplete);
+
+  if (!onboarded) {
+    return <OnboardingShell />;
+  }
+
+  return <MainShell />;
 }
 
 function App() {
-  const [commitments, setCommitments] = useState(loadFromStorage);
-
-  // Persist every change to localStorage
-  useEffect(() => {
-    localStorage.setItem("commitments", JSON.stringify(commitments));
-  }, [commitments]);
-
-  function addCommitment(commitment) {
-    setCommitments((prev) => [...prev, commitment]);
-  }
-
-  function markPaid(id) {
-    setCommitments((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: "paid" } : c))
-    );
-  }
-
-  function deleteCommitment(id) {
-    setCommitments((prev) => prev.filter((c) => c.id !== id));
-  }
-
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-100">
-        <Navbar />
-        <main className="md:pt-20 pb-24 md:pb-8 px-4 max-w-2xl mx-auto">
-          <div className="pt-6">
-            <Routes>
-              <Route path="/" element={<Home commitments={commitments} />} />
-              <Route
-                path="/commitments"
-                element={
-                  <Commitments
-                    commitments={commitments}
-                    onMarkPaid={markPaid}
-                    onDelete={deleteCommitment}
-                  />
-                }
-              />
-              <Route path="/add" element={<Add onAdd={addCommitment} />} />
-              <Route path="/lending" element={<Lending />} />
-              <Route path="/profile" element={<Profile commitments={commitments} />} />
-            </Routes>
-          </div>
-        </main>
-      </div>
+      <CommitTrackProvider>
+        <AppShell />
+      </CommitTrackProvider>
     </BrowserRouter>
   );
 }

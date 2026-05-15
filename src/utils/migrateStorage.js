@@ -1,0 +1,338 @@
+import { inferPriorityFromCategory } from "../constants/priority.js";
+import { CATEGORIES } from "../constants/categories.js";
+import { USER_MODE_IDS } from "../constants/userModes.js";
+import { enrichLendingFinancials } from "./lendingFinancials.js";
+
+const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
+
+export const SCHEMA_VERSION_KEY = "committrack_schema_version";
+export const CURRENT_SCHEMA_VERSION = 5;
+
+const USER_MODES = USER_MODE_IDS;
+
+function normalizeCategory(raw) {
+  const s = String(raw || "").trim();
+  if (s === "Health") return "Insurance";
+  if (CATEGORY_IDS.has(s)) return s;
+  return "Other";
+}
+
+/**
+ * @param {object} raw
+ * @returns {object}
+ */
+export function normalizeCommitment(raw) {
+  const now = Date.now();
+  const amount = Math.max(0, Number(raw.amount) || 0);
+  const payments = Array.isArray(raw.payments)
+    ? raw.payments.map((p) => ({
+        amount: Math.max(0, Number(p.amount) || 0),
+        date: String(p.date || "").slice(0, 10),
+      }))
+    : [];
+  const category = normalizeCategory(raw.category);
+  const repeatType = ["monthly", "yearly", "none"].includes(raw.repeatType) ? raw.repeatType : "none";
+  const priority = ["critical", "medium", "low"].includes(raw.priority)
+    ? raw.priority
+    : inferPriorityFromCategory(category);
+  const paidSum = payments.reduce((s, p) => s + p.amount, 0);
+  let remainingAmount = Math.max(0, amount - paidSum);
+  if (raw.status === "paid" && repeatType === "none") {
+    remainingAmount = 0;
+  }
+
+  return {
+    id: raw.id,
+    name: String(raw.name || "").trim() || "Untitled",
+    amount,
+    remainingAmount,
+    category,
+    dueDate: String(raw.dueDate || "").slice(0, 10),
+    repeatType,
+    priority,
+    status: ["paid", "pending", "overdue"].includes(raw.status) ? raw.status : "pending",
+    payments,
+    notes: String(raw.notes ?? ""),
+    profileId: String(raw.profileId || "default"),
+    annualInterestRate:
+      raw.annualInterestRate != null && !Number.isNaN(Number(raw.annualInterestRate))
+        ? Math.min(60, Math.max(0, Number(raw.annualInterestRate)))
+        : null,
+    trialEnd: raw.trialEnd ? String(raw.trialEnd).slice(0, 10) : "",
+    createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
+    updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
+  };
+}
+
+/**
+ * @param {object} raw
+ */
+export function normalizeLending(raw) {
+  const now = Date.now();
+  const totalAmount = Math.max(0, Number(raw.totalAmount ?? raw.amount) || 0);
+  const payments = Array.isArray(raw.payments)
+    ? raw.payments.map((p) => ({
+        amount: Math.max(0, Number(p.amount) || 0),
+        date: String(p.date || "").slice(0, 10),
+        onTime: p.onTime === false ? false : true,
+      }))
+    : [];
+  const paidSum = payments.reduce((s, p) => s + p.amount, 0);
+  const remainingAmount = Math.max(0, totalAmount - paidSum);
+  const type = raw.type === "borrowed" ? "borrowed" : "lent";
+  let status = raw.status;
+  if (remainingAmount <= 0) {
+    status = "complete";
+  } else if (status === "complete") {
+    status = "pending";
+  }
+  if (!["pending", "overdue", "complete"].includes(status)) {
+    status = "pending";
+  }
+
+  const base = {
+    id: raw.id,
+    personName: String(raw.personName ?? raw.name ?? "").trim() || "Unknown",
+    type,
+    totalAmount,
+    remainingAmount,
+    dueDate: String(raw.dueDate || "").slice(0, 10),
+    payments: payments.map((p) => ({
+      ...p,
+      principalPortion: Number(p.principalPortion) || 0,
+      interestPortion: Number(p.interestPortion) || 0,
+      paymentType: p.paymentType || "partial",
+    })),
+    notes: String(raw.notes ?? raw.note ?? ""),
+    status,
+    proofs: Array.isArray(raw.proofs)
+      ? raw.proofs.map((p) => ({
+          type: p.type === "document" ? "document" : "image",
+          uri: String(p.uri || ""),
+          date: String(p.date || "").slice(0, 10),
+          label: String(p.label || ""),
+        }))
+      : [],
+    disputeStatus: ["none", "open", "resolved"].includes(raw.disputeStatus) ? raw.disputeStatus : "none",
+    agreementText: String(raw.agreementText ?? ""),
+    agreementAccepted: Boolean(raw.agreementAccepted),
+    agreementAcceptedAt: raw.agreementAcceptedAt ? Number(raw.agreementAcceptedAt) : null,
+    relationshipTag: ["Friend", "Family", "Business", "Other"].includes(raw.relationshipTag)
+      ? raw.relationshipTag
+      : "Other",
+    profileId: String(raw.profileId || "default"),
+    paymentTimeline: Array.isArray(raw.paymentTimeline) ? raw.paymentTimeline : [],
+    createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
+    updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
+    principalAmount: Math.max(0, Number(raw.principalAmount ?? raw.totalAmount) || 0),
+    interestRate: Math.max(0, Math.min(60, Number(raw.interestRate) || 0)),
+    interestType: raw.interestType || "simple",
+    startDate: String(raw.startDate || raw.dueDate || "").slice(0, 10),
+    endDate: String(raw.endDate || raw.dueDate || "").slice(0, 10),
+    repaymentType: raw.repaymentType || "monthly",
+    repaymentFrequency: raw.repaymentFrequency || "monthly",
+    repaymentSchedule: Array.isArray(raw.repaymentSchedule) ? raw.repaymentSchedule : [],
+  };
+
+  const financials = enrichLendingFinancials(base, "");
+  const trustScoreSnapshot =
+    typeof raw.trustScoreSnapshot === "number" ? raw.trustScoreSnapshot : null;
+
+  return {
+    ...base,
+    ...financials,
+    trustScoreSnapshot,
+    status: financials.remainingBalance <= 0 ? "complete" : status === "complete" && financials.remainingBalance > 0 ? "pending" : status,
+    remainingAmount: financials.remainingBalance,
+  };
+}
+
+function mapNormalized(items, normalizer) {
+  const out = [];
+  for (const item of items) {
+    try {
+      out.push(normalizer(item));
+    } catch {
+      /* skip corrupt row */
+    }
+  }
+  return out;
+}
+
+export function loadCommitmentsFromStorage() {
+  try {
+    const raw = localStorage.getItem("commitments");
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return mapNormalized(arr, normalizeCommitment);
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+export function loadLendingsFromStorage() {
+  try {
+    const raw = localStorage.getItem("lendings");
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return mapNormalized(arr, normalizeLending);
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+export function loadMonthlySnapshotsFromStorage() {
+  try {
+    const raw = localStorage.getItem("committrack_monthly_snapshots");
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr.filter((s) => s && typeof s.month === "string").slice(-48);
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+export function saveMonthlySnapshotsToStorage(snapshots) {
+  try {
+    localStorage.setItem("committrack_monthly_snapshots", JSON.stringify(snapshots.slice(-48)));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function normalizeGoal(raw) {
+  const now = Date.now();
+  const type = ["reduce_open_debt", "income_ratio_cap", "save_amount"].includes(raw.type)
+    ? raw.type
+    : "reduce_open_debt";
+  return {
+    id: raw.id ?? Date.now(),
+    type,
+    title: String(raw.title || "Goal").trim(),
+    profileId: String(raw.profileId || "default"),
+    active: raw.active !== false,
+    baselineOpenRemaining: Number(raw.baselineOpenRemaining) || 0,
+    targetReduction: Math.max(1, Number(raw.targetReduction) || 1),
+    targetRatio: Math.min(0.95, Math.max(0.05, Number(raw.targetRatio) || 0.5)),
+    targetAmount: Math.max(0, Number(raw.targetAmount) || 0),
+    savedAmount: Math.max(0, Number(raw.savedAmount) || 0),
+    createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
+    updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
+  };
+}
+
+export function loadGoalsFromStorage() {
+  try {
+    const raw = localStorage.getItem("committrack_goals");
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return mapNormalized(arr, normalizeGoal);
+    }
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+/** One-time: move deprecated settings.savedTowardGoals onto the first save_amount goal. */
+export function migrateLegacySavedTowardGoals(settings, goals) {
+  const legacy = Math.max(0, Number(settings?.savedTowardGoals) || 0);
+  if (legacy <= 0) return { settings, goals };
+
+  const saveGoal = (goals || []).find((g) => g.type === "save_amount");
+  if (!saveGoal) return { settings, goals };
+
+  const nextGoals = goals.map((g) =>
+    g.id !== saveGoal.id
+      ? g
+      : normalizeGoal({
+          ...g,
+          savedAmount: Math.max(0, Number(g.savedAmount) || 0) + legacy,
+          updatedAt: Date.now(),
+        })
+  );
+  const nextSettings = { ...settings, savedTowardGoals: 0 };
+
+  try {
+    saveGoalsToStorage(nextGoals);
+    localStorage.setItem("committrack_settings", JSON.stringify(nextSettings));
+  } catch {
+    /* ignore */
+  }
+
+  return { settings: nextSettings, goals: nextGoals };
+}
+
+let cachedInitialAppState;
+
+export function loadInitialAppState() {
+  if (cachedInitialAppState) return cachedInitialAppState;
+  const settings = loadSettingsFromStorage();
+  const goals = loadGoalsFromStorage();
+  const migrated = migrateLegacySavedTowardGoals(settings, goals);
+  cachedInitialAppState = {
+    commitments: loadCommitmentsFromStorage(),
+    lendings: loadLendingsFromStorage(),
+    settings: migrated.settings,
+    goals: migrated.goals,
+    monthlySnapshots: loadMonthlySnapshotsFromStorage(),
+  };
+  return cachedInitialAppState;
+}
+
+export function saveGoalsToStorage(goals) {
+  try {
+    localStorage.setItem("committrack_goals", JSON.stringify(goals));
+  } catch {
+    /* ignore */
+  }
+}
+
+const COLOR_SCHEMES = ["light", "dark", "system"];
+
+const DEFAULT_SETTINGS = {
+  monthlyIncome: 0,
+  displayName: "",
+  userMode: "salaried",
+  onboardingComplete: false,
+  savedTowardGoals: 0,
+  readNotificationIds: [],
+  activeProfileId: "default",
+  businessType: "",
+  colorScheme: "system",
+};
+
+export function loadSettingsFromStorage() {
+  try {
+    const raw = localStorage.getItem("committrack_settings");
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (!o || typeof o !== "object" || Array.isArray(o)) {
+        return { ...DEFAULT_SETTINGS };
+      }
+      const mode = USER_MODES.includes(o.userMode) ? o.userMode : "salaried";
+      return {
+        monthlyIncome: Math.max(0, Number(o.monthlyIncome) || 0),
+        displayName: String(o.displayName || ""),
+        userMode: mode,
+        onboardingComplete: "onboardingComplete" in o ? Boolean(o.onboardingComplete) : false,
+        savedTowardGoals: Math.max(0, Number(o.savedTowardGoals) || 0),
+        readNotificationIds: Array.isArray(o.readNotificationIds)
+          ? o.readNotificationIds.map(String)
+          : [],
+        activeProfileId: String(o.activeProfileId || "default"),
+        businessType: String(o.businessType || ""),
+        colorScheme: COLOR_SCHEMES.includes(o.colorScheme) ? o.colorScheme : "system",
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+  return { ...DEFAULT_SETTINGS };
+}
