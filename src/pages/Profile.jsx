@@ -15,6 +15,7 @@ import {
   sendTestNotification,
   isNotificationSupported,
 } from "../services/notifications/index.js";
+import InstallAppBanner from "../components/InstallAppBanner.jsx";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -69,6 +70,8 @@ const Profile = () => {
         </h2>
         <p className="text-sm text-gray-400 mt-1">Financial commitments & lending tracker</p>
       </Card>
+
+      <InstallAppBanner />
 
       <Card className="space-y-4">
         <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Local preferences</p>

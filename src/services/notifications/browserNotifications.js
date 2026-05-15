@@ -1,4 +1,7 @@
+import { assetUrl } from "../../utils/basePath.js";
+
 const PERM_KEY = "committrack_notif_permission_asked";
+const NOTIF_ICON = () => assetUrl("pwa-192.png");
 
 /** @returns {boolean} */
 export function isNotificationSupported() {
@@ -44,12 +47,12 @@ export async function showLocalNotification(payload) {
         body,
         tag: tag || "committrack",
         data,
-        icon: "/favicon.svg",
-        badge: "/favicon.svg",
+        icon: NOTIF_ICON(),
+        badge: NOTIF_ICON(),
       });
       return true;
     }
-    new Notification(title, { body, tag, icon: "/favicon.svg" });
+    new Notification(title, { body, tag, icon: NOTIF_ICON() });
     return true;
   } catch {
     return false;

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-
 const DISMISS_KEY = "committrack_pwa_install_dismissed";
 
 function readStandalone() {
@@ -14,6 +13,11 @@ function readIos() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
+function readAndroid() {
+  if (typeof navigator === "undefined") return false;
+  return /android/i.test(navigator.userAgent);
+}
+
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [dismissed, setDismissed] = useState(() => {
@@ -25,6 +29,7 @@ export function usePwaInstall() {
   });
   const [isStandalone] = useState(readStandalone);
   const [isIos] = useState(readIos);
+  const [isAndroid] = useState(readAndroid);
 
   useEffect(() => {
     const onBeforeInstall = (e) => {
@@ -37,6 +42,8 @@ export function usePwaInstall() {
 
   const canInstall = Boolean(deferredPrompt) && !isStandalone && !dismissed;
   const showIosHint = isIos && !isStandalone && !dismissed;
+  const showAndroidHint = isAndroid && !canInstall && !isStandalone && !dismissed;
+  const showInstallUi = !isStandalone && !dismissed && (canInstall || showIosHint || showAndroidHint);
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return false;
@@ -55,5 +62,13 @@ export function usePwaInstall() {
     }
   }, []);
 
-  return { canInstall, showIosHint, install, dismiss, isStandalone };
+  return {
+    canInstall,
+    showIosHint,
+    showAndroidHint,
+    showInstallUi,
+    install,
+    dismiss,
+    isStandalone,
+  };
 }

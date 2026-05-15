@@ -1,11 +1,13 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { routerBasename } from "./utils/basePath.js";
 import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContext.jsx";
 import Navbar from "./components/Navbar";
 import Onboarding from "./pages/Onboarding.jsx";
 import ModeRoute from "./components/ModeRoute.jsx";
 import NotificationSync from "./components/NotificationSync.jsx";
 import ThemeSync from "./components/ThemeSync.jsx";
+import InstallAppBanner from "./components/InstallAppBanner.jsx";
 
 const Home = lazy(() => import("./pages/Home"));
 const Commitments = lazy(() => import("./pages/Commitments"));
@@ -27,6 +29,9 @@ function OnboardingShell() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 max-w-lg mx-auto py-8">
       <ThemeSync />
+      <div className="mb-6">
+        <InstallAppBanner />
+      </div>
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
@@ -82,7 +87,7 @@ function AppShell() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename()}>
       <CommitTrackProvider>
         <AppShell />
       </CommitTrackProvider>
