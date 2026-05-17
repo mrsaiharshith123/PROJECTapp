@@ -224,7 +224,18 @@ export function CommitTrackProvider({ children }) {
 
   const deleteLending = useCallback(
     (id) => {
-      persistLendings((prev) => prev.filter((l) => String(l.id) !== String(id)));
+      persistLendings((prev) => {
+        const row = prev.find((l) => String(l.id) === String(id));
+        if (row?.agreementLocked) {
+          const rem = Number(row.remainingAmount) || 0;
+          const settled = rem <= 0 || row.status === "complete";
+          const mutual =
+            Boolean(row.mutualCancelBorrowerSign?.trim()) &&
+            Boolean(row.mutualCancelLenderSign?.trim());
+          if (!settled && !mutual) return prev;
+        }
+        return prev.filter((l) => String(l.id) !== String(id));
+      });
     },
     [persistLendings]
   );

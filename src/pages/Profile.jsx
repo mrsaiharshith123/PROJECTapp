@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { USER_MODES, getUserModeConfig } from "../constants/userModes.js";
@@ -17,6 +16,8 @@ import {
 } from "../services/notifications/index.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
+import CollapsibleSection from "../components/CollapsibleSection.jsx";
+import ProfileAvatar from "../components/ProfileAvatar.jsx";
 import { COPY } from "../constants/copy.js";
 
 function formatDate(dateStr) {
@@ -29,7 +30,6 @@ function formatDate(dateStr) {
 }
 
 const Profile = () => {
-  const navigate = useNavigate();
   const {
     commitments,
     lendings,
@@ -49,21 +49,14 @@ const Profile = () => {
   const recent = recentCommitmentPaymentEvents(commitments, 10);
   const lentOut = outstandingLent(lendings);
 
-  const displayInitial = (settings.displayName || "You").trim().charAt(0).toUpperCase() || "Y";
-
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       <PageHeaderWithNotifications eyebrow="Account" title="Profile" />
 
       <Card className="flex flex-col items-center py-8 bg-gradient-to-b from-indigo-50 to-white dark:from-indigo-950 dark:to-slate-900 border-indigo-100 dark:border-indigo-800">
-        <div
-          className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg shadow-indigo-200"
-          style={{ fontFamily: "'Sora', sans-serif" }}
-        >
-          {displayInitial}
-        </div>
+        <ProfileAvatar settings={settings} updateSettings={updateSettings} />
         <h2
-          className="text-xl font-bold text-gray-900 dark:text-slate-100"
+          className="text-xl font-bold text-gray-900 dark:text-slate-100 mt-4"
           style={{ fontFamily: "'Sora', sans-serif" }}
         >
           {settings.displayName?.trim() || "CommitTrack user"}
@@ -73,10 +66,13 @@ const Profile = () => {
 
       <InstallAppBanner />
 
-      <Card className="space-y-4">
-        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Local preferences</p>
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Appearance</label>
+      <CollapsibleSection
+        title="Account settings"
+        subtitle="Appearance, income, user mode, and profile"
+        defaultOpen={false}
+      >
+        <div className="space-y-4 pt-3">
+          <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Appearance</label>
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: "light", label: "Light" },
@@ -98,9 +94,8 @@ const Profile = () => {
             ))}
           </div>
           <p className="text-[11px] text-gray-400 mt-1">System follows your device light/dark setting.</p>
-        </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Display name</label>
+          <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">Display name</label>
           <input
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm"
             value={settings.displayName ?? ""}
@@ -153,7 +148,8 @@ const Profile = () => {
           <p className="text-[11px] text-gray-400 mt-1">{COPY.newBillsHint}</p>
         </div>
         <p className="text-[11px] text-gray-400">Saved automatically on this device.</p>
-      </Card>
+        </div>
+      </CollapsibleSection>
 
       <Card className="border-dashed border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 space-y-2">
         <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">CommitTrack Plus (coming soon)</p>
@@ -232,14 +228,6 @@ const Profile = () => {
 
       <Card className="space-y-1">
         <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Data</p>
-        <button
-          type="button"
-          className="w-full flex items-center justify-between py-3 px-1 rounded-xl hover:bg-gray-50 text-left"
-          onClick={() => navigate("/tools")}
-        >
-          <span className="text-sm font-medium text-gray-700">Optimization tools & goals</span>
-          <span className="text-gray-300">›</span>
-        </button>
         <button
           type="button"
           className="w-full flex items-center justify-between py-3 px-1 rounded-xl hover:bg-gray-50 text-left"

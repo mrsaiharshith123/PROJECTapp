@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { addMonths, format, parseISO } from "date-fns";
 import Card from "../components/Card";
+import { formatInr } from "../constants/symbols.js";
+import { buildLendingRecord } from "../utils/lendingRecord.js";
 import { Modal } from "../components/Modal.jsx";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { getEffectiveLendingStatus } from "../utils/lendingStatus.js";
@@ -8,6 +9,8 @@ import { todayYmd } from "../utils/dates.js";
 import { lendingTrustByPerson, trustSummaryLine, trustScoreForLendingEntry, trustBadgeClass } from "../engines/lendingTrust.js";
 import LendingDetailModal from "../components/LendingDetailModal.jsx";
 import LendingFormFields from "../components/lending/LendingFormFields.jsx";
+import LendingRequestModal from "../components/lending/LendingRequestModal.jsx";
+import { canDeleteLending } from "../engines/lendingAgreement.js";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -54,17 +57,18 @@ const Lending = () => {
   const [payDate, setPayDate] = useState(() => todayYmd());
   const [formErrors, setFormErrors] = useState({});
   const [detailFor, setDetailFor] = useState(null);
+  const [showRequest, setShowRequest] = useState(false);
 
-  const sorted = useMemo(
-    () =>
-      [...lendings].sort((a, b) => {
-        const da = a.dueDate || "";
-        const db = b.dueDate || "";
-        if (da !== db) return da.localeCompare(db);
-        return String(a.personName).localeCompare(String(b.personName));
-      }),
-    [lendings]
-  );
+  const sortLendings = (list) =>
+    [...list].sort((a, b) => {
+      const da = a.dueDate || "";
+      const db = b.dueDate || "";
+      if (da !== db) return da.localeCompare(db);
+      return String(a.personName).localeCompare(String(b.personName));
+    });
+
+  const borrowedList = useMemo(() => sortLendings(lendings.filter((l) => l.type === "borrowed")), [lendings]);
+  const lentList = useMemo(() => sortLendings(lendings.filter((l) => l.type === "lent")), [lendings]);
 
   const trustRows = useMemo(() => lendingTrustByPerson(lendings), [lendings]);
 
@@ -106,32 +110,23 @@ const Lending = () => {
     return errs;
   };
 
-  const lendingPayload = () => {
-    const start = form.startDate || form.dueDate;
-    let end = form.endDate;
-    if (!end && start) {
-      try {
-        end = format(addMonths(parseISO(`${start}T12:00:00`), 12), "yyyy-MM-dd");
-      } catch {
-        end = form.dueDate;
-      }
-    }
-    return {
-      personName: form.personName.trim(),
+  const lendingPayload = () =>
+    buildLendingRecord({
       type: form.type,
-      totalAmount: Number(form.totalAmount),
-      principalAmount: Number(form.totalAmount),
+      personName: form.personName.trim(),
+      totalAmount: form.totalAmount,
       dueDate: form.dueDate,
-      startDate: start,
-      endDate: end,
-      interestRate: Number(form.interestRate),
-      interestType: form.interestType,
-      repaymentFrequency: form.repaymentFrequency,
-      repaymentType: form.repaymentType,
-      relationshipTag: form.relationshipTag,
+      interestRate: form.interestRate,
       notes: form.notes.trim(),
-    };
-  };
+      relationshipTag: form.relationshipTag,
+      extra: {
+        startDate: form.startDate || form.dueDate,
+        endDate: form.endDate,
+        interestType: form.interestType,
+        repaymentFrequency: form.repaymentFrequency,
+        repaymentType: form.repaymentType,
+      },
+    });
 
   const submitAdd = () => {
     const errs = validateForm();
@@ -202,140 +197,143 @@ const Lending = () => {
       formErrors[field] ? "border-red-300" : "border-gray-200"
     }`;
 
+  const renderEntry = (item) => {
+    const eff = getEffectiveLendingStatus(item, todayStr);
+    const cfg = lendingStatusStyle[eff] || lendingStatusStyle.pending;
+    const trust = trustScoreForLendingEntry(item);
+    return (
+      <Card key={item.id} className={eff === "overdue" ? "border-red-100 bg-red-50/50" : ""}>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold bg-indigo-100 text-indigo-700 shrink-0">
+              {avatarFor(item.personName)}
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold text-gray-800">{item.personName}</p>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${trustBadgeClass(trust)}`}>
+                  {trust}/100
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">Due {formatDate(item.dueDate)}</p>
+              {item.notes ? <p className="text-xs text-gray-400 mt-1">{item.notes}</p> : null}
+            </div>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
+              {formatInr(item.totalAmount)}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">Left {formatInr(item.remainingAmount)}</p>
+            <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${cfg.classes}`}>
+              {cfg.label}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+          {eff !== "complete" && (
+            <button type="button" onClick={() => openPayment(item)} className="flex-1 min-w-[100px] py-2 text-xs font-semibold bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">
+              Payment
+            </button>
+          )}
+          <button type="button" onClick={() => setDetailFor(item)} className="px-3 py-2 text-xs font-semibold border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50">
+            Details
+          </button>
+          <button type="button" onClick={() => openEdit(item)} className="px-3 py-2 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+            Edit
+          </button>
+          {canDeleteLending(item) ? (
+            <button type="button" onClick={() => deleteLending(item.id)} className="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+              Delete
+            </button>
+          ) : (
+            <span className="px-2 py-2 text-[10px] text-amber-700" title="Locked until repaid or both sign to cancel">
+              Locked
+            </span>
+          )}
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Tracker</p>
           <h1 className="text-3xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
-            Lending
+            Money
           </h1>
           <p className="text-xs text-gray-500 mt-1 max-w-xs">
-            Track money you lent or borrowed. Payments stay on this device.
+            Request money goes under debt; when someone accepts your link it shows as money lent.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            resetForm();
-            setShowAdd(true);
-          }}
-          className="shrink-0 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
-        >
-          + Add
-        </button>
+        <div className="flex flex-col gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowRequest(true)}
+            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700"
+          >
+            Request money
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              resetForm();
+              setShowAdd(true);
+            }}
+            className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+          >
+            + Add
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <Card className="text-center p-4">
           <p className="text-xs text-gray-400 mb-1">You lent (outstanding)</p>
           <p className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totals.lentOut.toLocaleString()}
+            {formatInr(totals.lentOut)}
           </p>
         </Card>
         <Card className="text-center p-4 bg-violet-50 border-violet-100">
-          <p className="text-xs text-violet-600 mb-1">You borrowed (due)</p>
+          <p className="text-xs text-violet-600 mb-1">You owe (debt)</p>
           <p className="text-lg font-bold text-violet-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totals.borrowedIn.toLocaleString()}
+            {formatInr(totals.borrowedIn)}
           </p>
         </Card>
         <Card className="text-center p-4 bg-emerald-50 border-emerald-100">
           <p className="text-xs text-emerald-600 mb-1">Recovered (lent)</p>
           <p className="text-lg font-bold text-emerald-700" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totals.recovered.toLocaleString()}
+            {formatInr(totals.recovered)}
           </p>
         </Card>
         <Card className="text-center p-4 bg-slate-50 border-slate-100">
-          <p className="text-xs text-slate-500 mb-1">Repaid (borrowed)</p>
+          <p className="text-xs text-slate-500 mb-1">Repaid (debt)</p>
           <p className="text-lg font-bold text-slate-700" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{totals.repaid.toLocaleString()}
+            {formatInr(totals.repaid)}
           </p>
         </Card>
       </div>
 
-      {sorted.length === 0 && (
+      {borrowedList.length === 0 && lentList.length === 0 && (
         <Card className="text-center py-10 text-sm text-gray-500">
-          No lending entries yet. Tap Add to record one.
+          Nothing here yet. Request money (debt) or Add and pick lent / borrowed.
         </Card>
       )}
 
-      <div className="space-y-3">
-        {sorted.map((item) => {
-          const eff = getEffectiveLendingStatus(item, todayStr);
-          const cfg = lendingStatusStyle[eff] || lendingStatusStyle.pending;
-          const letter = avatarFor(item.personName);
-          const trust = trustScoreForLendingEntry(item);
-          return (
-            <Card key={item.id} className={eff === "overdue" ? "border-red-100 bg-red-50/50" : ""}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold bg-indigo-100 text-indigo-700 shrink-0">
-                    {letter}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-gray-800">{item.personName}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${trustBadgeClass(trust)}`}>
-                        {trust}/100
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {item.type === "lent" ? "You lent" : "You borrowed"} · Due {formatDate(item.dueDate)}
-                    </p>
-                    {item.notes ? <p className="text-xs text-gray-400 mt-1">{item.notes}</p> : null}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-                    ₹{Number(item.totalAmount).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Left ₹{Number(item.remainingAmount).toLocaleString()}
-                  </p>
-                  <span
-                    className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${cfg.classes}`}
-                  >
-                    {cfg.label}
-                  </span>
-                </div>
-              </div>
+      {borrowedList.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-violet-800 uppercase tracking-wide">Money you owe (debt)</h2>
+          {borrowedList.map(renderEntry)}
+        </section>
+      )}
 
-              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
-                {eff !== "complete" && (
-                  <button
-                    type="button"
-                    onClick={() => openPayment(item)}
-                    className="flex-1 min-w-[100px] py-2 text-xs font-semibold bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
-                  >
-                    Payment
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setDetailFor(item)}
-                  className="px-3 py-2 text-xs font-semibold border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50"
-                >
-                  Details
-                </button>
-                <button
-                  type="button"
-                  onClick={() => openEdit(item)}
-                  className="px-3 py-2 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteLending(item.id)}
-                  className="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                >
-                  Delete
-                </button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      {lentList.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-indigo-800 uppercase tracking-wide">Money you lent</h2>
+          {lentList.map(renderEntry)}
+        </section>
+      )}
 
       {trustRows.length > 0 && (
         <Card className="space-y-2">
@@ -418,6 +416,8 @@ const Lending = () => {
           </div>
         </Modal>
       )}
+
+      {showRequest && <LendingRequestModal onClose={() => setShowRequest(false)} />}
 
       {detailFor && <LendingDetailModal lending={detailFor} onClose={() => setDetailFor(null)} />}
 

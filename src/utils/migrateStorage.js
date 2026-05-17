@@ -157,6 +157,15 @@ export function normalizeLending(raw) {
     agreementText: String(raw.agreementText ?? ""),
     agreementAccepted: Boolean(raw.agreementAccepted),
     agreementAcceptedAt: raw.agreementAcceptedAt ? Number(raw.agreementAcceptedAt) : null,
+    agreementLocked: Boolean(raw.agreementLocked),
+    offerId: raw.offerId ? String(raw.offerId) : null,
+    borrowerSignName: String(raw.borrowerSignName ?? ""),
+    borrowerSignedAt: raw.borrowerSignedAt ? Number(raw.borrowerSignedAt) : null,
+    lenderSignName: String(raw.lenderSignName ?? ""),
+    lenderSignedAt: raw.lenderSignedAt ? Number(raw.lenderSignedAt) : null,
+    collateralDescription: String(raw.collateralDescription ?? ""),
+    mutualCancelBorrowerSign: String(raw.mutualCancelBorrowerSign ?? ""),
+    mutualCancelLenderSign: String(raw.mutualCancelLenderSign ?? ""),
     relationshipTag: ["Friend", "Family", "Business", "Other"].includes(raw.relationshipTag)
       ? raw.relationshipTag
       : "Other",
@@ -346,6 +355,8 @@ const DEFAULT_SETTINGS = {
   activeProfileId: "default",
   businessType: "",
   colorScheme: "system",
+  avatarSource: "auto",
+  profileImageDataUrl: "",
 };
 
 export function loadSettingsFromStorage() {
@@ -369,6 +380,11 @@ export function loadSettingsFromStorage() {
         activeProfileId: String(o.activeProfileId || "default"),
         businessType: String(o.businessType || ""),
         colorScheme: COLOR_SCHEMES.includes(o.colorScheme) ? o.colorScheme : "system",
+        avatarSource: o.avatarSource === "upload" ? "upload" : "auto",
+        profileImageDataUrl:
+          o.avatarSource === "upload" && typeof o.profileImageDataUrl === "string"
+            ? o.profileImageDataUrl
+            : "",
       };
     }
   } catch {

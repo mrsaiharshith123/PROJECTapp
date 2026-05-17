@@ -1,5 +1,10 @@
+import { NAV_ITEMS } from "./nav.js";
+
 /** Shared user mode config (Blueprint role-based OS). */
 export const USER_MODE_IDS = ["salaried", "business", "freelancer", "family", "student", "power"];
+
+const NAV_FULL = ["/", "/commitments", "/lending", "/profile"];
+const NAV_NO_LENDING = ["/", "/commitments", "/profile"];
 
 export const USER_MODES = [
   {
@@ -7,7 +12,7 @@ export const USER_MODES = [
     label: "Salaried",
     emoji: "💼",
     description: "EMIs, subscriptions, and salary pressure.",
-    navPaths: ["/", "/commitments", "/lending", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
   },
@@ -16,7 +21,7 @@ export const USER_MODES = [
     label: "Business owner",
     emoji: "🏪",
     description: "Cashflow, receivables, and vendor payments.",
-    navPaths: ["/", "/commitments", "/lending", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: false,
   },
@@ -25,7 +30,7 @@ export const USER_MODES = [
     label: "Freelancer / gig",
     emoji: "🎯",
     description: "Irregular income and flexible budgeting.",
-    navPaths: ["/", "/commitments", "/lending", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
   },
@@ -34,7 +39,7 @@ export const USER_MODES = [
     label: "Family household",
     emoji: "👨‍👩‍👧",
     description: "Shared expenses and joint goals.",
-    navPaths: ["/", "/commitments", "/lending", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
   },
@@ -43,7 +48,7 @@ export const USER_MODES = [
     label: "Student",
     emoji: "🎓",
     description: "Education costs and simple budgeting.",
-    navPaths: ["/", "/commitments", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_NO_LENDING,
     showLending: false,
     showAffordabilityOnAdd: true,
   },
@@ -52,7 +57,7 @@ export const USER_MODES = [
     label: "Power user",
     emoji: "⚡",
     description: "All features enabled.",
-    navPaths: ["/", "/commitments", "/lending", "/analytics", "/tools", "/profile"],
+    navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
   },
@@ -64,13 +69,5 @@ export function getUserModeConfig(modeId) {
 
 export function navItemsForMode(modeId) {
   const cfg = getUserModeConfig(modeId);
-  const all = [
-    { to: "/", label: "Home", icon: "🏠" },
-    { to: "/commitments", label: "Bills", icon: "📋" },
-    { to: "/lending", label: "Lending", icon: "🤝" },
-    { to: "/analytics", label: "Analytics", icon: "📊" },
-    { to: "/tools", label: "Tools", icon: "⚙️" },
-    { to: "/profile", label: "Profile", icon: "👤" },
-  ];
-  return all.filter((item) => cfg.navPaths.includes(item.to));
+  return NAV_ITEMS.filter((item) => cfg.navPaths.includes(item.to));
 }

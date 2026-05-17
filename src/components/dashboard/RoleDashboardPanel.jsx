@@ -130,7 +130,7 @@ function buildModePanel(mode, ctx) {
           tone: free >= 0 ? "good" : "warn",
         },
       ],
-      tip: intel.subscriptionLeak.insights[0] || intel.forecast[0]?.text || "Set a savings goal in Tools",
+      tip: intel.subscriptionLeak.insights[0] || intel.forecast[0]?.text || "Set a savings goal under Quick calculators on Home",
     };
   }
   if (mode === "family") {

@@ -1,21 +1,7 @@
-import { useMemo } from "react";
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  LineChart,
-  Line,
-} from "recharts";
+﻿import { useMemo } from "react";
 import { format, subMonths } from "date-fns";
 import Card from "../components/Card";
+import AnalyticsChartPanel from "../components/AnalyticsChartPanel.jsx";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { getCategoryById } from "../constants/categories.js";
 import { totalPaidOnPayments } from "../utils/commitmentPayments.js";
@@ -33,19 +19,15 @@ import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { todayYmd } from "../utils/dates.js";
 import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
 import { repeatTypeLabel } from "../constants/repeatTypes.js";
-
-const PIE_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#14b8a6", "#f59e0b", "#10b981", "#64748b", "#ef4444", "#06b6d4"];
-
-const CHART_TICK = { fontSize: 11, fill: "#64748b" };
-const CHART_GRID = { stroke: "#e2e8f0", strokeDasharray: "4 4" };
-const rupeeTip = (v) => (v != null ? `₹${Number(v).toLocaleString("en-IN")}` : "");
+import { formatInr, EM_DASH, ARROW } from "../constants/symbols.js";
+import { PROFILE_SETTINGS_HINT } from "../constants/plainLanguage.js";
+import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
 
 const Analytics = () => {
   const {
     commitments,
     lendings,
     settings,
-    updateSettings,
     getEffectiveStatus,
     getEffectiveLendingStatus,
     monthlySnapshots,
@@ -147,10 +129,11 @@ const Analytics = () => {
   return (
     <div className="space-y-6 pb-4">
       <div>
-        <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Insights</p>
+        <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Money picture</p>
         <h1 className="text-3xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
           Analytics
         </h1>
+        <p className="text-xs text-gray-500 mt-1">Simple summaries first. Extra charts are optional.</p>
         {settings.activeProfileId && settings.activeProfileId !== "default" && (
           <p className="text-xs text-indigo-600 mt-1 font-medium">Profile: {settings.activeProfileId}</p>
         )}
@@ -165,76 +148,56 @@ const Analytics = () => {
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="text-[10px] uppercase text-indigo-200 font-semibold">Due</p>
             <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{monthBreakdown.dueThisMonth.toLocaleString()}
+              {formatInr(monthBreakdown.dueThisMonth)}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="text-[10px] uppercase text-indigo-200 font-semibold">Paid</p>
             <p className="text-lg font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{monthBreakdown.paidThisMonth.toLocaleString()}
+              {formatInr(monthBreakdown.paidThisMonth)}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="text-[10px] uppercase text-indigo-200 font-semibold">Left</p>
             <p className="text-lg font-bold text-amber-200" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{monthBreakdown.leftThisMonth.toLocaleString()}
+              {formatInr(monthBreakdown.leftThisMonth)}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 px-3 py-2">
             <p className="text-[10px] uppercase text-indigo-200 font-semibold">Free cash</p>
             <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
-              {monthBreakdown.freeCash != null ? `₹${monthBreakdown.freeCash.toLocaleString()}` : "—"}
+              {monthBreakdown.freeCash != null ? formatInr(monthBreakdown.freeCash) : EM_DASH}
             </p>
           </div>
         </div>
         <p className="text-xs text-indigo-100/80 leading-relaxed">
           {monthBreakdown.duePercentOfIncome
             ? `Planned bills this month are ${monthBreakdown.duePercentOfIncome} of your income. `
-            : "Set monthly income below to see burden vs salary. "}
+            : `${PROFILE_SETTINGS_HINT} `}
           Due shows what is still owed this month; Left matches Due after payments. Free cash = income minus paid.
         </p>
       </Card>
 
-      <Card className="space-y-4">
-        <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Monthly income (₹)</p>
-        <p className="text-xs text-gray-500">Used for the pressure card. Stored only on this device.</p>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min="0"
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-            value={settings.monthlyIncome === 0 ? "" : String(settings.monthlyIncome)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({
-                monthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0),
-              });
-            }}
-            placeholder="0"
-          />
-        </div>
-      </Card>
-
       <Card className="bg-gradient-to-br from-slate-900 to-indigo-900 text-white border-0 shadow-lg">
-        <p className="text-slate-300 text-sm font-medium mb-4">Financial pressure</p>
+        <p className="text-slate-300 text-sm font-medium mb-4">Can you afford your bills?</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <p className="text-slate-400 text-xs mb-1">Income (monthly)</p>
             <p className="text-xl font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{income.toLocaleString()}
+              {formatInr(income)}
             </p>
           </div>
           <div>
             <p className="text-slate-400 text-xs mb-1">Monthly burden</p>
             <p className="text-xl font-bold text-amber-300" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{monthlyBurden.toLocaleString()}
+              {formatInr(monthlyBurden)}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1">Open balance stock: ₹{openPressure.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-500 mt-1">Still owed overall: {formatInr(openPressure)}</p>
           </div>
           <div>
             <p className="text-slate-400 text-xs mb-1">Free after dues</p>
             <p className="text-xl font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{freeMoney.toLocaleString()}
+              {formatInr(freeMoney)}
             </p>
             <p className="text-[10px] text-slate-500 mt-1">Income minus estimated monthly dues</p>
           </div>
@@ -250,7 +213,7 @@ const Analytics = () => {
                 <span>{getCategoryById(biggestCategory.name).icon}</span>
                 {getCategoryById(biggestCategory.name).label}
               </p>
-              <p className="text-sm text-gray-500 mt-1">₹{biggestCategory.value.toLocaleString()} open</p>
+              <p className="text-sm text-gray-500 mt-1">{formatInr(biggestCategory.value)} open</p>
             </>
           ) : (
             <p className="text-sm text-gray-400">No open bills</p>
@@ -264,7 +227,7 @@ const Analytics = () => {
                 {highestRecurring.name}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                ₹{highestRecurring.amount.toLocaleString()} · {repeatTypeLabel(highestRecurring.repeatType)}
+                {formatInr(highestRecurring.amount)} {EM_DASH} {repeatTypeLabel(highestRecurring.repeatType)}
               </p>
             </>
           ) : (
@@ -274,8 +237,8 @@ const Analytics = () => {
       </div>
 
       <Card className="space-y-3">
-        <h2 className="text-base font-semibold text-gray-800">Due-date heatmap (next 4 weeks)</h2>
-        <p className="text-xs text-gray-500">How many dues cluster in each week for this profile.</p>
+        <h2 className="text-base font-semibold text-gray-800">Upcoming due dates (4 weeks)</h2>
+        <p className="text-xs text-gray-500">Which weeks have the most bills due.</p>
         <div className="grid grid-cols-4 gap-2">
           {dueHeatmap.map((b) => (
             <div key={b.label} className="text-center">
@@ -290,7 +253,7 @@ const Analytics = () => {
                 />
               </div>
               <p className="text-xs font-semibold text-gray-800 mt-1">{b.count} due</p>
-              <p className="text-[10px] text-gray-500">₹{Math.round(b.amount).toLocaleString()}</p>
+              <p className="text-[10px] text-gray-500">{formatInr(Math.round(b.amount))}</p>
             </div>
           ))}
         </div>
@@ -300,140 +263,47 @@ const Analytics = () => {
         <Card className="space-y-2">
           <h2 className="text-base font-semibold text-gray-800">Lending repayment</h2>
           <p className="text-xs text-gray-500">
-            {lendingStats.settled} settled · {lendingStats.active} active
-            {lendingStats.overdue > 0 ? ` · ${lendingStats.overdue} overdue` : ""}
+            {lendingStats.settled} settled {EM_DASH} {lendingStats.active} active
+            {lendingStats.overdue > 0 ? ` ${EM_DASH} ${lendingStats.overdue} overdue` : ""}
           </p>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="bg-emerald-50 rounded-xl p-3">
               <p className="text-xs text-gray-500">Principal paid</p>
-              <p className="font-bold text-emerald-800">₹{lendingTotals.principal.toLocaleString()}</p>
+              <p className="font-bold text-emerald-800">{formatInr(lendingTotals.principal)}</p>
             </div>
             <div className="bg-amber-50 rounded-xl p-3">
               <p className="text-xs text-gray-500">Interest paid</p>
-              <p className="font-bold text-amber-800">₹{lendingTotals.interest.toLocaleString()}</p>
+              <p className="font-bold text-amber-800">{formatInr(lendingTotals.interest)}</p>
             </div>
           </div>
         </Card>
       )}
 
-      {freeCashTrend.length >= 2 && (
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-gray-800">Free cash trend (snapshots)</h2>
-          <div className="h-44 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={freeCashTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid {...CHART_GRID} />
-                <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
-                <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
-                <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-                <Line type="monotone" dataKey="freeMoney" stroke="#10b981" strokeWidth={2} dot name="Free cash" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
-      <Card className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-800">Free cash forecast (12 months)</h2>
-        <p className="text-xs text-gray-500">Estimated dues vs income each month (recurring + one-off due dates).</p>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={forecastSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid {...CHART_GRID} />
-              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
-              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-              <Legend />
-              <Bar dataKey="due" name="Due" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="free" name="Free cash" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
-
-      <Card className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-800">Pressure score (from snapshots)</h2>
-        <p className="text-xs text-gray-500">Canonical stability score recorded monthly when you use the app.</p>
-        <div className="h-52 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={pressureTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid {...CHART_GRID} />
-              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 100]} tick={CHART_TICK} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-              <Line type="monotone" dataKey="pressure" stroke="#6366f1" strokeWidth={2} dot name="Pressure" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
-
-      <Card className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-800">Recurring payments (cash out)</h2>
-        <div className="h-48 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={recurringPaidTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid {...CHART_GRID} />
-              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
-              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-              <Bar dataKey="recurringPaid" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
+      <AnalyticsChartPanel
+        forecastSeries={forecastSeries}
+        barData={barData}
+        pieData={pieData}
+        pressureTrend={pressureTrend}
+        recurringPaidTrend={recurringPaidTrend}
+        freeCashTrend={freeCashTrend}
+      />
 
       {debtReduction && (
         <Card className="text-sm text-gray-700">
-          Open balance change {debtReduction.fromMonth} → {debtReduction.toMonth}: ₹
-          {Math.round(debtReduction.openDelta).toLocaleString()}{" "}
+          Balance change {debtReduction.fromMonth} {ARROW} {debtReduction.toMonth}:{" "}
+          {formatInr(Math.round(debtReduction.openDelta))}{" "}
           {debtReduction.openDelta > 0 ? "(increase)" : debtReduction.openDelta < 0 ? "(reduction)" : ""}
         </Card>
       )}
 
-      <Card className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-800">By category (open remaining)</h2>
-        <p className="text-xs text-gray-500 mb-2">Share of what you still owe, grouped by category</p>
-        <div className="h-64 w-full">
-          {pieData.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-16">Nothing to chart yet</p>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={88}>
-                  {pieData.map((_, i) => (
-                    <Cell key={pieData[i].name} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </Card>
-
-      <Card className="space-y-2">
-        <h2 className="text-base font-semibold text-gray-800">Cash out by month</h2>
-        <p className="text-xs text-gray-500 mb-2">Total bill payments recorded per month</p>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid {...CHART_GRID} />
-              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
-              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
-              <Bar dataKey="amount" fill="#6366f1" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
-
       <Card className="bg-gray-50 border-gray-100">
         <p className="text-xs text-gray-500">
-          All-time recorded payments: ₹
-          {commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0).toLocaleString()}
+          All-time recorded payments:{" "}
+          {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
         </p>
       </Card>
+
+      <ToolsDiscoveryToast variant="analytics" />
     </div>
   );
 };

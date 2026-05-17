@@ -16,6 +16,7 @@ const Lending = lazy(() => import("./pages/Lending"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Tools = lazy(() => import("./pages/Tools"));
+const LendingOfferReview = lazy(() => import("./pages/LendingOfferReview.jsx"));
 
 function PageLoader() {
   return (
@@ -89,7 +90,12 @@ function App() {
   return (
     <BrowserRouter basename={routerBasename()}>
       <CommitTrackProvider>
-        <AppShell />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/lend/offer" element={<LendingOfferReview />} />
+            <Route path="*" element={<AppShell />} />
+          </Routes>
+        </Suspense>
       </CommitTrackProvider>
     </BrowserRouter>
   );
