@@ -377,7 +377,13 @@ const Lending = () => {
           }
         >
                     <div className="space-y-4">
-            <LendingFormFields form={form} setForm={setForm} formErrors={formErrors} inputClass={inputClass} />
+            <LendingFormFields
+              form={form}
+              setForm={setForm}
+              formErrors={formErrors}
+              inputClass={inputClass}
+              todayStr={todayStr}
+            />
           </div>
         </Modal>
       )}
@@ -412,7 +418,13 @@ const Lending = () => {
           }
         >
                     <div className="space-y-4">
-            <LendingFormFields form={form} setForm={setForm} formErrors={formErrors} inputClass={inputClass} />
+            <LendingFormFields
+              form={form}
+              setForm={setForm}
+              formErrors={formErrors}
+              inputClass={inputClass}
+              todayStr={todayStr}
+            />
           </div>
         </Modal>
       )}

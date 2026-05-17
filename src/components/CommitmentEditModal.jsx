@@ -1,26 +1,33 @@
 import { useState } from "react";
 import { Modal } from "./Modal.jsx";
-import { CATEGORIES, categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import { categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import { getCategoriesForUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "./InsuranceFields.jsx";
-import {
-  normalizePremiumFrequency,
-  buildInsuranceBillName,
-  insuranceBillHasIdentity,
-} from "../constants/insurance.js";
+import { buildInsuranceBillName, insuranceBillHasIdentity } from "../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../constants/priority.js";
 import { repeatTypeToPremiumFrequency } from "../constants/insurance.js";
 import { COPY } from "../constants/copy.js";
 import { REPEAT_OPTIONS } from "../constants/repeatTypes.js";
+import {
+  applyBillRepeatChange,
+  applyBillStartDateChange,
+  defaultDueDateFromStart,
+  defaultEndDateFromStart,
+} from "../utils/billDates.js";
+import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 
-function formFromCommitment(c) {
+function formFromCommitment(c, todayStr) {
+  const startDate = c.startDate || c.dueDate || "";
+  const repeatType = c.repeatType || "none";
   return {
     name: c.name || "",
     amount: String(c.amount ?? ""),
-    startDate: c.startDate || c.dueDate || "",
+    startDate,
     endDate: c.endDate || "",
-    dueDate: c.dueDate || c.startDate || "",
+    dueDate: c.dueDate || defaultDueDateFromStart(startDate, repeatType, todayStr),
     category: c.category || "Other",
-    repeatType: c.repeatType || "none",
+    repeatType,
     priority: c.priority || "medium",
     notes: c.notes || "",
     annualInterestRate: c.annualInterestRate != null ? String(c.annualInterestRate) : "",
@@ -32,8 +39,27 @@ function formFromCommitment(c) {
 }
 
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
-  const [form, setForm] = useState(() => formFromCommitment(commitment));
+  const { todayStr, settings } = useCommitTrack();
+  const billCategories = getCategoriesForUserMode(settings.userMode || "salaried");
+  const [form, setForm] = useState(() => formFromCommitment(commitment, todayStr));
   const [errors, setErrors] = useState({});
+
+  const patchForm = (patch) => {
+    setForm((f) => {
+      if (patch.startDate !== undefined) {
+        return applyBillStartDateChange(f, patch.startDate, todayStr);
+      }
+      if (patch.repeatType !== undefined) {
+        return applyBillRepeatChange(f, patch.repeatType, todayStr);
+      }
+      return { ...f, ...patch };
+    });
+  };
+
+  const fillEndDateIfEmpty = () => {
+    if (!form.startDate || form.endDate) return;
+    patchForm({ endDate: defaultEndDateFromStart(form.startDate, todayStr) });
+  };
   const showInterest = categoryShowsInterestRate(form.category);
   const showInsurance = categoryShowsInsuranceFields(form.category);
   const isSubscription = form.category === "Subscription";
@@ -41,8 +67,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
 
   const inputClass = (field) =>
     `w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition ${
-      errors[field] ? "border-red-300 bg-red-50" : "border-gray-200 dark:border-slate-600"
-    }`;
+      isEnhancedUi() ? "ui-input" : ""
+    } ${errors[field] ? "border-red-300 bg-red-50" : "border-gray-200 dark:border-slate-600"}`;
 
   const validate = () => {
     const errs = {};
@@ -138,7 +164,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <input
             className={inputClass("name")}
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(e) => patchForm({ name: e.target.value })}
           />
           {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
         </div>
@@ -149,7 +175,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             min="0"
             className={inputClass("amount")}
             value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            onChange={(e) => patchForm({ amount: e.target.value })}
           />
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
         </div>
@@ -160,7 +186,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               type="date"
               className={inputClass("startDate")}
               value={form.startDate}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+              onChange={(e) => patchForm({ startDate: e.target.value })}
             />
             {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
           </div>
@@ -172,7 +198,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               type="date"
               className={inputClass("endDate")}
               value={form.endDate}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+              onChange={(e) => patchForm({ endDate: e.target.value })}
+              onFocus={fillEndDateIfEmpty}
             />
             {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
           </div>
@@ -183,7 +210,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             type="date"
             className={inputClass("dueDate")}
             value={form.dueDate}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+            onChange={(e) => patchForm({ dueDate: e.target.value })}
           />
           {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
         </div>
@@ -194,14 +221,13 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             value={form.category}
             onChange={(e) => {
               const cat = e.target.value;
-              setForm((f) => ({
-                ...f,
+              patchForm({
                 category: cat,
-                priority: cat === "Other" ? f.priority : inferPriorityFromCategory(cat),
-              }));
+                priority: cat === "Other" ? form.priority : inferPriorityFromCategory(cat),
+              });
             }}
           >
-            {CATEGORIES.map((c) => (
+            {billCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.icon} {c.label}
               </option>
@@ -213,7 +239,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <select
             className={inputClass("repeat")}
             value={form.repeatType}
-            onChange={(e) => setForm({ ...form, repeatType: e.target.value })}
+            onChange={(e) => patchForm({ repeatType: e.target.value })}
           >
             {REPEAT_OPTIONS.map((o) => (
               <option key={o.id} value={o.id}>
@@ -228,7 +254,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             <select
               className={inputClass("priority")}
               value={form.priority}
-              onChange={(e) => setForm({ ...form, priority: e.target.value })}
+              onChange={(e) => patchForm({ priority: e.target.value })}
             >
               {OTHER_PRIORITY_OPTIONS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -244,7 +270,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             values={form}
             errors={errors}
             inputClass={inputClass}
-            onChange={(name, value) => setForm((f) => ({ ...f, [name]: value }))}
+            onChange={(name, value) => patchForm({ [name]: value })}
           />
         )}
 
@@ -260,7 +286,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               step="0.1"
               className={inputClass("annualInterestRate")}
               value={form.annualInterestRate}
-              onChange={(e) => setForm({ ...form, annualInterestRate: e.target.value })}
+              onChange={(e) => patchForm({ annualInterestRate: e.target.value })}
               placeholder="For payoff ranking"
             />
           </div>
@@ -274,7 +300,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               type="date"
               className={inputClass("trialEnd")}
               value={form.trialEnd}
-              onChange={(e) => setForm({ ...form, trialEnd: e.target.value })}
+              onChange={(e) => patchForm({ trialEnd: e.target.value })}
             />
           </div>
         )}
@@ -283,7 +309,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <textarea
             className={`${inputClass("notes")} min-h-[80px] resize-y`}
             value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            onChange={(e) => patchForm({ notes: e.target.value })}
             placeholder="Optional"
           />
         </div>

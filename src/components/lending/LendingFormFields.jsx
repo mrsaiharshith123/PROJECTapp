@@ -1,6 +1,20 @@
+import { defaultEndDateFromStart } from "../../utils/billDates.js";
+
 const RELATIONSHIP_TAGS = ["Friend", "Family", "Business", "Other"];
 
-export default function LendingFormFields({ form, setForm, formErrors, inputClass }) {
+export default function LendingFormFields({ form, setForm, formErrors, inputClass, todayStr }) {
+  const onStartDate = (startDate) => {
+    setForm((f) => ({
+      ...f,
+      startDate,
+      endDate: f.endDate || defaultEndDateFromStart(startDate, todayStr),
+    }));
+  };
+
+  const fillEndIfEmpty = () => {
+    if (!form.startDate || form.endDate) return;
+    setForm((f) => ({ ...f, endDate: defaultEndDateFromStart(f.startDate, todayStr) }));
+  };
   return (
     <>
       <div>
@@ -93,7 +107,7 @@ export default function LendingFormFields({ form, setForm, formErrors, inputClas
             type="date"
             className={inputClass("startDate")}
             value={form.startDate}
-            onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+            onChange={(e) => onStartDate(e.target.value)}
           />
         </div>
         <div>
@@ -103,6 +117,7 @@ export default function LendingFormFields({ form, setForm, formErrors, inputClas
             className={inputClass("endDate")}
             value={form.endDate}
             onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+            onFocus={fillEndIfEmpty}
           />
         </div>
       </div>

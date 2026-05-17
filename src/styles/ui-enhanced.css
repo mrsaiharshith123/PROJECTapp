@@ -1,0 +1,78 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@600;700;800&display=swap");
+
+html[data-ui="enhanced"] {
+  --ui-bg: #e8ecf4;
+  --ui-bg-dark: #0b0f1a;
+  --ui-surface: #ffffff;
+  --ui-surface-dark: #121a2b;
+  --ui-accent: #5b4dff;
+  --ui-accent-soft: #ede9fe;
+  --ui-radius-lg: 1.125rem;
+  --ui-shadow: 0 4px 24px -4px rgba(30, 27, 75, 0.12), 0 2px 8px -2px rgba(30, 27, 75, 0.06);
+  --ui-shadow-dark: 0 8px 32px -8px rgba(0, 0, 0, 0.45);
+}
+
+html[data-ui="enhanced"] body {
+  font-family: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
+  background: radial-gradient(120% 80% at 50% -20%, #dfe6f5 0%, var(--ui-bg) 45%, #e2e8f0 100%);
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-ui="enhanced"].dark body {
+  background: radial-gradient(120% 70% at 50% -10%, #1a2240 0%, var(--ui-bg-dark) 50%, #070b12 100%);
+}
+
+html[data-ui="enhanced"] .font-display,
+html[data-ui="enhanced"] h1,
+html[data-ui="enhanced"] h2.ui-heading {
+  font-family: "Outfit", "Sora", sans-serif;
+  letter-spacing: -0.02em;
+}
+
+html[data-ui="enhanced"] .ui-card {
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow);
+  border: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+html.dark[data-ui="enhanced"] .ui-card {
+  background: var(--ui-surface-dark);
+  box-shadow: var(--ui-shadow-dark);
+  border-color: rgba(129, 140, 248, 0.12);
+}
+
+html[data-ui="enhanced"] .ui-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #5b4dff 50%, #7c3aed 100%);
+  box-shadow: 0 4px 14px -2px rgba(91, 77, 255, 0.45);
+}
+
+html[data-ui="enhanced"] .ui-input {
+  border-radius: 0.875rem;
+  border-color: rgba(148, 163, 184, 0.35);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+html[data-ui="enhanced"] .ui-input:focus {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+html[data-ui="enhanced"] .ui-nav-mobile {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border-top-color: rgba(99, 102, 241, 0.1);
+}
+
+html.dark[data-ui="enhanced"] .ui-nav-mobile {
+  background: rgba(15, 23, 42, 0.92);
+  border-top-color: rgba(129, 140, 248, 0.15);
+}
+
+html[data-ui="enhanced"] .ui-nav-desktop {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+html.dark[data-ui="enhanced"] .ui-nav-desktop {
+  background: rgba(15, 23, 42, 0.88);
+}

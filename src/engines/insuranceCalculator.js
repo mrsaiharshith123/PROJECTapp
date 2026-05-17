@@ -5,8 +5,6 @@ import {
   premiumFrequencyLabel,
   repeatTypeToPremiumFrequency,
 } from "../constants/insurance.js";
-import { repeatTypeLabel } from "../constants/repeatTypes.js";
-
 function estimateTermYearsFromBill(bill) {
   if (bill.startDate && bill.endDate) {
     try {

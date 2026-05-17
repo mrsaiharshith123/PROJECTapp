@@ -35,32 +35,7 @@ export const CHART_VIEWS_ADVANCED = [
   },
 ];
 
-export const TOOLS_PLAIN = [
-  {
-    id: "insurance",
-    title: "Insurance",
-    subtitle: "Was the policy worth it?",
-    accent: "teal",
-  },
-  {
-    id: "emi",
-    title: "Pay loan faster",
-    subtitle: "Extra EMI savings",
-    accent: "violet",
-  },
-  {
-    id: "payoff",
-    title: "Which debt first?",
-    subtitle: "Smallest vs highest rate",
-    accent: "amber",
-  },
-  {
-    id: "goals",
-    title: "Savings goals",
-    subtitle: "Track a target",
-    accent: "indigo",
-  },
-];
+/** Dashboard calculator tiles: see modeExperience.js (MODE_TOOL_DEFS). */
 
 export const PROFILE_SETTINGS_HINT = "Set monthly income under Profile \u2192 Account settings.";
 

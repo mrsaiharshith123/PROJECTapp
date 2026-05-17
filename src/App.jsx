@@ -47,7 +47,7 @@ function MainShell() {
       <ThemeSync />
       <Navbar />
       <NotificationSync />
-      <main className="md:pt-20 pb-24 md:pb-8 px-4 max-w-2xl mx-auto">
+      <main className="md:pt-[4.5rem] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 px-4 max-w-2xl mx-auto">
         <div className="pt-6">
           <Suspense fallback={<PageLoader />}>
             <Routes>

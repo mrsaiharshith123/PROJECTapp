@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -53,12 +53,10 @@ export default function AnalyticsChartPanel({
     [mainAvailable, advancedAvailable, showAdvanced]
   );
 
-  const [viewId, setViewId] = useState("forecast");
-  useEffect(() => {
-    if (!allViews.some((v) => v.id === viewId)) {
-      setViewId(allViews[0]?.id || "forecast");
-    }
-  }, [allViews, viewId]);
+  const [preferredViewId, setPreferredViewId] = useState("forecast");
+  const viewId = allViews.some((v) => v.id === preferredViewId)
+    ? preferredViewId
+    : allViews[0]?.id || "forecast";
 
   const current = allViews.find((v) => v.id === viewId) || allViews[0];
   const currentId = current?.id || "forecast";
@@ -152,7 +150,7 @@ export default function AnalyticsChartPanel({
         <span className="sr-only">Chart</span>
         <select
           value={currentId}
-          onChange={(e) => setViewId(e.target.value)}
+          onChange={(e) => setPreferredViewId(e.target.value)}
           className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-medium"
         >
           {allViews.map((v) => (
@@ -168,7 +166,7 @@ export default function AnalyticsChartPanel({
           <button
             key={v.id}
             type="button"
-            onClick={() => setViewId(v.id)}
+            onClick={() => setPreferredViewId(v.id)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
               currentId === v.id
                 ? "bg-indigo-600 text-white shadow-sm"

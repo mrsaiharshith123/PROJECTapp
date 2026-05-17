@@ -1,12 +1,13 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { computeCurrentMonthSummary } from "../../utils/monthPaymentSummary.js";
 import { isActiveBill } from "../../utils/billLifecycle.js";
 import { getUserModeConfig } from "../../constants/userModes.js";
+import { formatInr } from "../../constants/symbols.js";
 
 /**
- * Single home hero: this month — tap opens Analytics.
+ * Single home hero: this month ? tap opens Analytics.
  */
 export default function HomeOverviewCard() {
   const navigate = useNavigate();
@@ -24,15 +25,6 @@ export default function HomeOverviewCard() {
   const subs = active.filter((c) => c.category === "Subscription");
   const emis = active.filter((c) => c.category === "EMI");
 
-  const modeEmoji = {
-    salaried: "💼",
-    business: "🏪",
-    student: "🎓",
-    family: "👨‍👩‍👧",
-    freelancer: "🎯",
-    power: "⚡",
-  };
-
   const title = mode === "salaried" ? "This month" : mode === "business" ? "Cashflow" : modeCfg.label;
 
   return (
@@ -48,7 +40,7 @@ export default function HomeOverviewCard() {
           <p className="text-sm text-indigo-100/80">{monthSummary.monthLabel}</p>
         </div>
         <span className="text-2xl" aria-hidden>
-          {modeEmoji[mode] || "💰"}
+          {modeCfg.emoji}
         </span>
       </div>
 
@@ -56,19 +48,19 @@ export default function HomeOverviewCard() {
         <div className="rounded-xl bg-white/10 border border-white/10 px-2.5 py-2 text-center">
           <p className="text-[10px] text-indigo-200 uppercase font-semibold">Left</p>
           <p className="text-lg font-bold leading-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{monthSummary.leftThisMonth.toLocaleString()}
+            {formatInr(monthSummary.leftThisMonth)}
           </p>
         </div>
         <div className="rounded-xl bg-white/10 border border-white/10 px-2.5 py-2 text-center">
           <p className="text-[10px] text-indigo-200 uppercase font-semibold">Paid</p>
           <p className="text-lg font-bold text-emerald-300 leading-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{monthSummary.paidThisMonth.toLocaleString()}
+            {formatInr(monthSummary.paidThisMonth)}
           </p>
         </div>
         <div className="rounded-xl bg-white/10 border border-white/10 px-2.5 py-2 text-center">
           <p className="text-[10px] text-indigo-200 uppercase font-semibold">Due</p>
           <p className="text-lg font-bold text-amber-200 leading-tight" style={{ fontFamily: "'Sora', sans-serif" }}>
-            ₹{monthSummary.dueThisMonth.toLocaleString()}
+            {formatInr(monthSummary.dueThisMonth)}
           </p>
         </div>
       </div>
@@ -89,17 +81,17 @@ export default function HomeOverviewCard() {
       <div className="mx-3 mb-3 rounded-xl bg-white/10 border border-white/10 px-3 py-2.5 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
         <p className="text-indigo-100/70">
           Still due{" "}
-          <span className="font-semibold text-white">₹{monthSummary.dueThisMonth.toLocaleString()}</span>
+          <span className="font-semibold text-white">{formatInr(monthSummary.dueThisMonth)}</span>
           {monthSummary.duePercentOfIncome ? (
-            <span className="text-indigo-200/80"> · {monthSummary.duePercentOfIncome} of income</span>
+            <span className="text-indigo-200/80"> ? {monthSummary.duePercentOfIncome} of income</span>
           ) : income <= 0 ? (
-            <span className="text-indigo-200/80"> · set income</span>
+            <span className="text-indigo-200/80"> ? set income</span>
           ) : null}
         </p>
         <p className="text-indigo-100/70 text-right">
           Free cash{" "}
           <span className="font-semibold text-emerald-300">
-            {monthSummary.freeCash != null ? `₹${monthSummary.freeCash.toLocaleString()}` : "—"}
+            {monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : "?"}
           </span>
         </p>
         {mode === "salaried" && (
@@ -114,7 +106,7 @@ export default function HomeOverviewCard() {
         )}
       </div>
 
-      <p className="text-center text-[10px] text-indigo-200/80 pb-3">Tap for full analytics →</p>
+      <p className="text-center text-[10px] text-indigo-200/80 pb-3">Tap for full analytics ?</p>
     </button>
   );
 }

@@ -4,12 +4,12 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 /** GitHub Pages project site: https://user.github.io/PROJECTapp/ */
-const base = process.env.VITE_BASE_PATH || "/";
-const basePath = base.endsWith("/") ? base : `${base}/`;
+const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
+const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: /PROJECTapp/,
+  base: basePath,
   plugins: [
     react(),
     VitePWA({

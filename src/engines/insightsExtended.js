@@ -38,8 +38,17 @@ export function overlappingDueDatesInsight(commitments, lendings, todayStr, getE
 }
 
 /** Find month with lowest forecast free cash in next 12 months. */
-export function forecastCrunchInsight(commitments, income, getEffectiveStatus, todayStr) {
-  const series = buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr, 12);
+export function forecastCrunchInsight(
+  commitments,
+  income,
+  getEffectiveStatus,
+  todayStr,
+  { lendings = [], getEffectiveLendingStatus } = {}
+) {
+  const series = buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr, 12, {
+    lendings,
+    getEffectiveLendingStatus,
+  });
   if (!series.length) return null;
   let worst = series[0];
   for (const row of series) {

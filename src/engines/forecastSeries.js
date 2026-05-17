@@ -38,7 +38,49 @@ export function amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, to
 /**
  * 6–12 month cashflow forecast: obligations due per month vs income.
  */
-export function buildCashflowForecastSeries(commitments, monthlyIncome, getEffectiveStatusFn, todayStr, months = 12) {
+function lendingDueInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr) {
+  let sum = 0;
+  for (const l of lendings || []) {
+    if (l.type !== "borrowed") continue;
+    if (getEffectiveLendingStatus(l, todayStr) === "complete") continue;
+    for (const row of l.repaymentSchedule || []) {
+      if ((row.dueDate || "").startsWith(monthKey) && row.paymentStatus !== "paid") {
+        sum += Math.max(0, Number(row.totalPayment) || 0);
+      }
+    }
+    if (!l.repaymentSchedule?.length && (l.dueDate || "").startsWith(monthKey)) {
+      sum += Math.max(0, Number(l.remainingAmount) || 0);
+    }
+  }
+  return sum;
+}
+
+function lendingInflowInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr) {
+  let sum = 0;
+  for (const l of lendings || []) {
+    if (l.type !== "lent") continue;
+    if (getEffectiveLendingStatus(l, todayStr) === "complete") continue;
+    for (const row of l.repaymentSchedule || []) {
+      if ((row.dueDate || "").startsWith(monthKey) && row.paymentStatus !== "paid") {
+        sum += Math.max(0, Number(row.totalPayment) || 0);
+      }
+    }
+  }
+  return sum;
+}
+
+/**
+ * 6–12 month cashflow forecast: bill obligations + lending outflow vs income + expected receivables.
+ */
+export function buildCashflowForecastSeries(
+  commitments,
+  monthlyIncome,
+  getEffectiveStatusFn,
+  todayStr,
+  months = 12,
+  options = {}
+) {
+  const { lendings = [], getEffectiveLendingStatus } = options;
   const income = Math.max(0, monthlyIncome || 0);
   const today = parseISO(`${todayStr}T12:00:00`);
   const rows = [];
@@ -49,17 +91,28 @@ export function buildCashflowForecastSeries(commitments, monthlyIncome, getEffec
     const monthNum = format(d, "MM");
     const label = format(d, "MMM yy");
 
-    let due = 0;
+    let billDue = 0;
     for (const c of commitments) {
-      due += amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
+      billDue += amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
     }
-    const free = income - due;
+    const lendOut = getEffectiveLendingStatus
+      ? lendingDueInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
+      : 0;
+    const inflow = getEffectiveLendingStatus
+      ? lendingInflowInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
+      : 0;
+    const due = billDue + lendOut;
+    const effectiveIncome = income + inflow;
+    const free = effectiveIncome - due;
     rows.push({
       month: label,
       monthKey,
       due: Math.round(due),
       free: Math.round(free),
-      income: Math.round(income),
+      income: Math.round(effectiveIncome),
+      lendingInflow: Math.round(inflow),
+      lendingOutflow: Math.round(lendOut),
+      billsDue: Math.round(billDue),
     });
   }
 

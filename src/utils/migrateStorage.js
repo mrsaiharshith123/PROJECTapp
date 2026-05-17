@@ -345,6 +345,25 @@ export function saveGoalsToStorage(goals) {
 
 const COLOR_SCHEMES = ["light", "dark", "system"];
 
+const PROFILE_COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
+
+function normalizeProfiles(raw) {
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return [{ id: "default", label: "Personal", color: "indigo" }];
+  }
+  const out = raw
+    .map((p, i) => ({
+      id: String(p?.id || `profile-${i}`).slice(0, 40),
+      label: String(p?.label || p?.id || "Profile").slice(0, 40),
+      color: PROFILE_COLORS.includes(p?.color) ? p.color : PROFILE_COLORS[i % PROFILE_COLORS.length],
+    }))
+    .filter((p) => p.id);
+  if (!out.some((p) => p.id === "default")) {
+    out.unshift({ id: "default", label: "Personal", color: "indigo" });
+  }
+  return out;
+}
+
 const DEFAULT_SETTINGS = {
   monthlyIncome: 0,
   displayName: "",
@@ -357,6 +376,9 @@ const DEFAULT_SETTINGS = {
   colorScheme: "system",
   avatarSource: "auto",
   profileImageDataUrl: "",
+  liquidSavings: 0,
+  dependents: 0,
+  profiles: [{ id: "default", label: "Personal", color: "indigo" }],
 };
 
 export function loadSettingsFromStorage() {
@@ -385,6 +407,9 @@ export function loadSettingsFromStorage() {
           o.avatarSource === "upload" && typeof o.profileImageDataUrl === "string"
             ? o.profileImageDataUrl
             : "",
+        liquidSavings: Math.max(0, Number(o.liquidSavings) || 0),
+        dependents: Math.max(0, Math.min(12, Math.floor(Number(o.dependents) || 0))),
+        profiles: normalizeProfiles(o.profiles),
       };
     }
   } catch {

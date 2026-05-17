@@ -52,7 +52,10 @@ export function useCommitIntel() {
         getEffectiveStatus,
         (l) => getEffectiveLendingStatus(l, todayStr)
       ),
-      forecastCrunchInsight(commitments, income, getEffectiveStatus, todayStr),
+      forecastCrunchInsight(commitments, income, getEffectiveStatus, todayStr, {
+        lendings,
+        getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      }),
       subscriptionYearlyCostInsight(commitments, getEffectiveStatus),
       emiBurdenPercentInsight(commitments, income, getEffectiveStatus),
     ].filter(Boolean);

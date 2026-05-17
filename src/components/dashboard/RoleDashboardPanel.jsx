@@ -26,50 +26,11 @@ function Metric({ label, value, sub, tone = "default" }) {
 
 function buildModePanel(mode, ctx) {
   const { settings, lendings, commitments, getEffectiveStatus, intel, cfg } = ctx;
-  const subs = commitments.filter(
-    (c) => c.category === "Subscription" && getEffectiveStatus(c) !== "paid"
-  );
-  const emis = commitments.filter((c) => c.category === "EMI" && getEffectiveStatus(c) !== "paid");
   const receivables = lendings.filter((l) => l.type === "lent" && Number(l.remainingAmount) > 0);
   const payables = lendings.filter((l) => l.type === "borrowed" && Number(l.remainingAmount) > 0);
   const burden = Math.round(intel.stability.monthlyBurden);
   const free = Math.round(intel.stability.freeMoney);
-  const pct = intel.stability.committedPercent;
 
-  if (mode === "salaried") {
-    return {
-      title: "Your paycheck snapshot",
-      subtitle: "Quick read on salary vs monthly bills",
-      emoji: "💼",
-      metrics: [
-        {
-          label: "Monthly bills",
-          value: `₹${burden.toLocaleString()}`,
-          sub: pct != null ? `${pct}% of income` : "Add income in Profile",
-          tone: pct != null && pct > 50 ? "warn" : "default",
-        },
-        {
-          label: "Left after bills",
-          value: `₹${free.toLocaleString()}`,
-          sub: free >= 0 ? "Estimated free cash" : "Over-committed",
-          tone: free >= 0 ? "good" : "warn",
-        },
-        {
-          label: "EMIs open",
-          value: String(emis.length),
-          sub: emis.length ? "Tap Bills to pay down" : "None tracked",
-          tone: "accent",
-        },
-        {
-          label: "Subscriptions",
-          value: String(subs.length),
-          sub: subs.length ? "Review renewals" : "None active",
-          tone: "accent",
-        },
-      ],
-      tip: intel.payoffRec?.message || null,
-    };
-  }
   if (mode === "business") {
     return {
       title: "Business cashflow",
@@ -105,6 +66,9 @@ function buildModePanel(mode, ctx) {
     };
   }
   if (mode === "student") {
+    const subs = commitments.filter(
+      (c) => c.category === "Subscription" && getEffectiveStatus(c) !== "paid"
+    );
     return {
       title: "Student budget",
       subtitle: "Keep subs and dues under control",

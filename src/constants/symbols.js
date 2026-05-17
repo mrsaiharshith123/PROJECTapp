@@ -12,6 +12,7 @@ export const STATUS_ICONS = {
 };
 
 export const TOOL_ICONS = {
+  afford: "\u{1F9EE}",
   insurance: "\u{1F6E1}\uFE0F",
   emi: "\u{1F4C9}",
   payoff: "\u{1F3AF}",

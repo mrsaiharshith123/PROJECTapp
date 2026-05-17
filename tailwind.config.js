@@ -5,8 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["'DM Sans'", "sans-serif"],
-        display: ["'Sora'", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "'DM Sans'", "system-ui", "sans-serif"],
+        display: ["'Outfit'", "'Sora'", "sans-serif"],
       },
     },
   },

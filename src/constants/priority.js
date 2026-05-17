@@ -20,9 +20,19 @@ export function priorityRank(id) {
 /** Infer default priority from commitment category label/id */
 export function inferPriorityFromCategory(categoryId) {
   const c = String(categoryId || "");
-  if (c === "EMI" || c === "Credit Card" || c === "Loan") return "critical";
-  if (c === "Subscription" || c === "SIP") return "low";
-  if (c === "Insurance" || c === "Rent" || c === "Utility") return "medium";
+  if (c === "EMI" || c === "Credit Card" || c === "Loan" || c === "BNPL" || c === "Payroll" || c === "Tax")
+    return "critical";
+  if (c === "Subscription" || c === "SIP" || c === "Software" || c === "Food" || c === "Transport") return "low";
+  if (
+    c === "Insurance" ||
+    c === "Rent" ||
+    c === "Utility" ||
+    c === "Vendor" ||
+    c === "School" ||
+    c === "Groceries" ||
+    c === "Education"
+  )
+    return "medium";
   return "medium";
 }
 

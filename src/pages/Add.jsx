@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
-import { CATEGORIES, categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import { categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import { getCategoriesForUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "../components/InsuranceFields.jsx";
 import {
   emptyInsuranceFields,
@@ -15,7 +16,12 @@ import { COPY } from "../constants/copy.js";
 import { evaluateNewCommitmentAffordability, affordabilityBadgeClass } from "../engines/affordability.js";
 import { getUserModeConfig } from "../constants/userModes.js";
 import { estimatePriorSpend } from "../utils/billLifecycle.js";
-
+import {
+  applyBillRepeatChange,
+  applyBillStartDateChange,
+  defaultEndDateFromStart,
+} from "../utils/billDates.js";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 import { REPEAT_OPTIONS } from "../constants/repeatTypes.js";
 
 const Add = () => {
@@ -39,15 +45,22 @@ const Add = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => {
-      const next = { ...f, [name]: value };
-      if (name === "startDate" && !f.dueDate) next.dueDate = value;
-      if (name === "startDate" && f.dueDate === f.startDate) next.dueDate = value;
-      if (name === "category") {
+      let next = { ...f, [name]: value };
+      if (name === "startDate") {
+        next = applyBillStartDateChange(f, value, todayStr);
+      } else if (name === "repeatType") {
+        next = applyBillRepeatChange(f, value, todayStr);
+      } else if (name === "category") {
         next.priority = inferPriorityFromCategory(value || "Other");
       }
       return next;
     });
     setErrors((er) => ({ ...er, [name]: "" }));
+  };
+
+  const fillEndDateIfEmpty = () => {
+    if (!form.startDate || form.endDate) return;
+    setForm((f) => ({ ...f, endDate: defaultEndDateFromStart(f.startDate, todayStr) }));
   };
 
   const validate = () => {
@@ -71,7 +84,10 @@ const Add = () => {
     return errs;
   };
 
-  const showAffordability = getUserModeConfig(settings.userMode || "salaried").showAffordabilityOnAdd;
+  const mode = settings.userMode || "salaried";
+  const modeCfg = getUserModeConfig(mode);
+  const billCategories = getCategoriesForUserMode(mode);
+  const showAffordability = modeCfg.showAffordabilityOnAdd;
   const category = form.category || "Other";
   const showInterest = categoryShowsInterestRate(category);
   const showInsurance = categoryShowsInsuranceFields(category);
@@ -115,7 +131,7 @@ const Add = () => {
     showAffordability,
     form.amount,
     form.repeatType,
-    form.category,
+    category,
     form.dueDate,
     form.startDate,
     form.endDate,
@@ -123,7 +139,6 @@ const Add = () => {
     settings.monthlyIncome,
     todayStr,
     getEffectiveStatus,
-    category,
   ]);
 
   const handleSubmit = () => {
@@ -182,17 +197,16 @@ const Add = () => {
 
   const inputClass = (field) =>
     `w-full px-4 py-3 rounded-xl border bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition ${
-      errors[field] ? "border-red-300 bg-red-50" : "border-gray-200 dark:border-slate-600"
-    }`;
+      isEnhancedUi() ? "ui-input" : ""
+    } ${errors[field] ? "border-red-300 bg-red-50" : "border-gray-200 dark:border-slate-600"}`;
+
+  const displayFont = isEnhancedUi() ? "font-display" : "";
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
       <div>
         <p className="text-sm text-gray-400 dark:text-slate-500 font-medium uppercase tracking-widest">New entry</p>
-        <h1
-          className="text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1"
-          style={{ fontFamily: "'Sora', sans-serif" }}
-        >
+        <h1 className={`text-3xl font-bold text-gray-900 dark:text-slate-100 mt-1 ${displayFont}`}>
           {COPY.addBill}
         </h1>
       </div>
@@ -202,7 +216,7 @@ const Add = () => {
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Category</label>
           <select name="category" value={form.category} onChange={handleChange} className={inputClass("category")}>
             <option value="">Select category</option>
-            {CATEGORIES.map((cat) => (
+            {billCategories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.icon} {cat.label}
               </option>
@@ -242,7 +256,9 @@ const Add = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Start date</label>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+              Start date <span className="text-gray-400 font-normal">(when it began)</span>
+            </label>
             <input
               type="date"
               name="startDate"
@@ -264,6 +280,7 @@ const Add = () => {
               name="endDate"
               value={form.endDate}
               onChange={handleChange}
+              onFocus={fillEndDateIfEmpty}
               className={inputClass("endDate")}
             />
             {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
@@ -280,7 +297,9 @@ const Add = () => {
             className={inputClass("dueDate")}
           />
           {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
-          <p className="text-[11px] text-gray-400 mt-1">Defaults to start date; updates when you record payments.</p>
+          <p className="text-[11px] text-gray-400 mt-1">
+            Next payment date (not the same as start). We suggest the next due from your start day and repeat.
+          </p>
         </div>
 
         {priorSpendHint > 0 && (
@@ -374,8 +393,11 @@ const Add = () => {
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md shadow-indigo-200 active:scale-95"
-          style={{ fontFamily: "'Sora', sans-serif" }}
+          className={`w-full py-3.5 text-white font-semibold rounded-xl transition-all duration-200 active:scale-95 ${
+            isEnhancedUi()
+              ? "ui-btn-primary hover:brightness-110"
+              : "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-200"
+          } ${displayFont}`}
         >
           {COPY.addBill}
         </button>

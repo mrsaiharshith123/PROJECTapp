@@ -7,8 +7,9 @@ import { computeGoalProgress, goalTypeLabel } from "../../engines/goalsProgress.
 import { commitmentToIncomeRatio } from "../../engines/pressureAdvanced.js";
 import { comparePayoffStrategies } from "../../engines/payoffOptimizer.js";
 import InsuranceCalculatorModal from "../InsuranceCalculatorModal.jsx";
-import { TOOLS_PLAIN } from "../../constants/plainLanguage.js";
+import { getToolsForMode, getDashboardToolsHeading, resolveUserMode } from "../../constants/modeExperience.js";
 import { TOOL_ICONS, formatInr, INR, EM_DASH, ARROW } from "../../constants/symbols.js";
+import ExpenseSimulatorForm from "../tools/ExpenseSimulatorForm.jsx";
 
 const goalTypes = [
   { value: "reduce_open_debt", label: "Pay down total debt" },
@@ -20,6 +21,9 @@ const goalTypes = [
 export default function DashboardTools() {
   const { goals, addGoal, deleteGoal, commitments, settings, getEffectiveStatus, logSavingsToGoal, todayStr } =
     useCommitTrack();
+  const userMode = resolveUserMode(settings);
+  const widgets = getToolsForMode(userMode).map((t) => ({ ...t, icon: TOOL_ICONS[t.id] }));
+  const toolsHeading = getDashboardToolsHeading(userMode);
   const [activeTool, setActiveTool] = useState(null);
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
   const [principal, setPrincipal] = useState("");
@@ -72,13 +76,12 @@ export default function DashboardTools() {
   };
 
   const closeTool = () => setActiveTool(null);
-  const widgets = TOOLS_PLAIN.map((t) => ({ ...t, icon: TOOL_ICONS[t.id] }));
 
   return (
     <section className="space-y-3" id="dashboard-tools">
       <div>
-        <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">Quick calculators</h2>
-        <p className="text-xs text-gray-500 dark:text-slate-400">Tap a tile to open a calculator.</p>
+        <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">{toolsHeading}</h2>
+        <p className="text-xs text-gray-500 dark:text-slate-400">Tap a tile — options match your user mode.</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {widgets.map((t) => (
@@ -92,6 +95,12 @@ export default function DashboardTools() {
           />
         ))}
       </div>
+
+      {activeTool === "afford" && (
+        <Modal title={widgets.find((w) => w.id === "afford")?.title || "Can I afford this?"} onClose={closeTool}>
+          <ExpenseSimulatorForm />
+        </Modal>
+      )}
 
       {activeTool === "insurance" && (
         <InsuranceCalculatorModal

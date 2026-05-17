@@ -1,6 +1,7 @@
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { USER_MODES, getUserModeConfig } from "../constants/userModes.js";
+import { getIncomeLabel, resolveUserMode } from "../constants/modeExperience.js";
 import {
   computePaymentMonthStreak,
   computeControlScore,
@@ -48,6 +49,7 @@ const Profile = () => {
   const { count: paymentCount, sum: paymentSum } = totalPaymentCountAndSum(commitments);
   const recent = recentCommitmentPaymentEvents(commitments, 10);
   const lentOut = outstandingLent(lendings);
+  const incomeLabel = getIncomeLabel(resolveUserMode(settings));
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
@@ -104,7 +106,7 @@ const Profile = () => {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Monthly income (₹)</label>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">{incomeLabel} (₹)</label>
           <input
             type="number"
             min="0"
@@ -118,6 +120,41 @@ const Profile = () => {
             }}
             placeholder="0"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Liquid savings (₹)</label>
+          <input
+            type="number"
+            min="0"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+            value={settings.liquidSavings === 0 ? "" : String(settings.liquidSavings)}
+            onChange={(e) => {
+              const raw = e.target.value;
+              updateSettings({
+                liquidSavings: raw === "" ? 0 : Math.max(0, Number(raw) || 0),
+              });
+            }}
+            placeholder="Emergency cash and liquid funds"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">Used for survival months and emergency reserve analysis.</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Dependents</label>
+          <input
+            type="number"
+            min="0"
+            max="12"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+            value={settings.dependents === 0 ? "" : String(settings.dependents)}
+            onChange={(e) => {
+              const raw = e.target.value;
+              updateSettings({
+                dependents: raw === "" ? 0 : Math.min(12, Math.max(0, Math.floor(Number(raw) || 0))),
+              });
+            }}
+            placeholder="0"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">Household members relying on your income (family mode).</p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">User mode</label>

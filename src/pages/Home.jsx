@@ -9,6 +9,7 @@ import { getUserModeConfig } from "../constants/userModes.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
 import HomeOverviewCard from "../components/dashboard/HomeOverviewCard.jsx";
+import ModeIntelligenceSection from "../components/dashboard/ModeIntelligenceSection.jsx";
 import DashboardTools from "../components/dashboard/DashboardTools.jsx";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
 import { isActiveBill } from "../utils/billLifecycle.js";
@@ -25,7 +26,7 @@ const statusIcon = STATUS_ICONS;
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus } = useCommitTrack();
 
   const scrollToTools = useCallback(() => {
     document.getElementById("dashboard-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -64,6 +65,8 @@ const Home = () => {
 
       <InstallAppBanner />
       <HomeOverviewCard />
+
+      <ModeIntelligenceSection />
 
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">

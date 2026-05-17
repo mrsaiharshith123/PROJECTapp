@@ -22,6 +22,9 @@ import { repeatTypeLabel } from "../constants/repeatTypes.js";
 import { formatInr, EM_DASH, ARROW } from "../constants/symbols.js";
 import { PROFILE_SETTINGS_HINT } from "../constants/plainLanguage.js";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
+import PaycheckBreakdown from "../components/analytics/PaycheckBreakdown.jsx";
+import { computeSalaryBreakdown } from "../engines/salaryBreakdown.js";
+import { getAnalyticsCopy, getIncomeLabel, resolveUserMode } from "../constants/modeExperience.js";
 
 const Analytics = () => {
   const {
@@ -74,6 +77,17 @@ const Analytics = () => {
   }, [commitments, getEffectiveStatus]);
 
   const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+  const userMode = resolveUserMode(settings);
+  const analyticsCopy = getAnalyticsCopy(userMode);
+  const incomeLabel = getIncomeLabel(userMode);
+
+  const paycheckFlow = useMemo(
+    () =>
+      analyticsCopy.showPaycheckFlow
+        ? computeSalaryBreakdown(commitments, income, getEffectiveStatus)
+        : null,
+    [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus]
+  );
 
   const monthBreakdown = useMemo(
     () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr || todayYmd(), income),
@@ -107,8 +121,12 @@ const Analytics = () => {
   );
 
   const forecastSeries = useMemo(
-    () => buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr || todayYmd(), 12),
-    [commitments, income, getEffectiveStatus, todayStr]
+    () =>
+      buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr || todayYmd(), 12, {
+        lendings,
+        getEffectiveLendingStatus,
+      }),
+    [commitments, income, getEffectiveStatus, todayStr, lendings, getEffectiveLendingStatus]
   );
 
   const dueHeatmap = useMemo(
@@ -141,8 +159,9 @@ const Analytics = () => {
 
       <Card className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white border-0 shadow-lg space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-indigo-100">This month at a glance</h2>
+          <h2 className="text-base font-semibold text-indigo-100">{analyticsCopy.monthTitle}</h2>
           <p className="text-xs text-indigo-200/90">{monthBreakdown.monthLabel}</p>
+          <p className="text-[11px] text-indigo-200/70 mt-1">{analyticsCopy.monthHint}</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-xl bg-white/10 px-3 py-2">
@@ -176,13 +195,17 @@ const Analytics = () => {
             : `${PROFILE_SETTINGS_HINT} `}
           Due shows what is still owed this month; Left matches Due after payments. Free cash = income minus paid.
         </p>
+        <PaycheckBreakdown breakdown={paycheckFlow} />
       </Card>
 
-      <Card className="bg-gradient-to-br from-slate-900 to-indigo-900 text-white border-0 shadow-lg">
-        <p className="text-slate-300 text-sm font-medium mb-4">Can you afford your bills?</p>
+      <Card className="bg-gradient-to-br from-slate-900 to-indigo-900 text-white border-0 shadow-lg space-y-2">
+        <div>
+          <p className="text-slate-300 text-sm font-medium">{analyticsCopy.affordTitle}</p>
+          <p className="text-[11px] text-slate-500 mt-1">{analyticsCopy.affordHint}</p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <p className="text-slate-400 text-xs mb-1">Income (monthly)</p>
+            <p className="text-slate-400 text-xs mb-1">{incomeLabel}</p>
             <p className="text-xl font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
               {formatInr(income)}
             </p>
@@ -199,7 +222,7 @@ const Analytics = () => {
             <p className="text-xl font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
               {formatInr(freeMoney)}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1">Income minus estimated monthly dues</p>
+            <p className="text-[10px] text-slate-500 mt-1">{incomeLabel} minus estimated monthly dues</p>
           </div>
         </div>
       </Card>

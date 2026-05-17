@@ -1,24 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-
-const STORAGE_KEY = "committrack_tools_nudge_dismissed";
-
-export function isToolsNudgeDismissed() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-export function dismissToolsNudge() {
-  try {
-    localStorage.setItem(STORAGE_KEY, "1");
-  } catch {
-    /* ignore */
-  }
-}
+import { dismissToolsNudge, isToolsNudgeDismissed } from "../../utils/toolsDiscoveryStorage.js";
 
 /**
  * Small toast on the right (Home + Analytics).

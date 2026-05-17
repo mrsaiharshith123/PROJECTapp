@@ -340,8 +340,9 @@ const Commitments = () => {
                     )}
                   </div>
                   <p className="text-xs text-gray-400 dark:text-slate-500">
-                    {formatDate(item.startDate || item.dueDate)}
-                    {item.endDate ? ` \u2192 ${formatDate(item.endDate)}` : " \u00b7 ongoing"}
+                    {item.startDate ? `Started ${formatDate(item.startDate)}` : null}
+                    {item.startDate && item.endDate ? " \u2192 " : item.startDate ? " \u00b7 " : ""}
+                    {item.endDate ? `Ends ${formatDate(item.endDate)}` : item.startDate ? "Ongoing" : ""}
                     {" \u00b7 "}Due {formatDate(item.dueDate)}
                     {item.notes ? <span className="block mt-1 text-gray-500">{item.notes}</span> : null}
                   </p>

@@ -4,7 +4,7 @@ import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { decodeOfferPayload, trustScoreLabel } from "../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../constants/plainLanguage.js";
-import { formatInr, INR } from "../constants/symbols.js";
+import { formatInr } from "../constants/symbols.js";
 import { trustBadgeClass } from "../engines/lendingTrust.js";
 import { buildLendingRecord } from "../utils/lendingRecord.js";
 
