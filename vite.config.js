@@ -9,7 +9,7 @@ const basePath = base.endsWith("/") ? base : `${base}/`;
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: basePath,
+  base: /PROJECTapp/,
   plugins: [
     react(),
     VitePWA({
