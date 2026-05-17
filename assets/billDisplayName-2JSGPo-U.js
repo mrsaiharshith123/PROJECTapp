@@ -1,1 +1,0 @@
-import{h as e}from"./Card-4dySO9Bt.js";function t(t){if(!t)return``;if(t.category===`Insurance`){let n=e(t);if(n)return n}return t.name||`Untitled`}export{t};

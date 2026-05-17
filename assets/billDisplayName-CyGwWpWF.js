@@ -1,0 +1,1 @@
+import{E as e}from"./index-VKp6MBRD.js";function t(t){if(!t)return``;if(t.category===`Insurance`){let n=e(t);if(n)return n}return t.name||`Untitled`}export{t};

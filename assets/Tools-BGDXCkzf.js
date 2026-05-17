@@ -1,0 +1,1 @@
+import{i as e,t}from"./react-Cjd_PHu5.js";import{ht as n}from"./index-VKp6MBRD.js";var r=e(t(),1);function i(){let e=n();return(0,r.useEffect)(()=>{e(`/#dashboard-tools`,{replace:!0})},[e]),null}export{i as default};
