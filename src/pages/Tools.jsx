@@ -6,6 +6,7 @@ import { computeGoalProgress, goalTypeLabel } from "../engines/goalsProgress.js"
 import { commitmentToIncomeRatio } from "../engines/pressureAdvanced.js";
 import { totalMonthlyBurden } from "../engines/burden.js";
 import { comparePayoffStrategies } from "../engines/payoffOptimizer.js";
+import InsuranceCalculatorModal from "../components/InsuranceCalculatorModal.jsx";
 
 const goalTypes = [
   { value: "reduce_open_debt", label: "Reduce open debt by amount" },
@@ -14,9 +15,10 @@ const goalTypes = [
 ];
 
 const Tools = () => {
-  const { goals, addGoal, deleteGoal, commitments, settings, getEffectiveStatus, logSavingsToGoal } =
+  const { goals, addGoal, deleteGoal, commitments, settings, getEffectiveStatus, logSavingsToGoal, todayStr } =
     useCommitTrack();
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
+  const [insuranceCalcOpen, setInsuranceCalcOpen] = useState(false);
 
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("10.5");
@@ -92,6 +94,27 @@ const Tools = () => {
           Simulators and goals run locally. Not financial advice.
         </p>
       </div>
+
+      <Card className="space-y-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl shrink-0" aria-hidden>
+            🛡️
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-50">Insurance calculator</h2>
+            <p className="text-sm text-gray-600 dark:text-slate-300 mt-1 leading-relaxed">
+              Pick a policy from your bills, then add sum assured and maturity payout to see if premiums were worth it.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setInsuranceCalcOpen(true)}
+          className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold shadow-sm"
+        >
+          Open calculator
+        </button>
+      </Card>
 
       <Card className="space-y-4">
         <h2 className="text-base font-semibold text-gray-800">EMI prepayment simulator</h2>
@@ -318,6 +341,15 @@ const Tools = () => {
         {income > 0 ? `${Math.round(ratio * 100)}%` : "—"} · Monthly burden est.: ₹
         {Math.round(burden).toLocaleString()}
       </Card>
+
+      {insuranceCalcOpen && (
+        <InsuranceCalculatorModal
+          commitments={commitments}
+          todayStr={todayStr}
+          monthlyIncome={income}
+          onClose={() => setInsuranceCalcOpen(false)}
+        />
+      )}
     </div>
   );
 };

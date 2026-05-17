@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
+import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTypes.js";
 
 function sumOpenRemaining(commitments, getEffectiveStatusFn) {
   return commitments.reduce((s, c) => {
@@ -13,8 +14,8 @@ function sumCategoryMonthly(commitments, getEffectiveStatusFn, categoryId) {
     if (c.category !== categoryId) return s;
     if (getEffectiveStatusFn(c) === "paid") return s;
     const amt = Number(c.amount) || 0;
-    if (c.repeatType === "monthly") return s + amt;
-    if (c.repeatType === "yearly") return s + amt / 12;
+    const interval = repeatIntervalMonths(normalizeRepeatType(c.repeatType));
+    if (interval > 0) return s + amt / interval;
     return s + Math.max(0, Number(c.remainingAmount ?? 0));
   }, 0);
 }
@@ -46,13 +47,13 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "burden-danger",
       tone: "critical",
-      text: "EMI-style burden crossed a dangerous range vs income. Pause new commitments if possible.",
+      text: "EMI-style burden crossed a dangerous range vs income. Pause new bills if possible.",
     });
   } else if (ratio != null && ratio > 0.6) {
     insights.push({
       id: "burden-risk",
       tone: "warning",
-      text: "Commitment burden is elevated vs income—worth re-checking discretionary spends.",
+      text: "Monthly bill burden is elevated vs income—worth re-checking discretionary spends.",
     });
   }
 
@@ -73,14 +74,14 @@ export function generateCommitmentInsights(ctx) {
       insights.push({
         id: "open-up",
         tone: "warning",
-        text: `Open commitment balance jumped vs last snapshot (${prev.month} → ${last.month}).`,
+        text: `Open bill balance jumped vs last snapshot (${prev.month} → ${last.month}).`,
       });
     }
     if (last.openRemainingSum < prev.openRemainingSum * 0.92) {
       insights.push({
         id: "pressure-down",
         tone: "positive",
-        text: "You reduced open commitment pressure compared to the prior month snapshot.",
+        text: "You reduced open bill pressure compared to the prior month snapshot.",
       });
     }
   }

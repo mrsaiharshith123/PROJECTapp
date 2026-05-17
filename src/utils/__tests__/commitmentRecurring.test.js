@@ -1,26 +1,32 @@
 import { describe, it, expect } from "vitest";
+import { addMonths, format } from "date-fns";
 import { advanceRecurringCommitment } from "../commitmentRecurring.js";
+import { getEffectiveStatus } from "../commitmentStatus.js";
+import { todayYmd } from "../dates.js";
 
 describe("advanceRecurringCommitment", () => {
   it("advances monthly due date on new row", () => {
+    const today = todayYmd();
+    const dueDate = format(addMonths(new Date(`${today}T12:00:00`), -1), "yyyy-MM-dd");
+    const nextDue = format(addMonths(new Date(`${dueDate}T12:00:00`), 1), "yyyy-MM-dd");
     const c = {
       id: 1,
       repeatType: "monthly",
-      dueDate: "2026-04-15",
+      dueDate,
       amount: 1000,
       remainingAmount: 0,
       name: "Rent",
-      payments: [{ amount: 1000, date: "2026-04-15" }],
+      payments: [{ amount: 1000, date: dueDate }],
     };
     const { paidRow, nextCycle } = advanceRecurringCommitment(c, 999);
     expect(paidRow.status).toBe("paid");
     expect(paidRow.remainingAmount).toBe(0);
     expect(nextCycle).not.toBeNull();
     expect(nextCycle.id).toBe(999);
-    expect(nextCycle.dueDate).toBe("2026-05-15");
+    expect(nextCycle.dueDate).toBe(nextDue);
     expect(nextCycle.remainingAmount).toBe(1000);
     expect(nextCycle.payments).toEqual([]);
-    expect(nextCycle.status).toBe("pending");
+    expect(nextCycle.status).toBe(getEffectiveStatus(nextCycle, today));
   });
 
   it("marks one-off paid with no next row", () => {

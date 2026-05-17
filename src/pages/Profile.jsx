@@ -16,6 +16,8 @@ import {
   isNotificationSupported,
 } from "../services/notifications/index.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
+import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
+import { COPY } from "../constants/copy.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -51,24 +53,22 @@ const Profile = () => {
 
   return (
     <div className="space-y-6 max-w-lg mx-auto">
-      <div>
-        <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Account</p>
-        <h1 className="text-3xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
-          Profile
-        </h1>
-      </div>
+      <PageHeaderWithNotifications eyebrow="Account" title="Profile" />
 
-      <Card className="flex flex-col items-center py-8 bg-gradient-to-b from-indigo-50 to-white border-indigo-100">
+      <Card className="flex flex-col items-center py-8 bg-gradient-to-b from-indigo-50 to-white dark:from-indigo-950 dark:to-slate-900 border-indigo-100 dark:border-indigo-800">
         <div
           className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg shadow-indigo-200"
           style={{ fontFamily: "'Sora', sans-serif" }}
         >
           {displayInitial}
         </div>
-        <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: "'Sora', sans-serif" }}>
+        <h2
+          className="text-xl font-bold text-gray-900 dark:text-slate-100"
+          style={{ fontFamily: "'Sora', sans-serif" }}
+        >
           {settings.displayName?.trim() || "CommitTrack user"}
         </h2>
-        <p className="text-sm text-gray-400 mt-1">Financial commitments & lending tracker</p>
+        <p className="text-sm text-gray-400 dark:text-slate-400 mt-1">{COPY.trackBills}</p>
       </Card>
 
       <InstallAppBanner />
@@ -150,14 +150,14 @@ const Profile = () => {
             <option value="family">Family</option>
             <option value="business">Business</option>
           </select>
-          <p className="text-[11px] text-gray-400 mt-1">New commitments and lending entries use this label locally.</p>
+          <p className="text-[11px] text-gray-400 mt-1">{COPY.newBillsHint}</p>
         </div>
         <p className="text-[11px] text-gray-400">Saved automatically on this device.</p>
       </Card>
 
-      <Card className="border-dashed border-amber-200 bg-amber-50/50 space-y-2">
-        <p className="text-sm font-semibold text-amber-900">CommitTrack Plus (coming soon)</p>
-        <p className="text-xs text-amber-800">
+      <Card className="border-dashed border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 space-y-2">
+        <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">CommitTrack Plus (coming soon)</p>
+        <p className="text-xs text-amber-800 dark:text-amber-300/90">
           Cloud backup, SMS reminders, and shared family profiles — placeholder for future premium tier. All core
           features stay free on this device.
         </p>
@@ -169,7 +169,7 @@ const Profile = () => {
           <p className="text-lg font-bold text-gray-800 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
             {commitments.length}
           </p>
-          <p className="text-xs text-gray-400">Commitments</p>
+          <p className="text-xs text-gray-400">{COPY.billsStat}</p>
         </Card>
         <Card className="text-center p-4">
           <span className="text-2xl">✅</span>
@@ -197,7 +197,7 @@ const Profile = () => {
       <Card className="space-y-2">
         <p className="text-sm font-semibold text-gray-700">Monthly control score</p>
         <p className="text-xs text-gray-500">
-          Starts at 100 and subtracts for overdue items and open critical commitments. Transparent, local-only
+          Starts at 100 and subtracts for overdue items and open critical bills. Transparent, local-only
           signal—not advice.
         </p>
         <div className="flex items-center gap-3 mt-2">

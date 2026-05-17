@@ -31,8 +31,14 @@ import {
 import { buildCashflowForecastSeries } from "../engines/forecastSeries.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { todayYmd } from "../utils/dates.js";
+import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
+import { repeatTypeLabel } from "../constants/repeatTypes.js";
 
 const PIE_COLORS = ["#6366f1", "#8b5cf6", "#ec4899", "#14b8a6", "#f59e0b", "#10b981", "#64748b", "#ef4444", "#06b6d4"];
+
+const CHART_TICK = { fontSize: 11, fill: "#64748b" };
+const CHART_GRID = { stroke: "#e2e8f0", strokeDasharray: "4 4" };
+const rupeeTip = (v) => (v != null ? `₹${Number(v).toLocaleString("en-IN")}` : "");
 
 const Analytics = () => {
   const {
@@ -86,6 +92,12 @@ const Analytics = () => {
   }, [commitments, getEffectiveStatus]);
 
   const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+
+  const monthBreakdown = useMemo(
+    () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr || todayYmd(), income),
+    [commitments, getEffectiveStatus, todayStr, income]
+  );
+
   const cashMetrics = useMemo(
     () => freeMoneyAfterBurden(commitments, income, getEffectiveStatus),
     [commitments, income, getEffectiveStatus]
@@ -144,8 +156,47 @@ const Analytics = () => {
         )}
       </div>
 
+      <Card className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white border-0 shadow-lg space-y-4">
+        <div>
+          <h2 className="text-base font-semibold text-indigo-100">This month at a glance</h2>
+          <p className="text-xs text-indigo-200/90">{monthBreakdown.monthLabel}</p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="rounded-xl bg-white/10 px-3 py-2">
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Due</p>
+            <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
+              ₹{monthBreakdown.dueThisMonth.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 px-3 py-2">
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Paid</p>
+            <p className="text-lg font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
+              ₹{monthBreakdown.paidThisMonth.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 px-3 py-2">
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Left</p>
+            <p className="text-lg font-bold text-amber-200" style={{ fontFamily: "'Sora', sans-serif" }}>
+              ₹{monthBreakdown.leftThisMonth.toLocaleString()}
+            </p>
+          </div>
+          <div className="rounded-xl bg-white/10 px-3 py-2">
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Free cash</p>
+            <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
+              {monthBreakdown.freeCash != null ? `₹${monthBreakdown.freeCash.toLocaleString()}` : "—"}
+            </p>
+          </div>
+        </div>
+        <p className="text-xs text-indigo-100/80 leading-relaxed">
+          {monthBreakdown.duePercentOfIncome
+            ? `Planned bills this month are ${monthBreakdown.duePercentOfIncome} of your income. `
+            : "Set monthly income below to see burden vs salary. "}
+          Due shows what is still owed this month; Left matches Due after payments. Free cash = income minus paid.
+        </p>
+      </Card>
+
       <Card className="space-y-4">
-        <p className="text-sm font-semibold text-gray-700">Monthly income (₹)</p>
+        <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Monthly income (₹)</p>
         <p className="text-xs text-gray-500">Used for the pressure card. Stored only on this device.</p>
         <div className="flex gap-2">
           <input
@@ -202,7 +253,7 @@ const Analytics = () => {
               <p className="text-sm text-gray-500 mt-1">₹{biggestCategory.value.toLocaleString()} open</p>
             </>
           ) : (
-            <p className="text-sm text-gray-400">No open commitments</p>
+            <p className="text-sm text-gray-400">No open bills</p>
           )}
         </Card>
         <Card>
@@ -213,7 +264,7 @@ const Analytics = () => {
                 {highestRecurring.name}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                ₹{highestRecurring.amount.toLocaleString()} / {highestRecurring.repeatType}
+                ₹{highestRecurring.amount.toLocaleString()} · {repeatTypeLabel(highestRecurring.repeatType)}
               </p>
             </>
           ) : (
@@ -270,11 +321,11 @@ const Analytics = () => {
           <h2 className="text-base font-semibold text-gray-800">Free cash trend (snapshots)</h2>
           <div className="h-44 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={freeCashTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${v}`} />
-                <Tooltip formatter={(v) => `₹${Number(v).toLocaleString()}`} />
+              <LineChart data={freeCashTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid {...CHART_GRID} />
+                <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
+                <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+                <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
                 <Line type="monotone" dataKey="freeMoney" stroke="#10b981" strokeWidth={2} dot name="Free cash" />
               </LineChart>
             </ResponsiveContainer>
@@ -287,11 +338,11 @@ const Analytics = () => {
         <p className="text-xs text-gray-500">Estimated dues vs income each month (recurring + one-off due dates).</p>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={forecastSeries}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => `₹${Number(v).toLocaleString()}`} />
+            <BarChart data={forecastSeries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid {...CHART_GRID} />
+              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
+              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
               <Legend />
               <Bar dataKey="due" name="Due" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               <Bar dataKey="free" name="Free cash" fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -305,11 +356,11 @@ const Analytics = () => {
         <p className="text-xs text-gray-500">Canonical stability score recorded monthly when you use the app.</p>
         <div className="h-52 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={pressureTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-              <Tooltip />
+            <LineChart data={pressureTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid {...CHART_GRID} />
+              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={CHART_TICK} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
               <Line type="monotone" dataKey="pressure" stroke="#6366f1" strokeWidth={2} dot name="Pressure" />
             </LineChart>
           </ResponsiveContainer>
@@ -320,11 +371,11 @@ const Analytics = () => {
         <h2 className="text-base font-semibold text-gray-800">Recurring payments (cash out)</h2>
         <div className="h-48 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={recurringPaidTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => `₹${Number(v).toLocaleString()}`} />
+            <BarChart data={recurringPaidTrend} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid {...CHART_GRID} />
+              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
+              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
               <Bar dataKey="recurringPaid" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -353,8 +404,8 @@ const Analytics = () => {
                     <Cell key={pieData[i].name} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v) => `₹${Number(v).toLocaleString()}`} />
-                <Legend />
+                <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -363,14 +414,14 @@ const Analytics = () => {
 
       <Card className="space-y-2">
         <h2 className="text-base font-semibold text-gray-800">Cash out by month</h2>
-        <p className="text-xs text-gray-500 mb-2">Total commitment payments recorded per month</p>
+        <p className="text-xs text-gray-500 mb-2">Total bill payments recorded per month</p>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => `₹${Number(v).toLocaleString()}`} />
+            <BarChart data={barData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid {...CHART_GRID} />
+              <XAxis dataKey="month" tick={CHART_TICK} axisLine={false} tickLine={false} />
+              <YAxis tick={CHART_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip formatter={(v) => rupeeTip(v)} contentStyle={{ borderRadius: 12, border: "1px solid #e2e8f0" }} />
               <Bar dataKey="amount" fill="#6366f1" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

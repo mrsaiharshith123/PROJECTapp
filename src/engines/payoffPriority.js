@@ -1,4 +1,5 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
+import { isActiveBill } from "../utils/billLifecycle.js";
 
 /** Default annual % when user did not set `annualInterestRate` */
 export function defaultAnnualRateForCategory(categoryId) {
@@ -53,7 +54,11 @@ export function payoffPriorityScore(commitment, getEffectiveStatusFn, todayStr) 
 
 export function rankPayoffOrder(commitments, getEffectiveStatusFn, todayStr) {
   return commitments
-    .filter((c) => getEffectiveStatusFn(c) !== "paid")
+    .filter((c) => {
+      if (!isActiveBill(c)) return false;
+      const eff = getEffectiveStatusFn(c, todayStr);
+      return (eff === "pending" || eff === "overdue") && Number(c.remainingAmount ?? 0) > 0;
+    })
     .map((c) => ({
       commitment: c,
       score: payoffPriorityScore(c, getEffectiveStatusFn, todayStr),

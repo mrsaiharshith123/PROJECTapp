@@ -1,24 +1,42 @@
 import { addMonths, format, parseISO } from "date-fns";
+import { isBillDueInMonth, normalizeRepeatType } from "../constants/repeatTypes.js";
+
 /**
- * Due amount for a commitment falling in a given calendar month (YYYY-MM).
+ * Gross scheduled obligation in a month (before payments this month).
  */
-function dueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
-  const eff = getEffectiveStatusFn(c, todayStr);
-  if (eff === "paid") return 0;
-  const amt = Number(c.amount) || 0;
-  const rt = c.repeatType || "none";
-  if (rt === "monthly") return amt;
-  if (rt === "yearly") {
-    const due = c.dueDate || "";
-    return due.slice(5, 7) === monthNum ? amt : 0;
+export function scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
+  if (!isBillDueInMonth(c, monthKey, getEffectiveStatusFn, todayStr)) {
+    return 0;
   }
-  const due = c.dueDate || "";
-  return due.startsWith(monthKey) ? Math.max(0, Number(c.remainingAmount ?? amt)) : 0;
+  const eff = getEffectiveStatusFn(c, todayStr);
+  if (eff === "paid" || eff === "upnext") return 0;
+
+  const rt = normalizeRepeatType(c.repeatType);
+  const amt = Number(c.amount) || 0;
+  if (rt === "none") {
+    return Math.max(0, Number(c.remainingAmount ?? amt));
+  }
+  return amt;
+}
+
+/**
+ * Still owed this calendar month for one bill (scheduled minus payments dated this month).
+ */
+export function amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
+  const gross = scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
+  if (gross <= 0) return 0;
+
+  let paidInMonth = 0;
+  for (const p of c.payments || []) {
+    if ((p.date || "").startsWith(monthKey)) {
+      paidInMonth += Number(p.amount) || 0;
+    }
+  }
+  return Math.max(0, gross - paidInMonth);
 }
 
 /**
  * 6–12 month cashflow forecast: obligations due per month vs income.
- * @param {number} months 6–12
  */
 export function buildCashflowForecastSeries(commitments, monthlyIncome, getEffectiveStatusFn, todayStr, months = 12) {
   const income = Math.max(0, monthlyIncome || 0);
@@ -33,7 +51,7 @@ export function buildCashflowForecastSeries(commitments, monthlyIncome, getEffec
 
     let due = 0;
     for (const c of commitments) {
-      due += dueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
+      due += amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
     }
     const free = income - due;
     rows.push({

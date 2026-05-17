@@ -2,11 +2,15 @@ import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
 import { USER_MODE_IDS } from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
+import { estimatePriorSpend } from "./billLifecycle.js";
+import { todayYmd } from "./dates.js";
+import { normalizeRepeatType } from "../constants/repeatTypes.js";
+import { normalizePremiumFrequency } from "../constants/insurance.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 export const SCHEMA_VERSION_KEY = "committrack_schema_version";
-export const CURRENT_SCHEMA_VERSION = 5;
+export const CURRENT_SCHEMA_VERSION = 8;
 
 const USER_MODES = USER_MODE_IDS;
 
@@ -31,7 +35,7 @@ export function normalizeCommitment(raw) {
       }))
     : [];
   const category = normalizeCategory(raw.category);
-  const repeatType = ["monthly", "yearly", "none"].includes(raw.repeatType) ? raw.repeatType : "none";
+  const repeatType = normalizeRepeatType(raw.repeatType);
   const priority = ["critical", "medium", "low"].includes(raw.priority)
     ? raw.priority
     : inferPriorityFromCategory(category);
@@ -41,16 +45,34 @@ export function normalizeCommitment(raw) {
     remainingAmount = 0;
   }
 
+  const dueDate = String(raw.dueDate || raw.startDate || "").slice(0, 10);
+  const startDate = String(raw.startDate || raw.dueDate || "").slice(0, 10);
+  const endDate = raw.endDate ? String(raw.endDate).slice(0, 10) : "";
+  const draft = {
+    startDate,
+    dueDate,
+    endDate,
+    repeatType,
+    amount,
+    category,
+  };
+  const priorSpend =
+    raw.priorSpend != null && !Number.isNaN(Number(raw.priorSpend))
+      ? Math.max(0, Number(raw.priorSpend))
+      : estimatePriorSpend(draft, todayYmd());
+
   return {
     id: raw.id,
     name: String(raw.name || "").trim() || "Untitled",
     amount,
     remainingAmount,
     category,
-    dueDate: String(raw.dueDate || "").slice(0, 10),
+    startDate,
+    endDate,
+    dueDate,
     repeatType,
     priority,
-    status: ["paid", "pending", "overdue"].includes(raw.status) ? raw.status : "pending",
+    status: ["paid", "pending", "overdue", "upnext"].includes(raw.status) ? raw.status : "pending",
     payments,
     notes: String(raw.notes ?? ""),
     profileId: String(raw.profileId || "default"),
@@ -59,6 +81,24 @@ export function normalizeCommitment(raw) {
         ? Math.min(60, Math.max(0, Number(raw.annualInterestRate)))
         : null,
     trialEnd: raw.trialEnd ? String(raw.trialEnd).slice(0, 10) : "",
+    priorSpend,
+    insurancePolicyId: String(raw.insurancePolicyId || "").trim(),
+    insuredPersonName: String(raw.insuredPersonName || "").trim(),
+    insuranceCompany: String(raw.insuranceCompany || "").trim(),
+    insuranceSumAssured:
+      raw.insuranceSumAssured != null && !Number.isNaN(Number(raw.insuranceSumAssured))
+        ? Math.max(0, Number(raw.insuranceSumAssured))
+        : null,
+    insuranceTermYears:
+      raw.insuranceTermYears != null && !Number.isNaN(Number(raw.insuranceTermYears))
+        ? Math.max(1, Math.floor(Number(raw.insuranceTermYears)))
+        : null,
+    insurancePremiumFrequency:
+      category === "Insurance" ? normalizePremiumFrequency(raw.insurancePremiumFrequency) : "",
+    insuranceMaturityBenefit:
+      raw.insuranceMaturityBenefit != null && !Number.isNaN(Number(raw.insuranceMaturityBenefit))
+        ? Math.max(0, Number(raw.insuranceMaturityBenefit))
+        : null,
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
   };

@@ -18,3 +18,14 @@ const byId = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 export function getCategoryById(id) {
   return byId[id] || byId.Other;
 }
+
+/** Categories where annual interest % is relevant for payoff intel. */
+const INTEREST_RATE_CATEGORIES = new Set(["EMI", "Loan", "Credit Card"]);
+
+export function categoryShowsInterestRate(categoryId) {
+  return INTEREST_RATE_CATEGORIES.has(categoryId);
+}
+
+export function categoryShowsInsuranceFields(categoryId) {
+  return categoryId === "Insurance";
+}

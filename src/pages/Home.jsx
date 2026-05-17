@@ -1,97 +1,56 @@
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
-import { totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { useCommitIntel } from "../hooks/useCommitIntel.js";
 import { healthLevelBadgeClass } from "../engines/financialHealth.js";
 import { computeGoalProgress, goalTypeLabel } from "../engines/goalsProgress.js";
 import { getUserModeConfig } from "../constants/userModes.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
-import RoleDashboardPanel from "../components/dashboard/RoleDashboardPanel.jsx";
+import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
+import HomeOverviewCard from "../components/dashboard/HomeOverviewCard.jsx";
+import { isActiveBill } from "../utils/billLifecycle.js";
 
 function formatDate(dateStr) {
-  if (!dateStr) return "—";
+  if (!dateStr) return "?";
   return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-const statusIcon = { paid: "✅", pending: "🕐", overdue: "⚠️" };
+const statusIcon = { paid: "?", pending: "??", overdue: "??", upnext: "??" };
 
 const Home = () => {
   const navigate = useNavigate();
-  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus } = useCommitTrack();
+  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr } = useCommitTrack();
   const intel = useCommitIntel();
   const modeCfg = getUserModeConfig(settings.userMode || "salaried");
 
-  /**
-   * Dashboard summary (all-time payments vs open remaining):
-   * - paidAllTime: sum of every recorded payment across commitments
-   * - openRemaining: sum of remainingAmount where the item is not effectively paid
-   * - progress: paidAllTime / (paidAllTime + openRemaining), capped at 100
-   */
-  const paidAllTime = commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0);
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
     return s + Math.max(0, Number(c.remainingAmount ?? 0));
   }, 0);
-  const denom = paidAllTime + openRemaining;
-  const paidPct = denom > 0 ? Math.min(100, Math.round((paidAllTime / denom) * 100)) : 0;
 
   const upcoming = sortedCommitments
-    .filter((c) => getEffectiveStatus(c) === "pending")
+    .filter((c) => isActiveBill(c) && getEffectiveStatus(c) === "pending")
     .slice(0, 3);
 
   const overdue = sortedCommitments.filter((c) => getEffectiveStatus(c) === "overdue");
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm text-gray-400 font-medium uppercase tracking-widest">Overview</p>
-        <h1 className="text-3xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
-          Dashboard
-        </h1>
-        {settings.activeProfileId && settings.activeProfileId !== "default" && (
-          <p className="text-xs text-indigo-600 mt-1 font-medium">Profile: {settings.activeProfileId}</p>
-        )}
-      </div>
+      <PageHeaderWithNotifications
+        eyebrow="Overview"
+        title="Dashboard"
+        subtitle={
+          settings.activeProfileId && settings.activeProfileId !== "default" ? (
+            <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+              Profile: {settings.activeProfileId}
+            </p>
+          ) : null
+        }
+      />
 
       <InstallAppBanner />
-      <RoleDashboardPanel />
+      <HomeOverviewCard />
 
-      <Card className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white border-0 shadow-lg shadow-indigo-200">
-        <p className="text-indigo-200 text-sm font-medium mb-4">Summary</p>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <p className="text-indigo-200 text-xs mb-1">Open remaining</p>
-            <p className="text-2xl font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{openRemaining.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-indigo-200 text-xs mb-1">Paid (all-time)</p>
-            <p className="text-2xl font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{paidAllTime.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-indigo-200 text-xs mb-1">Total obligation</p>
-            <p className="text-2xl font-bold text-amber-300" style={{ fontFamily: "'Sora', sans-serif" }}>
-              ₹{(paidAllTime + openRemaining).toLocaleString()}
-            </p>
-          </div>
-        </div>
-        <div className="mt-5">
-          <div className="flex justify-between text-xs text-indigo-200 mb-2">
-            <span>Progress</span>
-            <span>{paidPct}% toward cleared balance</span>
-          </div>
-          <div className="h-2 bg-indigo-500/50 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-emerald-300 rounded-full transition-all duration-500"
-              style={{ width: `${paidPct}%` }}
-            />
-          </div>
-        </div>
-      </Card>
 
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -99,20 +58,20 @@ const Home = () => {
           <span
             className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${intel.stability.badgeClass}`}
           >
-            {intel.stability.label} · {intel.stability.score}/100
+            {intel.stability.label} ? {intel.stability.score}/100
           </span>
         </div>
         <p className="text-xs text-gray-500">
           {intel.stability.committedPercent != null
             ? `${intel.stability.committedPercent}% of income to monthly dues`
             : "Set income in Profile for burden %"}
-          . Free after dues: ₹{Math.round(intel.stability.freeMoney).toLocaleString()}.
+          . Free after dues: ?{Math.round(intel.stability.freeMoney).toLocaleString()}.
           <br />
           Health:{" "}
           <span className={`font-medium ${healthLevelBadgeClass(intel.health.level).split(" ").slice(1).join(" ")}`}>
             {intel.health.label} ({intel.health.score})
           </span>
-          . Yearly burden est. ₹{Math.round(intel.yearlyBurden).toLocaleString()}.
+          . Yearly burden est. ?{Math.round(intel.yearlyBurden).toLocaleString()}.
         </p>
         {modeCfg.id === "business" && (
           <p className="text-xs text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">
@@ -126,7 +85,7 @@ const Home = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-800">Goals</h2>
             <button type="button" onClick={() => navigate("/tools")} className="text-xs text-indigo-600 font-semibold">
-              Manage →
+              Manage ?
             </button>
           </div>
           {goals.slice(0, 3).map((g) => {
@@ -226,14 +185,17 @@ const Home = () => {
             onClick={() => navigate("/commitments")}
             className="text-xs text-indigo-500 font-medium hover:underline"
           >
-            View all →
+            View all ?
           </button>
         </div>
 
         {upcoming.length === 0 ? (
           <Card className="text-center py-6">
-            <p className="text-2xl mb-1">🎉</p>
-            <p className="text-sm text-gray-500">Nothing pending right now</p>
+            <p className="text-2xl mb-1" aria-hidden>
+              ?
+            </p>
+            <p className="text-sm text-gray-500">Nothing due right now</p>
+            <p className="text-xs text-gray-400 mt-1">Add bills or check History for paid items</p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -252,10 +214,10 @@ const Home = () => {
                   </div>
                   <div className="text-right shrink-0 pl-2">
                     <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-                      ₹{Number(item.remainingAmount ?? item.amount).toLocaleString()}
+                      ?{Number(item.remainingAmount ?? item.amount).toLocaleString()}
                     </p>
                     <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium">
-                      Pending
+                      Due
                     </span>
                   </div>
                 </Card>
@@ -275,7 +237,9 @@ const Home = () => {
             {overdue.map((item) => (
               <Card key={item.id} className="flex items-center justify-between border-red-100 bg-red-50">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg shrink-0">⚡</div>
+                  <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg shrink-0">
+                    ?
+                  </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-red-700 truncate">{item.name}</p>
                     <p className="text-xs text-red-400">Was due {formatDate(item.dueDate)}</p>
@@ -283,7 +247,7 @@ const Home = () => {
                 </div>
                 <div className="text-right shrink-0 pl-2">
                   <p className="font-bold text-red-600" style={{ fontFamily: "'Sora', sans-serif" }}>
-                    ₹{Number(item.remainingAmount ?? item.amount).toLocaleString()}
+                    ?{Number(item.remainingAmount ?? item.amount).toLocaleString()}
                   </p>
                   <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium border border-red-200">
                     Overdue
@@ -295,13 +259,6 @@ const Home = () => {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => navigate("/add")}
-        className="w-full py-3.5 border-2 border-dashed border-indigo-200 text-indigo-500 font-semibold rounded-2xl hover:bg-indigo-50 transition-all text-sm"
-      >
-        + Add New Commitment
-      </button>
     </div>
   );
 };

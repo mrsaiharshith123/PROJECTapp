@@ -22,9 +22,42 @@ function urgencyForCommitment(c, getEffectiveStatusFn, todayStr) {
 /**
  * In-app reminder list (no push). Sorted: critical first, then by due date.
  */
+/** Subscription with end date — remind a few days before to cancel auto-pay. */
+export function buildSubscriptionEndReminders(commitments, todayStr) {
+  const out = [];
+  for (const c of commitments) {
+    if (c.category !== "Subscription" || !c.endDate) continue;
+    try {
+      const days = differenceInCalendarDays(
+        parseISO(`${c.endDate}T12:00:00`),
+        parseISO(`${todayStr}T12:00:00`)
+      );
+      if (days >= 2 && days <= 4) {
+        out.push({
+          id: `sub-end-${c.id}`,
+          name: c.name,
+          dueDate: c.endDate,
+          amount: Number(c.amount) || 0,
+          category: c.category,
+          urgency: /** @type {ReminderUrgency} */ ("high"),
+          reason: "subscription_ending",
+          message: `${c.name} ends soon — cancel auto-pay if you do not want to renew.`,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return out;
+}
+
 export function buildCommitmentReminders(commitments, getEffectiveStatusFn, todayStr) {
-  return commitments
-    .filter((c) => getEffectiveStatusFn(c) !== "paid")
+  const subEnd = buildSubscriptionEndReminders(commitments, todayStr);
+  const dueReminders = commitments
+    .filter((c) => {
+      const eff = getEffectiveStatusFn(c, todayStr);
+      return eff !== "paid" && eff !== "upnext";
+    })
     .map((c) => {
       const { urgency, reason } = urgencyForCommitment(c, getEffectiveStatusFn, todayStr);
       return {
@@ -49,6 +82,13 @@ export function buildCommitmentReminders(commitments, getEffectiveStatusFn, toda
       if (d !== 0) return d;
       return (a.dueDate || "").localeCompare(b.dueDate || "");
     });
+
+  return [...subEnd, ...dueReminders].sort((a, b) => {
+    const order = { critical: 0, high: 1, normal: 2, low: 3 };
+    const d = (order[a.urgency] ?? 9) - (order[b.urgency] ?? 9);
+    if (d !== 0) return d;
+    return (a.dueDate || "").localeCompare(b.dueDate || "");
+  });
 }
 
 export function buildLendingReminders(lendings, todayStr, getEffectiveLendingStatusFn) {

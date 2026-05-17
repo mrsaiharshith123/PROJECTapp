@@ -1,6 +1,7 @@
-import { addMonths, addYears, parseISO, format } from "date-fns";
+import { addMonths, parseISO, format } from "date-fns";
 import { todayYmd } from "./dates.js";
 import { getEffectiveStatus } from "./commitmentStatus.js";
+import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTypes.js";
 
 /**
  * After a cycle is fully paid, return the paid row and optionally a new pending row for the next cycle.
@@ -10,7 +11,7 @@ import { getEffectiveStatus } from "./commitmentStatus.js";
  */
 export function advanceRecurringCommitment(c, newId = Date.now()) {
   const remaining = Number(c.remainingAmount ?? 0);
-  const repeatType = c.repeatType || "none";
+  const repeatType = normalizeRepeatType(c.repeatType);
   const amount = Math.max(0, Number(c.amount) || 0);
   const now = Date.now();
 
@@ -40,7 +41,8 @@ export function advanceRecurringCommitment(c, newId = Date.now()) {
   let nextDue = c.dueDate;
   try {
     const base = parseISO(`${c.dueDate}T12:00:00`);
-    const nextDate = repeatType === "yearly" ? addYears(base, 1) : addMonths(base, 1);
+    const step = repeatIntervalMonths(repeatType) || 1;
+    const nextDate = addMonths(base, step);
     nextDue = format(nextDate, "yyyy-MM-dd");
   } catch {
     /* keep nextDue */
@@ -61,7 +63,7 @@ export function advanceRecurringCommitment(c, newId = Date.now()) {
   const eff = getEffectiveStatus(rolled, todayStr);
   const nextCycle = {
     ...rolled,
-    status: eff === "overdue" ? "overdue" : "pending",
+    status: eff,
   };
 
   return { paidRow, nextCycle };
