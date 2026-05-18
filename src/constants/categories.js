@@ -7,6 +7,7 @@ export const CATEGORIES = [
   { id: "Subscription", label: "Subscription", icon: "📺", chipClass: "bg-sky-100 text-sky-800 border-sky-200" },
   { id: "Insurance", label: "Insurance", icon: "🛡️", chipClass: "bg-teal-100 text-teal-800 border-teal-200" },
   { id: "SIP", label: "SIP", icon: "📈", chipClass: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+  { id: "Chit Fund", label: "Chit fund", icon: "🪙", chipClass: "bg-yellow-100 text-yellow-900 border-yellow-300" },
   { id: "Rent", label: "Rent", icon: "🏠", chipClass: "bg-amber-100 text-amber-800 border-amber-200" },
   { id: "Loan", label: "Loan", icon: "📄", chipClass: "bg-indigo-100 text-indigo-800 border-indigo-200" },
   { id: "Utility", label: "Utility", icon: "⚡", chipClass: "bg-yellow-100 text-yellow-800 border-yellow-200" },
@@ -40,4 +41,8 @@ export function categoryShowsInterestRate(categoryId) {
 
 export function categoryShowsInsuranceFields(categoryId) {
   return categoryId === "Insurance";
+}
+
+export function categoryShowsChitFundFields(categoryId) {
+  return categoryId === "Chit Fund";
 }

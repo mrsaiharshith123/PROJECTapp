@@ -7,6 +7,10 @@ import { isEnhancedUi } from "./constants/uiTheme.js";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
+import { registerSW } from "virtual:pwa-register";
+
+registerSW({ immediate: true });
+
 bootstrapThemeFromStorage();
 applyUiThemeToDocument();
 if (isEnhancedUi()) {

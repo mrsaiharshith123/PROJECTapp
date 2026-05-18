@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { buildSurvivalContext, lendingMonthlyOutflow } from "../engines/survival.js";
-import { rankStressContributors, stressContributorsInsight } from "../engines/stressContributors.js";
+import { rankStressContributors } from "../engines/stressContributors.js";
 import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
 import { computeBusinessCashflow } from "../engines/modeBusiness.js";
@@ -40,7 +40,6 @@ export function useStabilityIntel() {
     });
 
     const extraInsights = [
-      stressContributorsInsight(stress),
       ...lifestyle.insights,
       ...survival.warnings.map((text, i) => ({
         id: `survival-warn-${i}`,
@@ -57,7 +56,8 @@ export function useStabilityIntel() {
           ctx.lendings,
           ctx.getEffectiveStatus,
           ctx.getEffectiveLendingStatus,
-          ctx.todayStr
+          ctx.todayStr,
+          ctx.businessInvoices
         ),
       };
       extraInsights.push(...(modeData.business.insights || []));
@@ -105,6 +105,7 @@ export function useStabilityIntel() {
     mode,
     ctx.commitments,
     ctx.lendings,
+    ctx.businessInvoices,
     ctx.settings,
     ctx.monthlySnapshots,
     ctx.todayStr,

@@ -10,17 +10,32 @@ import InsuranceCalculatorModal from "../InsuranceCalculatorModal.jsx";
 import { getToolsForMode, getDashboardToolsHeading, resolveUserMode } from "../../constants/modeExperience.js";
 import { TOOL_ICONS, formatInr, INR, EM_DASH, ARROW } from "../../constants/symbols.js";
 import ExpenseSimulatorForm from "../tools/ExpenseSimulatorForm.jsx";
+import ChitFundAdvisor from "../tools/ChitFundAdvisor.jsx";
+import LoanPayoffAdvisor from "../tools/LoanPayoffAdvisor.jsx";
 
 const goalTypes = [
   { value: "reduce_open_debt", label: "Pay down total debt" },
   { value: "income_ratio_cap", label: "Keep bills below % of income" },
   { value: "save_amount", label: "Save a set amount" },
+  { value: "education", label: "Child education fund" },
+  { value: "wedding", label: "Wedding / event fund" },
 ];
 
 /** Calculator widgets + modals — embedded on Home dashboard. */
 export default function DashboardTools() {
-  const { goals, addGoal, deleteGoal, commitments, settings, getEffectiveStatus, logSavingsToGoal, todayStr } =
-    useCommitTrack();
+  const {
+    allGoals,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    commitments,
+    settings,
+    getEffectiveStatus,
+    getEffectiveLendingStatus,
+    lendings,
+    logSavingsToGoal,
+    todayStr,
+  } = useCommitTrack();
   const userMode = resolveUserMode(settings);
   const widgets = getToolsForMode(userMode).map((t) => ({ ...t, icon: TOOL_ICONS[t.id] }));
   const toolsHeading = getDashboardToolsHeading(userMode);
@@ -68,6 +83,8 @@ export default function DashboardTools() {
       addGoal({ ...base, targetReduction: Math.max(1, Number(gTarget) || 25000) });
     } else if (gType === "income_ratio_cap") {
       addGoal({ ...base, targetRatio: Math.min(0.9, Math.max(0.1, Number(gTarget) || 0.45)) });
+    } else if (gType === "education" || gType === "wedding") {
+      addGoal({ ...base, type: gType, targetAmount: Math.max(1, Number(gTarget) || 100000) });
     } else {
       addGoal({ ...base, targetAmount: Math.max(1, Number(gTarget) || 10000) });
     }
@@ -164,6 +181,30 @@ export default function DashboardTools() {
         </Modal>
       )}
 
+      {activeTool === "loanTiming" && (
+        <Modal title="Loan extra payment planner" onClose={closeTool}>
+          <LoanPayoffAdvisor
+            commitments={commitments}
+            lendings={lendings}
+            settings={settings}
+            getEffectiveStatus={getEffectiveStatus}
+            getEffectiveLendingStatus={getEffectiveLendingStatus}
+            todayStr={todayStr}
+          />
+        </Modal>
+      )}
+
+      {activeTool === "chit" && (
+        <Modal title="Chit timing advisor" onClose={closeTool}>
+          <ChitFundAdvisor
+            commitments={commitments}
+            settings={settings}
+            getEffectiveStatus={getEffectiveStatus}
+            todayStr={todayStr}
+          />
+        </Modal>
+      )}
+
       {activeTool === "payoff" && (
         <Modal title="Which debt to pay first?" onClose={closeTool}>
           <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">
@@ -253,7 +294,9 @@ export default function DashboardTools() {
                   ? `Target (${INR})`
                   : gType === "income_ratio_cap"
                     ? "Max % of income (0.45 = 45%)"
-                    : `Save (${INR})`}
+                    : gType === "education" || gType === "wedding"
+                      ? `Target fund (${INR})`
+                      : `Save (${INR})`}
               </label>
               <input
                 className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm"
@@ -269,11 +312,15 @@ export default function DashboardTools() {
               Add goal
             </button>
             <div className="border-t border-gray-100 dark:border-slate-700 pt-3 space-y-2">
-              {goals.length === 0 ? (
+              {allGoals.length === 0 ? (
                 <p className="text-xs text-gray-400">No goals yet.</p>
               ) : (
-                goals.map((g) => {
-                  const savedForGoal = g.type === "save_amount" ? Number(g.savedAmount) || 0 : 0;
+                allGoals.map((g) => {
+                  if (g.archived) return null;
+                  const savedForGoal =
+                    g.type === "save_amount" || g.type === "education" || g.type === "wedding"
+                      ? Number(g.savedAmount) || 0
+                      : 0;
                   const p = computeGoalProgress(g, {
                     openRemainingSum: openRemaining,
                     burdenRatio: ratio,
@@ -292,15 +339,27 @@ export default function DashboardTools() {
                             />
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => deleteGoal(g.id)}
-                          className="text-xs text-red-500 shrink-0"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => updateGoal(g.id, { active: !g.active })}
+                            className="text-xs text-amber-600 font-semibold"
+                          >
+                            {g.active === false ? "Resume" : "Pause"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateGoal(g.id, { archived: true, active: false })}
+                            className="text-xs text-gray-500"
+                          >
+                            Archive
+                          </button>
+                          <button type="button" onClick={() => deleteGoal(g.id)} className="text-xs text-red-500">
+                            Delete
+                          </button>
+                        </div>
                       </div>
-                      {g.type === "save_amount" && (
+                      {(g.type === "save_amount" || g.type === "education" || g.type === "wedding") && (
                         <div className="flex gap-2">
                           <input
                             type="number"

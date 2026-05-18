@@ -94,11 +94,14 @@ export default function LendingFormFields({ form, setForm, formErrors, inputClas
             setForm({ ...form, repaymentFrequency: e.target.value, repaymentType: e.target.value })
           }
         >
-          <option value="monthly">Monthly</option>
+          <option value="monthly">Monthly installments</option>
           <option value="weekly">Weekly</option>
           <option value="biweekly">Biweekly</option>
-          <option value="lumpsum">Lump sum</option>
+          <option value="lumpsum">Flexible — pay anytime (partial or full)</option>
         </select>
+        <p className="text-[10px] text-gray-400 mt-1">
+          Flexible suits informal loans; monthly builds an EMI-style schedule.
+        </p>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>

@@ -1,4 +1,6 @@
 import Card from "../../Card.jsx";
+import InfoTip from "../../InfoTip.jsx";
+import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 
 const SURVIVAL_COPY = {
@@ -15,7 +17,10 @@ export default function SurvivalCard({ survival, mode = "salaried" }) {
     <Card className="space-y-3 border-l-4 border-l-indigo-500">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">{copy.title}</h2>
+          <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100 inline-flex items-center">
+            {copy.title}
+            <InfoTip text={CALC_HELP.survivalMonths} />
+          </h2>
           <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{copy.sub}</p>
         </div>
         <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${survival.badgeClass}`}>

@@ -1,7 +1,16 @@
 import { assetUrl } from "../../utils/basePath.js";
 
 const PERM_KEY = "committrack_notif_permission_asked";
-const NOTIF_ICON = () => assetUrl("pwa-192.png");
+const SW_READY_MS = 4000;
+
+export function absoluteNotificationIconUrl() {
+  if (typeof window === "undefined") return "/pwa-192.png";
+  try {
+    return new URL(assetUrl("pwa-192.png"), window.location.href).href;
+  } catch {
+    return assetUrl("pwa-192.png");
+  }
+}
 
 /** @returns {boolean} */
 export function isNotificationSupported() {
@@ -22,7 +31,8 @@ export async function requestNotificationPermission() {
   }
   if (Notification.permission === "granted") return "granted";
   if (Notification.permission === "denied") return "denied";
-  return Notification.requestPermission();
+  const result = await Notification.requestPermission();
+  return result;
 }
 
 export function wasPermissionAsked() {
@@ -33,37 +43,109 @@ export function wasPermissionAsked() {
   }
 }
 
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("timeout")), ms);
+    }),
+  ]);
+}
+
+/** Resolve an active service worker registration when PWA is installed. */
+export async function getActiveServiceWorkerRegistration() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
+  try {
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (reg?.active) return reg;
+    reg = await withTimeout(navigator.serviceWorker.ready, SW_READY_MS);
+    return reg?.active ? reg : null;
+  } catch {
+    return null;
+  }
+}
+
+function showViaWindowNotification(title, body, tag) {
+  const n = new Notification(title, {
+    body,
+    tag: tag || "committrack",
+    icon: absoluteNotificationIconUrl(),
+  });
+  n.onclick = () => {
+    window.focus();
+    n.close();
+  };
+  return true;
+}
+
 /**
- * Show a local browser notification (no push server).
+ * Show a system notification (phone/laptop tray). Uses service worker when available.
  * @param {{ title: string, body: string, tag?: string, data?: object }} payload
+ * @returns {Promise<boolean>}
  */
 export async function showLocalNotification(payload) {
-  if (!isNotificationSupported() || Notification.permission !== "granted") return false;
+  if (!isNotificationSupported()) return false;
+  if (Notification.permission !== "granted") return false;
+
   const { title, body, tag, data } = payload;
+  const icon = absoluteNotificationIconUrl();
+  const options = {
+    body,
+    tag: tag || "committrack",
+    data,
+    icon,
+    badge: icon,
+    vibrate: [180, 80, 180],
+    renotify: true,
+    silent: false,
+    requireInteraction: false,
+  };
+
   try {
-    if ("serviceWorker" in navigator) {
-      const reg = await navigator.serviceWorker.ready;
-      await reg.showNotification(title, {
-        body,
-        tag: tag || "committrack",
-        data,
-        icon: NOTIF_ICON(),
-        badge: NOTIF_ICON(),
-      });
+    const reg = await getActiveServiceWorkerRegistration();
+    if (reg) {
+      await reg.showNotification(title, options);
       return true;
     }
-    new Notification(title, { body, tag, icon: NOTIF_ICON() });
-    return true;
+  } catch {
+    /* fall through */
+  }
+
+  try {
+    const ready = await navigator.serviceWorker?.ready;
+    if (ready) {
+      await ready.showNotification(title, options);
+      return true;
+    }
+  } catch {
+    /* fall through */
+  }
+
+  try {
+    return showViaWindowNotification(title, body, tag);
   } catch {
     return false;
   }
 }
 
-/** Dev / settings test ping */
+/** Request permission if needed, then show a test system notification. */
 export async function sendTestNotification() {
-  return showLocalNotification({
+  if (!isNotificationSupported()) {
+    return { ok: false, reason: "unsupported" };
+  }
+  let perm = getNotificationPermission();
+  if (perm === "default") {
+    perm = await requestNotificationPermission();
+  }
+  if (perm !== "granted") {
+    return { ok: false, reason: perm === "denied" ? "denied" : "blocked" };
+  }
+
+  const ok = await showLocalNotification({
     title: "CommitTrack",
-    body: "Reminders are enabled on this device. Due alerts will appear here.",
+    body: "Notifications are working. Due and overdue bills will alert you here.",
     tag: "committrack-test",
+    data: { type: "test" },
   });
+  return { ok, reason: ok ? null : "show_failed" };
 }

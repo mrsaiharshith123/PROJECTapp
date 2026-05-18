@@ -58,6 +58,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff2}"],
         navigateFallback: `${basePath}index.html`,
         navigateFallbackDenylist: [/^\/api\//],
+        importScripts: ["notification-handler.js"],
       },
       devOptions: {
         enabled: true,

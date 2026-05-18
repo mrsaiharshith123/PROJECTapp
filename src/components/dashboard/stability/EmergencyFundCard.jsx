@@ -1,11 +1,16 @@
 import Card from "../../Card.jsx";
+import InfoTip from "../../InfoTip.jsx";
+import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 
 export default function EmergencyFundCard({ emergency }) {
   if (!emergency) return null;
   return (
     <Card className="space-y-3">
-      <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">Emergency reserve</h2>
+      <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100 inline-flex items-center">
+        Emergency reserve
+        <InfoTip text={CALC_HELP.emergencyReserve} />
+      </h2>
       <p className="text-xs text-gray-500 dark:text-slate-400">{emergency.message}</p>
       <div className="h-2 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
         <div

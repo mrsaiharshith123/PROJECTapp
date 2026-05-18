@@ -13,22 +13,22 @@ export const MODE_INCOME_LABEL = {
 
 /** Bill category ids shown when adding a commitment. */
 export const MODE_CATEGORY_IDS = {
-  salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Other"],
+  salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
   business: ["Vendor", "Payroll", "Rent", "Software", "Tax", "EMI", "Utility", "Insurance", "Other"],
   freelancer: ["Client", "Software", "Subscription", "Tax", "Equipment", "Insurance", "Utility", "Other"],
-  family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Subscription", "Utility", "Loan", "Other"],
+  family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Chit Fund", "Subscription", "Utility", "Loan", "Other"],
   student: ["Subscription", "Education", "Transport", "Food", "BNPL", "Loan", "Other"],
   power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Vendor", "Other"],
 };
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["afford", "insurance", "emi", "payoff", "goals"],
+  salaried: ["afford", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
   business: ["afford", "goals"],
-  freelancer: ["afford", "payoff", "goals", "emi"],
-  family: ["afford", "insurance", "emi", "goals"],
-  student: ["afford", "goals"],
-  power: ["afford", "insurance", "emi", "payoff", "goals"],
+  freelancer: ["afford", "payoff", "goals", "emi", "loanTiming"],
+  family: ["afford", "insurance", "emi", "loanTiming", "chit", "goals"],
+  student: ["afford", "loanTiming", "goals"],
+  power: ["afford", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -61,6 +61,18 @@ export const MODE_TOOL_DEFS = {
     title: "Savings goals",
     subtitle: "Track a target",
     accent: "indigo",
+  },
+  chit: {
+    id: "chit",
+    title: "Chit timing",
+    subtitle: "When to take the pot",
+    accent: "yellow",
+  },
+  loanTiming: {
+    id: "loanTiming",
+    title: "Loan extra pay",
+    subtitle: "Best month to pay more",
+    accent: "violet",
   },
 };
 

@@ -1,8 +1,13 @@
 import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTypes.js";
 import { effectiveAnnualRate } from "./payoffPriority.js";
+import { chitInstallment } from "./chitFund.js";
 
 function monthlyPressureWeight(c, getEffectiveStatus) {
   if (getEffectiveStatus(c) === "paid") return 0;
+  if (c.category === "Chit Fund" && Number(c.chitValue) > 0 && Number(c.chitMonths) > 0) {
+    const m = Math.min(Number(c.chitMonths), Math.max(1, Number(c.chitCurrentMonth) || 1));
+    return chitInstallment(c.chitValue, c.chitMonths, m);
+  }
   const amt = Number(c.amount) || 0;
   const interval = repeatIntervalMonths(normalizeRepeatType(c.repeatType));
   const base = interval > 0 ? amt / interval : Math.max(0, Number(c.remainingAmount ?? amt));

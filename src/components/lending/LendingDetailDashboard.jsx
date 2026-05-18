@@ -4,6 +4,7 @@ import { buildLendingDashboard } from "../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine, trustBadgeClass } from "../../engines/lendingTrust.js";
 import { downloadLendingAgreementHtml } from "../../utils/agreementExport.js";
+import { canEditLending, repaymentModeLabel } from "../../engines/lendingAgreement.js";
 
 function ProgressBar({ pct, className = "bg-indigo-500" }) {
   return (
@@ -33,6 +34,7 @@ export default function LendingDetailDashboard({
   );
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
+  const termsLocked = !canEditLending(lending);
 
   return (
     <div className="space-y-4">
@@ -120,7 +122,7 @@ export default function LendingDetailDashboard({
           disabled={Number(lending.remainingAmount) <= 0}
           className="flex-1 min-w-[120px] py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg disabled:opacity-40"
         >
-          Simulate Pay via UPI
+          Record payment
         </button>
         <button
           type="button"
@@ -131,7 +133,9 @@ export default function LendingDetailDashboard({
         </button>
       </div>
 
-      {!lending.agreementAccepted && (
+      <p className="text-xs text-gray-500">{repaymentModeLabel(lending)}</p>
+
+      {!lending.agreementAccepted && !termsLocked && (
         <button
           type="button"
           onClick={onAcceptAgreement}
@@ -141,19 +145,29 @@ export default function LendingDetailDashboard({
         </button>
       )}
 
+      {termsLocked && (
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          Agreement is locked after both parties accepted. You can still record payments until the loan is settled.
+        </p>
+      )}
+
       <textarea
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm min-h-[64px]"
+        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm min-h-[64px] disabled:bg-gray-100 disabled:text-gray-500"
         value={agreementDraft}
         onChange={(e) => setAgreementDraft(e.target.value)}
         placeholder="Custom clauses for printable agreement"
+        disabled={termsLocked}
+        readOnly={termsLocked}
       />
-      <button
-        type="button"
-        onClick={() => updateLending(lending.id, { agreementText: agreementDraft })}
-        className="text-xs font-semibold text-indigo-600"
-      >
-        Save agreement notes
-      </button>
+      {!termsLocked && (
+        <button
+          type="button"
+          onClick={() => updateLending(lending.id, { agreementText: agreementDraft })}
+          className="text-xs font-semibold text-indigo-600"
+        >
+          Save agreement notes
+        </button>
+      )}
 
       <ProofSection fileRef={fileRef} proofs={lending.proofs} onAddProof={onAddProof} />
     </div>

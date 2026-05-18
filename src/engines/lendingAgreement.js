@@ -98,11 +98,32 @@ export function buildOfferShareUrl(offer, origin = "") {
   return url.toString();
 }
 
+/** Both parties signed and record is locked — terms cannot be changed until settled or mutual cancel. */
+export function isAgreementFullyLocked(lending) {
+  if (!lending?.agreementLocked || !lending?.agreementAccepted) return false;
+  const rem = Number(lending.remainingAmount) || 0;
+  if (rem <= 0 || lending.status === "complete") return false;
+  return true;
+}
+
+export function canEditLending(lending) {
+  return !isAgreementFullyLocked(lending);
+}
+
 export function canDeleteLending(lending) {
   if (!lending?.agreementLocked) return true;
   const rem = Number(lending.remainingAmount) || 0;
   if (rem <= 0 || lending.status === "complete") return true;
   return Boolean(lending.mutualCancelBorrowerSign && lending.mutualCancelLenderSign);
+}
+
+export function repaymentModeLabel(lending) {
+  const t = lending?.repaymentType || lending?.repaymentFrequency || "monthly";
+  if (t === "lumpsum") return "Pay anytime (lump sum)";
+  if (t === "monthly") return "Monthly installments";
+  if (t === "weekly") return "Weekly installments";
+  if (t === "biweekly") return "Biweekly installments";
+  return "Flexible payments";
 }
 
 export function trustScoreLabel(score) {

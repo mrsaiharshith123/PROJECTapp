@@ -17,6 +17,8 @@ export const TOOL_ICONS = {
   emi: "\u{1F4C9}",
   payoff: "\u{1F3AF}",
   goals: "\u{1F3C1}",
+  chit: "\u{1FA99}",
+  loanTiming: "\u{1F4C6}",
 };
 
 export function formatInr(amount) {

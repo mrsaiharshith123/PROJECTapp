@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { Modal } from "./Modal.jsx";
-import { categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import {
+  categoryShowsInterestRate,
+  categoryShowsInsuranceFields,
+  categoryShowsChitFundFields,
+} from "../constants/categories.js";
+import ChitFundFields from "./ChitFundFields.jsx";
+import {
+  buildChitPayloadFromForm,
+  chitFieldsFromCommitment,
+  chitFundHasRequiredFields,
+  applyChitFormSync,
+  categoryIsChitFund,
+} from "../constants/chitFund.js";
 import { getCategoriesForUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "./InsuranceFields.jsx";
 import { buildInsuranceBillName, insuranceBillHasIdentity } from "../constants/insurance.js";
@@ -35,6 +47,7 @@ function formFromCommitment(c, todayStr) {
     insurancePolicyId: c.insurancePolicyId || "",
     insuredPersonName: c.insuredPersonName || "",
     insuranceCompany: c.insuranceCompany || "",
+    ...chitFieldsFromCommitment(c),
   };
 }
 
@@ -46,13 +59,18 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
 
   const patchForm = (patch) => {
     setForm((f) => {
+      let next;
       if (patch.startDate !== undefined) {
-        return applyBillStartDateChange(f, patch.startDate, todayStr);
+        next = applyBillStartDateChange(f, patch.startDate, todayStr);
+      } else if (patch.repeatType !== undefined) {
+        next = applyBillRepeatChange(f, patch.repeatType, todayStr);
+      } else {
+        next = { ...f, ...patch };
       }
-      if (patch.repeatType !== undefined) {
-        return applyBillRepeatChange(f, patch.repeatType, todayStr);
+      if (patch.category !== undefined && categoryIsChitFund(patch.category)) {
+        next = { ...next, repeatType: "monthly" };
       }
-      return { ...f, ...patch };
+      return categoryIsChitFund(next.category) ? applyChitFormSync(next) : next;
     });
   };
 
@@ -62,6 +80,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   };
   const showInterest = categoryShowsInterestRate(form.category);
   const showInsurance = categoryShowsInsuranceFields(form.category);
+  const showChit = categoryShowsChitFundFields(form.category);
   const isSubscription = form.category === "Subscription";
   const isOther = form.category === "Other";
 
@@ -77,7 +96,14 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
     } else if (!form.name.trim()) {
       errs.name = "Name is required";
     }
-    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) errs.amount = "Enter a valid amount";
+    if (showChit) {
+      if (!chitFundHasRequiredFields(form)) {
+        if (!form.chitValue || Number(form.chitValue) <= 0) errs.chitValue = "Enter chit value";
+        if (!form.chitMonths || Number(form.chitMonths) < 1) errs.chitMonths = "Enter months";
+      }
+    } else if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) {
+      errs.amount = "Enter a valid amount";
+    }
     if (!form.startDate) errs.startDate = "Start date is required";
     if (form.endDate && form.startDate && form.endDate < form.startDate) {
       errs.endDate = "End date must be on or after start date";
@@ -96,14 +122,17 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
       ? buildInsuranceBillName(form) || form.name.trim() || commitment.name
       : form.name.trim();
 
+    const chitPayload = showChit ? buildChitPayloadFromForm(form) : {};
+    const billAmount = showChit ? chitPayload.amount : Number(form.amount);
+
     onSave(commitment.id, {
       name: billName,
-      amount: Number(form.amount),
+      amount: billAmount,
       startDate: form.startDate,
-      endDate: form.endDate || "",
+      endDate: chitPayload.endDate || form.endDate || "",
       dueDate: form.dueDate,
       category: form.category,
-      repeatType: form.repeatType,
+      repeatType: showChit ? "monthly" : form.repeatType,
       priority: isOther ? form.priority : inferPriorityFromCategory(form.category),
       notes: form.notes.trim(),
       annualInterestRate:
@@ -130,6 +159,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             insuranceTermYears: null,
             insuranceMaturityBenefit: null,
           }),
+      ...(showChit ? chitPayload : {}),
     });
     onClose();
   };
@@ -169,15 +199,23 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Amount (₹)</label>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            {showChit ? "This month's installment (₹)" : "Amount (₹)"}
+          </label>
           <input
             type="number"
             min="0"
-            className={inputClass("amount")}
+            readOnly={showChit}
+            className={`${inputClass("amount")} ${showChit ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
             value={form.amount}
             onChange={(e) => patchForm({ amount: e.target.value })}
           />
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
+          {showChit && (
+            <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
+              Updates automatically when the calendar month advances.
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -234,20 +272,22 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
-          <select
-            className={inputClass("repeat")}
-            value={form.repeatType}
-            onChange={(e) => patchForm({ repeatType: e.target.value })}
-          >
-            {REPEAT_OPTIONS.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!showChit && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
+            <select
+              className={inputClass("repeat")}
+              value={form.repeatType}
+              onChange={(e) => patchForm({ repeatType: e.target.value })}
+            >
+              {REPEAT_OPTIONS.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {isOther && (
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Priority</label>
@@ -263,6 +303,16 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               ))}
             </select>
           </div>
+        )}
+
+        {showChit && (
+          <ChitFundFields
+            values={form}
+            errors={errors}
+            inputClass={inputClass}
+            todayStr={todayStr}
+            onChange={(name, value) => patchForm({ [name]: value })}
+          />
         )}
 
         {showInsurance && (

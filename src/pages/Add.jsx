@@ -2,7 +2,20 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
-import { categoryShowsInterestRate, categoryShowsInsuranceFields } from "../constants/categories.js";
+import {
+  categoryShowsInterestRate,
+  categoryShowsInsuranceFields,
+  categoryShowsChitFundFields,
+} from "../constants/categories.js";
+import ChitFundFields from "../components/ChitFundFields.jsx";
+import {
+  emptyChitFundFields,
+  buildChitPayloadFromForm,
+  chitFundHasRequiredFields,
+  chitEndDateFromStart,
+  applyChitFormSync,
+  categoryIsChitFund,
+} from "../constants/chitFund.js";
 import { getCategoriesForUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "../components/InsuranceFields.jsx";
 import {
@@ -39,6 +52,7 @@ const Add = () => {
     notes: "",
     annualInterestRate: "",
     ...emptyInsuranceFields(),
+    ...emptyChitFundFields(),
   });
   const [errors, setErrors] = useState({});
 
@@ -52,8 +66,14 @@ const Add = () => {
         next = applyBillRepeatChange(f, value, todayStr);
       } else if (name === "category") {
         next.priority = inferPriorityFromCategory(value || "Other");
+        if (value === "Chit Fund") {
+          next.repeatType = "monthly";
+          if (next.startDate && next.chitMonths) {
+            next.endDate = chitEndDateFromStart(next.startDate, next.chitMonths);
+          }
+        }
       }
-      return next;
+      return categoryIsChitFund(next.category) ? applyChitFormSync(next) : next;
     });
     setErrors((er) => ({ ...er, [name]: "" }));
   };
@@ -73,8 +93,17 @@ const Add = () => {
     if (isIns && !insuranceBillHasIdentity(form)) {
       errs.insurancePolicyId = "Enter policy ID, company, or insured person";
     }
-    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0)
+    if (categoryShowsChitFundFields(cat)) {
+      if (!chitFundHasRequiredFields(form)) {
+        if (!form.chitValue || Number(form.chitValue) <= 0) errs.chitValue = "Enter chit value";
+        if (!form.chitMonths || Number(form.chitMonths) < 1) errs.chitMonths = "Enter number of months";
+        const m = Number(form.chitCurrentMonth);
+        const N = Number(form.chitMonths);
+        if (m < 1 || m > N) errs.chitCurrentMonth = `Month must be 1–${N || "?"}`;
+      }
+    } else if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) {
       errs.amount = "Enter a valid amount";
+    }
     if (!form.startDate) errs.startDate = "Start date is required";
     if (form.endDate && form.startDate && form.endDate < form.startDate) {
       errs.endDate = "End date must be on or after start date";
@@ -91,6 +120,7 @@ const Add = () => {
   const category = form.category || "Other";
   const showInterest = categoryShowsInterestRate(category);
   const showInsurance = categoryShowsInsuranceFields(category);
+  const showChit = categoryShowsChitFundFields(category);
   const isSubscription = category === "Subscription";
   const isOther = category === "Other";
 
@@ -153,15 +183,18 @@ const Add = () => {
       ? buildInsuranceBillName(form) || form.name.trim() || "Insurance policy"
       : form.name.trim();
 
+    const chitPayload = showChit ? buildChitPayloadFromForm(form) : {};
+    const billAmount = showChit ? chitPayload.amount : Number(form.amount);
+
     const draft = {
       id: Date.now(),
       name: billName,
-      amount: Number(form.amount),
+      amount: billAmount,
       startDate: form.startDate,
-      endDate: form.endDate || "",
+      endDate: chitPayload.endDate || form.endDate || "",
       dueDate,
       category,
-      repeatType: form.repeatType,
+      repeatType: showChit ? "monthly" : form.repeatType,
       priority: isOther ? form.priority : inferPriorityFromCategory(category),
       notes: form.notes.trim(),
       annualInterestRate:
@@ -182,6 +215,7 @@ const Add = () => {
             insuranceMaturityBenefit: null,
           }
         : {}),
+      ...(showChit ? chitPayload : {}),
     };
     const effective = getEffectiveStatus({
       ...draft,
@@ -225,6 +259,19 @@ const Add = () => {
           {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
         </div>
 
+        {showChit && (
+          <ChitFundFields
+            values={form}
+            errors={errors}
+            inputClass={inputClass}
+            todayStr={todayStr}
+            onChange={(name, value) => {
+              setForm((f) => applyChitFormSync({ ...f, [name]: value }));
+              setErrors((er) => ({ ...er, [name]: "" }));
+            }}
+          />
+        )}
+
         {showInsurance && (
           <InsuranceFields
             values={form}
@@ -238,7 +285,9 @@ const Add = () => {
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Amount to pay (₹)</label>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            {showChit ? "This month's installment (₹)" : "Amount to pay (₹)"}
+          </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₹</span>
             <input
@@ -248,10 +297,16 @@ const Add = () => {
               onChange={handleChange}
               placeholder="0"
               min="0"
-              className={`${inputClass("amount")} pl-8`}
+              readOnly={showChit}
+              className={`${inputClass("amount")} pl-8 ${showChit ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
             />
           </div>
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
+          {showChit && (
+            <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
+              Auto-calculated for this month — goes down each calendar month without you editing it.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -309,16 +364,24 @@ const Add = () => {
           </p>
         )}
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
-          <select name="repeatType" value={form.repeatType} onChange={handleChange} className={inputClass("repeatType")}>
-            {REPEAT_OPTIONS.map((o) => (
-              <option key={o.id} value={o.id}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!showChit && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
+            <select name="repeatType" value={form.repeatType} onChange={handleChange} className={inputClass("repeatType")}>
+              {REPEAT_OPTIONS.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {showChit && (
+          <p className="text-xs text-yellow-800 dark:text-yellow-200 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg px-3 py-2">
+            Repeats monthly until the chit ends. When a new month starts, your due amount updates to the lower
+            installment — you do not change it yourself.
+          </p>
+        )}
 
         {isOther && (
           <div>
@@ -352,7 +415,7 @@ const Add = () => {
             name="name"
             value={form.name}
             onChange={handleChange}
-            placeholder={showInsurance ? "Nickname only if you want" : "e.g. Bike EMI, Netflix, Rent"}
+            placeholder={showInsurance ? "Nickname only if you want" : "e.g. Rent, EMI, school fees"}
             className={inputClass("name")}
           />
           {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}

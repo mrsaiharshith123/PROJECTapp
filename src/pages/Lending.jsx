@@ -10,7 +10,7 @@ import { lendingTrustByPerson, trustSummaryLine, trustScoreForLendingEntry, trus
 import LendingDetailModal from "../components/LendingDetailModal.jsx";
 import LendingFormFields from "../components/lending/LendingFormFields.jsx";
 import LendingRequestModal from "../components/lending/LendingRequestModal.jsx";
-import { canDeleteLending } from "../engines/lendingAgreement.js";
+import { canDeleteLending, canEditLending, repaymentModeLabel } from "../engines/lendingAgreement.js";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -152,6 +152,7 @@ const Lending = () => {
   };
 
   const openEdit = (l) => {
+    if (!canEditLending(l)) return;
     setEditing(l);
     setForm({
       personName: l.personName,
@@ -215,7 +216,12 @@ const Lending = () => {
                   {trust}/100
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">Due {formatDate(item.dueDate)}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Due {formatDate(item.dueDate)} · {repaymentModeLabel(item)}
+              </p>
+              {item.agreementAccepted && item.agreementLocked && eff !== "complete" && (
+                <p className="text-[10px] text-amber-700 mt-0.5">Agreement locked — record payments only</p>
+              )}
               {item.notes ? <p className="text-xs text-gray-400 mt-1">{item.notes}</p> : null}
             </div>
           </div>
@@ -238,9 +244,15 @@ const Lending = () => {
           <button type="button" onClick={() => setDetailFor(item)} className="px-3 py-2 text-xs font-semibold border border-indigo-200 text-indigo-700 rounded-lg hover:bg-indigo-50">
             Details
           </button>
-          <button type="button" onClick={() => openEdit(item)} className="px-3 py-2 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-            Edit
-          </button>
+          {canEditLending(item) ? (
+            <button
+              type="button"
+              onClick={() => openEdit(item)}
+              className="px-3 py-2 text-xs font-semibold bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Edit
+            </button>
+          ) : null}
           {canDeleteLending(item) ? (
             <button type="button" onClick={() => deleteLending(item.id)} className="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
               Delete
@@ -452,7 +464,7 @@ const Lending = () => {
                 disabled={Number(paymentFor.remainingAmount) <= 0}
                 className="flex-1 py-2.5 text-sm font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl disabled:opacity-40"
               >
-                Simulate UPI pay (₹{Number(paymentFor.remainingAmount).toLocaleString()})
+                Pay full balance (₹{Number(paymentFor.remainingAmount).toLocaleString()})
               </button>
             </div>
           }
@@ -461,6 +473,9 @@ const Lending = () => {
             <p className="text-sm text-gray-600">
               <span className="font-semibold">{paymentFor.personName}</span> — remaining{" "}
               <span className="font-bold">₹{Number(paymentFor.remainingAmount).toLocaleString()}</span>
+            </p>
+            <p className="text-xs text-gray-500 mt-2">
+              {repaymentModeLabel(paymentFor)}. You can log a partial amount or pay the full balance in one go.
             </p>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Amount (₹)</label>

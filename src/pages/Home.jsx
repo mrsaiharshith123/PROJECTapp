@@ -3,18 +3,16 @@ import { useCallback, useEffect } from "react";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../hooks/useCommitIntel.js";
-import { healthLevelBadgeClass } from "../engines/financialHealth.js";
 import { computeGoalProgress, goalTypeLabel } from "../engines/goalsProgress.js";
-import { getUserModeConfig } from "../constants/userModes.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
 import HomeOverviewCard from "../components/dashboard/HomeOverviewCard.jsx";
 import ModeIntelligenceSection from "../components/dashboard/ModeIntelligenceSection.jsx";
+import FinancialPulseCard from "../components/dashboard/FinancialPulseCard.jsx";
 import DashboardTools from "../components/dashboard/DashboardTools.jsx";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
 import { isActiveBill } from "../utils/billLifecycle.js";
 import { formatInr, STATUS_ICONS, CHEVRON } from "../constants/symbols.js";
-import { PROFILE_SETTINGS_HINT } from "../constants/plainLanguage.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "?";
@@ -36,7 +34,6 @@ const Home = () => {
     if (location.hash === "#dashboard-tools") scrollToTools();
   }, [location.hash, scrollToTools]);
   const intel = useCommitIntel();
-  const modeCfg = getUserModeConfig(settings.userMode || "salaried");
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
@@ -67,34 +64,7 @@ const Home = () => {
       <HomeOverviewCard />
 
       <ModeIntelligenceSection />
-
-      <Card className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-semibold text-gray-800">Financial stability</h2>
-          <span
-            className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${intel.stability.badgeClass}`}
-          >
-            {intel.stability.label} · {intel.stability.score}/100
-          </span>
-        </div>
-        <p className="text-xs text-gray-500">
-          {intel.stability.committedPercent != null
-            ? `${intel.stability.committedPercent}% of income to monthly dues`
-            : PROFILE_SETTINGS_HINT}
-          . Free after dues: {formatInr(Math.round(intel.stability.freeMoney))}.
-          <br />
-          Health:{" "}
-          <span className={`font-medium ${healthLevelBadgeClass(intel.health.level).split(" ").slice(1).join(" ")}`}>
-            {intel.health.label} ({intel.health.score})
-          </span>
-          . Yearly burden est. {formatInr(Math.round(intel.yearlyBurden))}.
-        </p>
-        {modeCfg.id === "business" && (
-          <p className="text-xs text-indigo-700 bg-indigo-50 rounded-lg px-3 py-2">
-            Business mode: track receivables and debt under Money; tap the month card for cashflow charts.
-          </p>
-        )}
-      </Card>
+      <FinancialPulseCard />
 
       {goals.length > 0 && (
         <Card className="space-y-3">
@@ -124,59 +94,6 @@ const Home = () => {
               </div>
             );
           })}
-        </Card>
-      )}
-
-      {intel.payoffRec && (
-        <Card className="border-indigo-100 bg-indigo-50/50">
-          <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Payoff priority</p>
-          <p className="text-sm text-gray-800 mt-1">{intel.payoffRec.message}</p>
-        </Card>
-      )}
-
-      {intel.insights.length > 0 && (
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-gray-800">Insights</h2>
-          <ul className="space-y-2">
-            {intel.insights.map((ins) => (
-              <li
-                key={ins.id}
-                className={`text-sm rounded-lg px-3 py-2 border ${
-                  ins.tone === "critical"
-                    ? "bg-red-50 border-red-100 text-red-900"
-                    : ins.tone === "warning"
-                      ? "bg-amber-50 border-amber-100 text-amber-900"
-                      : ins.tone === "positive"
-                        ? "bg-emerald-50 border-emerald-100 text-emerald-900"
-                        : "bg-gray-50 border-gray-100 text-gray-800"
-                }`}
-              >
-                {ins.text}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {intel.forecast.length > 0 && (
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-gray-800">Forecast</h2>
-          {intel.forecast.map((f) => (
-            <p key={f.id} className="text-sm text-gray-700">
-              {f.text}
-            </p>
-          ))}
-        </Card>
-      )}
-
-      {intel.subscriptionLeak.insights.length > 0 && (
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-gray-800">Subscriptions</h2>
-          {intel.subscriptionLeak.insights.map((t, i) => (
-            <p key={i} className="text-sm text-gray-700">
-              {t}
-            </p>
-          ))}
         </Card>
       )}
 

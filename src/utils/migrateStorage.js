@@ -4,6 +4,7 @@ import { USER_MODE_IDS } from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
 import { estimatePriorSpend } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
+import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 
@@ -98,6 +99,31 @@ export function normalizeCommitment(raw) {
     insuranceMaturityBenefit:
       raw.insuranceMaturityBenefit != null && !Number.isNaN(Number(raw.insuranceMaturityBenefit))
         ? Math.max(0, Number(raw.insuranceMaturityBenefit))
+        : null,
+    chitValue:
+      category === "Chit Fund" && raw.chitValue != null && !Number.isNaN(Number(raw.chitValue))
+        ? Math.max(0, Number(raw.chitValue))
+        : null,
+    chitMonths:
+      category === "Chit Fund" && raw.chitMonths != null
+        ? Math.max(1, Math.floor(Number(raw.chitMonths)))
+        : null,
+    chitCurrentMonth:
+      category === "Chit Fund" && raw.chitCurrentMonth != null
+        ? Math.max(1, Math.floor(Number(raw.chitCurrentMonth)))
+        : null,
+    chitForemanPct:
+      category === "Chit Fund" && raw.chitForemanPct != null
+        ? Math.min(15, Math.max(0, Number(raw.chitForemanPct)))
+        : null,
+    chitTaken: category === "Chit Fund" ? Boolean(raw.chitTaken) : false,
+    chitTakenAtMonth:
+      category === "Chit Fund" && raw.chitTakenAtMonth != null
+        ? Math.max(1, Math.floor(Number(raw.chitTakenAtMonth)))
+        : null,
+    chitTakenDiscount:
+      category === "Chit Fund" && raw.chitTakenDiscount != null
+        ? Math.max(0, Number(raw.chitTakenDiscount))
         : null,
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
@@ -213,7 +239,25 @@ export function loadCommitmentsFromStorage() {
     const raw = localStorage.getItem("commitments");
     if (raw) {
       const arr = JSON.parse(raw);
-      if (Array.isArray(arr)) return mapNormalized(arr, normalizeCommitment);
+      if (Array.isArray(arr)) {
+        const normalized = mapNormalized(arr, normalizeCommitment);
+        const todayStr = todayYmd();
+        const synced = refreshAllChitCommitments(normalized, todayStr);
+        const changed = synced.some(
+          (c, i) =>
+            c.chitCurrentMonth !== normalized[i]?.chitCurrentMonth ||
+            c.amount !== normalized[i]?.amount ||
+            c.remainingAmount !== normalized[i]?.remainingAmount
+        );
+        if (changed) {
+          try {
+            localStorage.setItem("commitments", JSON.stringify(synced));
+          } catch {
+            /* ignore */
+          }
+        }
+        return synced;
+      }
     }
   } catch {
     /* ignore */
@@ -257,7 +301,7 @@ export function saveMonthlySnapshotsToStorage(snapshots) {
 
 export function normalizeGoal(raw) {
   const now = Date.now();
-  const type = ["reduce_open_debt", "income_ratio_cap", "save_amount"].includes(raw.type)
+  const type = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"].includes(raw.type)
     ? raw.type
     : "reduce_open_debt";
   return {
@@ -266,6 +310,7 @@ export function normalizeGoal(raw) {
     title: String(raw.title || "Goal").trim(),
     profileId: String(raw.profileId || "default"),
     active: raw.active !== false,
+    archived: Boolean(raw.archived),
     baselineOpenRemaining: Number(raw.baselineOpenRemaining) || 0,
     targetReduction: Math.max(1, Number(raw.targetReduction) || 1),
     targetRatio: Math.min(0.95, Math.max(0.05, Number(raw.targetRatio) || 0.5)),
@@ -347,7 +392,7 @@ const COLOR_SCHEMES = ["light", "dark", "system"];
 
 const PROFILE_COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 
-function normalizeProfiles(raw) {
+export function normalizeProfiles(raw) {
   if (!Array.isArray(raw) || raw.length === 0) {
     return [{ id: "default", label: "Personal", color: "indigo" }];
   }
@@ -379,6 +424,7 @@ const DEFAULT_SETTINGS = {
   liquidSavings: 0,
   dependents: 0,
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
+  remindersEnabled: true,
 };
 
 export function loadSettingsFromStorage() {
@@ -410,6 +456,7 @@ export function loadSettingsFromStorage() {
         liquidSavings: Math.max(0, Number(o.liquidSavings) || 0),
         dependents: Math.max(0, Math.min(12, Math.floor(Number(o.dependents) || 0))),
         profiles: normalizeProfiles(o.profiles),
+        remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,
       };
     }
   } catch {

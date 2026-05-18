@@ -25,6 +25,8 @@ import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.js
 import PaycheckBreakdown from "../components/analytics/PaycheckBreakdown.jsx";
 import { computeSalaryBreakdown } from "../engines/salaryBreakdown.js";
 import { getAnalyticsCopy, getIncomeLabel, resolveUserMode } from "../constants/modeExperience.js";
+import InfoTip from "../components/InfoTip.jsx";
+import { CALC_HELP } from "../constants/calculationHelp.js";
 
 const Analytics = () => {
   const {
@@ -165,7 +167,10 @@ const Analytics = () => {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-xl bg-white/10 px-3 py-2">
-            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Due</p>
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold inline-flex items-center">
+              Due
+              <InfoTip text={CALC_HELP.dueThisMonth} />
+            </p>
             <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
               {formatInr(monthBreakdown.dueThisMonth)}
             </p>
@@ -183,7 +188,10 @@ const Analytics = () => {
             </p>
           </div>
           <div className="rounded-xl bg-white/10 px-3 py-2">
-            <p className="text-[10px] uppercase text-indigo-200 font-semibold">Free cash</p>
+            <p className="text-[10px] uppercase text-indigo-200 font-semibold inline-flex items-center">
+              Free cash
+              <InfoTip text={CALC_HELP.freeCash} />
+            </p>
             <p className="text-lg font-bold" style={{ fontFamily: "'Sora', sans-serif" }}>
               {monthBreakdown.freeCash != null ? formatInr(monthBreakdown.freeCash) : EM_DASH}
             </p>
@@ -211,14 +219,23 @@ const Analytics = () => {
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs mb-1">Monthly burden</p>
+            <p className="text-slate-400 text-xs mb-1 inline-flex items-center">
+              Monthly burden
+              <InfoTip text={CALC_HELP.monthlyBurden} />
+            </p>
             <p className="text-xl font-bold text-amber-300" style={{ fontFamily: "'Sora', sans-serif" }}>
               {formatInr(monthlyBurden)}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1">Still owed overall: {formatInr(openPressure)}</p>
+            <p className="text-[10px] text-slate-500 mt-1 inline-flex items-center">
+              Still owed overall: {formatInr(openPressure)}
+              <InfoTip text={CALC_HELP.openBalance} />
+            </p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs mb-1">Free after dues</p>
+            <p className="text-slate-400 text-xs mb-1 inline-flex items-center">
+              Free after dues
+              <InfoTip text={CALC_HELP.freeAfterDues} />
+            </p>
             <p className="text-xl font-bold text-emerald-300" style={{ fontFamily: "'Sora', sans-serif" }}>
               {formatInr(freeMoney)}
             </p>
@@ -260,7 +277,10 @@ const Analytics = () => {
       </div>
 
       <Card className="space-y-3">
-        <h2 className="text-base font-semibold text-gray-800">Upcoming due dates (4 weeks)</h2>
+        <h2 className="text-base font-semibold text-gray-800 inline-flex items-center">
+          Upcoming due dates (4 weeks)
+          <InfoTip text={CALC_HELP.dueHeatmap} />
+        </h2>
         <p className="text-xs text-gray-500">Which weeks have the most bills due.</p>
         <div className="grid grid-cols-4 gap-2">
           {dueHeatmap.map((b) => (
@@ -313,7 +333,11 @@ const Analytics = () => {
 
       {debtReduction && (
         <Card className="text-sm text-gray-700">
-          Balance change {debtReduction.fromMonth} {ARROW} {debtReduction.toMonth}:{" "}
+          <span className="inline-flex items-center">
+            Balance change
+            <InfoTip text={CALC_HELP.debtTrend} />
+          </span>{" "}
+          {debtReduction.fromMonth} {ARROW} {debtReduction.toMonth}:{" "}
           {formatInr(Math.round(debtReduction.openDelta))}{" "}
           {debtReduction.openDelta > 0 ? "(increase)" : debtReduction.openDelta < 0 ? "(reduction)" : ""}
         </Card>

@@ -6,6 +6,7 @@ const FIXED_CATEGORIES = new Set([
   "EMI",
   "Insurance",
   "SIP",
+  "Chit Fund",
   "Vendor",
   "Payroll",
   "Tax",

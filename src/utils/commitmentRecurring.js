@@ -2,6 +2,7 @@ import { addMonths, parseISO, format } from "date-fns";
 import { todayYmd } from "./dates.js";
 import { getEffectiveStatus } from "./commitmentStatus.js";
 import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTypes.js";
+import { chitInstallment } from "../engines/chitFund.js";
 
 /**
  * After a cycle is fully paid, return the paid row and optionally a new pending row for the next cycle.
@@ -37,6 +38,42 @@ export function advanceRecurringCommitment(c, newId = Date.now()) {
     status: "paid",
     updatedAt: now,
   };
+
+  const isChit =
+    c.category === "Chit Fund" &&
+    Number(c.chitValue) > 0 &&
+    Number(c.chitMonths) > 0 &&
+    !c.chitTaken;
+
+  if (isChit) {
+    const N = Math.floor(Number(c.chitMonths));
+    const nextMonth = Math.floor(Number(c.chitCurrentMonth) || 1) + 1;
+    if (nextMonth > N) {
+      return { paidRow, nextCycle: null };
+    }
+    const newAmount = Math.round(chitInstallment(c.chitValue, N, nextMonth));
+    let nextDue = c.dueDate;
+    try {
+      const base = parseISO(`${c.dueDate}T12:00:00`);
+      nextDue = format(addMonths(base, 1), "yyyy-MM-dd");
+    } catch {
+      /* keep */
+    }
+    const rolled = {
+      ...c,
+      id: newId,
+      chitCurrentMonth: nextMonth,
+      amount: newAmount,
+      dueDate: nextDue,
+      remainingAmount: newAmount,
+      payments: [],
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    };
+    const eff = getEffectiveStatus(rolled, todayStr);
+    return { paidRow, nextCycle: { ...rolled, status: eff } };
+  }
 
   let nextDue = c.dueDate;
   try {

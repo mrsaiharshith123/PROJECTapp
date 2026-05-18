@@ -20,6 +20,14 @@ import { priorityRank } from "../constants/priority.js";
 import { USER_MODE_IDS } from "../constants/userModes.js";
 import { getEffectiveStatus } from "../utils/commitmentStatus.js";
 import { buildMonthlySnapshot } from "../engines/snapshots.js";
+import { canEditLending } from "../engines/lendingAgreement.js";
+import { mergeImportedAppState } from "../utils/dataImport.js";
+import { refreshAllChitCommitments } from "../utils/chitSync.js";
+import {
+  loadBusinessInvoicesFromStorage,
+  normalizeBusinessInvoice,
+  saveBusinessInvoicesToStorage,
+} from "../utils/businessInvoices.js";
 
 const CommitTrackContext = createContext(null);
 
@@ -35,11 +43,15 @@ function sortCommitments(list) {
 }
 
 export function CommitTrackProvider({ children }) {
-  const [commitments, setCommitments] = useState(() => loadInitialAppState().commitments);
+  const [commitments, setCommitments] = useState(() =>
+    refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
+  );
   const [lendings, setLendings] = useState(() => loadInitialAppState().lendings);
   const [settings, setSettings] = useState(() => loadInitialAppState().settings);
   const [monthlySnapshots, setMonthlySnapshots] = useState(() => loadInitialAppState().monthlySnapshots);
   const [goals, setGoals] = useState(() => loadInitialAppState().goals);
+  const [businessInvoicesAll, setBusinessInvoicesAll] = useState(() => loadBusinessInvoicesFromStorage());
+  const [supplementalNotifications, setSupplementalNotifications] = useState([]);
 
   useEffect(() => {
     try {
@@ -54,8 +66,9 @@ export function CommitTrackProvider({ children }) {
 
   const persistCommitments = useCallback((updater) => {
     setCommitments((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
+      const raw = typeof updater === "function" ? updater(prev) : updater;
       const todayStr = todayYmd();
+      const next = refreshAllChitCommitments(raw, todayStr);
       const normalized = next.map((c) =>
         normalizeCommitmentStatusForSave(normalizeCommitment(c), todayStr)
       );
@@ -106,6 +119,15 @@ export function CommitTrackProvider({ children }) {
       const next = typeof updater === "function" ? updater(prev) : updater;
       saveGoalsToStorage(next);
       return next;
+    });
+  }, []);
+
+  const persistBusinessInvoices = useCallback((updater) => {
+    setBusinessInvoicesAll((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      const normalized = next.map((row) => normalizeBusinessInvoice(row));
+      saveBusinessInvoicesToStorage(normalized);
+      return normalized;
     });
   }, []);
 
@@ -207,16 +229,16 @@ export function CommitTrackProvider({ children }) {
   const updateLending = useCallback(
     (id, patch) => {
       persistLendings((prev) =>
-        prev.map((l) =>
-          String(l.id) !== String(id)
-            ? l
-            : normalizeLending({
-                ...l,
-                ...patch,
-                id: l.id,
-                updatedAt: Date.now(),
-              })
-        )
+        prev.map((l) => {
+          if (String(l.id) !== String(id)) return l;
+          if (!canEditLending(l)) return l;
+          return normalizeLending({
+            ...l,
+            ...patch,
+            id: l.id,
+            updatedAt: Date.now(),
+          });
+        })
       );
     },
     [persistLendings]
@@ -305,11 +327,27 @@ export function CommitTrackProvider({ children }) {
     [persistGoals]
   );
 
+  const pushInAppNotification = useCallback((item) => {
+    const row = {
+      id: item.id || `local-${Date.now()}`,
+      message: item.message || "",
+      urgency: item.urgency || "normal",
+      createdAt: Date.now(),
+      read: false,
+    };
+    setSupplementalNotifications((prev) => [row, ...prev.filter((n) => n.id !== row.id)]);
+    return row;
+  }, []);
+
   const markNotificationRead = useCallback(
     (id) => {
+      const sid = String(id);
+      setSupplementalNotifications((prev) =>
+        prev.map((n) => (n.id === sid ? { ...n, read: true } : n))
+      );
       persistSettings((prev) => {
         const ids = new Set(prev.readNotificationIds || []);
-        ids.add(String(id));
+        ids.add(sid);
         return { ...prev, readNotificationIds: [...ids] };
       });
     },
@@ -324,6 +362,59 @@ export function CommitTrackProvider({ children }) {
       });
     },
     [persistSettings]
+  );
+
+  const addBusinessInvoice = useCallback(
+    (raw) => {
+      const now = Date.now();
+      const row = normalizeBusinessInvoice({
+        ...raw,
+        id: raw.id ?? now,
+        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        createdAt: now,
+        updatedAt: now,
+      });
+      persistBusinessInvoices((prev) => [...prev, row]);
+    },
+    [persistBusinessInvoices, settings.activeProfileId]
+  );
+
+  const updateBusinessInvoice = useCallback(
+    (id, patch) => {
+      persistBusinessInvoices((prev) =>
+        prev.map((row) =>
+          String(row.id) !== String(id)
+            ? row
+            : normalizeBusinessInvoice({ ...row, ...patch, id: row.id, updatedAt: Date.now() })
+        )
+      );
+    },
+    [persistBusinessInvoices]
+  );
+
+  const deleteBusinessInvoice = useCallback(
+    (id) => {
+      persistBusinessInvoices((prev) => prev.filter((row) => String(row.id) !== String(id)));
+    },
+    [persistBusinessInvoices]
+  );
+
+  const markBusinessInvoicePaid = useCallback(
+    (id) => {
+      persistBusinessInvoices((prev) =>
+        prev.map((row) =>
+          String(row.id) !== String(id)
+            ? row
+            : normalizeBusinessInvoice({
+                ...row,
+                paid: true,
+                paidAt: todayStr,
+                updatedAt: Date.now(),
+              })
+        )
+      );
+    },
+    [persistBusinessInvoices, todayStr]
   );
 
   const logSavingsToGoal = useCallback(
@@ -355,7 +446,50 @@ export function CommitTrackProvider({ children }) {
     () => filterByProfile(lendings, activeProfileId),
     [lendings, activeProfileId]
   );
-  const profileGoals = useMemo(() => filterByProfile(goals, activeProfileId), [goals, activeProfileId]);
+  const profileGoals = useMemo(
+    () => filterByProfile(goals, activeProfileId).filter((g) => g.active !== false && !g.archived),
+    [goals, activeProfileId]
+  );
+  const businessInvoices = useMemo(
+    () => filterByProfile(businessInvoicesAll, activeProfileId),
+    [businessInvoicesAll, activeProfileId]
+  );
+
+  const importAppData = useCallback(
+    (payload, options = {}) => {
+      const merged = mergeImportedAppState(
+        {
+          commitments,
+          lendings,
+          goals,
+          settings,
+          monthlySnapshots,
+        },
+        payload,
+        options
+      );
+      persistCommitments(() => merged.commitments);
+      persistLendings(() => merged.lendings);
+      persistGoals(() => merged.goals);
+      persistSettings(() => merged.settings);
+      if (merged.monthlySnapshots?.length) {
+        persistSnapshots(() => merged.monthlySnapshots);
+      }
+      return merged.summary;
+    },
+    [
+      commitments,
+      lendings,
+      goals,
+      settings,
+      monthlySnapshots,
+      persistCommitments,
+      persistLendings,
+      persistGoals,
+      persistSettings,
+      persistSnapshots,
+    ]
+  );
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);
   const value = useMemo(
     () => ({
@@ -384,9 +518,18 @@ export function CommitTrackProvider({ children }) {
       addGoal,
       updateGoal,
       deleteGoal,
+      supplementalNotifications,
+      pushInAppNotification,
       markNotificationRead,
       markAllNotificationsRead,
       logSavingsToGoal,
+      importAppData,
+      businessInvoices,
+      allBusinessInvoices: businessInvoicesAll,
+      addBusinessInvoice,
+      updateBusinessInvoice,
+      deleteBusinessInvoice,
+      markBusinessInvoicePaid,
     }),
     [
       profileCommitments,
@@ -412,9 +555,18 @@ export function CommitTrackProvider({ children }) {
       addGoal,
       updateGoal,
       deleteGoal,
+      supplementalNotifications,
+      pushInAppNotification,
       markNotificationRead,
       markAllNotificationsRead,
       logSavingsToGoal,
+      importAppData,
+      businessInvoices,
+      businessInvoicesAll,
+      addBusinessInvoice,
+      updateBusinessInvoice,
+      deleteBusinessInvoice,
+      markBusinessInvoicePaid,
     ]
   );
 

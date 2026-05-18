@@ -17,7 +17,7 @@ export function computeGoalProgress(goal, ctx) {
     if (ratio <= cap) return 1;
     return Math.max(0, 1 - (ratio - cap) / Math.max(0.01, ratio));
   }
-  if (goal.type === "save_amount") {
+  if (goal.type === "save_amount" || goal.type === "education" || goal.type === "wedding") {
     const target = Math.max(1, Number(goal.targetAmount) || 1);
     const saved = Math.max(0, Number(ctx.savedAmountTowardGoal) || 0);
     return Math.min(1, saved / target);
@@ -33,6 +33,10 @@ export function goalTypeLabel(type) {
       return "Cap commitment ratio";
     case "save_amount":
       return "Cash buffer / save target";
+    case "education":
+      return "Education fund";
+    case "wedding":
+      return "Wedding / event fund";
     default:
       return "Goal";
   }

@@ -30,6 +30,7 @@ export function useCommitIntel() {
     monthlySnapshots,
     todayStr,
     getEffectiveStatus,
+    supplementalNotifications,
   } = useCommitTrack();
 
   return useMemo(() => {
@@ -81,7 +82,7 @@ export function useCommitIntel() {
     const ranked = rankPayoffOrder(commitments, getEffectiveStatus, todayStr);
     const payoffRec = topPayoffRecommendation(ranked);
 
-    const notifications = buildNotificationFeed({
+    const feed = buildNotificationFeed({
       commitments,
       lendings,
       getEffectiveStatus,
@@ -89,6 +90,12 @@ export function useCommitIntel() {
       todayStr,
       insights,
       readIds: settings.readNotificationIds,
+    });
+    const notifications = [...(supplementalNotifications || []), ...feed].sort((a, b) => {
+      const order = { critical: 0, high: 1, normal: 2, low: 3 };
+      const d = (order[a.urgency] ?? 9) - (order[b.urgency] ?? 9);
+      if (d !== 0) return d;
+      return (b.createdAt || 0) - (a.createdAt || 0);
     });
 
     const forecast = forecastInsights(commitments, todayStr);
@@ -126,6 +133,7 @@ export function useCommitIntel() {
     lendings,
     settings.monthlyIncome,
     settings.readNotificationIds,
+    supplementalNotifications,
     monthlySnapshots,
     todayStr,
     getEffectiveStatus,
