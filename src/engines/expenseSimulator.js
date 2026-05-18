@@ -9,6 +9,17 @@ const PRESETS = {
   subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
   travel: { label: "Travel fund", repeatType: "none", category: "Other" },
   personal_loan: { label: "Personal loan EMI", repeatType: "monthly", category: "Loan" },
+  home_loan: { label: "Home loan EMI", repeatType: "monthly", category: "Loan" },
+  car_loan: { label: "Car loan EMI", repeatType: "monthly", category: "EMI" },
+  salary_cut: { label: "Salary cut (−income)", repeatType: "none", category: "Other", incomeDelta: -5000 },
+};
+
+const MODE_PRESETS_SALARIED = {
+  marriage: { label: "Wedding / marriage cost", repeatType: "none", category: "Other" },
+  child: { label: "Child expenses / month", repeatType: "monthly", category: "Other" },
+  job_loss: { label: "Job loss (zero income)", repeatType: "none", category: "Other", simulateZeroIncome: true },
+  festival: { label: "Festival / gifts (one-off)", repeatType: "none", category: "Other" },
+  salary_hike: { label: "Salary hike (+income)", repeatType: "none", category: "Other", incomeDelta: 5000 },
 };
 
 const MODE_PRESETS = {
@@ -35,10 +46,17 @@ const MODE_PRESETS = {
     school: { label: "School fees", repeatType: "yearly", category: "School" },
     subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
     emi: { label: "Loan EMI", repeatType: "monthly", category: "EMI" },
+    home_loan: { label: "Home loan EMI", repeatType: "monthly", category: "Loan" },
+    child: { label: "Child / education monthly", repeatType: "monthly", category: "School" },
+    marriage: { label: "Family event / wedding", repeatType: "none", category: "Other" },
+    festival: { label: "Festival / gifts (one-off)", repeatType: "none", category: "Other" },
+    salary_hike: { label: "Salary hike (+income)", repeatType: "none", category: "Other", incomeDelta: 5000 },
   },
+  salaried: MODE_PRESETS_SALARIED,
 };
 
 export function getExpensePresetsForMode(mode) {
+  if (mode === "salaried") return { ...PRESETS, ...MODE_PRESETS_SALARIED };
   return MODE_PRESETS[mode] || PRESETS;
 }
 
@@ -68,16 +86,19 @@ export function simulateNewExpense({
   };
   const currentBurden = totalMonthlyBurden(commitments, getEffectiveStatus);
   const proposed = monthlyBurdenForDraft(draft, getEffectiveStatus);
-  const aff = evaluateAffordability(income, currentBurden, proposed);
+  const simIncome =
+    p.simulateZeroIncome === true ? 0 : Math.max(0, income + (Number(p.incomeDelta) || 0));
+  const inc = Math.max(0, simIncome);
+  const aff = evaluateAffordability(inc, currentBurden, proposed);
 
   const beforeSurvival = computeSurvivalAnalysis({
-    income,
+    income: Math.max(0, income),
     freeMoney,
     liquidSavings,
     monthlyBurden: currentBurden,
   });
   const afterSurvival = computeSurvivalAnalysis({
-    income,
+    income: inc,
     freeMoney: aff.freeMoneyAfter,
     liquidSavings,
     monthlyBurden: aff.newTotalBurden,
@@ -98,6 +119,21 @@ export function simulateNewExpense({
   }
   if (survivalDrop != null && survivalDrop >= 0.5) {
     warnings.push(`Survival runway may shrink by about ${survivalDrop} month(s) if income stops.`);
+  }
+  if (p.simulateZeroIncome) {
+    warnings.push("Simulating job loss — income set to zero for this check.");
+  }
+  if (aff.committedPercent != null && aff.committedPercent >= 70) {
+    warnings.push(
+      `This may raise commitments to about ${aff.committedPercent}% of income and leave ~${Math.round(aff.freeMoneyAfter).toLocaleString("en-IN")} free cash.`
+    );
+  }
+  const emergencyMonths =
+    aff.freeMoneyAfter > 0 && aff.newTotalBurden > 0
+      ? Math.round((liquidSavings + aff.freeMoneyAfter) / aff.newTotalBurden)
+      : null;
+  if (emergencyMonths != null && emergencyMonths < 4 && aff.newTotalBurden > 0) {
+    warnings.push(`Emergency buffer may cover only ~${emergencyMonths} month(s) at this burn.`);
   }
 
   return {

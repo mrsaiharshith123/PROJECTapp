@@ -3,6 +3,7 @@ import { formatInr } from "../../constants/symbols.js";
 import { affordabilityBadgeClass } from "../../engines/affordability.js";
 import { simulateNewExpense, getExpensePresetsForMode } from "../../engines/expenseSimulator.js";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { combinedMonthlyIncome } from "../../utils/combinedIncome.js";
 import { freeMoneyAfterBurden } from "../../engines/pressureScore.js";
 import { resolveUserMode } from "../../constants/modeExperience.js";
 
@@ -15,7 +16,7 @@ export default function ExpenseSimulatorForm() {
   const [preset, setPreset] = useState(presetKeys[0] || "emi");
   const [amount, setAmount] = useState("");
 
-  const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+  const income = combinedMonthlyIncome(settings);
   const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus);
   const amt = Number(amount) || 0;
   const sim =
@@ -72,6 +73,12 @@ export default function ExpenseSimulatorForm() {
             Free cash after: {formatInr(Math.round(sim.affordability.freeMoneyAfter))}
             {sim.affordability.committedPercent != null ? ` (${sim.affordability.committedPercent}% committed)` : ""}
           </p>
+          {sim.beforeSurvival && sim.afterSurvival && (
+            <p className="text-xs text-gray-600 dark:text-slate-400">
+              Survival if income stops: {sim.beforeSurvival.survivalMonths ?? "—"} mo →{" "}
+              {sim.afterSurvival.survivalMonths ?? "—"} mo after this cost
+            </p>
+          )}
           {sim.warnings.map((w, i) => (
             <p
               key={i}

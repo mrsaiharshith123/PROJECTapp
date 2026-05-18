@@ -3,6 +3,7 @@ import { useCallback, useEffect } from "react";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../hooks/useCommitIntel.js";
+import { useStabilityIntel } from "../hooks/useStabilityIntel.js";
 import { computeGoalProgress, goalTypeLabel } from "../engines/goalsProgress.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
@@ -25,6 +26,7 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { commitments, sortedCommitments, goals, settings, getEffectiveStatus } = useCommitTrack();
+  const stable = useStabilityIntel();
 
   const scrollToTools = useCallback(() => {
     document.getElementById("dashboard-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -84,10 +86,19 @@ const Home = () => {
               burdenRatio: intel.burdenRatio,
               savedAmountTowardGoal: g.type === "save_amount" ? Number(g.savedAmount) || 0 : 0,
             });
+            const cap = stable.goalCapacity?.find((x) => x.id === g.id);
             return (
               <div key={g.id}>
                 <p className="text-sm font-medium text-gray-800 truncate">{g.title}</p>
                 <p className="text-xs text-gray-500">{goalTypeLabel(g.type)}</p>
+                {cap && cap.neededPerMonth > 0 && (
+                  <p
+                    className={`text-[11px] mt-0.5 ${cap.feasible ? "text-emerald-700 dark:text-emerald-400" : "text-amber-800 dark:text-amber-200"}`}
+                  >
+                    ~{formatInr(cap.neededPerMonth)}/mo for ~{cap.monthsLeft} mo
+                    {!cap.feasible ? " (tight vs free cash)" : ""}
+                  </p>
+                )}
                 <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.round(p * 100)}%` }} />
                 </div>

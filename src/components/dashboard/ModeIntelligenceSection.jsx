@@ -1,6 +1,6 @@
 import { useStabilityIntel } from "../../hooks/useStabilityIntel.js";
 import RoleDashboardPanel from "./RoleDashboardPanel.jsx";
-import SurvivalCard from "./stability/SurvivalCard.jsx";
+import SurvivalCard from "./SurvivalCard.jsx";
 import BusinessCashflowPanel from "./BusinessCashflowPanel.jsx";
 import { showHomeRolePanel } from "../../constants/modeExperience.js";
 

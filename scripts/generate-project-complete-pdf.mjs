@@ -192,7 +192,7 @@ const CONTENT = [
           "src/engines/ — Business logic calculators (21 modules)",
           "src/utils/ — Helpers, migration, repayment submodule",
           "src/constants/ — Categories, nav, modes, copy, symbols",
-          "src/hooks/ — useCommitIntel, usePwaInstall, useProfileScope",
+          "src/hooks/ — useCommitIntel, usePwaInstall",
           "src/services/notifications/ — Browser notification bridge",
           "public/ — PWA icons, favicon",
           "scripts/ — Build helpers, PDF generators",
@@ -678,7 +678,7 @@ function buildFullContent() {
         h: "11.5 Other",
         bullets: [
           "AnalyticsChartPanel — Recharts switcher",
-          "ProfileAvatar, CollapsibleSection, InstallAppBanner",
+          "ProfileAvatar, InstallAppBanner",
         ],
       },
     ],
@@ -956,7 +956,7 @@ function buildFullContent() {
       {
         h: "19.2 Components (28)",
         bullets: [
-          "AnalyticsChartPanel, BillDetailModal, Card, CategoryChip, CollapsibleSection",
+          "AnalyticsChartPanel, BillDetailModal, Card, CategoryChip",
           "CommitmentEditModal, ErrorBoundary, InstallAppBanner, InsuranceCalculatorModal",
           "InsuranceFields, LendingDetailModal, Modal, ModeRoute, Navbar",
           "NotificationPanel, NotificationSync, PageHeaderWithNotifications",

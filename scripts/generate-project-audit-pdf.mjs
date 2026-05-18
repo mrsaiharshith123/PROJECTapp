@@ -65,7 +65,7 @@ const sections = [
     title: "Dead / unused code",
     bullets: [
       "categoryOpenTrend, monthlyPressureScore, pressureSeverity in engines.",
-      "REMINDER_TYPES constant, wasPermissionAsked, useProfileScope hook.",
+      "REMINDER_TYPES constant, wasPermissionAsked.",
       "savedTowardGoals legacy field (migrated to goals on load).",
     ],
   },

@@ -17,6 +17,7 @@ import ProfileNotificationsSection from "../components/profile/ProfileNotificati
 import ProfileSecuritySection from "../components/profile/ProfileSecuritySection.jsx";
 import { ProfileField, profileInputClass } from "../components/profile/ProfileField.jsx";
 import { COPY } from "../constants/copy.js";
+import { CALC_HELP } from "../constants/calculationHelp.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -47,6 +48,10 @@ const Profile = () => {
   const incomeLabel = getIncomeLabel(resolveUserMode(settings));
   const modeCfg = getUserModeConfig(settings.userMode || "salaried");
   const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
+  const secondaryOnly =
+    ["family", "salaried", "power"].includes(resolveUserMode(settings)) &&
+    incomeMissing &&
+    Number(settings.secondaryMonthlyIncome) > 0;
 
   return (
     <div className="space-y-5 max-w-lg mx-auto pb-8">
@@ -59,6 +64,16 @@ const Profile = () => {
         </h2>
         <p className="text-sm text-indigo-100 mt-1">{modeCfg.emoji} {modeCfg.label}</p>
       </Card>
+
+      {secondaryOnly && (
+        <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40">
+          <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">Main income is zero</p>
+          <p className="text-xs text-indigo-800 dark:text-indigo-200 mt-1">
+            You entered second income only. Put the larger or primary salary in &quot;{incomeLabel}&quot; and partner
+            / side income in second income so job-loss scenarios and labels stay intuitive.
+          </p>
+        </Card>
+      )}
 
       {incomeMissing && (
         <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40">
@@ -121,6 +136,36 @@ const Profile = () => {
             placeholder="e.g. 75000"
           />
         </ProfileField>
+        {["family", "salaried", "power"].includes(resolveUserMode(settings)) && (
+          <ProfileField
+            label="Second income (₹/mo)"
+            hint="Partner salary or steady side income — combined with main income for pressure, forecasts, and reminders. Use 0 if none."
+          >
+            <input
+              type="number"
+              min="0"
+              className={profileInputClass}
+              value={!settings.secondaryMonthlyIncome ? "" : String(settings.secondaryMonthlyIncome)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                updateSettings({ secondaryMonthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
+              }}
+              placeholder="0"
+            />
+          </ProfileField>
+        )}
+        {["family", "salaried", "power", "freelancer"].includes(resolveUserMode(settings)) && (
+          <ProfileField label="Income you enter is" hint={CALC_HELP.incomeEntryBasis}>
+            <select
+              className={profileInputClass}
+              value={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
+              onChange={(e) => updateSettings({ incomeEntryBasis: e.target.value === "gross" ? "gross" : "take_home" })}
+            >
+              <option value="take_home">Take-home (after tax / PF) — recommended</option>
+              <option value="gross">Gross / CTC-style (before deductions)</option>
+            </select>
+          </ProfileField>
+        )}
         <ProfileField label="Liquid savings (₹)" hint="Cash you can access quickly — emergency & survival math.">
           <input
             type="number"

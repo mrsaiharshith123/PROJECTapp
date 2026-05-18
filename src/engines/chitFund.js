@@ -4,8 +4,21 @@ import { freeMoneyAfterBurden } from "./pressureScore.js";
 
 export const DEFAULT_FOREMAN_PCT = 5;
 
+/** @typedef {'equal' | 'decreasing' | 'custom'} ChitInstallmentMode */
+
+export const CHIT_INSTALLMENT_MODES = /** @type {const} */ (["equal", "decreasing", "custom"]);
+
 /**
- * Decreasing installment schedule (common Indian chit pattern).
+ * Equal monthly share (very common for large chits: value ÷ months).
+ */
+export function chitEqualInstallment(chitValue, totalMonths) {
+  const V = Math.max(0, Number(chitValue) || 0);
+  const N = Math.max(1, Math.floor(Number(totalMonths) || 1));
+  return Math.round(V / N);
+}
+
+/**
+ * Decreasing installment schedule (classic pattern).
  * Month 1 is highest; month N is lowest. Sum of all installments = chitValue.
  */
 export function chitInstallment(chitValue, totalMonths, monthIndex) {
@@ -16,16 +29,57 @@ export function chitInstallment(chitValue, totalMonths, monthIndex) {
   return (2 * V) / (N * (N + 1)) * (N - m + 1);
 }
 
-export function buildChitInstallmentSchedule(chitValue, totalMonths) {
+/**
+ * @param {ChitInstallmentMode} [mode]
+ * @param {number|null} [customAmount] fixed installment when mode is custom
+ */
+export function resolveChitInstallment(
+  chitValue,
+  totalMonths,
+  monthIndex,
+  mode = "equal",
+  customAmount = null
+) {
+  if (mode === "custom") {
+    const fixed = Math.max(0, Number(customAmount) || 0);
+    if (fixed > 0) return Math.round(fixed);
+  }
+  if (mode === "decreasing") {
+    return Math.round(chitInstallment(chitValue, totalMonths, monthIndex));
+  }
+  return chitEqualInstallment(chitValue, totalMonths);
+}
+
+/** After N installments paid, you are on month N+1 (capped at total months). */
+export function chitCurrentMonthFromMonthsPaid(monthsPaid, totalMonths) {
+  const paid = Math.max(0, Math.floor(Number(monthsPaid) || 0));
+  const N = Math.max(1, Math.floor(Number(totalMonths) || 1));
+  return Math.min(N, paid + 1);
+}
+
+export function buildChitInstallmentSchedule(
+  chitValue,
+  totalMonths,
+  mode = "equal",
+  customAmount = null
+) {
   const N = Math.max(1, Math.floor(Number(totalMonths) || 1));
   const rows = [];
   for (let m = 1; m <= N; m++) {
     rows.push({
       month: m,
-      installment: Math.round(chitInstallment(chitValue, N, m)),
+      installment: resolveChitInstallment(chitValue, N, m, mode, customAmount),
     });
   }
   return rows;
+}
+
+/** Auction discount (₹) from actual cash received at the draw. */
+export function chitDiscountFromPayout(chitValue, payout, foremanPct = DEFAULT_FOREMAN_PCT) {
+  const V = Math.max(0, Number(chitValue) || 0);
+  const P = Math.max(0, Number(payout) || 0);
+  const foreman = Math.round(V * (Math.max(0, Number(foremanPct) || 0) / 100));
+  return Math.max(0, Math.round(V - P - foreman));
 }
 
 export function scheduleTotal(schedule) {

@@ -1,7 +1,7 @@
-import Card from "../../Card.jsx";
-import InfoTip from "../../InfoTip.jsx";
-import { CALC_HELP } from "../../../constants/calculationHelp.js";
-import { formatInr } from "../../../constants/symbols.js";
+import Card from "../Card.jsx";
+import InfoTip from "../InfoTip.jsx";
+import { CALC_HELP } from "../../constants/calculationHelp.js";
+import { formatInr } from "../../constants/symbols.js";
 
 const SURVIVAL_COPY = {
   salaried: { title: "Salary survival", sub: "If paycheck stops today" },

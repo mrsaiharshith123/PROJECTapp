@@ -1,4 +1,3 @@
-import { getUserModeConfig } from "./userModes.js";
 import { getCategoryById } from "./categories.js";
 
 /** Income field label in Profile / Analytics. */
@@ -23,12 +22,12 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["afford", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
+  salaried: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
   business: ["afford", "goals"],
-  freelancer: ["afford", "payoff", "goals", "emi", "loanTiming"],
-  family: ["afford", "insurance", "emi", "loanTiming", "chit", "goals"],
+  freelancer: ["afford", "scenarios", "payoff", "goals", "emi", "loanTiming"],
+  family: ["afford", "scenarios", "insurance", "emi", "loanTiming", "chit", "goals"],
   student: ["afford", "loanTiming", "goals"],
-  power: ["afford", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
+  power: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -37,6 +36,12 @@ export const MODE_TOOL_DEFS = {
     title: "Can I afford this?",
     subtitle: "Try a purchase before you commit",
     accent: "indigo",
+  },
+  scenarios: {
+    id: "scenarios",
+    title: "What-if stress test",
+    subtitle: "Job loss, fees, partner income",
+    accent: "rose",
   },
   insurance: {
     id: "insurance",
@@ -90,6 +95,7 @@ const MODE_TOOL_TITLES = {
   },
   family: {
     afford: { title: "Household affordability", subtitle: "New bill impact on the home" },
+    scenarios: { title: "Household what-ifs", subtitle: "Second income, fees, shocks" },
   },
 };
 
@@ -120,7 +126,7 @@ export const MODE_ANALYTICS = {
     monthHint: "Shared income vs family bills due this month.",
     affordTitle: "Household income vs bills",
     affordHint: "What the home keeps after monthly obligations.",
-    showPaycheckFlow: false,
+    showPaycheckFlow: true,
   },
   student: {
     monthTitle: "Budget this month",
@@ -183,10 +189,5 @@ export function showHomeRolePanel(mode) {
 }
 
 export function showSalariedStabilityCards(mode) {
-  return mode === "salaried" || mode === "power";
-}
-
-export function modeConfig(settings) {
-  const mode = resolveUserMode(settings);
-  return { mode, cfg: getUserModeConfig(mode) };
+  return mode === "salaried" || mode === "family" || mode === "power";
 }

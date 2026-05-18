@@ -31,10 +31,19 @@ export function computeCanonicalPressureScore({
 }
 
 export function pressureScoreLabel(score) {
-  if (score <= 35) return { level: "healthy", label: "Stable" };
-  if (score <= 55) return { level: "moderate", label: "Moderate" };
-  if (score <= 75) return { level: "stressed", label: "Stressed" };
-  return { level: "dangerous", label: "High pressure" };
+  if (score <= 35) {
+    return { level: "healthy", label: "Safe", hint: "Room to breathe — keep building your buffer." };
+  }
+  if (score <= 55) {
+    return { level: "moderate", label: "Moderate", hint: "Manageable, but watch new EMIs and subs." };
+  }
+  if (score <= 70) {
+    return { level: "stressed", label: "Tight", hint: "Bills take a large share — prioritize dues." };
+  }
+  if (score <= 85) {
+    return { level: "risky", label: "Risky", hint: "Small shocks could hurt — avoid new long commitments." };
+  }
+  return { level: "dangerous", label: "Critical", hint: "High stress zone — focus on overdue and essentials." };
 }
 
 export function pressureScoreBadgeClass(level) {
@@ -45,6 +54,8 @@ export function pressureScoreBadgeClass(level) {
       return "bg-amber-100 text-amber-900 border-amber-200";
     case "stressed":
       return "bg-orange-100 text-orange-900 border-orange-200";
+    case "risky":
+      return "bg-orange-100 text-orange-950 border-orange-300 dark:bg-orange-950/50 dark:text-orange-200 dark:border-orange-800";
     case "dangerous":
       return "bg-red-100 text-red-900 border-red-200";
     default:
@@ -65,4 +76,19 @@ export function freeMoneyAfterBurden(commitments, income, getEffectiveStatus) {
     freeMoney: inc - burden,
     committedPercent: inc > 0 ? Math.round((burden / inc) * 100) : null,
   };
+}
+
+/**
+ * What-if free cash if income drops (same open dues / burden model).
+ * @param {number[]} cuts — e.g. [0.1, 0.2] for −10% and −20%
+ * @returns {{ cutPercent: number, hypotheticalIncome: number, freeMoney: number }[]}
+ */
+export function buildIncomeSensitivityRows(commitments, income, getEffectiveStatus, cuts = [0.1, 0.2]) {
+  const inc = Math.max(0, income || 0);
+  if (inc <= 0) return [];
+  return cuts.map((cut) => {
+    const hypotheticalIncome = Math.max(0, Math.round(inc * (1 - cut)));
+    const freeMoney = Math.round(freeMoneyAfterBurden(commitments, hypotheticalIncome, getEffectiveStatus).freeMoney);
+    return { cutPercent: Math.round(cut * 100), hypotheticalIncome, freeMoney };
+  });
 }

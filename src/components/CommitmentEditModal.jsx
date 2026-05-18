@@ -13,7 +13,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../constants/chitFund.js";
-import { getCategoriesForUserMode } from "../constants/modeExperience.js";
+import { getCategoriesForUserMode, resolveUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "./InsuranceFields.jsx";
 import { buildInsuranceBillName, insuranceBillHasIdentity } from "../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../constants/priority.js";
@@ -28,6 +28,8 @@ import {
 } from "../utils/billDates.js";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { isEnhancedUi } from "../constants/uiTheme.js";
+import InfoTip from "./InfoTip.jsx";
+import { CALC_HELP } from "../constants/calculationHelp.js";
 
 function formFromCommitment(c, todayStr) {
   const startDate = c.startDate || c.dueDate || "";
@@ -44,6 +46,7 @@ function formFromCommitment(c, todayStr) {
     notes: c.notes || "",
     annualInterestRate: c.annualInterestRate != null ? String(c.annualInterestRate) : "",
     trialEnd: c.trialEnd || "",
+    householdPayer: c.householdPayer || "",
     insurancePolicyId: c.insurancePolicyId || "",
     insuredPersonName: c.insuredPersonName || "",
     insuranceCompany: c.insuranceCompany || "",
@@ -53,7 +56,8 @@ function formFromCommitment(c, todayStr) {
 
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const { todayStr, settings } = useCommitTrack();
-  const billCategories = getCategoriesForUserMode(settings.userMode || "salaried");
+  const userMode = resolveUserMode(settings);
+  const billCategories = getCategoriesForUserMode(userMode);
   const [form, setForm] = useState(() => formFromCommitment(commitment, todayStr));
   const [errors, setErrors] = useState({});
 
@@ -160,6 +164,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             insuranceMaturityBenefit: null,
           }),
       ...(showChit ? chitPayload : {}),
+      householdPayer: userMode === "family" ? form.householdPayer || "" : "",
     });
     onClose();
   };
@@ -205,15 +210,15 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <input
             type="number"
             min="0"
-            readOnly={showChit}
-            className={`${inputClass("amount")} ${showChit ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
+            readOnly={showChit && form.chitInstallmentMode !== "custom"}
+            className={`${inputClass("amount")} ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
             value={form.amount}
             onChange={(e) => patchForm({ amount: e.target.value })}
           />
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
-          {showChit && (
+          {showChit && form.chitInstallmentMode !== "custom" && (
             <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
-              Updates automatically when the calendar month advances.
+              From chit value and month. Choose &quot;fixed amount&quot; in chit details to edit manually.
             </p>
           )}
         </div>
@@ -352,6 +357,24 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               value={form.trialEnd}
               onChange={(e) => patchForm({ trialEnd: e.target.value })}
             />
+          </div>
+        )}
+        {userMode === "family" && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+              Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>
+              <InfoTip text={CALC_HELP.householdPayerBillTag} />
+            </label>
+            <select
+              className={inputClass("householdPayer")}
+              value={form.householdPayer || ""}
+              onChange={(e) => patchForm({ householdPayer: e.target.value })}
+            >
+              <option value="">Not tagged — counts in household total only</option>
+              <option value="primary">Primary income / main earner</option>
+              <option value="secondary">Second income / partner</option>
+              <option value="shared">Shared / joint</option>
+            </select>
           </div>
         )}
         <div>

@@ -16,7 +16,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../constants/chitFund.js";
-import { getCategoriesForUserMode } from "../constants/modeExperience.js";
+import { getCategoriesForUserMode, resolveUserMode } from "../constants/modeExperience.js";
 import InsuranceFields from "../components/InsuranceFields.jsx";
 import {
   emptyInsuranceFields,
@@ -29,6 +29,7 @@ import { COPY } from "../constants/copy.js";
 import { evaluateNewCommitmentAffordability, affordabilityBadgeClass } from "../engines/affordability.js";
 import { getUserModeConfig } from "../constants/userModes.js";
 import { estimatePriorSpend } from "../utils/billLifecycle.js";
+import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import {
   applyBillRepeatChange,
   applyBillStartDateChange,
@@ -36,6 +37,8 @@ import {
 } from "../utils/billDates.js";
 import { isEnhancedUi } from "../constants/uiTheme.js";
 import { REPEAT_OPTIONS } from "../constants/repeatTypes.js";
+import InfoTip from "../components/InfoTip.jsx";
+import { CALC_HELP } from "../constants/calculationHelp.js";
 
 const Add = () => {
   const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = useCommitTrack();
@@ -50,6 +53,7 @@ const Add = () => {
     repeatType: "none",
     priority: "medium",
     notes: "",
+    householdPayer: "",
     annualInterestRate: "",
     ...emptyInsuranceFields(),
     ...emptyChitFundFields(),
@@ -113,7 +117,7 @@ const Add = () => {
     return errs;
   };
 
-  const mode = settings.userMode || "salaried";
+  const mode = resolveUserMode(settings);
   const modeCfg = getUserModeConfig(mode);
   const billCategories = getCategoriesForUserMode(mode);
   const showAffordability = modeCfg.showAffordabilityOnAdd;
@@ -143,7 +147,7 @@ const Add = () => {
     if (!showAffordability) return null;
     const amt = Number(form.amount) || 0;
     if (amt <= 0) return null;
-    const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+    const income = combinedMonthlyIncome(settings);
     if (income <= 0) return null;
     const due = form.dueDate || form.startDate || todayStr;
     const draft = {
@@ -157,6 +161,7 @@ const Add = () => {
       status: "pending",
     };
     return evaluateNewCommitmentAffordability(income, commitments, draft, getEffectiveStatus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- income fields listed; full settings would over-rerender
   }, [
     showAffordability,
     form.amount,
@@ -167,6 +172,7 @@ const Add = () => {
     form.endDate,
     commitments,
     settings.monthlyIncome,
+    settings.secondaryMonthlyIncome,
     todayStr,
     getEffectiveStatus,
   ]);
@@ -216,6 +222,7 @@ const Add = () => {
           }
         : {}),
       ...(showChit ? chitPayload : {}),
+      householdPayer: mode === "family" ? (form.householdPayer || "").trim() : "",
     };
     const effective = getEffectiveStatus({
       ...draft,
@@ -297,14 +304,14 @@ const Add = () => {
               onChange={handleChange}
               placeholder="0"
               min="0"
-              readOnly={showChit}
-              className={`${inputClass("amount")} pl-8 ${showChit ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
+              readOnly={showChit && form.chitInstallmentMode !== "custom"}
+              className={`${inputClass("amount")} pl-8 ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
             />
           </div>
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
-          {showChit && (
+          {showChit && form.chitInstallmentMode !== "custom" && (
             <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
-              Auto-calculated for this month — goes down each calendar month without you editing it.
+              From chit value and month. Use &quot;fixed amount&quot; in chit details if your group uses a different number.
             </p>
           )}
         </div>
@@ -437,6 +444,26 @@ const Add = () => {
               placeholder="e.g. 12 for EMI, 36 for card"
               className={inputClass("annualInterestRate")}
             />
+          </div>
+        )}
+
+        {mode === "family" && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+              Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>
+              <InfoTip text={CALC_HELP.householdPayerBillTag} />
+            </label>
+            <select
+              name="householdPayer"
+              value={form.householdPayer || ""}
+              onChange={handleChange}
+              className={inputClass("householdPayer")}
+            >
+              <option value="">Not tagged</option>
+              <option value="primary">Primary / main earner</option>
+              <option value="secondary">Second income / partner</option>
+              <option value="shared">Shared / joint</option>
+            </select>
           </div>
         )}
 

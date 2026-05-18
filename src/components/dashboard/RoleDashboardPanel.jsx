@@ -1,6 +1,7 @@
 import Card from "../Card.jsx";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
+import { useStabilityIntel } from "../../hooks/useStabilityIntel.js";
 import { getUserModeConfig } from "../../constants/userModes.js";
 import { COPY } from "../../constants/copy.js";
 
@@ -25,7 +26,7 @@ function Metric({ label, value, sub, tone = "default" }) {
 }
 
 function buildModePanel(mode, ctx) {
-  const { settings, lendings, commitments, getEffectiveStatus, intel, cfg } = ctx;
+  const { settings, lendings, commitments, getEffectiveStatus, intel, cfg, family, familyCalendar } = ctx;
   const receivables = lendings.filter((l) => l.type === "lent" && Number(l.remainingAmount) > 0);
   const payables = lendings.filter((l) => l.type === "borrowed" && Number(l.remainingAmount) > 0);
   const burden = Math.round(intel.stability.monthlyBurden);
@@ -98,18 +99,24 @@ function buildModePanel(mode, ctx) {
     };
   }
   if (mode === "family") {
+    const fam = family;
     return {
       title: "Household view",
-      subtitle: `Profile: ${settings.activeProfileId || "default"}`,
+      subtitle: fam?.safetyLabel ? `Safety: ${fam.safetyLabel}` : `Profile: ${settings.activeProfileId || "default"}`,
       emoji: "👨‍👩‍👧",
       metrics: [
         {
           label: "Monthly bills",
           value: `₹${burden.toLocaleString()}`,
-          sub: "Household burden est.",
-          tone: "default",
+          sub: fam?.committedPercent != null ? `${fam.committedPercent}% of income` : "Household burden",
+          tone: fam?.committedPercent > 65 ? "warn" : "default",
         },
-        { label: COPY.billsStat, value: String(commitments.length), sub: "In this profile", tone: "accent" },
+        {
+          label: "Pressure",
+          value: `${intel.stability.score}`,
+          sub: intel.stability.label,
+          tone: "accent",
+        },
         {
           label: "Health",
           value: intel.health?.label || "—",
@@ -120,10 +127,13 @@ function buildModePanel(mode, ctx) {
           label: "Free cash",
           value: `₹${free.toLocaleString()}`,
           sub: "After bills",
-          tone: "good",
+          tone: free >= 0 ? "good" : "warn",
         },
       ],
-      tip: null,
+      tip:
+        fam?.insights?.[0]?.text ||
+        familyCalendar?.insights?.[0]?.text ||
+        "Add school fees and insurance in Bills for a sharper household calendar.",
     };
   }
   if (mode === "freelancer") {
@@ -178,6 +188,7 @@ function buildModePanel(mode, ctx) {
 export default function RoleDashboardPanel() {
   const { settings, lendings, commitments, getEffectiveStatus } = useCommitTrack();
   const intel = useCommitIntel();
+  const stable = useStabilityIntel();
   const mode = settings.userMode || "salaried";
   const cfg = getUserModeConfig(mode);
   const panel = buildModePanel(mode, {
@@ -187,6 +198,8 @@ export default function RoleDashboardPanel() {
     getEffectiveStatus,
     intel,
     cfg,
+    family: stable.family,
+    familyCalendar: stable.familyCalendar,
   });
 
   return (

@@ -1,12 +1,18 @@
-import { buildCommitmentReminders, buildLendingReminders } from "./reminders.js";
+import { buildContextualReminderFeed } from "./contextualReminders.js";
+
+function notificationId(r) {
+  const id = String(r.id);
+  if (id.startsWith("lend-")) return `l-${id}`;
+  return `c-${id}`;
+}
 
 /**
- * Build in-app notification items from reminders (no push).
- * @returns {{ id: string, message: string, urgency: string, createdAt: number, read: boolean }[]}
+ * Build in-app notification items from contextual reminders (no push).
  */
 export function buildNotificationFeed({
   commitments,
   lendings,
+  settings,
   getEffectiveStatus,
   getEffectiveLendingStatus,
   todayStr,
@@ -17,25 +23,22 @@ export function buildNotificationFeed({
   const now = Date.now();
   const items = [];
 
-  const commitmentReminders = buildCommitmentReminders(commitments, getEffectiveStatus, todayStr);
-  for (const r of commitmentReminders) {
-    items.push({
-      id: `c-${r.id}`,
-      message: r.message,
-      urgency: r.urgency,
-      dueDate: r.dueDate,
-      amount: r.amount,
-      createdAt: now,
-      read: readSet.has(`c-${r.id}`),
-    });
-  }
+  const contextual = buildContextualReminderFeed({
+    commitments,
+    lendings,
+    settings: settings || {},
+    getEffectiveStatus,
+    getEffectiveLendingStatus,
+    todayStr,
+  });
 
-  const lendingReminders = buildLendingReminders(lendings, todayStr, getEffectiveLendingStatus);
-  for (const r of lendingReminders) {
-    const nid = `l-${r.id}`;
+  for (const r of contextual) {
+    const nid = notificationId(r);
     items.push({
       id: nid,
       message: r.message,
+      title: r.title,
+      osBody: r.osBody,
       urgency: r.urgency,
       dueDate: r.dueDate,
       amount: r.amount,
@@ -50,6 +53,8 @@ export function buildNotificationFeed({
       items.push({
         id: nid,
         message: ins.text,
+        title: "CommitTrack",
+        osBody: ins.text,
         urgency: ins.tone === "critical" ? "critical" : "high",
         createdAt: now,
         read: readSet.has(nid),

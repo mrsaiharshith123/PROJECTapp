@@ -15,8 +15,11 @@ import {
   freeCashflowTrend,
 } from "../engines/analyticsSeries.js";
 import { buildCashflowForecastSeries } from "../engines/forecastSeries.js";
-import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
+import { freeMoneyAfterBurden, buildIncomeSensitivityRows } from "../engines/pressureScore.js";
+import { summarizeHouseholdPayerBurden } from "../engines/householdPayer.js";
+import { analyzeCreditCardPressure } from "../engines/stabilityPlan.js";
 import { todayYmd } from "../utils/dates.js";
+import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
 import { repeatTypeLabel } from "../constants/repeatTypes.js";
 import { formatInr, EM_DASH, ARROW } from "../constants/symbols.js";
@@ -78,16 +81,40 @@ const Analytics = () => {
     }, 0);
   }, [commitments, getEffectiveStatus]);
 
-  const income = Math.max(0, Number(settings.monthlyIncome) || 0);
   const userMode = resolveUserMode(settings);
   const analyticsCopy = getAnalyticsCopy(userMode);
   const incomeLabel = getIncomeLabel(userMode);
+  const income = combinedMonthlyIncome(settings);
 
   const paycheckFlow = useMemo(
     () =>
       analyticsCopy.showPaycheckFlow
         ? computeSalaryBreakdown(commitments, income, getEffectiveStatus)
         : null,
+    [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus]
+  );
+
+  const payerSplitForPaycheck = useMemo(() => {
+    if (userMode !== "family") return null;
+    const { by } = summarizeHouseholdPayerBurden(commitments, getEffectiveStatus);
+    const rows = [];
+    if (by.primary > 0) rows.push({ label: "Primary payer (open est.)", amount: by.primary });
+    if (by.secondary > 0) rows.push({ label: "Second payer (open est.)", amount: by.secondary });
+    if (by.shared > 0) rows.push({ label: "Shared (open est.)", amount: by.shared });
+    if (rows.length === 0) return null;
+    return { rows };
+  }, [userMode, commitments, getEffectiveStatus]);
+
+  const cardPressureAnalytics = useMemo(
+    () => (analyticsCopy.showPaycheckFlow ? analyzeCreditCardPressure(commitments, getEffectiveStatus, income) : null),
+    [analyticsCopy.showPaycheckFlow, commitments, getEffectiveStatus, income]
+  );
+
+  const paycheckSensitivity = useMemo(
+    () =>
+      analyticsCopy.showPaycheckFlow && income > 0
+        ? buildIncomeSensitivityRows(commitments, income, getEffectiveStatus)
+        : [],
     [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus]
   );
 
@@ -203,7 +230,14 @@ const Analytics = () => {
             : `${PROFILE_SETTINGS_HINT} `}
           Due shows what is still owed this month; Left matches Due after payments. Free cash = income minus paid.
         </p>
-        <PaycheckBreakdown breakdown={paycheckFlow} />
+        <PaycheckBreakdown
+          breakdown={paycheckFlow}
+          incomeStepLabel={incomeLabel}
+          incomeEntryBasis={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
+          payerSplit={payerSplitForPaycheck}
+          creditCard={cardPressureAnalytics}
+          sensitivityRows={paycheckSensitivity}
+        />
       </Card>
 
       <Card className="bg-gradient-to-br from-slate-900 to-indigo-900 text-white border-0 shadow-lg space-y-2">

@@ -51,6 +51,39 @@ export function buildSubscriptionEndReminders(commitments, todayStr) {
   return out;
 }
 
+/** Yearly / quarterly bills due in ~1–3 months — plan cash before they land in one month. */
+export function buildLumpyBillHorizonReminders(commitments, getEffectiveStatusFn, todayStr) {
+  const LUMP = new Set(["yearly", "quarterly"]);
+  const out = [];
+  for (const c of commitments) {
+    if (!LUMP.has(c.repeatType)) continue;
+    const eff = getEffectiveStatusFn(c, todayStr);
+    if (eff === "paid" || eff === "upnext") continue;
+    try {
+      const days = differenceInCalendarDays(
+        parseISO(`${c.dueDate}T12:00:00`),
+        parseISO(`${todayStr}T12:00:00`)
+      );
+      if (days >= 30 && days <= 95) {
+        const mo = Math.max(1, Math.round(days / 30));
+        out.push({
+          id: `lumpy-${c.id}`,
+          name: c.name,
+          dueDate: c.dueDate,
+          amount: Number(c.remainingAmount ?? c.amount) || 0,
+          category: c.category,
+          urgency: /** @type {ReminderUrgency} */ ("low"),
+          reason: "lumpy_horizon",
+          message: `${c.name} (${c.repeatType}) due in ~${mo} mo — set cash aside before that month.`,
+        });
+      }
+    } catch {
+      /* skip */
+    }
+  }
+  return out;
+}
+
 export function buildCommitmentReminders(commitments, getEffectiveStatusFn, todayStr) {
   const subEnd = buildSubscriptionEndReminders(commitments, todayStr);
   const dueReminders = commitments

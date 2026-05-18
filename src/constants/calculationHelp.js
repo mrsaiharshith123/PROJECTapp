@@ -33,7 +33,11 @@ export const CALC_HELP = {
   debtTrend:
     "Change in total open balance between the oldest and newest month we have snapshots for.",
   chitInstallments:
-    "Chit installments usually start high and drop each month. We split the total chit value across months so the sum matches the chit size (not interest like a loan).",
+    "Most large chits use equal monthly shares (value ÷ months). Some groups use decreasing installments (high early, low later). Pick the type that matches your group.",
+  chitMonthsPaid:
+    "How many installments you already paid. If you paid 46, you are on month 47 now. This fixes the due amount and month number.",
+  chitPayoutReceived:
+    "Actual cash you got when you took the chit (e.g. ₹4,43,000). We work out the auction discount from this — you do not need to guess the discount.",
   chitForeman:
     "Organiser commission, often around 5% of chit value, taken from the pot when you receive money.",
   chitDiscount:
@@ -44,4 +48,8 @@ export const CALC_HELP = {
     "We suggest a max loss from your income, monthly dues, open debt, overdue bills, and savings — not a fixed %. Taking early often exceeds it; later months usually cost less.",
   loanExtraTiming:
     "Shows upcoming months: when other bills are lighter so you can pay extra on this loan, and heavy months when you should stick to the minimum.",
+  incomeEntryBasis:
+    "Take-home matches what lands in your bank after tax, PF, and fixed deductions — best for pressure and free-cash math. Gross is useful only if every number you enter is pre-tax; free cash will look tighter than real life if you still bank less.",
+  householdPayerBillTag:
+    "Optional for family mode: tag who pays so the household pulse can describe split responsibility. Totals and pressure math stay the same.",
 };

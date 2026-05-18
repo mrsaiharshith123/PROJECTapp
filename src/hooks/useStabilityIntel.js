@@ -11,16 +11,24 @@ import { computeFamilyPressure } from "../engines/modeFamily.js";
 import { computeStudentBudget } from "../engines/modeStudent.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { mergeExtendedInsights } from "../engines/insightsExtended.js";
+import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
+import { buildPressureIntelligence } from "../engines/pressureIntelligence.js";
+import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
+import { resolveUserMode } from "../constants/modeExperience.js";
+import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
+import { householdPayerInsight } from "../engines/householdPayer.js";
 
-/** Mode-specific financial stability intelligence (salaried, business, etc.). */
+/** Mode-specific financial stability intelligence (salaried, family, etc.). */
 export function useStabilityIntel() {
   const ctx = useCommitTrack();
   const intel = useCommitIntel();
-  const mode = ctx.settings.userMode || "salaried";
+  const mode = resolveUserMode(ctx.settings);
 
   return useMemo(() => {
-    const income = Math.max(0, Number(ctx.settings.monthlyIncome) || 0);
+    const income = combinedMonthlyIncome(ctx.settings);
     const cash = freeMoneyAfterBurden(ctx.commitments, income, ctx.getEffectiveStatus);
+    const burdenRatio = income > 0 ? cash.monthlyBurden / income : 0;
+
     const survival = buildSurvivalContext(
       ctx.commitments,
       ctx.lendings,
@@ -33,14 +41,51 @@ export function useStabilityIntel() {
     const stress = rankStressContributors(ctx.commitments, ctx.getEffectiveStatus);
     const lifestyle = detectLifestyleInflation(ctx.commitments, ctx.getEffectiveStatus);
     const emergency = computeEmergencyFundIntel({
-      monthlyBurden: intel.stability.monthlyBurden,
+      monthlyBurden: cash.monthlyBurden,
       liquidSavings: ctx.settings.liquidSavings,
       dependents: ctx.settings.dependents,
       pressureScore: intel.stability.score,
     });
 
+    const overdueCount = ctx.commitments.filter((c) => ctx.getEffectiveStatus(c) === "overdue").length;
+
+    const ahead =
+      mode === "salaried" || mode === "family" || mode === "power"
+        ? buildStabilityAheadPlan({
+            commitments: ctx.commitments,
+            lendings: ctx.lendings,
+            goals: ctx.goals,
+            settings: ctx.settings,
+            getEffectiveStatus: ctx.getEffectiveStatus,
+            getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
+            todayStr: ctx.todayStr,
+            mode,
+          })
+        : null;
+
+    const healthNarrative = buildStabilityHealthNarrative({
+      mode: mode === "family" ? "family" : "salaried",
+      health: intel.health,
+      stability: intel.stability,
+      survival,
+      emergency,
+      lifestyle,
+      overdueCount,
+      commitments: ctx.commitments,
+      lendings: ctx.lendings,
+    });
+
+    const pressureIntel = buildPressureIntelligence({
+      snapshots: ctx.monthlySnapshots,
+      commitments: ctx.commitments,
+      todayStr: ctx.todayStr,
+      score: intel.stability.score,
+      stressTop: stress.top,
+    });
+
     const extraInsights = [
       ...lifestyle.insights,
+      ...(ahead?.headlines || []),
       ...survival.warnings.map((text, i) => ({
         id: `survival-warn-${i}`,
         tone: "warning",
@@ -68,14 +113,21 @@ export function useStabilityIntel() {
       extraInsights.push(...(vol.insights || []));
       if (client) extraInsights.push(client);
     } else if (mode === "family") {
-      const fam = computeFamilyPressure(
+      modeData = {
+        family: computeFamilyPressure(
+          ctx.commitments,
+          income,
+          ctx.getEffectiveStatus,
+          ctx.settings.dependents
+        ),
+      };
+      extraInsights.push(...(modeData.family.insights || []));
+      const payerIns = householdPayerInsight(
         ctx.commitments,
-        income,
         ctx.getEffectiveStatus,
-        ctx.settings.dependents
+        Math.max(0, Number(ctx.settings.secondaryMonthlyIncome) || 0)
       );
-      modeData = { family: fam };
-      extraInsights.push(...(fam.insights || []));
+      if (payerIns) extraInsights.push(payerIns);
     } else if (mode === "student") {
       modeData = {
         student: computeStudentBudget(
@@ -93,18 +145,28 @@ export function useStabilityIntel() {
 
     return {
       mode,
+      income,
+      burdenRatio,
       survival,
       stress,
       lifestyle,
       emergency,
+      healthNarrative,
+      pressureIntel,
+      ahead,
+      goalBalance: ahead?.goalBalance || null,
+      goalCapacity: ahead?.goalCapacity || [],
+      family: modeData.family || null,
       lendingOutflow: lendingMonthlyOutflow(ctx.lendings, ctx.getEffectiveLendingStatus, ctx.todayStr),
       stabilityInsights,
       ...modeData,
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- broad ctx fields drive one stability snapshot
   }, [
     mode,
     ctx.commitments,
     ctx.lendings,
+    ctx.goals,
     ctx.businessInvoices,
     ctx.settings,
     ctx.monthlySnapshots,

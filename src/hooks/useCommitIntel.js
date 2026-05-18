@@ -21,6 +21,7 @@ import { buildNotificationFeed, unreadCount } from "../engines/notifications.js"
 import { forecastInsights } from "../engines/forecast.js";
 import { subscriptionLeakReport } from "../engines/subscriptionLeak.js";
 import { getEffectiveLendingStatus } from "../utils/lendingStatus.js";
+import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 
 export function useCommitIntel() {
   const {
@@ -34,7 +35,7 @@ export function useCommitIntel() {
   } = useCommitTrack();
 
   return useMemo(() => {
-    const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+    const income = combinedMonthlyIncome(settings);
     const burdenRatio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
     const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus);
     const openRemaining = cash.openRemaining;
@@ -85,6 +86,7 @@ export function useCommitIntel() {
     const feed = buildNotificationFeed({
       commitments,
       lendings,
+      settings,
       getEffectiveStatus,
       getEffectiveLendingStatus,
       todayStr,
@@ -131,8 +133,7 @@ export function useCommitIntel() {
   }, [
     commitments,
     lendings,
-    settings.monthlyIncome,
-    settings.readNotificationIds,
+    settings,
     supplementalNotifications,
     monthlySnapshots,
     todayStr,

@@ -12,6 +12,9 @@ import { TOOL_ICONS, formatInr, INR, EM_DASH, ARROW } from "../../constants/symb
 import ExpenseSimulatorForm from "../tools/ExpenseSimulatorForm.jsx";
 import ChitFundAdvisor from "../tools/ChitFundAdvisor.jsx";
 import LoanPayoffAdvisor from "../tools/LoanPayoffAdvisor.jsx";
+import QuickScenariosPanel from "../tools/QuickScenariosPanel.jsx";
+import { combinedMonthlyIncome } from "../../utils/combinedIncome.js";
+import { orderDashboardWidgets } from "../../utils/dashboardToolOrder.js";
 
 const goalTypes = [
   { value: "reduce_open_debt", label: "Pay down total debt" },
@@ -35,11 +38,19 @@ export default function DashboardTools() {
     lendings,
     logSavingsToGoal,
     todayStr,
+    updateSettings,
   } = useCommitTrack();
   const userMode = resolveUserMode(settings);
-  const widgets = getToolsForMode(userMode).map((t) => ({ ...t, icon: TOOL_ICONS[t.id] }));
+  const widgets = useMemo(() => {
+    const defaultToolList = getToolsForMode(userMode);
+    return orderDashboardWidgets(defaultToolList, settings.dashboardToolOrderByMode?.[userMode]).map((t) => ({
+      ...t,
+      icon: TOOL_ICONS[t.id],
+    }));
+  }, [userMode, settings.dashboardToolOrderByMode]);
   const toolsHeading = getDashboardToolsHeading(userMode);
   const [activeTool, setActiveTool] = useState(null);
+  const [reorderTools, setReorderTools] = useState(false);
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("10.5");
@@ -73,7 +84,7 @@ export default function DashboardTools() {
     if (getEffectiveStatus(c) === "paid") return s;
     return s + Math.max(0, Number(c.remainingAmount ?? 0));
   }, 0);
-  const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+  const income = combinedMonthlyIncome(settings);
   const ratio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
 
   const submitGoal = () => {
@@ -94,28 +105,119 @@ export default function DashboardTools() {
 
   const closeTool = () => setActiveTool(null);
 
+  const persistToolOrder = (orderedIds) => {
+    const prev = settings.dashboardToolOrderByMode && typeof settings.dashboardToolOrderByMode === "object"
+      ? { ...settings.dashboardToolOrderByMode }
+      : {};
+    prev[userMode] = orderedIds;
+    updateSettings({ dashboardToolOrderByMode: prev });
+  };
+
+  const moveTool = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= widgets.length || fromIndex === toIndex) return;
+    const ids = widgets.map((w) => w.id);
+    const [moved] = ids.splice(fromIndex, 1);
+    ids.splice(toIndex, 0, moved);
+    persistToolOrder(ids);
+  };
+
+  const resetToolOrder = () => {
+    const prev = settings.dashboardToolOrderByMode && typeof settings.dashboardToolOrderByMode === "object"
+      ? { ...settings.dashboardToolOrderByMode }
+      : {};
+    delete prev[userMode];
+    updateSettings({ dashboardToolOrderByMode: prev });
+  };
+
   return (
     <section className="space-y-3" id="dashboard-tools">
-      <div>
-        <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">{toolsHeading}</h2>
-        <p className="text-xs text-gray-500 dark:text-slate-400">Tap a tile — options match your user mode.</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-base font-semibold text-gray-800 dark:text-slate-100">{toolsHeading}</h2>
+          <p className="text-xs text-gray-500 dark:text-slate-400">
+            {reorderTools ? "Use arrows to move tiles — order is saved for this mode." : "Tap a tile — options match your user mode."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {reorderTools && (
+            <button
+              type="button"
+              className="text-xs font-medium text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+              onClick={resetToolOrder}
+            >
+              Reset order
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setReorderTools((v) => !v)}
+            className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+              reorderTools
+                ? "border-indigo-500 bg-indigo-50 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
+                : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-400 hover:border-indigo-300"
+            }`}
+          >
+            {reorderTools ? "Done" : "Reorder"}
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        {widgets.map((t) => (
-          <ToolWidget
-            key={t.id}
-            icon={t.icon}
-            title={t.title}
-            subtitle={t.subtitle}
-            accent={t.accent}
-            onClick={() => setActiveTool(t.id)}
-          />
-        ))}
+        {widgets.map((t, i) =>
+          reorderTools ? (
+            <div key={t.id} className="flex gap-1.5 items-stretch min-h-[9.5rem]">
+              <div className="flex flex-col justify-center gap-0.5 shrink-0 py-1">
+                <button
+                  type="button"
+                  disabled={i === 0}
+                  aria-label="Move up"
+                  onClick={() => moveTool(i, i - 1)}
+                  className="w-8 h-8 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-800"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  disabled={i === widgets.length - 1}
+                  aria-label="Move down"
+                  onClick={() => moveTool(i, i + 1)}
+                  className="w-8 h-8 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-800"
+                >
+                  ↓
+                </button>
+              </div>
+              <div className="flex-1 min-w-0">
+                <ToolWidget
+                  icon={t.icon}
+                  title={t.title}
+                  subtitle={t.subtitle}
+                  accent={t.accent}
+                  onClick={() => {}}
+                  disabled
+                />
+              </div>
+            </div>
+          ) : (
+            <ToolWidget
+              key={t.id}
+              icon={t.icon}
+              title={t.title}
+              subtitle={t.subtitle}
+              accent={t.accent}
+              onClick={() => setActiveTool(t.id)}
+            />
+          )
+        )}
       </div>
 
       {activeTool === "afford" && (
         <Modal title={widgets.find((w) => w.id === "afford")?.title || "Can I afford this?"} onClose={closeTool}>
           <ExpenseSimulatorForm />
+        </Modal>
+      )}
+
+      {activeTool === "scenarios" && (
+        <Modal title={widgets.find((w) => w.id === "scenarios")?.title || "What-if stress test"} onClose={closeTool}>
+          <QuickScenariosPanel />
         </Modal>
       )}
 

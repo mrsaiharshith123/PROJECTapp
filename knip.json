@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/main.jsx", "public/notification-handler.js"],
+  "project": ["src/**/*.{js,jsx}", "public/notification-handler.js"],
+  "ignore": [
+    "scripts/**",
+    "dist/**",
+    "src/engines/__tests__/**",
+    "src/utils/__tests__/**"
+  ],
+  "ignoreDependencies": ["sharp", "pdfkit", "gh-pages"],
+  "ignoreExportsUsedInFile": true
+}

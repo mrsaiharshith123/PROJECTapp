@@ -2,7 +2,7 @@ import { addMonths, parseISO, format } from "date-fns";
 import { todayYmd } from "./dates.js";
 import { getEffectiveStatus } from "./commitmentStatus.js";
 import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTypes.js";
-import { chitInstallment } from "../engines/chitFund.js";
+import { resolveChitInstallment } from "../engines/chitFund.js";
 
 /**
  * After a cycle is fully paid, return the paid row and optionally a new pending row for the next cycle.
@@ -51,7 +51,9 @@ export function advanceRecurringCommitment(c, newId = Date.now()) {
     if (nextMonth > N) {
       return { paidRow, nextCycle: null };
     }
-    const newAmount = Math.round(chitInstallment(c.chitValue, N, nextMonth));
+    const mode = c.chitInstallmentMode || "equal";
+    const custom = c.chitCustomInstallment ?? c.amount;
+    const newAmount = Math.round(resolveChitInstallment(c.chitValue, N, nextMonth, mode, custom));
     let nextDue = c.dueDate;
     try {
       const base = parseISO(`${c.dueDate}T12:00:00`);

@@ -7,6 +7,7 @@ import { todayYmd } from "./dates.js";
 import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
+import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
@@ -125,6 +126,25 @@ export function normalizeCommitment(raw) {
       category === "Chit Fund" && raw.chitTakenDiscount != null
         ? Math.max(0, Number(raw.chitTakenDiscount))
         : null,
+    chitMonthsPaid:
+      category === "Chit Fund" && raw.chitMonthsPaid != null
+        ? Math.max(0, Math.floor(Number(raw.chitMonthsPaid)))
+        : null,
+    chitInstallmentMode:
+      category === "Chit Fund" && raw.chitInstallmentMode
+        ? String(raw.chitInstallmentMode)
+        : "equal",
+    chitCustomInstallment:
+      category === "Chit Fund" && raw.chitCustomInstallment != null
+        ? Math.max(0, Number(raw.chitCustomInstallment))
+        : null,
+    chitTakenPayout:
+      category === "Chit Fund" && raw.chitTakenPayout != null
+        ? Math.max(0, Number(raw.chitTakenPayout))
+        : null,
+    householdPayer: ["primary", "secondary", "shared"].includes(String(raw.householdPayer || "").toLowerCase())
+      ? String(raw.householdPayer).toLowerCase()
+      : "",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
   };
@@ -411,6 +431,9 @@ export function normalizeProfiles(raw) {
 
 const DEFAULT_SETTINGS = {
   monthlyIncome: 0,
+  secondaryMonthlyIncome: 0,
+  /** "take_home" = what hits your account; "gross" = before tax — same math, clearer copy. */
+  incomeEntryBasis: "take_home",
   displayName: "",
   userMode: "salaried",
   onboardingComplete: false,
@@ -425,6 +448,7 @@ const DEFAULT_SETTINGS = {
   dependents: 0,
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
+  dashboardToolOrderByMode: {},
 };
 
 export function loadSettingsFromStorage() {
@@ -438,6 +462,8 @@ export function loadSettingsFromStorage() {
       const mode = USER_MODES.includes(o.userMode) ? o.userMode : "salaried";
       return {
         monthlyIncome: Math.max(0, Number(o.monthlyIncome) || 0),
+        secondaryMonthlyIncome: Math.max(0, Number(o.secondaryMonthlyIncome) || 0),
+        incomeEntryBasis: o.incomeEntryBasis === "gross" ? "gross" : "take_home",
         displayName: String(o.displayName || ""),
         userMode: mode,
         onboardingComplete: "onboardingComplete" in o ? Boolean(o.onboardingComplete) : false,
@@ -457,6 +483,7 @@ export function loadSettingsFromStorage() {
         dependents: Math.max(0, Math.min(12, Math.floor(Number(o.dependents) || 0))),
         profiles: normalizeProfiles(o.profiles),
         remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,
+        dashboardToolOrderByMode: normalizeDashboardToolOrderByMode(o.dashboardToolOrderByMode),
       };
     }
   } catch {

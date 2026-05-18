@@ -1,8 +1,12 @@
-import { chitInstallment, deriveChitCurrentMonth } from "../engines/chitFund.js";
+import {
+  deriveChitCurrentMonth,
+  resolveChitInstallment,
+  chitCurrentMonthFromMonthsPaid,
+} from "../engines/chitFund.js";
 import { totalPaidOnPayments } from "./commitmentPayments.js";
 
 /**
- * Align chit bill to calendar month: installment drops each month automatically.
+ * Align chit bill to calendar month: installment updates each month automatically.
  * Unpaid balance from a prior month is carried into the new month's due.
  */
 export function refreshChitCommitment(c, todayStr) {
@@ -14,10 +18,16 @@ export function refreshChitCommitment(c, todayStr) {
   const start = c.startDate || c.dueDate;
   if (!start) return c;
 
-  const calendarMonth = deriveChitCurrentMonth(start, N, todayStr);
+  const mode = c.chitInstallmentMode || "equal";
+  const custom = c.chitCustomInstallment ?? c.amount;
+
   const storedMonth = Math.max(1, Math.floor(Number(c.chitCurrentMonth) || 1));
-  const targetMonth = Math.max(storedMonth, calendarMonth);
-  const newInstallment = Math.round(chitInstallment(V, N, targetMonth));
+  const targetMonth =
+    c.chitMonthsPaid != null && !Number.isNaN(Number(c.chitMonthsPaid))
+      ? chitCurrentMonthFromMonthsPaid(c.chitMonthsPaid, N)
+      : Math.max(storedMonth, deriveChitCurrentMonth(start, N, todayStr));
+
+  const newInstallment = Math.round(resolveChitInstallment(V, N, targetMonth, mode, custom));
   const paidThisCycle = totalPaidOnPayments(c.payments);
 
   let remainingAmount;

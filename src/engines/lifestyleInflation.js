@@ -15,13 +15,16 @@ export function detectLifestyleInflation(commitments, getEffectiveStatus) {
     };
   }
 
-  const first = series.find((s) => s.amount > 0);
-  const last = [...series].reverse().find((s) => s.amount > 0);
+  const first = series.find((s) => s.recurringPaid > 0);
+  const last = [...series].reverse().find((s) => s.recurringPaid > 0);
   if (!first || !last || first === last) {
     return { hasTrend: false, growthPercent: null, subscriptionGrowthPercent: null, message: null, insights: [] };
   }
 
-  const growthPercent = first.amount > 0 ? Math.round(((last.amount - first.amount) / first.amount) * 100) : null;
+  const growthPercent =
+    first.recurringPaid > 0
+      ? Math.round(((last.recurringPaid - first.recurringPaid) / first.recurringPaid) * 100)
+      : null;
 
   const subs = commitments.filter(
     (c) => c.category === "Subscription" && getEffectiveStatus(c) !== "paid"
@@ -30,8 +33,9 @@ export function detectLifestyleInflation(commitments, getEffectiveStatus) {
 
   const insights = [];
   let message = null;
+  const monthSpan = series.filter((s) => s.recurringPaid > 0).length;
   if (growthPercent != null && growthPercent >= 15) {
-    message = `Recurring expenses increased about ${growthPercent}% over recent months.`;
+    message = `Recurring payments rose about ${growthPercent}% across ${monthSpan} month(s) of history.`;
     insights.push({
       id: "lifestyle-inflation",
       tone: growthPercent >= 30 ? "warning" : "info",
