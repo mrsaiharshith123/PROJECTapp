@@ -7,7 +7,7 @@ import { computeGoalProgress, goalTypeLabel } from "../../engines/goalsProgress.
 import { commitmentToIncomeRatio } from "../../engines/pressureAdvanced.js";
 import { comparePayoffStrategies } from "../../engines/payoffOptimizer.js";
 import InsuranceCalculatorModal from "../InsuranceCalculatorModal.jsx";
-import { getToolsForMode, getDashboardToolsHeading, resolveUserMode } from "../../constants/modeExperience.js";
+import { getToolsForMode, getDashboardToolsHeading, getExperienceMode } from "../../constants/modeExperience.js";
 import { TOOL_ICONS, formatInr, INR, EM_DASH, ARROW } from "../../constants/symbols.js";
 import ExpenseSimulatorForm from "../tools/ExpenseSimulatorForm.jsx";
 import ChitFundAdvisor from "../tools/ChitFundAdvisor.jsx";
@@ -40,15 +40,15 @@ export default function DashboardTools() {
     todayStr,
     updateSettings,
   } = useCommitTrack();
-  const userMode = resolveUserMode(settings);
+  const toolMode = getExperienceMode(settings);
   const widgets = useMemo(() => {
-    const defaultToolList = getToolsForMode(userMode);
-    return orderDashboardWidgets(defaultToolList, settings.dashboardToolOrderByMode?.[userMode]).map((t) => ({
+    const defaultToolList = getToolsForMode(settings);
+    return orderDashboardWidgets(defaultToolList, settings.dashboardToolOrderByMode?.[toolMode]).map((t) => ({
       ...t,
       icon: TOOL_ICONS[t.id],
     }));
-  }, [userMode, settings.dashboardToolOrderByMode]);
-  const toolsHeading = getDashboardToolsHeading(userMode);
+  }, [settings, toolMode, settings.dashboardToolOrderByMode]);
+  const toolsHeading = getDashboardToolsHeading(settings);
   const [activeTool, setActiveTool] = useState(null);
   const [reorderTools, setReorderTools] = useState(false);
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
@@ -109,7 +109,7 @@ export default function DashboardTools() {
     const prev = settings.dashboardToolOrderByMode && typeof settings.dashboardToolOrderByMode === "object"
       ? { ...settings.dashboardToolOrderByMode }
       : {};
-    prev[userMode] = orderedIds;
+    prev[toolMode] = orderedIds;
     updateSettings({ dashboardToolOrderByMode: prev });
   };
 
@@ -125,7 +125,7 @@ export default function DashboardTools() {
     const prev = settings.dashboardToolOrderByMode && typeof settings.dashboardToolOrderByMode === "object"
       ? { ...settings.dashboardToolOrderByMode }
       : {};
-    delete prev[userMode];
+    delete prev[toolMode];
     updateSettings({ dashboardToolOrderByMode: prev });
   };
 

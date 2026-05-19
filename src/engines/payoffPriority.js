@@ -6,7 +6,7 @@ export function defaultAnnualRateForCategory(categoryId) {
   const c = String(categoryId || "");
   if (c === "Credit Card") return 36;
   if (c === "EMI" || c === "Loan") return 12;
-  if (c === "Rent" || c === "Utility") return 0;
+  if (c === "Rent" || c === "Utility" || c === "Subscription") return 0;
   return 8;
 }
 

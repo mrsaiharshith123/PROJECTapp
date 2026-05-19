@@ -15,11 +15,12 @@ export function applyPaymentToCommitment(c, payment) {
   const payAmt = Math.max(0, Number(payment.amount) || 0);
   const date = payment.date || "";
   const amount = Math.max(0, Number(c.amount) || 0);
+  const cap = Math.max(amount, Math.max(0, Number(c.remainingAmount ?? amount) || 0));
   const prevPaid = totalPaidOnPayments(c.payments);
-  const remainingBefore = Math.max(0, amount - prevPaid);
+  const remainingBefore = Math.max(0, cap - prevPaid);
   const applied = Math.min(payAmt, remainingBefore);
   const newPayments = [...(c.payments || []), { amount: applied, date }];
-  const newRemaining = Math.max(0, amount - totalPaidOnPayments(newPayments));
+  const newRemaining = Math.max(0, cap - totalPaidOnPayments(newPayments));
   const now = Date.now();
   return {
     ...c,

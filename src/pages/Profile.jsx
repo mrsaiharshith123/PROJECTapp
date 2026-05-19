@@ -1,7 +1,12 @@
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
-import { USER_MODES, getUserModeConfig } from "../constants/userModes.js";
-import { getIncomeLabel, resolveUserMode } from "../constants/modeExperience.js";
+import { SELECTABLE_USER_MODES, getUserModeConfig } from "../constants/userModes.js";
+import {
+  getIncomeLabel,
+  resolveUserMode,
+  isSalariedFamily,
+  hasPowerFeatures,
+} from "../constants/modeExperience.js";
 import {
   computePaymentMonthStreak,
   computeControlScore,
@@ -45,11 +50,12 @@ const Profile = () => {
   const control = computeControlScore(commitments, getEffectiveStatus);
   const { count: paymentCount, sum: paymentSum } = totalPaymentCountAndSum(commitments);
   const recent = recentCommitmentPaymentEvents(commitments, 8);
-  const incomeLabel = getIncomeLabel(resolveUserMode(settings));
-  const modeCfg = getUserModeConfig(settings.userMode || "salaried");
+  const incomeLabel = getIncomeLabel(settings);
+  const modeCfg = getUserModeConfig(resolveUserMode(settings));
+  const salariedFamily = isSalariedFamily(settings);
   const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
   const secondaryOnly =
-    ["family", "salaried", "power"].includes(resolveUserMode(settings)) &&
+    resolveUserMode(settings) === "salaried" &&
     incomeMissing &&
     Number(settings.secondaryMonthlyIncome) > 0;
 
@@ -62,7 +68,11 @@ const Profile = () => {
         <h2 className="text-xl font-bold mt-4" style={{ fontFamily: "'Sora', sans-serif" }}>
           {settings.displayName?.trim() || "CommitTrack user"}
         </h2>
-        <p className="text-sm text-indigo-100 mt-1">{modeCfg.emoji} {modeCfg.label}</p>
+        <p className="text-sm text-indigo-100 mt-1">
+          {modeCfg.emoji} {modeCfg.label}
+          {salariedFamily ? " · Family household" : ""}
+          {hasPowerFeatures(settings) ? " · Pro" : ""}
+        </p>
       </Card>
 
       {secondaryOnly && (
@@ -136,7 +146,7 @@ const Profile = () => {
             placeholder="e.g. 75000"
           />
         </ProfileField>
-        {["family", "salaried", "power"].includes(resolveUserMode(settings)) && (
+        {resolveUserMode(settings) === "salaried" && (
           <ProfileField
             label="Second income (₹/mo)"
             hint="Partner salary or steady side income — combined with main income for pressure, forecasts, and reminders. Use 0 if none."
@@ -154,7 +164,7 @@ const Profile = () => {
             />
           </ProfileField>
         )}
-        {["family", "salaried", "power", "freelancer"].includes(resolveUserMode(settings)) && (
+        {["salaried", "freelancer"].includes(resolveUserMode(settings)) && (
           <ProfileField label="Income you enter is" hint={CALC_HELP.incomeEntryBasis}>
             <select
               className={profileInputClass}
@@ -178,7 +188,7 @@ const Profile = () => {
             }}
           />
         </ProfileField>
-        <ProfileField label="Dependents" hint="People relying on your income (family mode).">
+        <ProfileField label="Dependents" hint="People relying on your income (family household).">
           <input
             type="number"
             min="0"
@@ -196,23 +206,48 @@ const Profile = () => {
         <ProfileField label="User mode" hint={modeCfg.description}>
           <select
             className={profileInputClass}
-            value={settings.userMode || "salaried"}
-            onChange={(e) => updateSettings({ userMode: e.target.value })}
+            value={resolveUserMode(settings)}
+            onChange={(e) => {
+              const next = e.target.value;
+              updateSettings({
+                userMode: next,
+                householdScope: next === "salaried" ? settings.householdScope || "single" : "single",
+              });
+            }}
           >
-            {USER_MODES.map((m) => (
+            {SELECTABLE_USER_MODES.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.emoji} {m.label}
               </option>
             ))}
           </select>
         </ProfileField>
+        {resolveUserMode(settings) === "salaried" && (
+          <ProfileField label="Household" hint="Family unlocks household categories, payer tags, and family member profiles.">
+            <select
+              className={profileInputClass}
+              value={settings.householdScope === "family" ? "family" : "single"}
+              onChange={(e) =>
+                updateSettings({
+                  householdScope: e.target.value === "family" ? "family" : "single",
+                  activeProfileId: e.target.value === "family" ? settings.activeProfileId : "default",
+                })
+              }
+            >
+              <option value="single">Just me</option>
+              <option value="family">Family household</option>
+            </select>
+          </ProfileField>
+        )}
       </Card>
 
-      <Card className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Profiles</h3>
-        <p className="text-xs text-gray-500">Separate bills for home, business, or family.</p>
-        <ProfileManager />
-      </Card>
+      {salariedFamily && (
+        <Card className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Family profiles</h3>
+          <p className="text-xs text-gray-500">Separate bills by family member or area of the home.</p>
+          <ProfileManager />
+        </Card>
+      )}
 
       <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />
 

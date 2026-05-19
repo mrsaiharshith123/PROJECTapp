@@ -4,17 +4,17 @@ import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { computeCurrentMonthSummary } from "../../utils/monthPaymentSummary.js";
 import { isActiveBill } from "../../utils/billLifecycle.js";
 import { getUserModeConfig } from "../../constants/userModes.js";
-import { formatInr } from "../../constants/symbols.js";
+import { getExperienceMode } from "../../constants/modeExperience.js";
+import { combinedMonthlyIncome } from "../../utils/combinedIncome.js";
+import { formatInr, EM_DASH } from "../../constants/symbols.js";
 
-/**
- * Single home hero: this month ? tap opens Analytics.
- */
+/** Single home hero — tap opens Analytics. */
 export default function HomeOverviewCard() {
   const navigate = useNavigate();
   const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
-  const mode = settings.userMode || "salaried";
-  const modeCfg = getUserModeConfig(mode);
-  const income = Math.max(0, Number(settings.monthlyIncome) || 0);
+  const experienceMode = getExperienceMode(settings);
+  const modeCfg = getUserModeConfig(settings.userMode || "salaried");
+  const income = combinedMonthlyIncome(settings);
 
   const monthSummary = useMemo(
     () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income),
@@ -25,7 +25,14 @@ export default function HomeOverviewCard() {
   const subs = active.filter((c) => c.category === "Subscription");
   const emis = active.filter((c) => c.category === "EMI");
 
-  const title = mode === "salaried" ? "This month" : mode === "business" ? "Cashflow" : modeCfg.label;
+  const title =
+    experienceMode === "salaried"
+      ? "This month"
+      : experienceMode === "business"
+        ? "Cashflow"
+        : experienceMode === "family"
+          ? "Household month"
+          : modeCfg.label;
 
   return (
     <button
@@ -83,18 +90,18 @@ export default function HomeOverviewCard() {
           Still due{" "}
           <span className="font-semibold text-white">{formatInr(monthSummary.dueThisMonth)}</span>
           {monthSummary.duePercentOfIncome ? (
-            <span className="text-indigo-200/80"> ? {monthSummary.duePercentOfIncome} of income</span>
+            <span className="text-indigo-200/80"> · {monthSummary.duePercentOfIncome} of income</span>
           ) : income <= 0 ? (
-            <span className="text-indigo-200/80"> ? set income</span>
+            <span className="text-indigo-200/80"> · set income in Profile</span>
           ) : null}
         </p>
         <p className="text-indigo-100/70 text-right">
           Free cash{" "}
           <span className="font-semibold text-emerald-300">
-            {monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : "?"}
+            {monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
           </span>
         </p>
-        {mode === "salaried" && (
+        {(experienceMode === "salaried" || experienceMode === "family") && (
           <>
             <p className="text-indigo-100/70">
               EMIs <span className="font-semibold text-white">{emis.length}</span>
@@ -106,7 +113,7 @@ export default function HomeOverviewCard() {
         )}
       </div>
 
-      <p className="text-center text-[10px] text-indigo-200/80 pb-3">Tap for full analytics ?</p>
+      <p className="text-center text-[10px] text-indigo-200/80 pb-3">Tap for full analytics →</p>
     </button>
   );
 }

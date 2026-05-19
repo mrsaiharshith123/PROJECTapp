@@ -55,8 +55,22 @@ const MODE_PRESETS = {
   salaried: MODE_PRESETS_SALARIED,
 };
 
-export function getExpensePresetsForMode(mode) {
-  if (mode === "salaried") return { ...PRESETS, ...MODE_PRESETS_SALARIED };
+import { getExperienceMode, isSalariedFamily } from "../constants/modeExperience.js";
+
+export function getExpensePresetsForMode(modeOrSettings) {
+  let mode = modeOrSettings;
+  let household = false;
+  if (typeof modeOrSettings === "object" && modeOrSettings !== null) {
+    mode = getExperienceMode(modeOrSettings);
+    household = isSalariedFamily(modeOrSettings);
+  }
+  if (mode === "salaried" || mode === "family") {
+    const base = { ...PRESETS, ...MODE_PRESETS_SALARIED };
+    if (household || mode === "family") {
+      return { ...base, ...MODE_PRESETS.family };
+    }
+    return base;
+  }
   return MODE_PRESETS[mode] || PRESETS;
 }
 
@@ -74,7 +88,9 @@ export function simulateNewExpense({
   repeatType,
   category,
   mode = "salaried",
+  loanMeta = null,
 }) {
+  const experienceMode = typeof mode === "object" && mode !== null ? getExperienceMode(mode) : mode;
   const catalog = getExpensePresetsForMode(mode);
   const p = catalog[preset] || PRESETS[preset] || PRESETS.emi;
   const draft = {
@@ -111,7 +127,8 @@ export function simulateNewExpense({
 
   const warnings = [];
   if (aff.tier === "dangerous" || aff.tier === "high_risk") {
-    const incomeWord = mode === "business" ? "revenue" : mode === "student" ? "budget" : "income";
+    const incomeWord =
+      experienceMode === "business" ? "revenue" : experienceMode === "student" ? "budget" : "income";
     warnings.push(`This raises commitments to about ${aff.committedPercent}% of ${incomeWord}.`);
   }
   if (aff.freeMoneyAfter < income * 0.15 && income > 0) {
@@ -136,6 +153,12 @@ export function simulateNewExpense({
     warnings.push(`Emergency buffer may cover only ~${emergencyMonths} month(s) at this burn.`);
   }
 
+  if (loanMeta?.totalInterest > 0) {
+    warnings.push(
+      `Total interest over the loan is about ₹${Math.round(loanMeta.totalInterest).toLocaleString("en-IN")} on top of principal.`
+    );
+  }
+
   return {
     preset: p.label,
     affordability: aff,
@@ -143,6 +166,7 @@ export function simulateNewExpense({
     afterSurvival,
     survivalDrop,
     warnings,
+    loanMeta,
   };
 }
 

@@ -278,6 +278,12 @@ export function CommitTrackProvider({ children }) {
         if (patch.userMode != null && !USER_MODE_IDS.includes(patch.userMode)) {
           next.userMode = prev.userMode || "salaried";
         }
+        if (patch.householdScope != null && patch.householdScope !== "family") {
+          next.householdScope = "single";
+        }
+        if (patch.subscriptionTier != null && patch.subscriptionTier !== "power") {
+          next.subscriptionTier = "free";
+        }
         return next;
       });
     },

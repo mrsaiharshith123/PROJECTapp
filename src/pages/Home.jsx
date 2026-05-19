@@ -12,11 +12,12 @@ import ModeIntelligenceSection from "../components/dashboard/ModeIntelligenceSec
 import FinancialPulseCard from "../components/dashboard/FinancialPulseCard.jsx";
 import DashboardTools from "../components/dashboard/DashboardTools.jsx";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
+import { isSalariedFamily } from "../constants/modeExperience.js";
 import { isActiveBill } from "../utils/billLifecycle.js";
-import { formatInr, STATUS_ICONS, CHEVRON } from "../constants/symbols.js";
+import { formatInr, STATUS_ICONS, CHEVRON, EM_DASH } from "../constants/symbols.js";
 
 function formatDate(dateStr) {
-  if (!dateStr) return "?";
+  if (!dateStr) return EM_DASH;
   return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
@@ -54,7 +55,9 @@ const Home = () => {
         eyebrow="Overview"
         title="Dashboard"
         subtitle={
-          settings.activeProfileId && settings.activeProfileId !== "default" ? (
+          isSalariedFamily(settings) &&
+          settings.activeProfileId &&
+          settings.activeProfileId !== "default" ? (
             <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
               Profile: {settings.activeProfileId}
             </p>

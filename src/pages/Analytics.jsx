@@ -27,7 +27,7 @@ import { PROFILE_SETTINGS_HINT } from "../constants/plainLanguage.js";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
 import PaycheckBreakdown from "../components/analytics/PaycheckBreakdown.jsx";
 import { computeSalaryBreakdown } from "../engines/salaryBreakdown.js";
-import { getAnalyticsCopy, getIncomeLabel, resolveUserMode } from "../constants/modeExperience.js";
+import { getAnalyticsCopy, getIncomeLabel, isSalariedFamily } from "../constants/modeExperience.js";
 import InfoTip from "../components/InfoTip.jsx";
 import { CALC_HELP } from "../constants/calculationHelp.js";
 
@@ -81,9 +81,8 @@ const Analytics = () => {
     }, 0);
   }, [commitments, getEffectiveStatus]);
 
-  const userMode = resolveUserMode(settings);
-  const analyticsCopy = getAnalyticsCopy(userMode);
-  const incomeLabel = getIncomeLabel(userMode);
+  const analyticsCopy = getAnalyticsCopy(settings);
+  const incomeLabel = getIncomeLabel(settings);
   const income = combinedMonthlyIncome(settings);
 
   const paycheckFlow = useMemo(
@@ -95,7 +94,7 @@ const Analytics = () => {
   );
 
   const payerSplitForPaycheck = useMemo(() => {
-    if (userMode !== "family") return null;
+    if (!isSalariedFamily(settings)) return null;
     const { by } = summarizeHouseholdPayerBurden(commitments, getEffectiveStatus);
     const rows = [];
     if (by.primary > 0) rows.push({ label: "Primary payer (open est.)", amount: by.primary });
@@ -103,7 +102,7 @@ const Analytics = () => {
     if (by.shared > 0) rows.push({ label: "Shared (open est.)", amount: by.shared });
     if (rows.length === 0) return null;
     return { rows };
-  }, [userMode, commitments, getEffectiveStatus]);
+  }, [settings, commitments, getEffectiveStatus]);
 
   const cardPressureAnalytics = useMemo(
     () => (analyticsCopy.showPaycheckFlow ? analyzeCreditCardPressure(commitments, getEffectiveStatus, income) : null),
@@ -181,7 +180,7 @@ const Analytics = () => {
           Analytics
         </h1>
         <p className="text-xs text-gray-500 mt-1">Simple summaries first. Extra charts are optional.</p>
-        {settings.activeProfileId && settings.activeProfileId !== "default" && (
+        {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
           <p className="text-xs text-indigo-600 mt-1 font-medium">Profile: {settings.activeProfileId}</p>
         )}
       </div>

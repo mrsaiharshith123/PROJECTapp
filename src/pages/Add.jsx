@@ -16,7 +16,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../constants/chitFund.js";
-import { getCategoriesForUserMode, resolveUserMode } from "../constants/modeExperience.js";
+import { getCategoriesForUserMode, isSalariedFamily } from "../constants/modeExperience.js";
 import InsuranceFields from "../components/InsuranceFields.jsx";
 import {
   emptyInsuranceFields,
@@ -117,9 +117,9 @@ const Add = () => {
     return errs;
   };
 
-  const mode = resolveUserMode(settings);
-  const modeCfg = getUserModeConfig(mode);
-  const billCategories = getCategoriesForUserMode(mode);
+  const modeCfg = getUserModeConfig(settings.userMode || "salaried");
+  const billCategories = getCategoriesForUserMode(settings);
+  const salariedFamily = isSalariedFamily(settings);
   const showAffordability = modeCfg.showAffordabilityOnAdd;
   const category = form.category || "Other";
   const showInterest = categoryShowsInterestRate(category);
@@ -222,7 +222,7 @@ const Add = () => {
           }
         : {}),
       ...(showChit ? chitPayload : {}),
-      householdPayer: mode === "family" ? (form.householdPayer || "").trim() : "",
+      householdPayer: salariedFamily ? (form.householdPayer || "").trim() : "",
     };
     const effective = getEffectiveStatus({
       ...draft,
@@ -447,7 +447,7 @@ const Add = () => {
           </div>
         )}
 
-        {mode === "family" && (
+        {salariedFamily && (
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
               Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>

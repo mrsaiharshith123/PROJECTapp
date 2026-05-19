@@ -7,7 +7,7 @@ import { healthLevelBadgeClass } from "../../engines/financialHealth.js";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../hooks/useStabilityIntel.js";
 import { Link } from "react-router-dom";
-import { showSalariedStabilityCards, getAnalyticsCopy, resolveUserMode } from "../../constants/modeExperience.js";
+import { showSalariedStabilityCards, getAnalyticsCopy, isSalariedFamily } from "../../constants/modeExperience.js";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { shareOrCopyPlainText } from "../../utils/shareText.js";
 
@@ -65,10 +65,9 @@ export default function FinancialPulseCard() {
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const { settings } = useCommitTrack();
-  const mode = resolveUserMode(settings);
-  const showPressure = showSalariedStabilityCards(mode);
-  const isFamily = mode === "family";
-  const analyticsCopy = getAnalyticsCopy(mode);
+  const showPressure = showSalariedStabilityCards(settings);
+  const isFamily = isSalariedFamily(settings);
+  const analyticsCopy = getAnalyticsCopy(settings);
   const ahead = stable.ahead;
 
   const tips = useMemo(() => mergeTips(intel, stable), [intel, stable]);

@@ -13,7 +13,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../constants/chitFund.js";
-import { getCategoriesForUserMode, resolveUserMode } from "../constants/modeExperience.js";
+import { getCategoriesForUserMode, isSalariedFamily } from "../constants/modeExperience.js";
 import InsuranceFields from "./InsuranceFields.jsx";
 import { buildInsuranceBillName, insuranceBillHasIdentity } from "../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../constants/priority.js";
@@ -56,8 +56,8 @@ function formFromCommitment(c, todayStr) {
 
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const { todayStr, settings } = useCommitTrack();
-  const userMode = resolveUserMode(settings);
-  const billCategories = getCategoriesForUserMode(userMode);
+  const salariedFamily = isSalariedFamily(settings);
+  const billCategories = getCategoriesForUserMode(settings);
   const [form, setForm] = useState(() => formFromCommitment(commitment, todayStr));
   const [errors, setErrors] = useState({});
 
@@ -164,7 +164,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             insuranceMaturityBenefit: null,
           }),
       ...(showChit ? chitPayload : {}),
-      householdPayer: userMode === "family" ? form.householdPayer || "" : "",
+      householdPayer: salariedFamily ? form.householdPayer || "" : "",
     });
     onClose();
   };
@@ -359,7 +359,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             />
           </div>
         )}
-        {userMode === "family" && (
+        {salariedFamily && (
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
               Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>

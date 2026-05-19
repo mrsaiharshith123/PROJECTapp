@@ -1,6 +1,6 @@
 import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
-import { USER_MODE_IDS } from "../constants/userModes.js";
+import { USER_MODE_IDS, ALL_USER_MODE_IDS } from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
 import { estimatePriorSpend } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
@@ -12,9 +12,9 @@ import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 export const SCHEMA_VERSION_KEY = "committrack_schema_version";
-export const CURRENT_SCHEMA_VERSION = 8;
+export const CURRENT_SCHEMA_VERSION = 9;
 
-const USER_MODES = USER_MODE_IDS;
+const USER_MODES = ALL_USER_MODE_IDS;
 
 function normalizeCategory(raw) {
   const s = String(raw || "").trim();
@@ -436,6 +436,10 @@ const DEFAULT_SETTINGS = {
   incomeEntryBasis: "take_home",
   displayName: "",
   userMode: "salaried",
+  /** "single" | "family" — only when userMode is salaried */
+  householdScope: "single",
+  /** "free" | "power" — subscription unlocks power features */
+  subscriptionTier: "free",
   onboardingComplete: false,
   savedTowardGoals: 0,
   readNotificationIds: [],
@@ -459,13 +463,28 @@ export function loadSettingsFromStorage() {
       if (!o || typeof o !== "object" || Array.isArray(o)) {
         return { ...DEFAULT_SETTINGS };
       }
-      const mode = USER_MODES.includes(o.userMode) ? o.userMode : "salaried";
+      let mode = USER_MODES.includes(o.userMode) ? o.userMode : "salaried";
+      let householdScope = o.householdScope === "family" ? "family" : "single";
+      let subscriptionTier = o.subscriptionTier === "power" ? "power" : "free";
+      if (mode === "family") {
+        mode = "salaried";
+        householdScope = "family";
+      }
+      if (mode === "power") {
+        mode = "salaried";
+        subscriptionTier = "power";
+      }
+      if (!USER_MODE_IDS.includes(mode)) {
+        mode = "salaried";
+      }
       return {
         monthlyIncome: Math.max(0, Number(o.monthlyIncome) || 0),
         secondaryMonthlyIncome: Math.max(0, Number(o.secondaryMonthlyIncome) || 0),
         incomeEntryBasis: o.incomeEntryBasis === "gross" ? "gross" : "take_home",
         displayName: String(o.displayName || ""),
         userMode: mode,
+        householdScope,
+        subscriptionTier,
         onboardingComplete: "onboardingComplete" in o ? Boolean(o.onboardingComplete) : false,
         savedTowardGoals: Math.max(0, Number(o.savedTowardGoals) || 0),
         readNotificationIds: Array.isArray(o.readNotificationIds)

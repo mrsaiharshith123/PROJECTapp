@@ -1,4 +1,5 @@
 import { getCategoryById } from "./categories.js";
+import { USER_MODE_IDS } from "./userModes.js";
 
 /** Income field label in Profile / Analytics. */
 export const MODE_INCOME_LABEL = {
@@ -154,40 +155,90 @@ export const MODE_DASHBOARD_TOOLS_HEADING = {
 };
 
 export function resolveUserMode(settings) {
-  return settings?.userMode || "salaried";
+  const raw = settings?.userMode || "salaried";
+  if (raw === "family" || raw === "power") return "salaried";
+  return USER_MODE_IDS.includes(raw) ? raw : "salaried";
 }
 
-export function getIncomeLabel(mode) {
+/** Salaried user managing a family household (merged former “family” mode). */
+export function isSalariedFamily(settings) {
+  if (!settings) return false;
+  if (settings.userMode === "family") return true;
+  return resolveUserMode(settings) === "salaried" && settings.householdScope === "family";
+}
+
+/** Subscription unlocks power features without a separate mode pick. */
+export function hasPowerFeatures(settings) {
+  if (!settings) return false;
+  return settings.subscriptionTier === "power" || settings.userMode === "power";
+}
+
+/** Drives categories, tools, analytics copy, and intel engines. */
+export function getExperienceMode(settings) {
+  if (hasPowerFeatures(settings)) return "power";
+  if (isSalariedFamily(settings)) return "family";
+  return resolveUserMode(settings);
+}
+
+export function getIncomeLabel(settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
   return MODE_INCOME_LABEL[mode] || MODE_INCOME_LABEL.salaried;
 }
 
-export function getAnalyticsCopy(mode) {
+export function getAnalyticsCopy(settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
   return MODE_ANALYTICS[mode] || MODE_ANALYTICS.salaried;
 }
 
-export function getCategoriesForUserMode(mode) {
+export function getCategoriesForUserMode(settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
   const ids = MODE_CATEGORY_IDS[mode] || MODE_CATEGORY_IDS.salaried;
   return ids.map((id) => getCategoryById(id));
 }
 
-export function getToolsForMode(mode) {
+export function getToolsForMode(settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
   const ids = MODE_TOOL_IDS[mode] || MODE_TOOL_IDS.salaried;
   const overrides = MODE_TOOL_TITLES[mode] || {};
-  return ids.map((id) => {
-    const base = MODE_TOOL_DEFS[id];
-    if (!base) return null;
-    return { ...base, ...(overrides[id] || {}) };
-  }).filter(Boolean);
+  return ids
+    .map((id) => {
+      const base = MODE_TOOL_DEFS[id];
+      if (!base) return null;
+      return { ...base, ...(overrides[id] || {}) };
+    })
+    .filter(Boolean);
 }
 
-export function getDashboardToolsHeading(mode) {
+export function getDashboardToolsHeading(settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
+  if (mode === "family") return MODE_DASHBOARD_TOOLS_HEADING.family;
   return MODE_DASHBOARD_TOOLS_HEADING[mode] || "Quick calculators";
 }
 
-export function showHomeRolePanel(mode) {
+export function showHomeRolePanel(settings) {
+  const mode = typeof settings === "object" ? getExperienceMode(settings) : settings;
   return mode !== "salaried";
 }
 
-export function showSalariedStabilityCards(mode) {
-  return mode === "salaried" || mode === "family" || mode === "power";
+export function showSalariedStabilityCards(settings) {
+  if (typeof settings === "object") {
+    const base = resolveUserMode(settings);
+    return base === "salaried" || hasPowerFeatures(settings);
+  }
+  return settings === "salaried" || settings === "family" || settings === "power";
 }

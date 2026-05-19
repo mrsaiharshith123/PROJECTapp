@@ -14,7 +14,7 @@ import { mergeExtendedInsights } from "../engines/insightsExtended.js";
 import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
 import { buildPressureIntelligence } from "../engines/pressureIntelligence.js";
 import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
-import { resolveUserMode } from "../constants/modeExperience.js";
+import { resolveUserMode, getExperienceMode, isSalariedFamily, hasPowerFeatures } from "../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { householdPayerInsight } from "../engines/householdPayer.js";
 
@@ -22,7 +22,8 @@ import { householdPayerInsight } from "../engines/householdPayer.js";
 export function useStabilityIntel() {
   const ctx = useCommitTrack();
   const intel = useCommitIntel();
-  const mode = resolveUserMode(ctx.settings);
+  const baseMode = resolveUserMode(ctx.settings);
+  const experienceMode = getExperienceMode(ctx.settings);
 
   return useMemo(() => {
     const income = combinedMonthlyIncome(ctx.settings);
@@ -50,7 +51,7 @@ export function useStabilityIntel() {
     const overdueCount = ctx.commitments.filter((c) => ctx.getEffectiveStatus(c) === "overdue").length;
 
     const ahead =
-      mode === "salaried" || mode === "family" || mode === "power"
+      baseMode === "salaried" || hasPowerFeatures(ctx.settings)
         ? buildStabilityAheadPlan({
             commitments: ctx.commitments,
             lendings: ctx.lendings,
@@ -59,12 +60,12 @@ export function useStabilityIntel() {
             getEffectiveStatus: ctx.getEffectiveStatus,
             getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
             todayStr: ctx.todayStr,
-            mode,
+            mode: experienceMode,
           })
         : null;
 
     const healthNarrative = buildStabilityHealthNarrative({
-      mode: mode === "family" ? "family" : "salaried",
+      mode: experienceMode === "family" ? "family" : "salaried",
       health: intel.health,
       stability: intel.stability,
       survival,
@@ -94,7 +95,7 @@ export function useStabilityIntel() {
     ].filter(Boolean);
 
     let modeData = {};
-    if (mode === "business") {
+    if (baseMode === "business") {
       modeData = {
         business: computeBusinessCashflow(
           ctx.commitments,
@@ -106,13 +107,13 @@ export function useStabilityIntel() {
         ),
       };
       extraInsights.push(...(modeData.business.insights || []));
-    } else if (mode === "freelancer") {
+    } else if (baseMode === "freelancer") {
       const vol = computeFreelancerVolatility(ctx.monthlySnapshots, income);
       const client = clientDependencyInsight(ctx.lendings);
       modeData = { freelancer: vol };
       extraInsights.push(...(vol.insights || []));
       if (client) extraInsights.push(client);
-    } else if (mode === "family") {
+    } else if (experienceMode === "family") {
       modeData = {
         family: computeFamilyPressure(
           ctx.commitments,
@@ -128,7 +129,7 @@ export function useStabilityIntel() {
         Math.max(0, Number(ctx.settings.secondaryMonthlyIncome) || 0)
       );
       if (payerIns) extraInsights.push(payerIns);
-    } else if (mode === "student") {
+    } else if (baseMode === "student") {
       modeData = {
         student: computeStudentBudget(
           ctx.commitments,
@@ -144,7 +145,7 @@ export function useStabilityIntel() {
     const stabilityInsights = mergeExtendedInsights(intel.insights, extraInsights);
 
     return {
-      mode,
+      mode: experienceMode,
       income,
       burdenRatio,
       survival,
@@ -163,7 +164,8 @@ export function useStabilityIntel() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- broad ctx fields drive one stability snapshot
   }, [
-    mode,
+    baseMode,
+    experienceMode,
     ctx.commitments,
     ctx.lendings,
     ctx.goals,

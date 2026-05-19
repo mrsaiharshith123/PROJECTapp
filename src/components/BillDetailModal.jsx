@@ -133,12 +133,6 @@ export default function BillDetailModal({
           {bill.dueDate ? ` · Next due ${formatDate(bill.dueDate)}` : null}
         </p>
 
-        {summary.priorSpend > 0 && (
-          <p className="text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/80 rounded-lg px-3 py-2">
-            Includes ~₹{summary.priorSpend.toLocaleString()} estimated from earlier years (before {calendarYear}).
-          </p>
-        )}
-
         {summary.ended && (
           <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-3 py-2">
             This {COPY.bill} has ended — no further payments expected.
@@ -146,18 +140,27 @@ export default function BillDetailModal({
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <Stat label="Spent since start" value={`₹${summary.spentSinceStart.toLocaleString()}`} accent="text-emerald-600 dark:text-emerald-400" />
+          <Stat
+            label="Recorded payments"
+            value={`₹${summary.recordedSinceStart.toLocaleString()}`}
+            accent="text-emerald-600 dark:text-emerald-400"
+          />
           <Stat label="Still to go" value={futureLabel} accent="text-amber-700 dark:text-amber-400" />
           <Stat label="Per cycle" value={`₹${amount.toLocaleString()}`} />
           <Stat
-            label={summary.totalProjected != null ? "Total (start → end)" : "All-time paid"}
+            label={summary.totalProjected != null ? "Total (start → end)" : "All-time recorded"}
             value={
               summary.totalProjected != null
                 ? `₹${summary.totalProjected.toLocaleString()}`
-                : `₹${summary.spentAllTime.toLocaleString()}`
+                : `₹${summary.recordedAllTime.toLocaleString()}`
             }
           />
         </div>
+        {summary.priorSpend > 0 && (
+          <p className="text-[11px] text-gray-500 dark:text-slate-400">
+            Estimated before you tracked: ~₹{summary.priorSpend.toLocaleString()} (not counted in recorded payments above).
+          </p>
+        )}
 
         {bill.category === "Subscription" && summary.endDate && !summary.ended && (
           <p className="text-[11px] text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 rounded-lg px-3 py-2">

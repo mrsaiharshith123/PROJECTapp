@@ -9,7 +9,7 @@ export function scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusF
     return 0;
   }
   const eff = getEffectiveStatusFn(c, todayStr);
-  if (eff === "paid" || eff === "upnext") return 0;
+  if (eff === "paid") return 0;
 
   const rt = normalizeRepeatType(c.repeatType);
   const amt = Number(c.amount) || 0;

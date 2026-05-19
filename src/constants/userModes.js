@@ -1,7 +1,12 @@
 import { NAV_ITEMS } from "./nav.js";
 
-/** Shared user mode config (Blueprint role-based OS). */
-export const USER_MODE_IDS = ["salaried", "business", "freelancer", "family", "student", "power"];
+/** Modes users pick in onboarding / Profile (family merged into salaried; power via subscription). */
+export const USER_MODE_IDS = ["salaried", "business", "freelancer", "student"];
+
+/** Legacy ids still read from old saves — migrated on load. */
+export const LEGACY_USER_MODE_IDS = ["family", "power"];
+
+export const ALL_USER_MODE_IDS = [...USER_MODE_IDS, ...LEGACY_USER_MODE_IDS];
 
 const NAV_FULL = ["/", "/commitments", "/lending", "/profile"];
 const NAV_NO_LENDING = ["/", "/commitments", "/profile"];
@@ -11,7 +16,7 @@ export const USER_MODES = [
     id: "salaried",
     label: "Salaried",
     emoji: "💼",
-    description: "EMIs, subscriptions, and salary pressure.",
+    description: "Salary, EMIs, and subscriptions — single or family household.",
     navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
@@ -35,15 +40,6 @@ export const USER_MODES = [
     showAffordabilityOnAdd: true,
   },
   {
-    id: "family",
-    label: "Family household",
-    emoji: "👨‍👩‍👧",
-    description: "Shared expenses and joint goals.",
-    navPaths: NAV_FULL,
-    showLending: true,
-    showAffordabilityOnAdd: true,
-  },
-  {
     id: "student",
     label: "Student",
     emoji: "🎓",
@@ -52,7 +48,22 @@ export const USER_MODES = [
     showLending: false,
     showAffordabilityOnAdd: true,
   },
-  {
+];
+
+/** Modes shown in onboarding / Profile dropdown. */
+export const SELECTABLE_USER_MODES = USER_MODES;
+
+const LEGACY_MODES = {
+  family: {
+    id: "family",
+    label: "Family household",
+    emoji: "👨‍👩‍👧",
+    description: "Shared expenses and joint goals.",
+    navPaths: NAV_FULL,
+    showLending: true,
+    showAffordabilityOnAdd: true,
+  },
+  power: {
     id: "power",
     label: "Power user",
     emoji: "⚡",
@@ -61,10 +72,10 @@ export const USER_MODES = [
     showLending: true,
     showAffordabilityOnAdd: true,
   },
-];
+};
 
 export function getUserModeConfig(modeId) {
-  return USER_MODES.find((m) => m.id === modeId) || USER_MODES[0];
+  return USER_MODES.find((m) => m.id === modeId) || LEGACY_MODES[modeId] || USER_MODES[0];
 }
 
 export function navItemsForMode(modeId) {

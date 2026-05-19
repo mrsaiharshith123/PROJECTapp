@@ -32,8 +32,10 @@ export function computeBillSpendSummary(c, todayStr) {
     .filter((p) => !startDate || compareYmd(p.date, startDate) >= 0)
     .reduce((s, p) => s + Math.max(0, Number(p.amount) || 0), 0);
 
+  const recordedAllTime = Math.round(totalPaidOnPayments(payments));
+  const recordedSinceStart = Math.round(paymentsTracked);
   const spentSinceStart = prior + paymentsTracked;
-  const spentAllTime = prior + totalPaidOnPayments(payments);
+  const spentAllTime = prior + recordedAllTime;
   const ended = isBillEnded(c, todayStr);
   const remaining = Math.max(0, Number(c.remainingAmount ?? amount));
 
@@ -72,6 +74,8 @@ export function computeBillSpendSummary(c, todayStr) {
     startDate,
     endDate,
     priorSpend: Math.round(prior),
+    recordedSinceStart,
+    recordedAllTime,
     spentSinceStart: Math.round(spentSinceStart),
     spentAllTime: Math.round(spentAllTime),
     futureSpend: futureSpend != null ? Math.round(futureSpend) : null,

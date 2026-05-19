@@ -10,6 +10,9 @@ function monthlyPressureWeight(c, getEffectiveStatus) {
   const amt = Number(c.amount) || 0;
   const interval = repeatIntervalMonths(normalizeRepeatType(c.repeatType));
   const base = interval > 0 ? amt / interval : Math.max(0, Number(c.remainingAmount ?? amt));
+  const cat = String(c.category || "");
+  const isDebt = cat === "Credit Card" || cat === "EMI" || cat === "Loan";
+  if (!isDebt) return base;
   const rate = effectiveAnnualRate(c);
   const interestBoost = 1 + Math.min(0.5, rate / 24);
   return base * interestBoost;

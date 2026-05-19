@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { navItemsForMode } from "../constants/userModes.js";
+import { resolveUserMode } from "../constants/modeExperience.js";
 import { isEnhancedUi } from "../constants/uiTheme.js";
 
 const NAV_COLS = {
@@ -10,7 +11,7 @@ const NAV_COLS = {
 
 const Navbar = () => {
   const { settings } = useCommitTrack();
-  const navItems = navItemsForMode(settings.userMode || "salaried");
+  const navItems = navItemsForMode(resolveUserMode(settings));
   const colClass = NAV_COLS[navItems.length] || "grid-cols-4";
   const enhanced = isEnhancedUi();
 

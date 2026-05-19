@@ -1,13 +1,13 @@
 import { formatInr } from "../../constants/symbols.js";
 import { buildQuickScenarioSummaries } from "../../engines/quickScenarios.js";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
-import { resolveUserMode } from "../../constants/modeExperience.js";
+import { getExperienceMode } from "../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../utils/combinedIncome.js";
 
 /** Dashboard modal — read-only stress checks using current commitments. */
 export default function QuickScenariosPanel() {
   const { commitments, settings, getEffectiveStatus } = useCommitTrack();
-  const mode = resolveUserMode(settings);
+  const mode = getExperienceMode(settings);
   const income = combinedMonthlyIncome(settings);
   const secondary = Math.max(0, Number(settings.secondaryMonthlyIncome) || 0);
   const primary = Math.max(0, Number(settings.monthlyIncome) || 0);
