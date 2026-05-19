@@ -2,7 +2,8 @@ import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
 import { USER_MODE_IDS, ALL_USER_MODE_IDS } from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
-import { estimatePriorSpend } from "./billLifecycle.js";
+import { computeContractPaymentLedger } from "./billPaymentProgress.js";
+import { currentCycleRemainingAmount } from "./commitmentPayments.js";
 import { todayYmd } from "./dates.js";
 import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
@@ -42,26 +43,36 @@ export function normalizeCommitment(raw) {
     ? raw.priority
     : inferPriorityFromCategory(category);
   const paidSum = payments.reduce((s, p) => s + p.amount, 0);
-  let remainingAmount = Math.max(0, amount - paidSum);
-  if (raw.status === "paid" && repeatType === "none") {
-    remainingAmount = 0;
-  }
 
   const dueDate = String(raw.dueDate || raw.startDate || "").slice(0, 10);
   const startDate = String(raw.startDate || raw.dueDate || "").slice(0, 10);
   const endDate = raw.endDate ? String(raw.endDate).slice(0, 10) : "";
   const draft = {
+    ...raw,
     startDate,
     dueDate,
     endDate,
     repeatType,
     amount,
     category,
+    payments,
   };
+  const ledger = computeContractPaymentLedger(draft, todayYmd());
+  let remainingAmount;
+  if (repeatType === "none") {
+    remainingAmount = Math.max(0, amount - paidSum);
+    if (raw.status === "paid") remainingAmount = 0;
+  } else {
+    remainingAmount = currentCycleRemainingAmount(draft, todayYmd());
+    if (remainingAmount <= 0 && raw.status !== "paid") {
+      remainingAmount = amount;
+    }
+  }
+
   const priorSpend =
     raw.priorSpend != null && !Number.isNaN(Number(raw.priorSpend))
       ? Math.max(0, Number(raw.priorSpend))
-      : estimatePriorSpend(draft, todayYmd());
+      : Math.max(0, ledger.inferredPriorSpend ?? 0);
 
   return {
     id: raw.id,

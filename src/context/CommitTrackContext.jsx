@@ -23,6 +23,7 @@ import { buildMonthlySnapshot } from "../engines/snapshots.js";
 import { canEditLending } from "../engines/lendingAgreement.js";
 import { mergeImportedAppState } from "../utils/dataImport.js";
 import { refreshAllChitCommitments } from "../utils/chitSync.js";
+import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import {
   loadBusinessInvoicesFromStorage,
   normalizeBusinessInvoice,
@@ -70,7 +71,7 @@ export function CommitTrackProvider({ children }) {
       const todayStr = todayYmd();
       const next = refreshAllChitCommitments(raw, todayStr);
       const normalized = next.map((c) =>
-        normalizeCommitmentStatusForSave(normalizeCommitment(c), todayStr)
+        normalizeCommitmentStatusForSave(normalizeCommitment(c), todayStr, next)
       );
       try {
         localStorage.setItem("commitments", JSON.stringify(normalized));
@@ -167,20 +168,21 @@ export function CommitTrackProvider({ children }) {
 
   const updateCommitment = useCallback(
     (id, patch) => {
-      persistCommitments((prev) =>
-        prev.map((c) =>
-          String(c.id) !== String(id)
-            ? c
-            : normalizeCommitment({
-                ...c,
-                ...patch,
-                id: c.id,
-                updatedAt: Date.now(),
-              })
-        )
-      );
+      persistCommitments((prev) => {
+        const all = prev;
+        return prev.map((c) => {
+          if (String(c.id) !== String(id)) return c;
+          const merged = reconcileBillAfterEdit(
+            c,
+            { ...c, ...patch, id: c.id, updatedAt: Date.now() },
+            todayStr,
+            all
+          );
+          return normalizeCommitmentStatusForSave(normalizeCommitment(merged), todayStr, all);
+        });
+      });
     },
-    [persistCommitments]
+    [persistCommitments, todayStr]
   );
 
   const deleteCommitment = useCallback(
@@ -195,7 +197,8 @@ export function CommitTrackProvider({ children }) {
       persistCommitments((prev) =>
         prev.flatMap((c) => {
           if (String(c.id) !== String(id)) return [c];
-          const updated = applyPaymentToCommitment(c, payment);
+          let updated = applyPaymentToCommitment(c, payment, prev, todayStr);
+          updated = normalizeCommitmentStatusForSave(normalizeCommitment(updated), todayStr, prev);
           if (Number(updated.remainingAmount) > 0) return [updated];
           const nextId = Date.now() + Math.floor(Math.random() * 1000);
           const { paidRow, nextCycle } = advanceRecurringCommitment(updated, nextId);
@@ -203,7 +206,24 @@ export function CommitTrackProvider({ children }) {
         })
       );
     },
-    [persistCommitments]
+    [persistCommitments, todayStr]
+  );
+
+  const removeCommitmentPayment = useCallback(
+    (id, paymentIndex) => {
+      persistCommitments((prev) =>
+        prev.map((c) => {
+          if (String(c.id) !== String(id)) return c;
+          const payments = [...(c.payments || [])];
+          const idx = Number(paymentIndex);
+          if (idx < 0 || idx >= payments.length) return c;
+          payments.splice(idx, 1);
+          const merged = normalizeCommitment({ ...c, payments, updatedAt: Date.now() });
+          return normalizeCommitmentStatusForSave(merged, todayStr, prev);
+        })
+      );
+    },
+    [persistCommitments, todayStr]
   );
 
   const addLending = useCallback(
@@ -510,12 +530,13 @@ export function CommitTrackProvider({ children }) {
       settings,
       monthlySnapshots,
       todayStr,
-      getEffectiveStatus: (c) => getEffectiveStatus(c, todayStr),
+      getEffectiveStatus: (c) => getEffectiveStatus(c, todayStr, commitments),
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
       addCommitment,
       updateCommitment,
       deleteCommitment,
       addCommitmentPayment,
+      removeCommitmentPayment,
       addLending,
       updateLending,
       deleteLending,
@@ -553,6 +574,7 @@ export function CommitTrackProvider({ children }) {
       updateCommitment,
       deleteCommitment,
       addCommitmentPayment,
+      removeCommitmentPayment,
       addLending,
       updateLending,
       deleteLending,

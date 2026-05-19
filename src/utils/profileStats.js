@@ -44,18 +44,19 @@ export function computeControlScore(commitments, getEffectiveStatus) {
 /**
  * Flatten recent payments across commitments (newest first).
  */
-export function recentCommitmentPaymentEvents(commitments, limit = 10) {
+export function recentCommitmentPaymentEvents(commitments, limit = 25) {
   const rows = [];
   for (const c of commitments || []) {
-    let i = 0;
-    for (const p of c.payments || []) {
+    (c.payments || []).forEach((p, paymentIndex) => {
       rows.push({
-        id: `${c.id}-${p.date}-${p.amount}-${i++}`,
+        id: `${c.id}-${paymentIndex}-${p.date}-${p.amount}`,
+        commitmentId: c.id,
+        paymentIndex,
         name: c.name,
         amount: p.amount,
         date: p.date,
       });
-    }
+    });
   }
   rows.sort((a, b) => b.date.localeCompare(a.date));
   return rows.slice(0, limit);

@@ -30,13 +30,14 @@ export function refreshChitCommitment(c, todayStr) {
   const newInstallment = Math.round(resolveChitInstallment(V, N, targetMonth, mode, custom));
   const paidThisCycle = totalPaidOnPayments(c.payments);
 
-  let remainingAmount;
+  let owedThisCycle;
   if (targetMonth > storedMonth) {
     const carry = Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
-    remainingAmount = Math.max(0, Math.round(carry + newInstallment - paidThisCycle));
+    owedThisCycle = carry + newInstallment;
   } else {
-    remainingAmount = Math.max(0, Math.round(newInstallment - paidThisCycle));
+    owedThisCycle = newInstallment;
   }
+  const remainingAmount = Math.max(0, Math.round(owedThisCycle - paidThisCycle));
 
   const unchanged =
     targetMonth === storedMonth &&

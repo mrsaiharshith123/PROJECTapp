@@ -14,6 +14,7 @@ import DashboardTools from "../components/dashboard/DashboardTools.jsx";
 import ToolsDiscoveryToast from "../components/dashboard/ToolsDiscoveryPrompt.jsx";
 import { isSalariedFamily } from "../constants/modeExperience.js";
 import { isActiveBill } from "../utils/billLifecycle.js";
+import { monthlyBurdenForCommitment } from "../engines/burden.js";
 import { formatInr, STATUS_ICONS, CHEVRON, EM_DASH } from "../constants/symbols.js";
 
 function formatDate(dateStr) {
@@ -26,7 +27,7 @@ const statusIcon = STATUS_ICONS;
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus } = useCommitTrack();
+  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr } = useCommitTrack();
   const stable = useStabilityIntel();
 
   const scrollToTools = useCallback(() => {
@@ -38,13 +39,13 @@ const Home = () => {
   }, [location.hash, scrollToTools]);
   const intel = useCommitIntel();
 
-  const openRemaining = commitments.reduce((s, c) => {
-    if (getEffectiveStatus(c) === "paid") return s;
-    return s + Math.max(0, Number(c.remainingAmount ?? 0));
-  }, 0);
+  const openRemaining = commitments.reduce(
+    (s, c) => s + monthlyBurdenForCommitment(c, getEffectiveStatus),
+    0
+  );
 
   const upcoming = sortedCommitments
-    .filter((c) => isActiveBill(c) && getEffectiveStatus(c) === "pending")
+    .filter((c) => isActiveBill(c, getEffectiveStatus, todayStr) && getEffectiveStatus(c) === "pending")
     .slice(0, 3);
 
   const overdue = sortedCommitments.filter((c) => getEffectiveStatus(c) === "overdue");
@@ -148,7 +149,7 @@ const Home = () => {
                   </div>
                   <div className="text-right shrink-0 pl-2">
                     <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-                      {formatInr(Number(item.remainingAmount ?? item.amount))}
+                      {formatInr(Number(item.amount ?? 0))}
                     </p>
                     <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-medium">
                       Due
@@ -181,7 +182,7 @@ const Home = () => {
                 </div>
                 <div className="text-right shrink-0 pl-2">
                   <p className="font-bold text-red-600" style={{ fontFamily: "'Sora', sans-serif" }}>
-                    {formatInr(Number(item.remainingAmount ?? item.amount))}
+                    {formatInr(Number(item.amount ?? 0))}
                   </p>
                   <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium border border-red-200">
                     Overdue

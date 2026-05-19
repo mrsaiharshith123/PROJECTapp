@@ -21,7 +21,7 @@ export default function HomeOverviewCard() {
     [commitments, getEffectiveStatus, todayStr, income]
   );
 
-  const active = commitments.filter(isActiveBill);
+  const active = commitments.filter((c) => isActiveBill(c, getEffectiveStatus, todayStr));
   const subs = active.filter((c) => c.category === "Subscription");
   const emis = active.filter((c) => c.category === "EMI");
 

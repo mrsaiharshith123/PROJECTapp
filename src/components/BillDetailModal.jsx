@@ -4,6 +4,8 @@ import PriorityBadge from "./PriorityBadge.jsx";
 import { COPY } from "../constants/copy.js";
 import { BILL_STATUS_UI, currentYearPrefix } from "../utils/billLifecycle.js";
 import { computeBillSpendSummary } from "../utils/commitmentSpendSummary.js";
+import { computeBillPaymentProgress } from "../utils/billPaymentProgress.js";
+import { isCurrentCyclePaid } from "../utils/commitmentPayments.js";
 import { repeatTypeLabel } from "../constants/repeatTypes.js";
 
 function formatDate(dateStr) {
@@ -32,16 +34,20 @@ function Stat({ label, value, accent }) {
 export default function BillDetailModal({
   bill,
   todayStr,
+  allCommitments = [],
   displayStatus,
   onClose,
   onEdit,
   onAddPayment,
   onDelete,
 }) {
-  const summary = computeBillSpendSummary(bill, todayStr);
+  const summary = computeBillSpendSummary(bill, todayStr, allCommitments);
+  const progress = computeBillPaymentProgress(bill, todayStr, allCommitments);
   const amount = Number(bill.amount) || 0;
   const statusUi = BILL_STATUS_UI[displayStatus] || BILL_STATUS_UI.pending;
-  const canPay = displayStatus === "pending" || displayStatus === "overdue";
+  const canPay =
+    (displayStatus === "pending" || displayStatus === "overdue") &&
+    !isCurrentCyclePaid(bill, todayStr, allCommitments);
   const calendarYear = currentYearPrefix(todayStr);
   const isInsurance = bill.category === "Insurance";
 
@@ -135,30 +141,57 @@ export default function BillDetailModal({
 
         {summary.ended && (
           <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-3 py-2">
-            This {COPY.bill} has ended — no further payments expected.
+            This {COPY.bill} has ended — shown in History. Extend the end date when editing to bring it back to your active bills.
           </p>
         )}
 
+        <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/60 dark:bg-indigo-950/30 px-3 py-2.5 space-y-1">
+          <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-100">Payment progress</p>
+          <p className="text-sm text-indigo-950 dark:text-indigo-100">{progress.label}</p>
+          <p className="text-[11px] text-indigo-800/80 dark:text-indigo-200/80">
+            From {formatDate(summary.startDate)}
+            {summary.priorSpend > 0
+              ? ` · ~₹${summary.priorSpend.toLocaleString("en-IN")} before you used CommitTrack`
+              : ""}
+            {progress.paymentEntries > 0
+              ? ` · ${progress.paymentEntries} payment record${progress.paymentEntries === 1 ? "" : "s"} (₹${progress.paymentAmount.toLocaleString("en-IN")})`
+              : ""}
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <Stat
-            label="Recorded payments"
-            value={`₹${summary.recordedSinceStart.toLocaleString()}`}
+            label="Paid till now"
+            value={`₹${(summary.paidTillNow ?? summary.spentSinceStart).toLocaleString("en-IN")}`}
             accent="text-emerald-600 dark:text-emerald-400"
           />
-          <Stat label="Still to go" value={futureLabel} accent="text-amber-700 dark:text-amber-400" />
+          <Stat
+            label="Still to pay"
+            value={
+              summary.ended
+                ? "Ended"
+                : summary.remainingToPay != null
+                  ? `₹${summary.remainingToPay.toLocaleString("en-IN")}`
+                  : futureLabel
+            }
+            accent="text-amber-700 dark:text-amber-400"
+          />
           <Stat label="Per cycle" value={`₹${amount.toLocaleString()}`} />
           <Stat
-            label={summary.totalProjected != null ? "Total (start → end)" : "All-time recorded"}
+            label={summary.totalContractValue != null ? "Total (start → end)" : "Contract total"}
             value={
-              summary.totalProjected != null
-                ? `₹${summary.totalProjected.toLocaleString()}`
-                : `₹${summary.recordedAllTime.toLocaleString()}`
+              summary.totalContractValue != null
+                ? `₹${summary.totalContractValue.toLocaleString("en-IN")}`
+                : summary.totalProjected != null
+                  ? `₹${summary.totalProjected.toLocaleString("en-IN")}`
+                  : "—"
             }
           />
         </div>
-        {summary.priorSpend > 0 && (
+        {progress.paymentEntries > 0 && summary.priorSpend > 0 && (
           <p className="text-[11px] text-gray-500 dark:text-slate-400">
-            Estimated before you tracked: ~₹{summary.priorSpend.toLocaleString()} (not counted in recorded payments above).
+            ₹{summary.recordedAllTime.toLocaleString("en-IN")} logged in CommitTrack · ~
+            {summary.priorSpend.toLocaleString("en-IN")} from earlier installments (from your start date).
           </p>
         )}
 

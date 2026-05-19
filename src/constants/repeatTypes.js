@@ -1,4 +1,5 @@
 import { differenceInCalendarMonths, parseISO } from "date-fns";
+import { compareYmd, todayYmd } from "../utils/dates.js";
 
 export const REPEAT_OPTIONS = [
   { id: "none", label: "Does not repeat", months: 0 },
@@ -42,12 +43,33 @@ export function monthsFromAnchorToMonth(anchorYmd, monthKey) {
   }
 }
 
+/** Sum of payment amounts dated in yyyy-MM. */
+export function paymentsInMonth(c, monthKey) {
+  let sum = 0;
+  for (const p of c.payments || []) {
+    if ((p.date || "").startsWith(monthKey)) {
+      sum += Math.max(0, Number(p.amount) || 0);
+    }
+  }
+  return sum;
+}
+
 /**
- * Whether this bill has a payment obligation in the given calendar month.
+ * Calendar schedule only — whether this bill type can fall due in a month (ignores paid state).
  */
-export function isBillDueInMonth(c, monthKey, getEffectiveStatusFn, todayStr) {
-  const eff = getEffectiveStatusFn(c, todayStr);
-  if (eff === "paid") return false;
+export function isScheduledInMonth(c, monthKey, todayStr = todayYmd()) {
+  const monthStart = `${monthKey}-01`;
+  const monthEnd = `${monthKey}-28`;
+
+  const endDate = c.endDate || "";
+  if (endDate && compareYmd(endDate, monthStart) < 0) {
+    return false;
+  }
+
+  const start = c.startDate || c.dueDate || "";
+  if (start && compareYmd(monthEnd, start) < 0) {
+    return false;
+  }
 
   const rt = normalizeRepeatType(c.repeatType);
   if (rt === "none") {
@@ -66,4 +88,27 @@ export function isBillDueInMonth(c, monthKey, getEffectiveStatusFn, todayStr) {
   }
 
   return offset % interval === 0;
+}
+
+/** Gross obligation for a calendar month (before payments in that month). */
+export function grossObligationInMonth(c, monthKey, monthNum, todayStr = todayYmd()) {
+  if (!isScheduledInMonth(c, monthKey, todayStr)) return 0;
+
+  const rt = normalizeRepeatType(c.repeatType);
+  const amt = Math.max(0, Number(c.amount) || 0);
+  if (rt === "none") {
+    return Math.max(0, Number(c.remainingAmount ?? amt));
+  }
+  return amt;
+}
+
+/**
+ * Whether money is still owed for this calendar month (schedule minus payments dated in month).
+ * Does not use global "paid" status so a paid cycle does not hide future recurring months.
+ */
+export function isBillDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
+  const gross = grossObligationInMonth(c, monthKey, monthNum, todayStr);
+  if (gross <= 0) return false;
+  const paid = paymentsInMonth(c, monthKey);
+  return gross - paid > 0.01;
 }

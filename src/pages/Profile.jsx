@@ -1,37 +1,24 @@
+import { useState } from "react";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
-import { SELECTABLE_USER_MODES, getUserModeConfig } from "../constants/userModes.js";
-import {
-  getIncomeLabel,
-  resolveUserMode,
-  isSalariedFamily,
-  hasPowerFeatures,
-} from "../constants/modeExperience.js";
+import { getUserModeConfig } from "../constants/userModes.js";
+import { resolveUserMode, getIncomeLabel, hasPowerFeatures, isSalariedFamily } from "../constants/modeExperience.js";
 import {
   computePaymentMonthStreak,
   computeControlScore,
-  recentCommitmentPaymentEvents,
   totalPaymentCountAndSum,
 } from "../utils/profileStats.js";
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
 import ProfileAvatar from "../components/ProfileAvatar.jsx";
-import ProfileManager from "../components/profile/ProfileManager.jsx";
 import DataImportSection from "../components/profile/DataImportSection.jsx";
 import ProfileNotificationsSection from "../components/profile/ProfileNotificationsSection.jsx";
 import ProfileSecuritySection from "../components/profile/ProfileSecuritySection.jsx";
-import { ProfileField, profileInputClass } from "../components/profile/ProfileField.jsx";
+import ProfileHistorySection from "../components/profile/ProfileHistorySection.jsx";
+import { ProfileSectionPicker } from "../components/profile/ProfileSectionPicker.jsx";
+import ProfilePersonalSection from "../components/profile/ProfilePersonalSection.jsx";
+import ProfileMoneySection from "../components/profile/ProfileMoneySection.jsx";
 import { COPY } from "../constants/copy.js";
-import { CALC_HELP } from "../constants/calculationHelp.js";
-
-function formatDate(dateStr) {
-  if (!dateStr) return "—";
-  return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 const Profile = () => {
   const {
@@ -44,12 +31,17 @@ const Profile = () => {
     monthlySnapshots,
     getEffectiveStatus,
     updateSettings,
+    updateCommitment,
+    deleteCommitment,
+    removeCommitmentPayment,
+    todayStr,
   } = useCommitTrack();
+
+  const [openSection, setOpenSection] = useState(null);
 
   const streak = computePaymentMonthStreak(commitments, lendings);
   const control = computeControlScore(commitments, getEffectiveStatus);
   const { count: paymentCount, sum: paymentSum } = totalPaymentCountAndSum(commitments);
-  const recent = recentCommitmentPaymentEvents(commitments, 8);
   const incomeLabel = getIncomeLabel(settings);
   const modeCfg = getUserModeConfig(resolveUserMode(settings));
   const salariedFamily = isSalariedFamily(settings);
@@ -89,181 +81,17 @@ const Profile = () => {
         <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40">
           <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Set your income</p>
           <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
-            Required for affordability, chit timing, loan planner, and pressure scores.
+            Required for affordability, chit timing, loan planner, and pressure scores.{" "}
+            <button
+              type="button"
+              onClick={() => setOpenSection("money")}
+              className="font-semibold underline"
+            >
+              Open Money setup
+            </button>
           </p>
         </Card>
       )}
-
-      <InstallAppBanner />
-
-      <Card className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Personal</h3>
-        <ProfileField label="Display name" hint="How we greet you on the dashboard.">
-          <input
-            className={profileInputClass}
-            value={settings.displayName ?? ""}
-            onChange={(e) => updateSettings({ displayName: e.target.value })}
-            placeholder="Your name"
-          />
-        </ProfileField>
-        <div>
-          <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-2">Appearance</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: "light", label: "Light" },
-              { id: "dark", label: "Dark" },
-              { id: "system", label: "System" },
-            ].map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => updateSettings({ colorScheme: opt.id })}
-                className={`py-2.5 rounded-xl text-xs font-semibold border transition-all ${
-                  (settings.colorScheme || "system") === opt.id
-                    ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-200"
-                    : "border-gray-200 dark:border-slate-600 text-gray-600 dark:text-slate-300"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </Card>
-
-      <Card className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Money setup</h3>
-        <ProfileField label={`${incomeLabel} (₹)`} required hint="Used across analytics and tools.">
-          <input
-            type="number"
-            min="0"
-            className={profileInputClass}
-            value={settings.monthlyIncome === 0 ? "" : String(settings.monthlyIncome)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({ monthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-            }}
-            placeholder="e.g. 75000"
-          />
-        </ProfileField>
-        {resolveUserMode(settings) === "salaried" && (
-          <ProfileField
-            label="Second income (₹/mo)"
-            hint="Partner salary or steady side income — combined with main income for pressure, forecasts, and reminders. Use 0 if none."
-          >
-            <input
-              type="number"
-              min="0"
-              className={profileInputClass}
-              value={!settings.secondaryMonthlyIncome ? "" : String(settings.secondaryMonthlyIncome)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                updateSettings({ secondaryMonthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-              }}
-              placeholder="0"
-            />
-          </ProfileField>
-        )}
-        {["salaried", "freelancer"].includes(resolveUserMode(settings)) && (
-          <ProfileField label="Income you enter is" hint={CALC_HELP.incomeEntryBasis}>
-            <select
-              className={profileInputClass}
-              value={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
-              onChange={(e) => updateSettings({ incomeEntryBasis: e.target.value === "gross" ? "gross" : "take_home" })}
-            >
-              <option value="take_home">Take-home (after tax / PF) — recommended</option>
-              <option value="gross">Gross / CTC-style (before deductions)</option>
-            </select>
-          </ProfileField>
-        )}
-        <ProfileField label="Liquid savings (₹)" hint="Cash you can access quickly — emergency & survival math.">
-          <input
-            type="number"
-            min="0"
-            className={profileInputClass}
-            value={settings.liquidSavings === 0 ? "" : String(settings.liquidSavings)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({ liquidSavings: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-            }}
-          />
-        </ProfileField>
-        <ProfileField label="Dependents" hint="People relying on your income (family household).">
-          <input
-            type="number"
-            min="0"
-            max="12"
-            className={profileInputClass}
-            value={settings.dependents === 0 ? "" : String(settings.dependents)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({
-                dependents: raw === "" ? 0 : Math.min(12, Math.max(0, Math.floor(Number(raw) || 0))),
-              });
-            }}
-          />
-        </ProfileField>
-        <ProfileField label="User mode" hint={modeCfg.description}>
-          <select
-            className={profileInputClass}
-            value={resolveUserMode(settings)}
-            onChange={(e) => {
-              const next = e.target.value;
-              updateSettings({
-                userMode: next,
-                householdScope: next === "salaried" ? settings.householdScope || "single" : "single",
-              });
-            }}
-          >
-            {SELECTABLE_USER_MODES.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.emoji} {m.label}
-              </option>
-            ))}
-          </select>
-        </ProfileField>
-        {resolveUserMode(settings) === "salaried" && (
-          <ProfileField label="Household" hint="Family unlocks household categories, payer tags, and family member profiles.">
-            <select
-              className={profileInputClass}
-              value={settings.householdScope === "family" ? "family" : "single"}
-              onChange={(e) =>
-                updateSettings({
-                  householdScope: e.target.value === "family" ? "family" : "single",
-                  activeProfileId: e.target.value === "family" ? settings.activeProfileId : "default",
-                })
-              }
-            >
-              <option value="single">Just me</option>
-              <option value="family">Family household</option>
-            </select>
-          </ProfileField>
-        )}
-      </Card>
-
-      {salariedFamily && (
-        <Card className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Family profiles</h3>
-          <p className="text-xs text-gray-500">Separate bills by family member or area of the home.</p>
-          <ProfileManager />
-        </Card>
-      )}
-
-      <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />
-
-      <ProfileSecuritySection
-        allCommitments={allCommitments}
-        allLendings={allLendings}
-        allGoals={allGoals}
-        settings={settings}
-        monthlySnapshots={monthlySnapshots}
-        updateSettings={updateSettings}
-      />
-
-      <Card className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Import & export</h3>
-        <DataImportSection />
-      </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Card className="text-center p-4">
@@ -271,7 +99,7 @@ const Profile = () => {
           <p className="text-xs text-gray-500">{COPY.billsStat}</p>
         </Card>
         <Card className="text-center p-4">
-          <p className="text-lg font-bold text-gray-800 dark:text-slate-100">₹{paymentSum.toLocaleString()}</p>
+          <p className="text-lg font-bold text-gray-800 dark:text-slate-100">₹{paymentSum.toLocaleString("en-IN")}</p>
           <p className="text-xs text-gray-500">Paid ({paymentCount})</p>
         </Card>
         <Card className="text-center p-4">
@@ -284,19 +112,59 @@ const Profile = () => {
         </Card>
       </div>
 
-      {recent.length > 0 && (
-        <Card className="space-y-2">
-          <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">Recent payments</p>
-          <ul className="divide-y divide-gray-100 dark:divide-slate-700">
-            {recent.map((row) => (
-              <li key={row.id} className="py-2 flex justify-between gap-2 text-sm">
-                <span className="text-gray-700 dark:text-slate-300 truncate">{row.name}</span>
-                <span className="text-gray-500 shrink-0">{formatDate(row.date)}</span>
-                <span className="font-semibold shrink-0">₹{Number(row.amount).toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
+      <InstallAppBanner />
+
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide px-0.5">
+          Settings
+        </p>
+        <ProfileSectionPicker openId={openSection} onSelect={setOpenSection} />
+      </div>
+
+      {openSection === "personal" && (
+        <ProfilePersonalSection settings={settings} updateSettings={updateSettings} />
+      )}
+
+      {openSection === "money" && (
+        <ProfileMoneySection settings={settings} updateSettings={updateSettings} />
+      )}
+
+      {openSection === "notifications" && (
+        <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />
+      )}
+
+      {openSection === "security" && (
+        <ProfileSecuritySection
+          allCommitments={allCommitments}
+          allLendings={allLendings}
+          allGoals={allGoals}
+          settings={settings}
+          monthlySnapshots={monthlySnapshots}
+          updateSettings={updateSettings}
+        />
+      )}
+
+      {openSection === "import" && (
+        <Card className="space-y-3">
+          <DataImportSection />
         </Card>
+      )}
+
+      {openSection === "history" && (
+        <ProfileHistorySection
+          commitments={commitments}
+          getEffectiveStatus={getEffectiveStatus}
+          todayStr={todayStr}
+          deleteCommitment={deleteCommitment}
+          removeCommitmentPayment={removeCommitmentPayment}
+          updateCommitment={updateCommitment}
+        />
+      )}
+
+      {!openSection && (
+        <p className="text-center text-xs text-gray-400 dark:text-slate-500 px-2">
+          Tap a section above to view or edit. Tap again to collapse.
+        </p>
       )}
 
       <p className="text-center text-[11px] text-gray-400 pb-2">Saved automatically on this device.</p>

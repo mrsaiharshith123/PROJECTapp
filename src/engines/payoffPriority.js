@@ -55,7 +55,7 @@ export function payoffPriorityScore(commitment, getEffectiveStatusFn, todayStr) 
 export function rankPayoffOrder(commitments, getEffectiveStatusFn, todayStr) {
   return commitments
     .filter((c) => {
-      if (!isActiveBill(c)) return false;
+      if (!isActiveBill(c, getEffectiveStatusFn, todayStr)) return false;
       const eff = getEffectiveStatusFn(c, todayStr);
       return (eff === "pending" || eff === "overdue") && Number(c.remainingAmount ?? 0) > 0;
     })

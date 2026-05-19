@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCashflowForecastSeries } from "../forecastSeries.js";
+import { buildCashflowForecastSeries, amountDueInMonth } from "../forecastSeries.js";
 import { getEffectiveStatus } from "../../utils/commitmentStatus.js";
 
 describe("buildCashflowForecastSeries", () => {
@@ -20,5 +20,26 @@ describe("buildCashflowForecastSeries", () => {
     const june = rows.find((r) => r.monthKey === "2026-06");
     expect(june).toBeDefined();
     expect(june.due).toBe(50000);
+  });
+
+  it("clears current month after payment recorded in that month", () => {
+    const commitments = [
+      {
+        id: "netflix",
+        name: "Netflix",
+        amount: 199,
+        remainingAmount: 0,
+        repeatType: "monthly",
+        dueDate: "2026-05-10",
+        startDate: "2025-09-10",
+        payments: [{ amount: 199, date: "2026-05-12" }],
+        status: "pending",
+      },
+    ];
+    const monthKey = "2026-05";
+    expect(amountDueInMonth(commitments[0], monthKey, "05", getEffectiveStatus, "2026-05-15")).toBe(0);
+    const rows = buildCashflowForecastSeries(commitments, 50000, getEffectiveStatus, "2026-05-15", 3);
+    const may = rows.find((r) => r.monthKey === monthKey);
+    expect(may?.due).toBe(0);
   });
 });

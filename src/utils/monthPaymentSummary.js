@@ -1,12 +1,13 @@
 import { format } from "date-fns";
 import { amountDueInMonth, scheduledGrossInMonth } from "../engines/forecastSeries.js";
+import { paymentsInMonth } from "../constants/repeatTypes.js";
 import { isHistoryBill } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
 import { formatBurdenPercent } from "./formatBurdenPercent.js";
 
 /**
  * Current calendar month summary for the dashboard.
- * Due / Left = still owed; Paid = cash out; burden % uses planned obligations (gross).
+ * Due / Left = still owed this month; Paid = cash recorded this month.
  */
 export function computeCurrentMonthSummary(commitments, getEffectiveStatusFn, todayStr = todayYmd(), monthlyIncome = 0) {
   const monthKey = format(new Date(`${todayStr}T12:00:00`), "yyyy-MM");
@@ -18,29 +19,14 @@ export function computeCurrentMonthSummary(commitments, getEffectiveStatusFn, to
   let dueThisMonth = 0;
 
   for (const c of commitments) {
-    if (isHistoryBill(c)) {
-      for (const p of c.payments || []) {
-        if ((p.date || "").startsWith(monthKey)) {
-          paidThisMonth += Number(p.amount) || 0;
-        }
-      }
-      continue;
-    }
-
-    const eff = getEffectiveStatusFn(c, todayStr);
-    if (eff === "paid") {
-      for (const p of c.payments || []) {
-        if ((p.date || "").startsWith(monthKey)) {
-          paidThisMonth += Number(p.amount) || 0;
-        }
-      }
-      continue;
-    }
-
     for (const p of c.payments || []) {
       if ((p.date || "").startsWith(monthKey)) {
-        paidThisMonth += Number(p.amount) || 0;
+        paidThisMonth += Math.max(0, Number(p.amount) || 0);
       }
+    }
+
+    if (isHistoryBill(c, getEffectiveStatusFn, todayStr)) {
+      continue;
     }
 
     const gross = scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);

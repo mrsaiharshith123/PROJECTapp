@@ -1,22 +1,15 @@
 import { addMonths, format, parseISO } from "date-fns";
-import { isBillDueInMonth, normalizeRepeatType } from "../constants/repeatTypes.js";
+import {
+  isBillDueInMonth,
+  grossObligationInMonth,
+  paymentsInMonth,
+} from "../constants/repeatTypes.js";
 
 /**
  * Gross scheduled obligation in a month (before payments this month).
  */
 export function scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
-  if (!isBillDueInMonth(c, monthKey, getEffectiveStatusFn, todayStr)) {
-    return 0;
-  }
-  const eff = getEffectiveStatusFn(c, todayStr);
-  if (eff === "paid") return 0;
-
-  const rt = normalizeRepeatType(c.repeatType);
-  const amt = Number(c.amount) || 0;
-  if (rt === "none") {
-    return Math.max(0, Number(c.remainingAmount ?? amt));
-  }
-  return amt;
+  return grossObligationInMonth(c, monthKey, monthNum, todayStr);
 }
 
 /**
@@ -25,13 +18,7 @@ export function scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusF
 export function amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr) {
   const gross = scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
   if (gross <= 0) return 0;
-
-  let paidInMonth = 0;
-  for (const p of c.payments || []) {
-    if ((p.date || "").startsWith(monthKey)) {
-      paidInMonth += Number(p.amount) || 0;
-    }
-  }
+  const paidInMonth = paymentsInMonth(c, monthKey);
   return Math.max(0, gross - paidInMonth);
 }
 
@@ -93,7 +80,9 @@ export function buildCashflowForecastSeries(
 
     let billDue = 0;
     for (const c of commitments) {
-      billDue += amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
+      if (isBillDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr)) {
+        billDue += amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
+      }
     }
     const lendOut = getEffectiveLendingStatus
       ? lendingDueInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
