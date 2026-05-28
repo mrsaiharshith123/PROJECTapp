@@ -13,6 +13,13 @@ Local-first PWA for **commitments, pressure, and household/salary cashflow** —
 | `npm run knip` | Unused exports / files (see `knip.json`) |
 | `npm run deploy` | Build and publish `dist/` to GitHub Pages |
 
+## GitHub Pages env setup
+
+For CI builds in `.github/workflows/deploy-pages.yml`, add these repository secrets so Supabase is available in production:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
 ## Build outputs (do not commit)
 
 These are **generated** or **installed** and are listed in **`.gitignore`**:
