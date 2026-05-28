@@ -11,6 +11,7 @@ import LendingDetailModal from "../components/LendingDetailModal.jsx";
 import LendingFormFields from "../components/lending/LendingFormFields.jsx";
 import LendingRequestModal from "../components/lending/LendingRequestModal.jsx";
 import { canDeleteLending, canEditLending, repaymentModeLabel } from "../engines/lendingAgreement.js";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -48,6 +49,7 @@ function avatarFor(name) {
 }
 
 const Lending = () => {
+  const enhanced = isEnhancedUi();
   const { lendings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } = useCommitTrack();
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -194,7 +196,7 @@ const Lending = () => {
   };
 
   const inputClass = (field) =>
-    `w-full px-4 py-3 rounded-xl border bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
+    `w-full px-4 py-3 rounded-xl border bg-gray-50 text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ui-input ${
       formErrors[field] ? "border-red-300" : "border-gray-200"
     }`;
 
@@ -283,7 +285,7 @@ const Lending = () => {
           <button
             type="button"
             onClick={() => setShowRequest(true)}
-            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700"
+            className="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 ui-btn-primary"
           >
             Request money
           </button>
@@ -293,7 +295,7 @@ const Lending = () => {
               resetForm();
               setShowAdd(true);
             }}
-            className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+            className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 ui-btn-primary"
           >
             + Add
           </button>
@@ -301,25 +303,25 @@ const Lending = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Card className="text-center p-4">
+        <Card className={`text-center p-4 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-xs text-gray-400 mb-1">You lent (outstanding)</p>
           <p className="text-lg font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
             {formatInr(totals.lentOut)}
           </p>
         </Card>
-        <Card className="text-center p-4 bg-violet-50 border-violet-100">
+        <Card className={`text-center p-4 bg-violet-50 border-violet-100 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-xs text-violet-600 mb-1">You owe (debt)</p>
           <p className="text-lg font-bold text-violet-800" style={{ fontFamily: "'Sora', sans-serif" }}>
             {formatInr(totals.borrowedIn)}
           </p>
         </Card>
-        <Card className="text-center p-4 bg-emerald-50 border-emerald-100">
+        <Card className={`text-center p-4 bg-emerald-50 border-emerald-100 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-xs text-emerald-600 mb-1">Recovered (lent)</p>
           <p className="text-lg font-bold text-emerald-700" style={{ fontFamily: "'Sora', sans-serif" }}>
             {formatInr(totals.recovered)}
           </p>
         </Card>
-        <Card className="text-center p-4 bg-slate-50 border-slate-100">
+        <Card className={`text-center p-4 bg-slate-50 border-slate-100 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-xs text-slate-500 mb-1">Repaid (debt)</p>
           <p className="text-lg font-bold text-slate-700" style={{ fontFamily: "'Sora', sans-serif" }}>
             {formatInr(totals.repaid)}

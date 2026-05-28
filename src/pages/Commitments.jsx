@@ -21,6 +21,7 @@ import {
 } from "../utils/commitmentPayments.js";
 import { computeContractPaymentLedger } from "../utils/billPaymentProgress.js";
 import { priorityRank } from "../constants/priority.js";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "\u2014";
@@ -29,6 +30,7 @@ function formatDate(dateStr) {
 }
 
 const Commitments = () => {
+  const enhanced = isEnhancedUi();
   const navigate = useNavigate();
   const {
     sortedCommitments,
@@ -202,19 +204,31 @@ const Commitments = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-2">
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800 rounded-2xl p-3 text-center">
+        <div
+          className={`bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800 rounded-2xl p-3 text-center ${
+            enhanced ? "ui-stat-tile" : ""
+          }`}
+        >
           <p className="text-xl font-bold text-amber-600" style={{ fontFamily: "'Sora', sans-serif" }}>
             {counts.pending || 0}
           </p>
           <p className="text-[10px] text-amber-600 font-medium mt-0.5">Due</p>
         </div>
-        <div className="bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-800 rounded-2xl p-3 text-center">
+        <div
+          className={`bg-sky-50 dark:bg-sky-950/30 border border-sky-100 dark:border-sky-800 rounded-2xl p-3 text-center ${
+            enhanced ? "ui-stat-tile" : ""
+          }`}
+        >
           <p className="text-xl font-bold text-sky-600" style={{ fontFamily: "'Sora', sans-serif" }}>
             {counts.upnext || 0}
           </p>
           <p className="text-[10px] text-sky-600 font-medium mt-0.5">Up next</p>
         </div>
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-800 rounded-2xl p-3 text-center">
+        <div
+          className={`bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-800 rounded-2xl p-3 text-center ${
+            enhanced ? "ui-stat-tile" : ""
+          }`}
+        >
           <p className="text-xl font-bold text-red-600" style={{ fontFamily: "'Sora', sans-serif" }}>
             {counts.overdue || 0}
           </p>
@@ -223,7 +237,9 @@ const Commitments = () => {
         <button
           type="button"
           onClick={() => setShowHistory((v) => !v)}
-          className="bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-2xl p-3 text-center hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+          className={`bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-2xl p-3 text-center hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors ${
+            enhanced ? "ui-stat-tile" : ""
+          }`}
         >
           <p className="text-xl font-bold text-gray-600 dark:text-slate-300" style={{ fontFamily: "'Sora', sans-serif" }}>
             {historyBills.length}
@@ -238,13 +254,13 @@ const Commitments = () => {
           placeholder="Search by name\u2026"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ui-input"
         />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 ui-input"
           >
             <option value="">All categories</option>
             <option value="EMI">EMI</option>
@@ -260,7 +276,7 @@ const Commitments = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 ui-input"
           >
             <option value="">All statuses</option>
             <option value="pending">Due now</option>
@@ -271,7 +287,7 @@ const Commitments = () => {
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 ui-input"
           >
             <option value="">All priorities</option>
             <option value="critical">Critical</option>
@@ -281,7 +297,7 @@ const Commitments = () => {
           <select
             value={filterPreset}
             onChange={(e) => setFilterPreset(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 sm:col-span-2"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 sm:col-span-2 ui-input"
           >
             <option value="">All types</option>
             <option value="recurring">Recurring only</option>
@@ -295,7 +311,7 @@ const Commitments = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 sm:col-span-1"
+            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-700 sm:col-span-1 ui-input"
           >
             <option value="priority_due">Sort: priority + due</option>
             <option value="due_soonest">Due soonest</option>

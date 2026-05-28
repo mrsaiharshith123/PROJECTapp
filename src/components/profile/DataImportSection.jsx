@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { previewImportCounts } from "../../utils/dataImport.js";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { decryptBackupPayload, downloadEncryptedBackup } from "../../services/drive/backup.js";
 
 export default function DataImportSection() {
   const { importAppData } = useCommitTrack();
+  const { isLoggedIn, user } = useAuth();
   const [preview, setPreview] = useState(null);
   const [pending, setPending] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [mode, setMode] = useState("merge");
+  const [busyDrive, setBusyDrive] = useState(false);
+
+  const makePassphrase = () => `${user?.id || ""}::${user?.email || ""}`;
 
   const onFile = (e) => {
     setError(null);
@@ -45,6 +51,32 @@ export default function DataImportSection() {
     }
   };
 
+  const restoreFromDrive = async () => {
+    setError(null);
+    setResult(null);
+    if (!isLoggedIn || !user) {
+      setError("Login required before restoring from Google Drive.");
+      return;
+    }
+    setBusyDrive(true);
+    try {
+      const fromDrive = await downloadEncryptedBackup();
+      if (!fromDrive?.payload) {
+        setError("No Google Drive backup found.");
+        return;
+      }
+      const data = await decryptBackupPayload(fromDrive.payload, makePassphrase());
+      const summary = importAppData(data, { mode });
+      setResult(
+        `Restored from Drive: ${summary.addedCommitments} bills, ${summary.addedLendings} lending, ${summary.addedGoals} goals (${mode}).`
+      );
+    } catch (e) {
+      setError(e.message || "Restore from Google Drive failed.");
+    } finally {
+      setBusyDrive(false);
+    }
+  };
+
   return (
     <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-slate-700">
       <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">Import JSON</p>
@@ -72,6 +104,14 @@ export default function DataImportSection() {
           Confirm import
         </button>
       )}
+      <button
+        type="button"
+        onClick={restoreFromDrive}
+        disabled={busyDrive}
+        className="w-full py-2 rounded-xl border border-indigo-200 text-indigo-700 text-xs font-semibold disabled:opacity-60"
+      >
+        {busyDrive ? "Restoring..." : "Restore latest from Google Drive"}
+      </button>
       {error && <p className="text-xs text-red-600">{error}</p>}
       {result && <p className="text-xs text-emerald-700">{result}</p>}
     </div>

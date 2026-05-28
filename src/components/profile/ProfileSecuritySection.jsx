@@ -1,4 +1,7 @@
 import Card from "../Card.jsx";
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { encryptBackupPayload, uploadEncryptedBackup } from "../../services/drive/backup.js";
 
 export default function ProfileSecuritySection({
   allCommitments,
@@ -8,6 +11,37 @@ export default function ProfileSecuritySection({
   monthlySnapshots,
   updateSettings,
 }) {
+  const { isLoggedIn, user } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const makePassphrase = () => `${user?.id || ""}::${user?.email || ""}`;
+
+  const backupToDrive = async () => {
+    if (!isLoggedIn || !user) {
+      setMessage("Login required before Google Drive backup.");
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    try {
+      const payload = {
+        commitments: allCommitments,
+        lendings: allLendings,
+        settings,
+        monthlySnapshots,
+        goals: allGoals,
+      };
+      const encrypted = await encryptBackupPayload(payload, makePassphrase());
+      await uploadEncryptedBackup(encrypted);
+      setMessage("Google Drive backup saved.");
+    } catch (e) {
+      setMessage(e.message || "Could not backup to Google Drive.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Card className="space-y-3">
       <div>
@@ -49,11 +83,21 @@ export default function ProfileSecuritySection({
 
       <button
         type="button"
+        disabled={busy}
+        className="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800 text-sm font-medium text-indigo-700 dark:text-indigo-300 disabled:opacity-60"
+        onClick={backupToDrive}
+      >
+        {busy ? "Backing up..." : "Backup to Google Drive"}
+      </button>
+
+      <button
+        type="button"
         className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-700 dark:text-slate-200"
         onClick={() => updateSettings({ readNotificationIds: [] })}
       >
         Mark all notifications as read
       </button>
+      {message && <p className="text-xs text-gray-600 dark:text-slate-300">{message}</p>}
     </Card>
   );
 }

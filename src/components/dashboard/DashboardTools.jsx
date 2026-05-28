@@ -11,6 +11,7 @@ import { getToolsForMode, getDashboardToolsHeading, getExperienceMode } from "..
 import { TOOL_ICONS, formatInr, INR, EM_DASH, ARROW } from "../../constants/symbols.js";
 import ExpenseSimulatorForm from "../tools/ExpenseSimulatorForm.jsx";
 import ChitFundAdvisor from "../tools/ChitFundAdvisor.jsx";
+import BondAdvisor from "../tools/BondAdvisor.jsx";
 import LoanPayoffAdvisor from "../tools/LoanPayoffAdvisor.jsx";
 import QuickScenariosPanel from "../tools/QuickScenariosPanel.jsx";
 import { combinedMonthlyIncome } from "../../utils/combinedIncome.js";
@@ -304,6 +305,12 @@ export default function DashboardTools() {
             getEffectiveStatus={getEffectiveStatus}
             todayStr={todayStr}
           />
+        </Modal>
+      )}
+
+      {activeTool === "bond" && (
+        <Modal title="Bond return advisor" onClose={closeTool}>
+          <BondAdvisor monthlyIncome={income} />
         </Modal>
       )}
 

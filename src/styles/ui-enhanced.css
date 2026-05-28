@@ -10,6 +10,7 @@ html[data-ui="enhanced"] {
   --ui-radius-lg: 1.125rem;
   --ui-shadow: 0 4px 24px -4px rgba(30, 27, 75, 0.12), 0 2px 8px -2px rgba(30, 27, 75, 0.06);
   --ui-shadow-dark: 0 8px 32px -8px rgba(0, 0, 0, 0.45);
+  --ui-border-soft: rgba(99, 102, 241, 0.12);
 }
 
 html[data-ui="enhanced"] body {
@@ -20,6 +21,10 @@ html[data-ui="enhanced"] body {
 
 html[data-ui="enhanced"].dark body {
   background: radial-gradient(120% 70% at 50% -10%, #1a2240 0%, var(--ui-bg-dark) 50%, #070b12 100%);
+}
+
+html[data-ui="enhanced"] .ui-screen-bg {
+  background: transparent !important;
 }
 
 html[data-ui="enhanced"] .font-display,
@@ -33,7 +38,109 @@ html[data-ui="enhanced"] .ui-card {
   background: var(--ui-surface);
   border-radius: var(--ui-radius-lg);
   box-shadow: var(--ui-shadow);
-  border: 1px solid rgba(99, 102, 241, 0.08);
+  border: 1px solid var(--ui-border-soft);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+/* Global utility overrides so legacy-tailwind classes adopt new design language app-wide */
+html[data-ui="enhanced"] .bg-white {
+  background: rgba(255, 255, 255, 0.9) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+html[data-ui="enhanced"] .bg-gray-50,
+html[data-ui="enhanced"] .bg-gray-100 {
+  background: rgba(248, 250, 252, 0.88) !important;
+}
+
+html.dark[data-ui="enhanced"] .bg-gray-50,
+html.dark[data-ui="enhanced"] .bg-gray-100 {
+  background: rgba(30, 41, 59, 0.7) !important;
+}
+
+html.dark[data-ui="enhanced"] .bg-white {
+  background: rgba(18, 26, 43, 0.86) !important;
+}
+
+html.dark[data-ui="enhanced"] .bg-slate-900,
+html.dark[data-ui="enhanced"] .bg-slate-950 {
+  background: rgba(11, 15, 26, 0.92) !important;
+}
+
+html[data-ui="enhanced"] .border-gray-100,
+html[data-ui="enhanced"] .border-gray-200 {
+  border-color: rgba(99, 102, 241, 0.14) !important;
+}
+
+html[data-ui="enhanced"] .border-slate-700,
+html[data-ui="enhanced"] .border-slate-800 {
+  border-color: rgba(129, 140, 248, 0.22) !important;
+}
+
+html.dark[data-ui="enhanced"] .border-gray-100,
+html.dark[data-ui="enhanced"] .border-gray-200 {
+  border-color: rgba(129, 140, 248, 0.2) !important;
+}
+
+html[data-ui="enhanced"] button.bg-indigo-600,
+html[data-ui="enhanced"] button.bg-violet-600,
+html[data-ui="enhanced"] a.bg-indigo-600,
+html[data-ui="enhanced"] a.bg-violet-600 {
+  background: linear-gradient(135deg, #6366f1 0%, #5b4dff 55%, #7c3aed 100%) !important;
+  box-shadow: 0 8px 18px -6px rgba(91, 77, 255, 0.5);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+html[data-ui="enhanced"] .rounded-2xl {
+  border-radius: 1.1rem !important;
+}
+
+html[data-ui="enhanced"] .rounded-xl {
+  border-radius: 0.9rem !important;
+}
+
+html[data-ui="enhanced"] .text-gray-900,
+html[data-ui="enhanced"] .text-gray-800 {
+  color: #0f172a !important;
+}
+
+html[data-ui="enhanced"] .text-gray-700,
+html[data-ui="enhanced"] .text-gray-600 {
+  color: #1e293b !important;
+}
+
+html[data-ui="enhanced"] .text-slate-900,
+html[data-ui="enhanced"] .text-slate-800 {
+  color: #0f172a !important;
+}
+
+html.dark[data-ui="enhanced"] .text-gray-900,
+html.dark[data-ui="enhanced"] .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark[data-ui="enhanced"] .text-gray-700,
+html.dark[data-ui="enhanced"] .text-gray-600,
+html.dark[data-ui="enhanced"] .text-gray-500,
+html.dark[data-ui="enhanced"] .text-gray-400 {
+  color: #cbd5e1 !important;
+}
+
+html.dark[data-ui="enhanced"] .text-slate-100,
+html.dark[data-ui="enhanced"] .text-slate-200,
+html.dark[data-ui="enhanced"] .text-slate-300 {
+  color: #e2e8f0 !important;
+}
+
+html.dark[data-ui="enhanced"] input::placeholder,
+html.dark[data-ui="enhanced"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-ui="enhanced"] .ui-card:hover {
+  border-color: rgba(99, 102, 241, 0.24);
+  box-shadow: 0 8px 28px -8px rgba(79, 70, 229, 0.22);
 }
 
 html.dark[data-ui="enhanced"] .ui-card {
@@ -45,20 +152,44 @@ html.dark[data-ui="enhanced"] .ui-card {
 html[data-ui="enhanced"] .ui-btn-primary {
   background: linear-gradient(135deg, #6366f1 0%, #5b4dff 50%, #7c3aed 100%);
   box-shadow: 0 4px 14px -2px rgba(91, 77, 255, 0.45);
+  color: #fff;
+}
+
+html[data-ui="enhanced"] .ui-btn-primary:hover {
+  filter: brightness(1.04);
 }
 
 html[data-ui="enhanced"] .ui-input {
   border-radius: 0.875rem;
   border-color: rgba(148, 163, 184, 0.35);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  background: rgba(255, 255, 255, 0.88);
+  transition: box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
 }
 
 html[data-ui="enhanced"] .ui-input:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
+html.dark[data-ui="enhanced"] .ui-input {
+  background: rgba(30, 41, 59, 0.72);
+  border-color: rgba(99, 102, 241, 0.24);
+}
+
+html[data-ui="enhanced"] .ui-stat-tile {
+  border-radius: 1rem;
+  border: 1px solid var(--ui-border-soft);
+  box-shadow: 0 2px 12px -8px rgba(79, 70, 229, 0.28);
+}
+
+html[data-ui="enhanced"] .ui-modal-shell {
+  border-radius: 1.1rem;
+  border: 1px solid var(--ui-border-soft);
+  box-shadow: 0 20px 50px -18px rgba(30, 27, 75, 0.35);
+}
+
 html[data-ui="enhanced"] .ui-nav-mobile {
   background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border-top-color: rgba(99, 102, 241, 0.1);
 }
@@ -70,6 +201,7 @@ html.dark[data-ui="enhanced"] .ui-nav-mobile {
 
 html[data-ui="enhanced"] .ui-nav-desktop {
   background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 

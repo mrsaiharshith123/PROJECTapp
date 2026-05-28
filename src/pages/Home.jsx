@@ -16,6 +16,7 @@ import { isSalariedFamily } from "../constants/modeExperience.js";
 import { isActiveBill } from "../utils/billLifecycle.js";
 import { monthlyBurdenForCommitment } from "../engines/burden.js";
 import { formatInr, STATUS_ICONS, CHEVRON, EM_DASH } from "../constants/symbols.js";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return EM_DASH;
@@ -25,6 +26,7 @@ function formatDate(dateStr) {
 const statusIcon = STATUS_ICONS;
 
 const Home = () => {
+  const enhanced = isEnhancedUi();
   const navigate = useNavigate();
   const location = useLocation();
   const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr } = useCommitTrack();
@@ -73,7 +75,7 @@ const Home = () => {
       <FinancialPulseCard />
 
       {goals.length > 0 && (
-        <Card className="space-y-3">
+        <Card className={`space-y-3 ${enhanced ? "ui-card" : ""}`}>
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-800">Goals</h2>
             <button
@@ -103,7 +105,7 @@ const Home = () => {
                     {!cap.feasible ? " (tight vs free cash)" : ""}
                   </p>
                 )}
-                <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="mt-1 h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.round(p * 100)}%` }} />
                 </div>
               </div>
@@ -137,9 +139,9 @@ const Home = () => {
             {upcoming.map((item) => {
               const eff = getEffectiveStatus(item);
               return (
-                <Card key={item.id} className="flex items-center justify-between">
+                <Card key={item.id} className={`flex items-center justify-between ${enhanced ? "ui-card" : ""}`}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-lg shrink-0">
+                    <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl flex items-center justify-center text-lg shrink-0 border border-indigo-100 dark:border-indigo-900/60">
                       {statusIcon[eff] || statusIcon.pending}
                     </div>
                     <div className="min-w-0">
@@ -170,7 +172,12 @@ const Home = () => {
           </h2>
           <div className="space-y-3">
             {overdue.map((item) => (
-              <Card key={item.id} className="flex items-center justify-between border-red-100 bg-red-50">
+              <Card
+                key={item.id}
+                className={`flex items-center justify-between border-red-100 bg-red-50 dark:bg-red-950/30 ${
+                  enhanced ? "ui-card" : ""
+                }`}
+              >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-lg shrink-0">
                     {STATUS_ICONS.overdue}

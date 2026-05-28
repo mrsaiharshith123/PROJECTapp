@@ -20,6 +20,7 @@ export const TOOL_ICONS = {
   goals: "\u{1F3C1}",
   chit: "\u{1FA99}",
   loanTiming: "\u{1F4C6}",
+  bond: "\u{1F9FE}",
 };
 
 export function formatInr(amount) {

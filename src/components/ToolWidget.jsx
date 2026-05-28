@@ -1,5 +1,8 @@
+import { isEnhancedUi } from "../constants/uiTheme.js";
+
 /** Clickable tool tile for the Tools grid. */
 export default function ToolWidget({ icon, title, subtitle, accent, onClick, disabled = false }) {
+  const enhanced = isEnhancedUi();
   const accentClass =
     accent === "teal"
       ? "from-teal-500/10 to-emerald-600/5 border-teal-200/80 dark:border-teal-800 hover:border-teal-400"
@@ -22,7 +25,7 @@ export default function ToolWidget({ icon, title, subtitle, accent, onClick, dis
         disabled
           ? "opacity-75 cursor-default"
           : "hover:shadow-lg hover:-translate-y-1 active:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-      }`}
+      } ${enhanced ? "ui-card" : ""}`}
     >
       <span
         className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"

@@ -1,4 +1,7 @@
+import { isEnhancedUi } from "../constants/uiTheme.js";
+
 export function Modal({ title, children, onClose, footer }) {
+  const enhanced = isEnhancedUi();
   return (
     <div
       className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4"
@@ -12,7 +15,11 @@ export function Modal({ title, children, onClose, footer }) {
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-2xl md:rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 max-h-[90vh] overflow-hidden flex flex-col">
+      <div
+        className={`relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-2xl md:rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 max-h-[90vh] overflow-hidden flex flex-col ${
+          enhanced ? "ui-modal-shell" : ""
+        }`}
+      >
         {title && (
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-700 shrink-0">
             <h2 id="modal-title" className="text-lg font-bold text-gray-900 dark:text-slate-100" style={{ fontFamily: "'Sora', sans-serif" }}>

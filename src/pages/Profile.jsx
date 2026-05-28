@@ -11,6 +11,7 @@ import {
 import InstallAppBanner from "../components/InstallAppBanner.jsx";
 import PageHeaderWithNotifications from "../components/PageHeaderWithNotifications.jsx";
 import ProfileAvatar from "../components/ProfileAvatar.jsx";
+import AccountPanel from "../components/auth/AccountPanel.jsx";
 import DataImportSection from "../components/profile/DataImportSection.jsx";
 import ProfileNotificationsSection from "../components/profile/ProfileNotificationsSection.jsx";
 import ProfileSecuritySection from "../components/profile/ProfileSecuritySection.jsx";
@@ -19,8 +20,10 @@ import { ProfileSectionPicker } from "../components/profile/ProfileSectionPicker
 import ProfilePersonalSection from "../components/profile/ProfilePersonalSection.jsx";
 import ProfileMoneySection from "../components/profile/ProfileMoneySection.jsx";
 import { COPY } from "../constants/copy.js";
+import { isEnhancedUi } from "../constants/uiTheme.js";
 
 const Profile = () => {
+  const enhanced = isEnhancedUi();
   const {
     commitments,
     lendings,
@@ -67,6 +70,8 @@ const Profile = () => {
         </p>
       </Card>
 
+      <AccountPanel />
+
       {secondaryOnly && (
         <Card className="border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40">
           <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">Main income is zero</p>
@@ -94,19 +99,19 @@ const Profile = () => {
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <Card className="text-center p-4">
+        <Card className={`text-center p-4 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-lg font-bold text-gray-800 dark:text-slate-100">{commitments.length}</p>
           <p className="text-xs text-gray-500">{COPY.billsStat}</p>
         </Card>
-        <Card className="text-center p-4">
+        <Card className={`text-center p-4 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-lg font-bold text-gray-800 dark:text-slate-100">₹{paymentSum.toLocaleString("en-IN")}</p>
           <p className="text-xs text-gray-500">Paid ({paymentCount})</p>
         </Card>
-        <Card className="text-center p-4">
+        <Card className={`text-center p-4 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-lg font-bold text-gray-800 dark:text-slate-100">{streak} mo</p>
           <p className="text-xs text-gray-500">Streak</p>
         </Card>
-        <Card className="text-center p-4">
+        <Card className={`text-center p-4 ${enhanced ? "ui-stat-tile" : ""}`}>
           <p className="text-lg font-bold text-indigo-600">{control}</p>
           <p className="text-xs text-gray-500">Control score</p>
         </Card>

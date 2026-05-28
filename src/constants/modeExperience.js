@@ -23,12 +23,12 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
-  business: ["afford", "goals"],
-  freelancer: ["afford", "scenarios", "payoff", "goals", "emi", "loanTiming"],
-  family: ["afford", "scenarios", "insurance", "emi", "loanTiming", "chit", "goals"],
-  student: ["afford", "loanTiming", "goals"],
-  power: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "goals"],
+  salaried: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
+  business: ["afford", "bond", "goals"],
+  freelancer: ["afford", "scenarios", "payoff", "bond", "goals", "emi", "loanTiming"],
+  family: ["afford", "scenarios", "insurance", "emi", "loanTiming", "chit", "bond", "goals"],
+  student: ["afford", "loanTiming", "bond", "goals"],
+  power: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -79,6 +79,12 @@ export const MODE_TOOL_DEFS = {
     title: "Loan extra pay",
     subtitle: "Best month to pay more",
     accent: "violet",
+  },
+  bond: {
+    id: "bond",
+    title: "Bond check",
+    subtitle: "Is this bond worth it?",
+    accent: "indigo",
   },
 };
 

@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import { SELECTABLE_USER_MODES } from "../constants/userModes.js";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { updateSettings } = useCommitTrack();
+  const { saveProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [userMode, setUserMode] = useState("salaried");
   const [householdScope, setHouseholdScope] = useState("single");
@@ -14,15 +16,29 @@ export default function Onboarding() {
   const [monthlyIncome, setMonthlyIncome] = useState("");
   const [businessType, setBusinessType] = useState("");
 
-  const finish = () => {
-    updateSettings({
+  const finish = async () => {
+    const payload = {
       userMode,
       householdScope: userMode === "salaried" ? householdScope : "single",
       displayName: displayName.trim(),
       monthlyIncome: monthlyIncome === "" ? 0 : Math.max(0, Number(monthlyIncome) || 0),
       businessType: businessType.trim(),
       onboardingComplete: true,
-    });
+    };
+    updateSettings(payload);
+    try {
+      await saveProfile({
+        username: payload.displayName,
+        display_name: payload.displayName,
+        user_mode: payload.userMode,
+        household_scope: payload.householdScope,
+        monthly_income: payload.monthlyIncome,
+        business_type: payload.businessType,
+        onboarding_complete: true,
+      });
+    } catch {
+      // Ignore profile sync errors to avoid blocking onboarding.
+    }
     navigate("/", { replace: true });
   };
 
