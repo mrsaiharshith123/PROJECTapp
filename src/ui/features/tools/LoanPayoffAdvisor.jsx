@@ -2,10 +2,35 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import ToolSourcePicker from "./ToolSourcePicker.jsx";
-import { debtPickerItemFromCommitment, debtPickerItemFromLending } from "./toolSourcePickerItems.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { adviseLoanExtraPaymentMonths, listDebtSources } from "../../../engines/loanPayoffTiming.js";
 import { formatInr } from "../../../constants/symbols.js";
+
+function debtPickerItemFromCommitment(c, getEffectiveStatus) {
+  const bal = Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
+  const emi = Math.max(0, Number(c.amount) || 0);
+  const rate = c.annualInterestRate != null ? `${c.annualInterestRate}% p.a.` : "rate not set";
+  return {
+    id: `c-${c.id}`,
+    raw: c,
+    kind: "commitment",
+    title: c.name,
+    subtitle: `${c.category} · ${formatInr(emi)}/cycle`,
+    meta: `Open ${formatInr(bal)} · ${rate} · ${getEffectiveStatus(c)}`,
+  };
+}
+
+function debtPickerItemFromLending(l, getEffectiveLendingStatus) {
+  const bal = Math.max(0, Number(l.remainingAmount) || 0);
+  return {
+    id: `l-${l.id}`,
+    raw: l,
+    kind: "lending",
+    title: l.personName || "Borrowed",
+    subtitle: `Lending · ${formatInr(bal)} left`,
+    meta: getEffectiveLendingStatus(l),
+  };
+}
 
 const inputClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";

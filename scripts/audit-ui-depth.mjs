@@ -2,8 +2,8 @@
 /**
  * Deep UI / on-screen audit:
  * - Barrel exports never imported
- * - Pages without routes
- * - UI modules unreachable from App entry
+ * - Pages not wired in App.jsx (static or lazy import)
+ * - UI modules unreachable from App.jsx entry (follows lazy(() => import(...)))
  * - Dashboard tool tiles without modal handlers
  * - Nav links without matching routes
  * - Buttons / FAB / QuickActions in unreachable files
@@ -52,14 +52,22 @@ function resolveImport(fromFile, spec) {
   return null;
 }
 
+const DYNAMIC_IMPORT_RE = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
+
+function importSpecsFromFile(file) {
+  const code = fs.readFileSync(file, "utf8");
+  const specs = [];
+  for (const m of code.matchAll(IMPORT_RE)) specs.push(m[1]);
+  for (const m of code.matchAll(DYNAMIC_IMPORT_RE)) specs.push(m[1]);
+  return specs;
+}
+
 function buildReachable(entryFiles) {
   const queue = [...entryFiles].filter((f) => fs.existsSync(f));
   const seen = new Set(queue);
   while (queue.length) {
     const file = queue.shift();
-    const code = fs.readFileSync(file, "utf8");
-    for (const m of code.matchAll(IMPORT_RE)) {
-      const spec = m[1];
+    for (const spec of importSpecsFromFile(file)) {
       if (!spec.startsWith(".")) continue;
       const resolved = resolveImport(file, spec);
       if (resolved && !seen.has(resolved)) {
@@ -103,18 +111,17 @@ function findUnusedBarrelExports(srcFiles, exportNames) {
 function findUnmountedPages() {
   const pageDir = path.join(UI, "features/pages");
   const appSrc = fs.readFileSync(path.join(SRC, "App.jsx"), "utf8");
-  const routes = [...appSrc.matchAll(ROUTE_RE)].map((m) => m[1]);
   const items = [];
   if (!fs.existsSync(pageDir)) return items;
   for (const file of fs.readdirSync(pageDir)) {
     if (!file.endsWith("Page.jsx")) continue;
-    const base = file.replace(/Page\.jsx$/, "");
-    const shell = path.join(SRC, "pages", `${base}.jsx`);
-    const routeHit = routes.some(
-      (r) => r === `/${base.toLowerCase()}` || r === `/${base}` || r.includes(base.toLowerCase()),
-    );
-    if (!routeHit && !fs.existsSync(shell)) {
-      items.push({ kind: "unmounted-page", file: rel(path.join(pageDir, file)) });
+    const pagePath = rel(path.join(pageDir, file));
+    const wiredInApp =
+      appSrc.includes(pagePath) ||
+      appSrc.includes(file) ||
+      appSrc.includes(file.replace(/Page\.jsx$/, ""));
+    if (!wiredInApp) {
+      items.push({ kind: "unmounted-page", file: pagePath });
     }
   }
   return items;
@@ -217,7 +224,7 @@ const srcFiles = walk(SRC);
 const entries = [
   path.join(SRC, "main.jsx"),
   path.join(SRC, "App.jsx"),
-  ...walk(path.join(SRC, "pages")),
+  ...walk(path.join(SRC, "app")),
 ];
 const reachable = buildReachable(entries);
 
@@ -254,10 +261,10 @@ function printFinding(f) {
       console.log(`  [barrel] ${f.name} — exported from ui/index.js, never imported`);
       break;
     case "unmounted-page":
-      console.log(`  [page] ${f.file} — no Route in App.jsx and no src/pages shell`);
+      console.log(`  [page] ${f.file} — not imported or lazy-loaded from App.jsx`);
       break;
     case "unreachable-ui":
-      console.log(`  [dead module] ${f.file} — not reachable from App/pages`);
+      console.log(`  [dead module] ${f.file} — not reachable from App.jsx (static or lazy import chain)`);
       break;
     case "tool-no-handler":
       console.log(`  [tool tile] "${f.id}" — in mode tools but no activeTool === "${f.id}" in DashboardTools`);

@@ -284,6 +284,37 @@ function resolveImport(fromFile, spec) {
   return null;
 }
 
+/** @type {{ total: number, high: number, items: unknown[] }} */
+let mergeSummary = { total: 0, high: 0, items: [] };
+
+function runMergeSuggestionsAudit() {
+  const r = spawnSync("node", ["scripts/audit-merge-suggestions.mjs", "--json"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+  try {
+    mergeSummary = JSON.parse((r.stdout || "").trim() || "{}");
+  } catch {
+    addWarning("merge-suggest", "Could not parse merge-suggestions audit output");
+    return;
+  }
+  const items = mergeSummary.items || [];
+  const cap = 10;
+  for (const s of items.slice(0, cap)) {
+    const from = (s.from || []).map((f) => path.basename(f)).join(", ");
+    const into = s.into ? path.basename(String(s.into)) : "?";
+    const msg = from
+      ? `Merge \`${from}\` → \`${into}\``
+      : String(s.into || "merge");
+    addWarning("merge-suggest", msg, s.reason || "");
+  }
+  if (items.length > cap) {
+    addWarning("merge-suggest", `… and ${items.length - cap} more suggestion(s) — npm run audit:merge`);
+  }
+  if (!mergeSummary.total && !QUIET) console.log("  Merge suggestions: none");
+}
+
 function runUiDepthAudit() {
   const r = spawnSync("node", ["scripts/audit-ui-depth.mjs", "--json"], {
     cwd: ROOT,
@@ -367,6 +398,9 @@ checkUnresolvedImports();
 if (!QUIET) console.log("\n── UI depth (screens, buttons, tools, barrel)");
 runUiDepthAudit();
 
+if (!QUIET) console.log("\n── Merge / simplify suggestions (advisory)");
+runMergeSuggestionsAudit();
+
 const strictWarnings = STRICT ? warnings : [];
 const failCount = errors.length + strictWarnings.length;
 
@@ -381,6 +415,10 @@ const payload = {
     barrelExports: uiDepthSummary.barrelExports ?? [],
     deadButtons: uiDepthSummary.deadButtons ?? [],
     orphanTools: uiDepthSummary.orphanTools ?? [],
+  },
+  mergeSuggestions: {
+    total: mergeSummary.total ?? 0,
+    high: mergeSummary.high ?? 0,
   },
   errorItems: errors,
   warningItems: warnings,

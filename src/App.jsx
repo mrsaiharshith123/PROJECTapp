@@ -5,20 +5,20 @@ import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContex
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { Navbar, InstallAppBanner, Screen, MainContent } from "./ui";
-import Onboarding from "./pages/Onboarding.jsx";
+import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import AccountPanel from "./ui/features/auth/AccountPanel.jsx";
 
-const Home = lazy(() => import("./pages/Home"));
-const Commitments = lazy(() => import("./pages/Commitments"));
-const Add = lazy(() => import("./pages/Add"));
-const Lending = lazy(() => import("./pages/Lending"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const Tools = lazy(() => import("./pages/Tools"));
-const LendingOfferReview = lazy(() => import("./pages/LendingOfferReview.jsx"));
+const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
+const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
+const Add = lazy(() => import("./ui/features/pages/AddPage.jsx"));
+const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
+const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
+const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
+const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
+const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 
 function PageLoader() {
   return (

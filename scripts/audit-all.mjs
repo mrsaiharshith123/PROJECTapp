@@ -279,6 +279,14 @@ console.log(paint(C.bold, "Running checks…\n"));
   } else {
     notes.push("UI depth: screens, nav, tools, barrel OK");
   }
+  const mergeN = data.mergeSuggestions?.total ?? 0;
+  if (mergeN > 0) {
+    notes.push(
+      `${mergeN} merge/simplify suggestion(s) — npm run audit:merge (optional file consolidation)`,
+    );
+  } else {
+    notes.push("Merge suggestions: no obvious file consolidation");
+  }
   if (data.errors > 0) notes.push(`${data.errors} hygiene/import error(s)`);
   record(
     "code",
