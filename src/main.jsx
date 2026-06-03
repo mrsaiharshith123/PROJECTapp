@@ -1,11 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import "./styles/ui-enhanced.css";
+import "./ui/styles/index.css";
 import { bootstrapThemeFromStorage } from "./utils/theme.js";
 import { applyUiThemeToDocument } from "./utils/applyUiTheme.js";
 import App from "./App.jsx";
-import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 
 import { registerSW } from "virtual:pwa-register";
 

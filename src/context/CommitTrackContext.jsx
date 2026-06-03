@@ -30,7 +30,8 @@ import {
   saveBusinessInvoicesToStorage,
 } from "../utils/businessInvoices.js";
 
-const CommitTrackContext = createContext(null);
+/** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
+const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
 
 function sortCommitments(list) {
   return [...list].sort((a, b) => {
@@ -601,7 +602,6 @@ export function CommitTrackProvider({ children }) {
   return <CommitTrackContext.Provider value={value}>{children}</CommitTrackContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useCommitTrack() {
   const ctx = useContext(CommitTrackContext);
   if (!ctx) throw new Error("useCommitTrack must be used within CommitTrackProvider");

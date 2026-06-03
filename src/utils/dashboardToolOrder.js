@@ -1,9 +1,10 @@
 /**
  * Apply a saved id order to the default tool list for a mode.
  * Unknown ids are dropped; missing ids are appended in default order.
- * @param {{ id: string }[]} defaultWidgets
+ * @param {Array<{ id: string } & Record<string, unknown>>} defaultWidgets
  * @param {string[] | undefined} savedOrder
  */
+/** @returns {Array<{ id: string } & Record<string, unknown>>} */
 export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   if (!Array.isArray(defaultWidgets) || defaultWidgets.length === 0) return [];
   const defaultIds = defaultWidgets.map((w) => w.id);
@@ -11,6 +12,7 @@ export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   if (!Array.isArray(savedOrder) || savedOrder.length === 0) return [...defaultWidgets];
 
   const seen = new Set();
+  /** @type {Array<{ id: string } & Record<string, unknown>>} */
   const out = [];
   for (const id of savedOrder) {
     if (!allowed.has(id) || seen.has(id)) continue;
@@ -29,7 +31,8 @@ export function orderDashboardWidgets(defaultWidgets, savedOrder) {
  * @returns {Record<string, string[]>}
  */
 export function normalizeDashboardToolOrderByMode(raw) {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return /** @type {Record<string, string[]>} */ ({});
+  /** @type {Record<string, string[]>} */
   const out = {};
   for (const [mode, arr] of Object.entries(raw)) {
     if (typeof mode !== "string" || mode.length > 20) continue;

@@ -57,9 +57,9 @@ export function generateRepaymentSchedule({
         );
       }
       if (freq === "weekly") {
-        return Math.max(1, Math.min(520, Math.round((end - start) / (7 * 86400000))));
+        return Math.max(1, Math.min(520, Math.round((end.getTime() - start.getTime()) / (7 * 86400000))));
       }
-      return Math.max(1, Math.min(260, Math.round((end - start) / (14 * 86400000))));
+      return Math.max(1, Math.min(260, Math.round((end.getTime() - start.getTime()) / (14 * 86400000))));
     } catch {
       return 12;
     }
@@ -92,11 +92,17 @@ export function generateRepaymentSchedule({
     }
     balance = Math.max(0, balance - principalComponent);
     let lateDays = 0;
+    /** @type {"pending"|"paid"|"partial"|"overdue"} */
     let paymentStatus = "pending";
     if (todayStr && compareYmd(dueDate, todayStr) < 0) {
       paymentStatus = "overdue";
       try {
-        lateDays = Math.max(0, Math.floor((parseISO(`${todayStr}T12:00:00`) - parseISO(`${dueDate}T12:00:00`)) / 86400000));
+        lateDays = Math.max(
+          0,
+          Math.floor(
+            (parseISO(`${todayStr}T12:00:00`).getTime() - parseISO(`${dueDate}T12:00:00`).getTime()) / 86400000
+          )
+        );
       } catch {
         lateDays = 0;
       }

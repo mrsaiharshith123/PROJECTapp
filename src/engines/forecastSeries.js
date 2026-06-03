@@ -59,6 +59,9 @@ function lendingInflowInMonth(lendings, monthKey, getEffectiveLendingStatus, tod
 /**
  * 6–12 month cashflow forecast: bill obligations + lending outflow vs income + expected receivables.
  */
+/**
+ * @param {{ lendings?: object[], getEffectiveLendingStatus?: (l: object, todayStr?: string) => string }} [options]
+ */
 export function buildCashflowForecastSeries(
   commitments,
   monthlyIncome,

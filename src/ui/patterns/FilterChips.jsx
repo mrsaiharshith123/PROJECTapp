@@ -1,0 +1,21 @@
+export function FilterChips({ options, value, onChange }) {
+  return (
+    <div className="ct-row" style={{ overflowX: "auto", paddingBottom: 4 }}>
+      {options.map((opt) => {
+        const id = opt.id ?? opt;
+        const label = opt.label ?? opt;
+        const active = value === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            className={active ? "ct-chip ct-chip-active" : "ct-chip"}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

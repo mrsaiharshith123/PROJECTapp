@@ -1,4 +1,4 @@
-import { compareYmd, todayYmd } from "./dates.js";
+import { todayYmd } from "./dates.js";
 import { commitmentSeriesKey } from "./billLifecycle.js";
 import {
   grossObligationInMonth,

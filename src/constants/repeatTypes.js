@@ -57,7 +57,7 @@ export function paymentsInMonth(c, monthKey) {
 /**
  * Calendar schedule only — whether this bill type can fall due in a month (ignores paid state).
  */
-export function isScheduledInMonth(c, monthKey, todayStr = todayYmd()) {
+export function isScheduledInMonth(c, monthKey, _todayStr = todayYmd()) {
   const monthStart = `${monthKey}-01`;
   const monthEnd = `${monthKey}-28`;
 

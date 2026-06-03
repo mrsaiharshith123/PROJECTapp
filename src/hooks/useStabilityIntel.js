@@ -14,7 +14,7 @@ import { mergeExtendedInsights } from "../engines/insightsExtended.js";
 import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
 import { buildPressureIntelligence } from "../engines/pressureIntelligence.js";
 import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
-import { resolveUserMode, getExperienceMode, isSalariedFamily, hasPowerFeatures } from "../constants/modeExperience.js";
+import { resolveUserMode, getExperienceMode, hasPowerFeatures } from "../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { householdPayerInsight } from "../engines/householdPayer.js";
 
@@ -158,6 +158,10 @@ export function useStabilityIntel() {
       goalBalance: ahead?.goalBalance || null,
       goalCapacity: ahead?.goalCapacity || [],
       family: modeData.family || null,
+      familyCalendar: ahead?.familyCalendar ?? null,
+      business: modeData.business ?? null,
+      freelancer: modeData.freelancer ?? null,
+      student: modeData.student ?? null,
       lendingOutflow: lendingMonthlyOutflow(ctx.lendings, ctx.getEffectiveLendingStatus, ctx.todayStr),
       stabilityInsights,
       ...modeData,

@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { amountDueInMonth, scheduledGrossInMonth } from "../engines/forecastSeries.js";
-import { paymentsInMonth } from "../constants/repeatTypes.js";
 import { isHistoryBill } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
 import { formatBurdenPercent } from "./formatBurdenPercent.js";

@@ -9,7 +9,7 @@ export function buildLendingRecord({
   interestRate = 0,
   notes = "",
   relationshipTag = "Other",
-  extra = {},
+  extra = /** @type {Record<string, unknown>} */ ({}),
 }) {
   const amount = Math.max(0, Number(totalAmount) || 0);
   const due = String(dueDate || "").slice(0, 10);

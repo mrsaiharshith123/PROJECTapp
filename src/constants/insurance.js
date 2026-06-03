@@ -41,6 +41,9 @@ export function emptyInsuranceFields() {
 }
 
 /** Display label from policy id + company (+ person). */
+/**
+ * @param {{ insuranceCompany?: string, insurancePolicyId?: string, insuredPersonName?: string }} fields
+ */
 export function buildInsuranceBillName({ insuranceCompany, insurancePolicyId, insuredPersonName }) {
   const company = String(insuranceCompany || "").trim();
   const id = String(insurancePolicyId || "").trim();

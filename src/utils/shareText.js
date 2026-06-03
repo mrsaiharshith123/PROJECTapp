@@ -11,7 +11,7 @@ export async function shareOrCopyPlainText(text, { title = "CommitTrack" } = {})
       await navigator.share({ title, text: body });
       return { ok: true, method: "share" };
     } catch (e) {
-      if (e && (e.name === "AbortError" || e.name === "NotAllowedError")) {
+      if (e instanceof Error && (e.name === "AbortError" || e.name === "NotAllowedError")) {
         return { ok: false, method: "none" };
       }
       /* fall through to clipboard */

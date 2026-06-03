@@ -68,7 +68,7 @@ export function buildChitInstallmentSchedule(
   for (let m = 1; m <= N; m++) {
     rows.push({
       month: m,
-      installment: resolveChitInstallment(chitValue, N, m, mode, customAmount),
+      installment: resolveChitInstallment(chitValue, N, m, /** @type {ChitInstallmentMode} */ (mode), customAmount),
     });
   }
   return rows;

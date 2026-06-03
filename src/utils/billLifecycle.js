@@ -4,13 +4,6 @@ import { normalizeRepeatType, repeatIntervalMonths } from "../constants/repeatTy
 
 /** @typedef {"paid" | "upnext" | "pending" | "overdue"} BillEffectiveStatus */
 
-export const BILL_STATUS_UI = {
-  paid: { label: "Paid", classes: "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800" },
-  upnext: { label: "Up next", classes: "bg-sky-100 text-sky-700 border border-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:border-sky-800" },
-  pending: { label: "Due", classes: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-200" },
-  overdue: { label: "Overdue", classes: "bg-red-100 text-red-600 border border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800" },
-};
-
 /**
  * Active = still on the main bills list (uses effective status, not stored status alone).
  * @param {object} c
@@ -80,15 +73,6 @@ export function estimatePriorSpend(c, todayStr = todayYmd()) {
   } catch {
     return 0;
   }
-}
-
-export function hasPaymentInYear(c, year) {
-  const prefix = `${year}-`;
-  return (c.payments || []).some((p) => (p.date || "").startsWith(prefix));
-}
-
-export function currentYearPrefix(todayStr = todayYmd()) {
-  return todayStr.slice(0, 4);
 }
 
 /** Group key for summing payments across rolled recurring / chit rows. */

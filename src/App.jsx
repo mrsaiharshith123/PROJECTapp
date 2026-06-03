@@ -4,14 +4,12 @@ import { routerBasename } from "./utils/basePath.js";
 import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
-import { isEnhancedUi } from "./constants/uiTheme.js";
-import Navbar from "./components/Navbar";
+import { Navbar, InstallAppBanner, Screen, MainContent } from "./ui";
 import Onboarding from "./pages/Onboarding.jsx";
-import ModeRoute from "./components/ModeRoute.jsx";
-import NotificationSync from "./components/NotificationSync.jsx";
-import ThemeSync from "./components/ThemeSync.jsx";
-import InstallAppBanner from "./components/InstallAppBanner.jsx";
-import AccountPanel from "./components/auth/AccountPanel.jsx";
+import ModeRoute from "./app/ModeRoute.jsx";
+import NotificationSync from "./app/NotificationSync.jsx";
+import ThemeSync from "./app/ThemeSync.jsx";
+import AccountPanel from "./ui/features/auth/AccountPanel.jsx";
 
 const Home = lazy(() => import("./pages/Home"));
 const Commitments = lazy(() => import("./pages/Commitments"));
@@ -24,16 +22,15 @@ const LendingOfferReview = lazy(() => import("./pages/LendingOfferReview.jsx"));
 
 function PageLoader() {
   return (
-    <div className="flex items-center justify-center py-16 text-sm text-gray-500" role="status">
+    <div className="ct-loader ct-caption" role="status">
       Loading…
     </div>
   );
 }
 
 function OnboardingShell() {
-  const enhanced = isEnhancedUi();
   return (
-    <div className={`min-h-screen px-4 max-w-lg mx-auto py-8 ${enhanced ? "ui-screen-bg" : "bg-gray-100 dark:bg-slate-950"}`}>
+    <Screen narrow>
       <ThemeSync />
       <div className="mb-6">
         <InstallAppBanner />
@@ -42,58 +39,52 @@ function OnboardingShell() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
       </Routes>
-    </div>
+    </Screen>
   );
 }
 
 function MainShell() {
-  const enhanced = isEnhancedUi();
   return (
-    <div className={`min-h-screen ${enhanced ? "ui-screen-bg" : "bg-gray-100 dark:bg-slate-950"}`}>
+    <Screen>
       <ThemeSync />
       <Navbar />
       <NotificationSync />
-      <main className="md:pt-[4.5rem] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-8 px-4 max-w-2xl mx-auto">
-        <div className="pt-6">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/commitments" element={<Commitments />} />
-              <Route path="/add" element={<Add />} />
-              <Route
-                path="/lending"
-                element={
-                  <ModeRoute path="/lending">
-                    <Lending />
-                  </ModeRoute>
-                }
-              />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/tools" element={<Tools />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/onboarding" element={<Navigate to="/" replace />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </div>
-      </main>
-    </div>
+      <MainContent>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/commitments" element={<Commitments />} />
+            <Route path="/add" element={<Add />} />
+            <Route
+              path="/lending"
+              element={
+                <ModeRoute path="/lending">
+                  <Lending />
+                </ModeRoute>
+              }
+            />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/tools" element={<Tools />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/onboarding" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </MainContent>
+    </Screen>
   );
 }
 
 function AuthShell() {
-  const enhanced = isEnhancedUi();
   return (
-    <div className={`min-h-screen px-4 max-w-lg mx-auto py-8 ${enhanced ? "ui-screen-bg" : "bg-gray-100 dark:bg-slate-950"}`}>
+    <Screen narrow>
       <ThemeSync />
       <div className="mb-6">
         <InstallAppBanner />
       </div>
       <AccountPanel />
-      <p className="text-center text-xs text-gray-500 dark:text-slate-400 mt-4">
-        Login or create account to continue.
-      </p>
-    </div>
+      <p className="ct-caption ct-caption-center mt-4">Login or create account to continue.</p>
+    </Screen>
   );
 }
 

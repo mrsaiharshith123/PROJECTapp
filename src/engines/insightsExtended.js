@@ -43,7 +43,7 @@ export function forecastCrunchInsight(
   income,
   getEffectiveStatus,
   todayStr,
-  { lendings = [], getEffectiveLendingStatus } = {}
+  /** @type {{ lendings?: object[], getEffectiveLendingStatus?: (l: object, todayStr?: string) => string }} */ { lendings = [], getEffectiveLendingStatus } = {}
 ) {
   const series = buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr, 12, {
     lendings,

@@ -7,10 +7,14 @@
     "dev": "vite",
     "build": "node scripts/generate-pwa-icons.mjs && vite build && node scripts/copy-404.mjs",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "audit": "node scripts/audit-all.mjs",
+    "audit:ui-depth": "node scripts/audit-ui-depth.mjs --list",
+    "audit:ui-inventory": "node scripts/audit-ui-depth.mjs --inventory",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "knip": "knip",
     "audit:pdf": "node scripts/generate-project-audit-pdf.mjs",
     "docs:pdf": "node scripts/generate-project-complete-pdf.mjs",
     "predeploy": "npm run build",
@@ -40,8 +44,9 @@
     "postcss": "^8.5.13",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.19",
+    "typescript": "~5.8.3",
     "vite": "^8.0.10",
     "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.8"
   }
 }

@@ -9,7 +9,8 @@ import {
   signUpWithEmail,
 } from "../services/supabase/auth.js";
 
-const AuthContext = createContext(null);
+/** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
+const AuthContext = createContext(/** @type {import('../types/context.js').AuthContextValue | null} */ (null));
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
@@ -40,7 +41,7 @@ export function AuthProvider({ children }) {
         }
       })
       .catch((e) => {
-        if (mounted) setError(e.message || "Could not initialize auth.");
+        if (mounted) setError((e instanceof Error ? e.message : null) || "Could not initialize auth.");
       })
       .finally(() => {
         if (mounted) setIsReady(true);
@@ -56,7 +57,7 @@ export function AuthProvider({ children }) {
       try {
         await refreshProfile(u.id);
       } catch (e) {
-        setError(e.message || "Could not load profile.");
+        setError((e instanceof Error ? e.message : null) || "Could not load profile.");
       }
     });
     return () => {
@@ -90,7 +91,7 @@ export function AuthProvider({ children }) {
       setProfile(next);
       return next;
     },
-    [user?.id]
+    [user]
   );
 
   const value = useMemo(

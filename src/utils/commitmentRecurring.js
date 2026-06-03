@@ -73,7 +73,7 @@ export function advanceRecurringCommitment(c, newId = Date.now()) {
       createdAt: now,
       updatedAt: now,
     };
-    const eff = getEffectiveStatus(rolled, todayStr);
+    const eff = getEffectiveStatus(rolled, todayYmd());
     return { paidRow, nextCycle: { ...rolled, status: eff } };
   }
 

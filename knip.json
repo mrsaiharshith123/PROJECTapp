@@ -9,5 +9,15 @@
     "src/utils/__tests__/**"
   ],
   "ignoreDependencies": ["sharp", "pdfkit", "gh-pages"],
-  "ignoreExportsUsedInFile": true
+  "ignoreExportsUsedInFile": true,
+  "ignoreIssues": {
+    "src/engines/**": ["exports"],
+    "src/utils/**": ["exports"],
+    "src/services/**": ["exports"],
+    "src/ui/primitives/**": ["exports", "duplicates"],
+    "src/ui/patterns/**": ["exports", "duplicates"],
+    "src/ui/features/**": ["exports", "duplicates"],
+    "src/ui/layout/**": ["exports", "duplicates"],
+    "src/constants/userModes.js": ["duplicates"]
+  }
 }

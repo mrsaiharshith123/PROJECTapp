@@ -10,7 +10,7 @@ import {
  */
 export async function syncFeedToBrowserNotifications(
   feedItems,
-  { max = 3, todayStr, skipAlreadySent = true } = {}
+  /** @type {{ max?: number, todayStr?: string, skipAlreadySent?: boolean }} */ { max = 3, todayStr, skipAlreadySent = true } = {}
 ) {
   if (!feedItems?.length) return 0;
   const unread = feedItems.filter((n) => !n.read).slice(0, max);

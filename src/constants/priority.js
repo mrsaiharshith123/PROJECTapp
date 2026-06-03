@@ -1,10 +1,10 @@
 /** @typedef {"critical" | "medium" | "low"} PriorityId */
 
-/** @type {{ id: PriorityId, label: string, badgeClass: string, rank: number }[]} */
+/** @type {{ id: PriorityId, label: string, rank: number }[]} */
 export const PRIORITIES = [
-  { id: "critical", label: "Critical", badgeClass: "bg-red-100 text-red-700 border-red-200", rank: 0 },
-  { id: "medium", label: "Medium", badgeClass: "bg-amber-100 text-amber-800 border-amber-200", rank: 1 },
-  { id: "low", label: "Low", badgeClass: "bg-slate-100 text-slate-600 border-slate-200", rank: 2 },
+  { id: "critical", label: "Critical", rank: 0 },
+  { id: "medium", label: "Medium", rank: 1 },
+  { id: "low", label: "Low", rank: 2 },
 ];
 
 const byId = Object.fromEntries(PRIORITIES.map((p) => [p.id, p]));

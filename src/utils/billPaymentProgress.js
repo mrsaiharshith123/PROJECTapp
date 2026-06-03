@@ -5,7 +5,6 @@ import {
   grossObligationInMonth,
   isScheduledInMonth,
   normalizeRepeatType,
-  repeatIntervalMonths,
 } from "../constants/repeatTypes.js";
 import { currentCycleRemainingAmount, totalPaidOnPayments } from "./commitmentPayments.js";
 import { isHistoryBill } from "./billLifecycle.js";

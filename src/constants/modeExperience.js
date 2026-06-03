@@ -211,6 +211,10 @@ export function getCategoriesForUserMode(settingsOrMode) {
   return ids.map((id) => getCategoryById(id));
 }
 
+/**
+ * @typedef {{ id: string, title: string, subtitle?: string, accent?: string }} DashboardToolDef
+ * @returns {DashboardToolDef[]}
+ */
 export function getToolsForMode(settingsOrMode) {
   const mode =
     typeof settingsOrMode === "object" && settingsOrMode !== null

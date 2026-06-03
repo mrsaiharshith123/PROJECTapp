@@ -85,8 +85,8 @@ export function simulateNewExpense({
   freeMoney,
   amount,
   preset = "emi",
-  repeatType,
-  category,
+  repeatType = undefined,
+  category = undefined,
   mode = "salaried",
   loanMeta = null,
 }) {

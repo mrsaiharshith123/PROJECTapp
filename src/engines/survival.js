@@ -36,7 +36,7 @@ export function survivalTierBadgeClass(tier) {
 
 /**
  * How long user can cover monthly burn using liquid savings + current free cash runway.
- * @param {{ income: number, freeMoney: number, liquidSavings: number, monthlyBurden: number, lendingOutflow: number }} params
+ * @param {{ income: number, freeMoney: number, liquidSavings: number, monthlyBurden: number, lendingOutflow?: number }} params
  */
 export function computeSurvivalAnalysis({ income, freeMoney, liquidSavings, monthlyBurden, lendingOutflow = 0 }) {
   const burn = Math.max(0, monthlyBurden + Math.max(0, lendingOutflow));
