@@ -1,14 +1,12 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { Card, CategoryChip, PriorityBadge, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName } from "../../";
+import { Card, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName, BillCard, Caption } from "../../";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
+import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
 import { COPY } from "../../../constants/copy.js";
 import { isActiveBill, isHistoryBill } from "../../../utils/billLifecycle.js";
-import { BILL_STATUS_UI } from "../../tokens/billStatus.js";
-import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
-import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
 import { monthlyBurdenForCommitment } from "../../../engines/burden.js";
@@ -20,14 +18,9 @@ import {
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
 import { priorityRank } from "../../../constants/priority.js";
 
-function formatDate(dateStr) {
-  if (!dateStr) return "\u2014";
-  const d = new Date(dateStr + "T12:00:00");
-  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-}
-
 const Commitments = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const {
     sortedCommitments,
     commitments,
@@ -39,7 +32,9 @@ const Commitments = () => {
   } = useCommitTrack();
 
   const [search, setSearch] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategory, setFilterCategory] = useState(() =>
+    searchParams.get("filter") === "Subscription" ? "Subscription" : "",
+  );
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [filterPreset, setFilterPreset] = useState("");
@@ -49,6 +44,7 @@ const Commitments = () => {
   const [detailFor, setDetailFor] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
   const [payDate, setPayDate] = useState(() => todayYmd());
+  const [smsOpen, setSmsOpen] = useState(false);
 
   /** @type {Array<import('../../../types/context.js').AuthProfile & { effectiveStatus: string }>} */
   const withEffective = useMemo(
@@ -192,11 +188,22 @@ const Commitments = () => {
         title={COPY.billsPageTitle}
         eyebrow="Monthly"
         actions={
-          <Fab type="button" onClick={() => navigate("/add")} aria-label={COPY.addBill}>
-            +
-          </Fab>
+          <>
+            <button
+              type="button"
+              className="ct-btn ct-btn-ghost ct-btn-sm"
+              aria-label="Detect from SMS"
+              onClick={() => setSmsOpen(true)}
+            >
+              📱
+            </button>
+            <Fab type="button" onClick={() => navigate("/add")} aria-label={COPY.addBill}>
+              +
+            </Fab>
+          </>
         }
       />
+      <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
 
       <FilterChips
         options={presetChips}
@@ -218,14 +225,14 @@ const Commitments = () => {
         }}
       />
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="ct-grid-4">
         <CountTile value={counts.pending || 0} label="Due" tone="warning" />
         <CountTile value={counts.upnext || 0} label="Up next" tone="info" />
         <CountTile value={counts.overdue || 0} label="Overdue" tone="critical" />
         <CountTile value={historyBills.length} label="History" onClick={() => setShowHistory((v) => !v)} />
       </div>
 
-      <Card className="space-y-3">
+      <Card className="ct-stack">
         <input
           type="search"
           placeholder="Search by name\u2026"
@@ -233,7 +240,7 @@ const Commitments = () => {
           onChange={(e) => setSearch(e.target.value)}
           className={inputClassName()}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="ct-grid-3">
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
@@ -300,24 +307,24 @@ const Commitments = () => {
       </Card>
 
       {sortedCommitments.length === 0 && (
-        <Card className="text-center py-12">
+        <Card className="ct-stack-center" style={{ padding: "3rem 1.25rem", textAlign: "center" }}>
           <p className="text-4xl mb-3" aria-hidden>
             {"\uD83D\uDCCB"}
           </p>
-          <p className="font-semibold text-gray-600 dark:text-slate-300">{COPY.noBills}</p>
-          <p className="text-sm text-gray-400 mt-1">Tap + {COPY.addBill} above to create your first one</p>
+          <p className="ct-body-strong">{COPY.noBills}</p>
+          <Caption>Tap + {COPY.addBill} above to create your first one</Caption>
         </Card>
       )}
 
       {sortedCommitments.length > 0 && activeBills.length === 0 && (
-        <Card className="text-center py-8 text-sm text-gray-500">No active bills match your filters.</Card>
+        <Card className="ct-stack-center" style={{ padding: "2rem 1.25rem", textAlign: "center" }}>
+          <Caption>No active bills match your filters.</Caption>
+        </Card>
       )}
 
-      <div className="space-y-3">
+      <div className="ct-stack">
         {activeBills.map((item) => {
           const eff = item.effectiveStatus;
-          const { label, classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
-          const isOverdue = eff === "overdue";
           const total = Number(item.amount ?? 0);
           const cycleDue = suggestedCyclePaymentAmount(item, todayStr, commitments);
           const partial = (eff === "pending" || eff === "overdue") && cycleDue > 0 && cycleDue < total;
@@ -325,139 +332,48 @@ const Commitments = () => {
           const progress = computeBillPaymentProgress(item, todayStr, commitments);
 
           return (
-            <Card
+            <BillCard
               key={item.id}
-              className={`space-y-3 ${isOverdue ? "border-red-100 bg-red-50/60" : ""}`}
-            >
-              <button
-                type="button"
-                onClick={() => setDetailFor(item)}
-                className="w-full text-left flex items-start justify-between gap-2 rounded-lg -m-1 p-1 hover:bg-gray-50/80 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                <div className="space-y-2 min-w-0">
-                  <p className="font-semibold text-gray-800 dark:text-slate-100">{getBillDisplayName(item)}</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CategoryChip categoryId={item.category} />
-                    <PriorityBadge priorityId={item.priority} />
-                    {item.repeatType !== "none" && (
-                      <span className="text-[10px] uppercase tracking-wide font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full">
-                        {repeatTypeLabel(item.repeatType)}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-400 dark:text-slate-500">
-                    {item.startDate ? `Started ${formatDate(item.startDate)}` : null}
-                    {item.startDate && item.endDate ? " \u2192 " : item.startDate ? " \u00b7 " : ""}
-                    {item.endDate ? `Ends ${formatDate(item.endDate)}` : item.startDate ? "Ongoing" : ""}
-                    {" \u00b7 "}Due {formatDate(item.dueDate)}
-                    {item.notes ? <span className="block mt-1 text-gray-500">{item.notes}</span> : null}
-                  </p>
-                  {progress.totalCycles != null && progress.totalCycles > 0 && (
-                    <p className="text-[11px] text-indigo-700 dark:text-indigo-300 font-medium">{progress.label}</p>
-                  )}
-                </div>
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  <p className="font-bold text-gray-800" style={{ fontFamily: "'Sora', sans-serif" }}>
-                    {"\u20b9"}
-                    {total.toLocaleString()}
-                  </p>
-                  {partial && (
-                    <p className="text-xs text-amber-700 font-medium">
-                      Due now {"\u20b9"}
-                      {cycleDue.toLocaleString("en-IN")}
-                    </p>
-                  )}
-                  <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${classes}`}>{label}</span>
-                </div>
-              </button>
-
-              {monthPaid && (
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg px-3 py-2 border-t border-gray-100 dark:border-slate-700">
-                  Paid for this month — unlocks when the next due date starts.
-                </p>
-              )}
-
-              {(eff === "pending" || eff === "overdue") && (
-                <div className="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => openPayment(item)}
-                    className="flex-1 min-w-[120px] py-2 text-xs font-semibold bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-all active:scale-95"
-                  >
-                    Pay {"\u20b9"}
-                    {cycleDue.toLocaleString("en-IN")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditing(item)}
-                    className="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteCommitment(item.id)}
-                    className="px-3 py-2 text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-
-            </Card>
+              item={item}
+              effectiveStatus={eff}
+              cycleDue={cycleDue}
+              partial={partial}
+              monthPaid={monthPaid}
+              progress={progress}
+              onOpen={() => setDetailFor(item)}
+              onPay={() => openPayment(item)}
+              onEdit={() => setEditing(item)}
+              onDelete={() => deleteCommitment(item.id)}
+            />
           );
         })}
       </div>
 
       {historyBills.length > 0 && (
         <div>
-          <button
-            type="button"
-            onClick={() => setShowHistory((v) => !v)}
-            className="w-full flex items-center justify-between text-sm font-semibold text-gray-600 dark:text-slate-400 py-2"
-          >
+          <button type="button" onClick={() => setShowHistory((v) => !v)} className="ct-bill-card-head ct-body-strong">
             <span>History ({historyBills.length})</span>
             <span aria-hidden>{showHistory ? "\u25b2" : "\u25bc"}</span>
           </button>
           {showHistory && (
-            <div className="space-y-2 mt-2">
+            <div className="ct-stack-sm mt-2">
               {historyBills.map((item) => {
                 const hp = computeBillPaymentProgress(item, todayStr, commitments);
                 return (
-                <Card key={item.id} className="space-y-2 opacity-90">
-                  <button
-                    type="button"
-                    onClick={() => setDetailFor(item)}
-                    className="w-full flex items-center justify-between text-left"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium text-gray-700 dark:text-slate-300 truncate">{getBillDisplayName(item)}</p>
-                      <p className="text-xs text-gray-400">
-                        Paid {"\u00b7"} due {formatDate(item.dueDate)}
-                      </p>
-                      {hp.totalCycles != null && hp.totalCycles > 0 && (
-                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-0.5">{hp.label}</p>
-                      )}
-                    </div>
-                    <span className="text-xs font-semibold text-emerald-600 shrink-0">Paid</span>
-                  </button>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditing(item)}
-                      className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteCommitment(item.id)}
-                      className="px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </Card>
+                  <BillCard
+                    key={item.id}
+                    variant="history"
+                    item={item}
+                    effectiveStatus="paid"
+                    cycleDue={0}
+                    partial={false}
+                    monthPaid={false}
+                    progress={hp}
+                    onOpen={() => setDetailFor(item)}
+                    onPay={() => {}}
+                    onEdit={() => setEditing(item)}
+                    onDelete={() => deleteCommitment(item.id)}
+                  />
                 );
               })}
             </div>

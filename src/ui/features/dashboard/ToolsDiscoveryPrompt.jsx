@@ -64,7 +64,7 @@ export default function ToolsDiscoveryToast({ variant = "home" }) {
           <div className="min-w-0">
             <Body className="!text-[11px] font-semibold leading-tight text-[var(--ct-text)]">Better money math?</Body>
             <Caption className="mt-0.5 block leading-snug">
-              {variant === "analytics" ? "Calculators on Home" : "Loan · debt · goals"}
+              {variant === "analytics" ? "Calculators on Home" : "Planner · tax · loans"}
             </Caption>
             <Caption className="ct-text-accent font-semibold mt-1 block">
               {variant === "analytics" ? "Go there ↓" : "Show me ↓"}

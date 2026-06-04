@@ -6,7 +6,7 @@ CommitTrack is a **local-first PWA** for tracking **financial commitments** (bil
 
 - **Commitments** — recurring or one-off obligations with due dates, amounts, categories, and payment history.
 - **Pressure & stability** — engines compute burden vs income, survival runway, forecasts, and insights.
-- **Modes** — salaried (single or household), business; tools and copy change per experience (`constants/modeExperience.js`).
+- **Modes** — salaried (single or household); tools and copy change per experience (`constants/modeExperience.js`).
 - **Storage** — local-first on device; optional **CommitTrack Cloud** sync via Supabase (`docs/architecture/LocalFirstSync.md`).
 - **Lending** — track money lent/borrowed with agreements, schedules, and trust scoring.
 - **Optional cloud** — Supabase auth/profile when env vars are set; core data still persists in the browser.

@@ -25,14 +25,6 @@ export function explainInsight(insight, ctx = {}) {
       reasons: ["Emergency savings are lower than typical monthly burn."],
     },
     {
-      match: /vendor|payable|business/i,
-      reasons: ["Vendor or operating payables increased.", "Near-term cash outflows are clustered."],
-    },
-    {
-      match: /receivable|collection|client|invoice/i,
-      reasons: ["Customer collections are slow or concentrated.", "Open receivables are tying up cash."],
-    },
-    {
       match: /school|education|household|family/i,
       reasons: ["Household expenses such as school or rent weigh on shared income."],
     },

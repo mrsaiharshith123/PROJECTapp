@@ -6,10 +6,14 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { Navbar, InstallAppBanner, Screen, MainContent } from "./ui";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
+import AuthGatePage from "./ui/features/auth/AuthGatePage.jsx";
 import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
+import { isAccountSetupComplete } from "./utils/profileSetup.js";
+import { normalizeIndianPhone } from "./utils/phone.js";
+import { isSignupPending } from "./utils/authSessionCleanup.js";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -25,6 +29,21 @@ function PageLoader() {
     <div className="ct-loader ct-caption" role="status">
       Loading…
     </div>
+  );
+}
+
+function AuthGateShell() {
+  return (
+    <Screen narrow>
+      <ThemeSync />
+      <div className="mb-6">
+        <InstallAppBanner />
+      </div>
+      <Routes>
+        <Route path="/auth" element={<AuthGatePage />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    </Screen>
   );
 }
 
@@ -68,6 +87,7 @@ function MainShell() {
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/auth" element={<Navigate to="/profile" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
@@ -76,12 +96,11 @@ function MainShell() {
   );
 }
 
-/** Local-first: app runs without sign-in; cloud is optional in Profile. */
+/** Signed-in only; onboarding until profile setup complete. */
 function AppShell() {
-  const { settings, updateSettings, commitments } = useCommitTrack();
-  const { isReady, isLoggedIn, user, profile, saveProfile } = useAuth();
-  const onboarded = Boolean(settings?.onboardingComplete);
-  const hasLocalData = onboarded || commitments.length > 0;
+  const { settings, updateSettings } = useCommitTrack();
+  const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
+  const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id) return;
@@ -91,21 +110,28 @@ function AppShell() {
 
     const patch = {};
     if (!settings.displayName && meta.display_name) patch.displayName = String(meta.display_name);
+    if (!settings.phoneNumber && meta.phone) patch.phoneNumber = normalizeIndianPhone(meta.phone);
+    if (profile?.phone && !settings.phoneNumber) patch.phoneNumber = normalizeIndianPhone(profile.phone);
     if ((!settings.monthlyIncome || Number(settings.monthlyIncome) <= 0) && Number(meta.monthly_income) > 0) {
       patch.monthlyIncome = Number(meta.monthly_income);
     }
     if (meta.user_mode) patch.userMode = String(meta.user_mode);
     if (meta.household_scope) patch.householdScope = meta.household_scope === "family" ? "family" : "single";
-    if (!settings.onboardingComplete && meta.onboarding_complete === true) patch.onboardingComplete = true;
+    if (profile?.onboarding_complete === true && !settings.onboardingComplete) {
+      patch.onboardingComplete = true;
+    }
+    if (!profile) {
+      patch.onboardingComplete = false;
+    }
 
     if (Object.keys(patch).length > 0) {
       updateSettings(patch);
     }
     localStorage.setItem(key, "1");
-  }, [isLoggedIn, user, settings, updateSettings]);
+  }, [isLoggedIn, user, profile, settings, updateSettings]);
 
   useEffect(() => {
-    if (!isLoggedIn || !user?.id || !settings?.onboardingComplete) return;
+    if (!isLoggedIn || !user?.id || !setupComplete) return;
     const key = `committrack_profile_seeded_${user.id}`;
     if (localStorage.getItem(key) === "1") return;
     if (profile?.monthly_income != null || profile?.user_mode || profile?.onboarding_complete === true) {
@@ -115,10 +141,10 @@ function AppShell() {
     saveProfile({
       username: settings.displayName || profile?.username || "",
       display_name: settings.displayName || "",
+      phone: settings.phoneNumber || profile?.phone || "",
       user_mode: settings.userMode || "salaried",
       household_scope: settings.householdScope || "single",
       monthly_income: Number(settings.monthlyIncome) || 0,
-      business_type: settings.businessType || "",
       onboarding_complete: true,
       pan: profile?.pan || "",
       pan_verified: Boolean(profile?.pan_verified),
@@ -129,21 +155,32 @@ function AppShell() {
       .catch(() => {
         /* Keep app usable even when DB schema does not yet include onboarding columns. */
       });
-  }, [isLoggedIn, user, profile, settings, saveProfile]);
+  }, [isLoggedIn, user, profile, settings, saveProfile, setupComplete]);
 
-  if (!isReady) {
+  if (!isReady || (isLoggedIn && !profileResolved)) {
     return <PageLoader />;
   }
 
-  if (!hasLocalData) {
-    return <OnboardingShell />;
+  if (!isLoggedIn) {
+    return <AuthGateShell />;
   }
 
-  if (!onboarded && isLoggedIn) {
+  if (!profile && !isSignupPending()) {
+    return <AuthGateShell />;
+  }
+
+  if (!setupComplete) {
     return <OnboardingShell />;
   }
 
   return <MainShell />;
+}
+
+function RequireAuth({ children }) {
+  const { isReady, isLoggedIn } = useAuth();
+  if (!isReady) return <PageLoader />;
+  if (!isLoggedIn) return <Navigate to="/auth" replace />;
+  return children;
 }
 
 function App() {
@@ -153,7 +190,14 @@ function App() {
         <CommitTrackProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/lend/offer" element={<LendingOfferReview />} />
+              <Route
+                path="/lend/offer"
+                element={
+                  <RequireAuth>
+                    <LendingOfferReview />
+                  </RequireAuth>
+                }
+              />
               <Route path="*" element={<AppShell />} />
             </Routes>
           </Suspense>

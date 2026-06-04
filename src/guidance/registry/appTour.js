@@ -25,13 +25,13 @@ const COMMON = [
   {
     id: "add",
     title: "Add your world",
-    body: "Bills, EMIs, subscriptions, and business dues feed every score. The more honest your list, the smarter the guidance.",
+    body: "Bills, EMIs, and subscriptions feed every score. The more honest your list, the smarter the guidance.",
     tip: "Quick actions at the bottom jump to Add bill, Lending, or Profile.",
   },
   {
     id: "profile",
     title: "Profile & settings",
-    body: "Income, mode, notifications, and optional cloud sync live in Profile. Change your experience anytime — we adapt the language to match.",
+    body: "Income, mode, notifications, and account backup live in Profile. Change your experience anytime — we adapt the language to match.",
   },
 ];
 
@@ -45,11 +45,6 @@ const MODE_TAIL = {
     id: "mode-family",
     title: "Your household view",
     body: "We highlight shared bills, school fees, and household safety — so the whole home feels understandable, not just one salary.",
-  },
-  business: {
-    id: "mode-business",
-    title: "Your business view",
-    body: "We track receivables, payables, and operating stability — collections and vendor timing matter as much as revenue.",
   },
 };
 

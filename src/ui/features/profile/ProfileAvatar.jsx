@@ -1,14 +1,15 @@
 import { useRef } from "react";
+import { Button, Caption } from "../../index.js";
 import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
 
 const MAX_IMAGE_BYTES = 400_000;
 
-export default function ProfileAvatar({ settings, updateSettings, size = "lg" }) {
+/**
+ * @param {{ settings: object, updateSettings: (p: object) => void, size?: 'sm' | 'lg', compact?: boolean }} props
+ */
+export default function ProfileAvatar({ settings, updateSettings, size = "lg", compact = false }) {
   const fileRef = useRef(null);
   const { style, imageUrl, isUploaded, mode } = resolveProfileAvatar(settings);
-
-  const sizeClass =
-    size === "sm" ? "w-16 h-16 text-3xl" : "w-24 h-24 text-5xl ring-4 ring-white/30";
 
   const onFile = (e) => {
     const file = e.target.files?.[0];
@@ -33,38 +34,38 @@ export default function ProfileAvatar({ settings, updateSettings, size = "lg" })
     updateSettings({ avatarSource: "auto", profileImageDataUrl: "" });
   };
 
+  const avatarSize = size === "sm" || compact ? "ct-avatar-sm" : "ct-avatar-lg";
+
+  const avatarNode = (
+    <div className={`ct-avatar ${avatarSize} bg-gradient-to-br ${style.gradient}`}>
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <span className="select-none" role="img" aria-label={style.label}>
+          {style.character}
+        </span>
+      )}
+    </div>
+  );
+
+  if (compact) {
+    return avatarNode;
+  }
+
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div
-        className={`relative rounded-2xl overflow-hidden shadow-lg flex items-center justify-center bg-gradient-to-br ${style.gradient} ${sizeClass}`}
-      >
-        {imageUrl ? (
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <span className="select-none" role="img" aria-label={style.label}>
-            {style.character}
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-gray-500 dark:text-slate-400 text-center">
+    <div className="ct-stack-sm items-center">
+      {avatarNode}
+      <Caption className="text-center">
         {isUploaded ? "Your photo" : `${mode.emoji} ${style.label} avatar`}
-      </p>
-      <div className="flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
-        >
+      </Caption>
+      <div className="ct-row" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+        <Button type="button" size="sm" variant="primary" onClick={() => fileRef.current?.click()}>
           Upload photo
-        </button>
+        </Button>
         {isUploaded && (
-          <button
-            type="button"
-            onClick={useCartoon}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-200"
-          >
+          <Button type="button" size="sm" variant="outline" onClick={useCartoon}>
             Use cartoon
-          </button>
+          </Button>
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />

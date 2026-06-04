@@ -2,7 +2,6 @@ import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
 import {
   USER_MODE_IDS,
-  ALL_USER_MODE_IDS,
   REMOVED_USER_MODE_IDS,
 } from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
@@ -13,14 +12,11 @@ import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
-import { loadBusinessInvoicesFromStorage } from "./businessInvoices.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 export const SCHEMA_VERSION_KEY = "committrack_schema_version";
 export const CURRENT_SCHEMA_VERSION = 9;
-
-const USER_MODES = ALL_USER_MODE_IDS;
 
 function normalizeCategory(raw) {
   const s = String(raw || "").trim();
@@ -423,11 +419,7 @@ export function loadInitialAppState() {
 /** Fresh read for cloud sync / export (bypasses in-memory cache). */
 export function loadFullAppStateForSync() {
   invalidateInitialAppStateCache();
-  const base = loadInitialAppState();
-  return {
-    ...base,
-    businessInvoices: loadBusinessInvoicesFromStorage(),
-  };
+  return loadInitialAppState();
 }
 
 export function saveGoalsToStorage(goals) {
@@ -465,6 +457,7 @@ const DEFAULT_SETTINGS = {
   /** "take_home" = what hits your account; "gross" = before tax — same math, clearer copy. */
   incomeEntryBasis: "take_home",
   displayName: "",
+  phoneNumber: "",
   userMode: "salaried",
   /** "single" | "family" — only when userMode is salaried */
   householdScope: "single",
@@ -475,7 +468,6 @@ const DEFAULT_SETTINGS = {
   savedTowardGoals: 0,
   readNotificationIds: [],
   activeProfileId: "default",
-  businessType: "",
   colorScheme: "system",
   avatarSource: "auto",
   profileImageDataUrl: "",
@@ -484,7 +476,7 @@ const DEFAULT_SETTINGS = {
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
   dashboardToolOrderByMode: {},
-  /** Optional CommitTrack Cloud continuity (requires sign-in). */
+  /** Legacy flag — backup is on whenever signed in + Supabase configured. */
   cloudSyncEnabled: false,
 };
 
@@ -496,9 +488,11 @@ export function loadSettingsFromStorage() {
       if (!o || typeof o !== "object" || Array.isArray(o)) {
         return { ...DEFAULT_SETTINGS };
       }
-      let mode = USER_MODES.includes(o.userMode) ? o.userMode : "salaried";
+      let mode = USER_MODE_IDS.includes(o.userMode) ? o.userMode : "salaried";
       let householdScope = o.householdScope === "family" ? "family" : "single";
-      let subscriptionTier = o.subscriptionTier === "power" ? "power" : "free";
+      let subscriptionTier = "free";
+      if (o.subscriptionTier === "power") subscriptionTier = "power";
+      else if (o.subscriptionTier === "pro") subscriptionTier = "pro";
       if (mode === "family") {
         mode = "salaried";
         householdScope = "family";
@@ -518,6 +512,7 @@ export function loadSettingsFromStorage() {
         secondaryMonthlyIncome: Math.max(0, Number(o.secondaryMonthlyIncome) || 0),
         incomeEntryBasis: o.incomeEntryBasis === "gross" ? "gross" : "take_home",
         displayName: String(o.displayName || ""),
+        phoneNumber: String(o.phoneNumber || ""),
         userMode: mode,
         householdScope,
         subscriptionTier,
@@ -531,7 +526,6 @@ export function loadSettingsFromStorage() {
           ? o.readNotificationIds.map(String)
           : [],
         activeProfileId: String(o.activeProfileId || "default"),
-        businessType: String(o.businessType || ""),
         colorScheme: COLOR_SCHEMES.includes(o.colorScheme) ? o.colorScheme : "system",
         avatarSource: o.avatarSource === "upload" ? "upload" : "auto",
         profileImageDataUrl:

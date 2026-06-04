@@ -8,6 +8,10 @@ export const CALC_HELP = {
     "A simple 0–100 score from how heavy your bills are vs income, overdue items, and recent trends. Lower is calmer.",
   healthScore:
     "Combines payment streak, control over bills, open balances, and lending. It is a guide, not a credit score.",
+  payStreak:
+    "How many months in a row you logged at least one bill or lending payment. Breaks when a month has no payments.",
+  billControl:
+    "Starts at 100 and drops when bills are overdue or critical items are still open. Higher means you are on top of dues — not a credit score.",
   survivalMonths:
     "How long liquid savings plus current free cash could cover monthly burn if income stopped today.",
   emergencyReserve:
@@ -26,8 +30,6 @@ export const CALC_HELP = {
     "Bills with a due date in the current calendar month that are not fully paid yet.",
   freeAfterDues:
     "Income minus estimated monthly dues from recurring and active bills.",
-  businessReceivables:
-    "Money clients owe you: open lending you marked as lent, plus client invoices you add below. Vendor dues come from your business bills in Commitments.",
   dueHeatmap:
     "How many bills fall due in each of the next four weeks and their total amount.",
   debtTrend:

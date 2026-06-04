@@ -6,7 +6,6 @@ import { getExperienceMode } from "../../constants/modeExperience.js";
  * @param {object} ctx.settings
  * @param {number} ctx.overdueCount
  * @param {number} ctx.stabilityScore
- * @param {object} [ctx.stable]
  */
 export function getDashboardFocus(ctx) {
   const mode = getExperienceMode(ctx.settings);
@@ -22,13 +21,6 @@ export function getDashboardFocus(ctx) {
   }
 
   if (score < 45) {
-    if (mode === "business") {
-      return {
-        tone: "warning",
-        label: "Most important",
-        message: "Operating pressure is high — review payables and collections in your business dashboard.",
-      };
-    }
     if (mode === "family") {
       return {
         tone: "warning",
@@ -40,14 +32,6 @@ export function getDashboardFocus(ctx) {
       tone: "warning",
       label: "Most important",
       message: "Financial pressure is elevated — review dues and free cash in Financial pulse.",
-    };
-  }
-
-  if (mode === "business") {
-    return {
-      tone: "info",
-      label: "This month",
-      message: "Watch receivables vs payables — that's your operating heartbeat.",
     };
   }
 

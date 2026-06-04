@@ -14,10 +14,13 @@ export function applyColorScheme(preference) {
   if (typeof document === "undefined") return "light";
   const resolved = resolveColorScheme(preference);
   const root = document.documentElement;
+  root.dataset.theme = resolved;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0f172a" : "#4f46e5");
+  if (meta) {
+    meta.setAttribute("content", resolved === "dark" ? "#0d0d17" : "#eef1f8");
+  }
   return resolved;
 }
 

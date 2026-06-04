@@ -12,15 +12,12 @@ export const STATUS_ICONS = {
 };
 
 export const TOOL_ICONS = {
-  afford: "\u{1F9EE}",
-  scenarios: "\u{1F4CA}",
+  planner: "\u{1F9EE}",
+  loan: "\u{1F4C9}",
   insurance: "\u{1F6E1}\uFE0F",
-  emi: "\u{1F4C9}",
-  payoff: "\u{1F3AF}",
-  goals: "\u{1F3C1}",
   chit: "\u{1FA99}",
-  loanTiming: "\u{1F4C6}",
   bond: "\u{1F9FE}",
+  incomeTax: "\u{1F4B8}",
 };
 
 export function formatInr(amount) {

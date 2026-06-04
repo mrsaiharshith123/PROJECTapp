@@ -5,7 +5,13 @@ import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
 import { downloadLendingAgreementHtml } from "../../../utils/agreementExport.js";
 import { canEditLending, repaymentModeLabel } from "../../../engines/lendingAgreement.js";
-import { Button } from "../../primitives/Button.jsx";
+import { Button } from "../../index.js";
+import {
+  generateLendingShareCardHtml,
+  lendingSharePlainText,
+  openHtmlInNewTab,
+} from "../../../utils/lendingShareCard.js";
+import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
@@ -140,6 +146,20 @@ export default function LendingDetailDashboard({
           onClick={() => downloadLendingAgreementHtml({ ...lending, agreementText: agreementDraft }, settings)}
         >
           Print agreement
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="flex-1 min-w-[120px]"
+          onClick={async () => {
+            openHtmlInNewTab(generateLendingShareCardHtml(lending, settings));
+            await shareOrCopyPlainText(lendingSharePlainText(lending, settings), {
+              title: "CommitTrack lending summary",
+            });
+          }}
+        >
+          Share summary
         </Button>
       </div>
 

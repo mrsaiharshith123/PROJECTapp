@@ -84,7 +84,6 @@ export function previewImportCounts(payload) {
     commitments: Array.isArray(payload.commitments) ? payload.commitments.length : 0,
     lendings: Array.isArray(payload.lendings) ? payload.lendings.length : 0,
     goals: Array.isArray(payload.goals) ? payload.goals.length : 0,
-    businessInvoices: Array.isArray(payload.businessInvoices) ? payload.businessInvoices.length : 0,
     hasSettings: Boolean(payload.settings),
   };
 }

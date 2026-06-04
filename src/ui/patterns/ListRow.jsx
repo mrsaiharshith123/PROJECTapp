@@ -4,9 +4,25 @@ import { Body, Caption } from "../primitives/Text.jsx";
 import { Badge } from "../primitives/Badge.jsx";
 
 /**
- * @param {{ icon?: string, title: string, subtitle?: string, amount?: string, status?: string, statusTone?: string, onClick?: () => void, as?: string }} props
+ * @param {{ icon?: string, title: string, subtitle?: string, amount?: string, amountTone?: 'positive' | 'negative' | 'neutral', status?: string, statusTone?: string, onClick?: () => void, as?: string }} props
  */
-export function ListRow({ icon, title, subtitle, amount, status, statusTone, onClick, as: Tag = "div" }) {
+export function ListRow({
+  icon,
+  title,
+  subtitle,
+  amount,
+  amountTone = "neutral",
+  status,
+  statusTone,
+  onClick,
+  as: Tag = "div",
+}) {
+  const amountClass =
+    amountTone === "positive"
+      ? "ct-amount-positive"
+      : amountTone === "negative"
+        ? "ct-amount-negative"
+        : "text-[var(--ct-text)] font-bold";
   const inner = (
     <>
       <Row className="min-w-0 flex-1">
@@ -17,7 +33,7 @@ export function ListRow({ icon, title, subtitle, amount, status, statusTone, onC
         </div>
       </Row>
       <div className="text-right shrink-0">
-        {amount && <Body className="font-bold text-[var(--ct-text)] block">{amount}</Body>}
+        {amount && <Body className={`block ${amountClass}`}>{amount}</Body>}
         {status && <Badge tone={statusTone} className="mt-1">{status}</Badge>}
       </div>
     </>

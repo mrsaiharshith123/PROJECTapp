@@ -7,6 +7,7 @@ import { computeGoalProgress, goalTypeLabel } from "../../../engines/goalsProgre
 import {
   InstallAppBanner,
   PageHeaderWithNotifications,
+  PlansButton,
   HomeOverviewCard,
   ModeIntelligenceSection,
   FinancialPulseCard,
@@ -14,30 +15,23 @@ import {
   ToolsDiscoveryToast,
 } from "../../";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
-import {
-  getHomeKpiTiles,
-  getHomeKpiCaption,
-} from "../dashboard/config/modeDashboardMetrics.js";
-import { getDashboardFocus, interpretHomeMetric } from "../../../guidance/index.js";
-import { getExperienceMode } from "../../../constants/modeExperience.js";
-import { GuidanceBanner } from "../../guidance/GuidanceBanner.jsx";
+import { getHomeKpiTiles } from "../dashboard/config/modeDashboardMetrics.js";
 import { GuidedEmptyState } from "../../guidance/GuidedEmptyState.jsx";
 import { MicroTipCard } from "../../guidance/MicroTipCard.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
+import FinancialHealthTile from "../dashboard/FinancialHealthTile.jsx";
+import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { monthlyBurdenForCommitment } from "../../../engines/burden.js";
-import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
-import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
+import { computePaymentMonthStreak, computeControlScore } from "../../../utils/profileStats.js";
 import { formatInr, STATUS_ICONS, CHEVRON, EM_DASH } from "../../../constants/symbols.js";
 import {
   ScreenSection,
   Card,
   Stack,
   Row,
-  Grid,
   MetricTile,
   ListRow,
-  InsightBanner,
   Heading,
   Body,
   Caption,
@@ -54,7 +48,7 @@ function formatDate(dateStr) {
 
 const Home = () => {
   const navigate = useNavigate();
-  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr, updateSettings } =
+  const { commitments, lendings, sortedCommitments, goals, settings, getEffectiveStatus, todayStr, updateSettings } =
     useCommitTrack();
   const location = useLocation();
   const navWantsTour = Boolean(location.state?.replayGuide || location.state?.startGuide);
@@ -62,12 +56,6 @@ const Home = () => {
   const tourOpen = !tourDismissed && (navWantsTour || !settings.appGuideComplete);
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
-  const income = combinedMonthlyIncome(settings);
-  const monthSummary = useMemo(
-    () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income),
-    [commitments, getEffectiveStatus, todayStr, income]
-  );
-
   const scrollToTools = useCallback(() => {
     document.getElementById("dashboard-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
@@ -101,50 +89,27 @@ const Home = () => {
   const displayName = settings.displayName?.trim() || "there";
   const greeting = `Hey, ${displayName} 👋`;
 
-  const insightText = useMemo(() => {
-    if (stable.healthNarrative?.headline) return stable.healthNarrative.headline;
-    const free = intel.freeMoneyAfterBurden ?? monthSummary.freeCash;
-    if (free != null && free >= 0) {
-      return `Good job! You'll have ${formatInr(free)} left after paying all dues.`;
-    }
-    return null;
-  }, [stable.healthNarrative, intel.freeMoneyAfterBurden, monthSummary.freeCash]);
-
-  const stabilityScore = intel.stability?.score ?? 0;
-  const stabilityLabel =
-    stabilityScore >= 70 ? "Good" : stabilityScore >= 45 ? "Fair" : "Tight";
+  const payStreak = useMemo(
+    () => computePaymentMonthStreak(commitments, lendings),
+    [commitments, lendings],
+  );
+  const billControl = useMemo(
+    () => computeControlScore(commitments, getEffectiveStatus),
+    [commitments, getEffectiveStatus],
+  );
 
   const homeKpis = useMemo(
     () =>
       getHomeKpiTiles({
         settings,
-        monthSummary,
-        intel,
-        stable,
         commitments,
-        getEffectiveStatus,
-        todayStr,
-      }),
-    [settings, monthSummary, intel, stable, commitments, getEffectiveStatus, todayStr],
-  );
-  const kpiCaption = getHomeKpiCaption(settings);
-  const experienceMode = getExperienceMode(settings);
-  const kpiInterpretation = useMemo(() => {
-    const primary = homeKpis.find((k) => k.conceptId === "stability" || k.conceptId === "businessStability" || k.conceptId === "householdSafety") || homeKpis[1];
-    if (!primary) return null;
-    return interpretHomeMetric(primary.label, primary.value, { mode: experienceMode });
-  }, [homeKpis, experienceMode]);
-  const dashboardFocus = useMemo(
-    () =>
-      getDashboardFocus({
-        settings,
+        streak: payStreak,
+        control: billControl,
         overdueCount: overdue.length,
-        stabilityScore,
         stable,
       }),
-    [settings, overdue.length, stabilityScore, stable],
+    [settings, commitments, payStreak, billControl, overdue.length, stable],
   );
-
   const microTipSeed = commitments.length + goals.length;
 
   return (
@@ -155,7 +120,7 @@ const Home = () => {
         onComplete={completeTour}
         onDismiss={completeTour}
       />
-      <PageHeaderWithNotifications greeting={greeting} />
+      <PageHeaderWithNotifications greeting={greeting} headerActions={<PlansButton />} />
 
       {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
         <Caption className="text-[var(--ct-accent)] font-semibold">
@@ -164,38 +129,28 @@ const Home = () => {
       )}
 
       <InstallAppBanner />
-      <GuidanceBanner focus={dashboardFocus} />
       <HomeOverviewCard />
 
-      <Grid cols={4}>
-        {homeKpis.map((kpi) => (
-          <MetricTile
-            key={kpi.label}
-            label={kpi.label}
-            value={kpi.value}
-            valueClassName={kpi.valueClassName}
-            caption={kpi.caption}
-            conceptId={kpi.conceptId}
-          />
-        ))}
-      </Grid>
-      <Caption className="-mt-2 text-center block">
-        {kpiCaption}
-        {homeKpis.length === 4 && homeKpis.some((k) => k.label === "Stability")
-          ? ` · ${stabilityLabel}`
-          : ""}
-      </Caption>
-      {kpiInterpretation && (
-        <Caption className="-mt-1 text-center block opacity-90">{kpiInterpretation}</Caption>
-      )}
+      <div className="ct-home-kpis">
+        <div className="ct-grid-2">
+          {homeKpis.map((kpi) => (
+            <MetricTile
+              key={kpi.label}
+              label={kpi.label}
+              value={kpi.value}
+              valueClassName={kpi.valueClassName}
+              caption={kpi.caption}
+              conceptId={kpi.conceptId}
+            />
+          ))}
+        </div>
+        <FinancialHealthTile />
+      </div>
 
       <MicroTipCard seed={microTipSeed} />
       <ModeIntelligenceSection />
       <FinancialPulseCard />
-
-      {insightText && (
-        <InsightBanner variant="success">{insightText}</InsightBanner>
-      )}
+      {isSalariedFamily(settings) && <FamilyCalendarWidget />}
 
       {goals.length > 0 && (
         <Card>
@@ -282,7 +237,7 @@ const Home = () => {
       <ScreenSection title="Quick actions">
         <QuickActionRow>
           <QuickAction icon="+" label="Add Bill" onClick={() => navigate("/add")} />
-          <QuickAction icon="💳" label="Add Debt" onClick={() => navigate("/lending")} />
+          <QuickAction icon="🤝" label="Lending" onClick={() => navigate("/lending")} />
           <QuickAction icon="💰" label="Add Income" onClick={() => navigate("/profile")} />
           <QuickAction icon="🧮" label="Calculator" onClick={scrollToTools} />
           <QuickAction icon="📊" label="Insights" onClick={() => navigate("/analytics")} />

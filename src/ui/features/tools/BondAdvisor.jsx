@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { analyzeBond } from "../../../engines/bondAnalyzer.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { ProGate } from "../../patterns/ProGate.jsx";
 
 const inputClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
@@ -37,6 +38,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
   const setField = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
   return (
+    <ProGate featureId="bond_advisor">
     <div className="space-y-3">
       <p className="text-xs text-gray-500">
         Check if a bond return is worth it after tax and inflation, and whether it fits your salary.
@@ -136,5 +138,6 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
         </p>
       )}
     </div>
+    </ProGate>
   );
 }

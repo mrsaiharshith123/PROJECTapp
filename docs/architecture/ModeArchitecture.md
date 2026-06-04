@@ -10,7 +10,6 @@ Registry: `src/governance/registries/modes.js`
 |------|------------|-----------|
 | Salaried | Personal salary & bills | `ModeIntelligenceSection.jsx` (survival panel) |
 | Salaried + household scope **family** | Household | `FamilyModeDashboard.jsx` |
-| Business | Operating cashflow | `BusinessModeDashboard.jsx` |
 
 ## Legacy saves (migrated on load)
 

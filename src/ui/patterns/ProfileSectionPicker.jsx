@@ -1,33 +1,38 @@
-import { Body, Caption } from "../primitives/Text.jsx";
+import { SettingsRow } from "./SettingsRow.jsx";
 
 const SECTIONS = [
-  { id: "guide", label: "App guide", hint: "Tutorial & setup replay" },
-  { id: "personal", label: "Personal Information", hint: "Name, mode, household" },
-  { id: "money", label: "Money Setup", hint: "Income, currency, budgets" },
-  { id: "notifications", label: "Notifications", hint: "Reminders & alerts" },
-  { id: "cloud", label: "CommitTrack Cloud", hint: "Optional sync & backup" },
-  { id: "security", label: "Local data & export", hint: "Device storage, JSON" },
-  { id: "import", label: "Import Data", hint: "File or cloud restore" },
-  { id: "history", label: "Payment History", hint: "Past bills & edits" },
+  { id: "guide", icon: "📖", label: "App guide", hint: "Tutorial & setup replay" },
+  { id: "personal", icon: "👤", label: "Personal & money", hint: "Name, income, mode, appearance" },
+  { id: "backup", icon: "☁️", label: "Backup & data", hint: "Account backup, import, export" },
+  { id: "notifications", icon: "🔔", label: "Notifications", hint: "Reminders & alerts" },
+  { id: "history", icon: "📜", label: "Payment history", hint: "Past bills & edits" },
 ];
 
-export function ProfileSectionPicker({ openId, onSelect }) {
+/**
+ * @param {{
+ *   openId: string | null,
+ *   onSelect: (id: string | null) => void,
+ *   renderPanel?: (id: string) => import('react').ReactNode,
+ * }} props
+ */
+export function ProfileSectionPicker({ openId, onSelect, renderPanel }) {
   return (
-    <div className="ct-grid-2">
-      {SECTIONS.map((s) => {
-        const active = openId === s.id;
-        return (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => onSelect(active ? null : s.id)}
-            className={`ct-list-row text-left ${active ? "ct-settings-tile-active" : ""}`}
-          >
-            <Body className={`font-semibold block ${active ? "ct-text-accent" : ""}`}>{s.label}</Body>
-            <Caption className="block mt-0.5">{s.hint}</Caption>
-          </button>
-        );
-      })}
+    <div className="ct-settings-group">
+      <p className="ct-settings-group-title">Profile settings</p>
+      {SECTIONS.map((s) => (
+        <div key={s.id} className="ct-settings-section">
+          <SettingsRow
+            icon={s.icon}
+            label={s.label}
+            hint={s.hint}
+            active={openId === s.id}
+            onClick={() => onSelect(openId === s.id ? null : s.id)}
+          />
+          {openId === s.id && renderPanel ? (
+            <div className="ct-settings-panel">{renderPanel(s.id)}</div>
+          ) : null}
+        </div>
+      ))}
     </div>
   );
 }

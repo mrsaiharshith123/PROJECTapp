@@ -23,12 +23,6 @@ const MODE_PRESETS_SALARIED = {
 };
 
 const MODE_PRESETS = {
-  business: {
-    vendor: { label: "Vendor payment", repeatType: "monthly", category: "Vendor" },
-    payroll: { label: "Payroll / hire", repeatType: "monthly", category: "Payroll" },
-    software: { label: "Software / SaaS", repeatType: "monthly", category: "Software" },
-    equipment: { label: "Equipment", repeatType: "none", category: "Equipment" },
-  },
   family: {
     insurance: { label: "Family insurance", repeatType: "yearly", category: "Insurance" },
     school: { label: "School fees", repeatType: "yearly", category: "School" },
@@ -78,7 +72,6 @@ export function simulateNewExpense({
   mode = "salaried",
   loanMeta = null,
 }) {
-  const experienceMode = typeof mode === "object" && mode !== null ? getExperienceMode(mode) : mode;
   const catalog = getExpensePresetsForMode(mode);
   const p = catalog[preset] || PRESETS[preset] || PRESETS.emi;
   const draft = {
@@ -115,8 +108,7 @@ export function simulateNewExpense({
 
   const warnings = [];
   if (aff.tier === "dangerous" || aff.tier === "high_risk") {
-    const incomeWord =
-      experienceMode === "business" ? "revenue" : "income";
+    const incomeWord = "income";
     warnings.push(`This raises commitments to about ${aff.committedPercent}% of ${incomeWord}.`);
   }
   if (aff.freeMoneyAfter < income * 0.15 && income > 0) {

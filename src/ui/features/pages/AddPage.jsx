@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, InfoTip, Button, fieldInputClass } from "../../";
+import { Card, InfoTip, Button, fieldInputClass, PageHeader } from "../../";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import {
   categoryShowsInterestRate,
@@ -35,7 +35,7 @@ import {
   applyBillStartDateChange,
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
-import { Eyebrow, Heading } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 import { REPEAT_OPTIONS } from "../../../constants/repeatTypes.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 
@@ -238,17 +238,12 @@ const Add = () => {
   const inputClass = (field) => fieldInputClass(Boolean(errors[field]));
 
   return (
-    <div className="space-y-6 max-w-lg mx-auto">
-      <div>
-        <Eyebrow>New entry</Eyebrow>
-        <Heading level={1} className="text-3xl mt-1">
-          {COPY.addBill}
-        </Heading>
-      </div>
+    <div className="ct-page ct-form-narrow">
+      <PageHeader title={COPY.addBill} eyebrow="New entry" />
 
-      <Card className="space-y-5">
+      <Card className="ct-stack-lg">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Category</label>
+          <label className="ct-field-label">Category</label>
           <select name="category" value={form.category} onChange={handleChange} className={inputClass("category")}>
             <option value="">Select category</option>
             {billCategories.map((cat) => (
@@ -286,11 +281,11 @@ const Add = () => {
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+          <label className="ct-field-label">
             {showChit ? "This month's installment (₹)" : "Amount to pay (₹)"}
           </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₹</span>
+          <div className="ct-input-prefix-wrap">
+            <span className="ct-input-prefix">₹</span>
             <input
               type="number"
               name="amount"
@@ -299,7 +294,7 @@ const Add = () => {
               placeholder="0"
               min="0"
               readOnly={showChit && form.chitInstallmentMode !== "custom"}
-              className={`${inputClass("amount")} pl-8 ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
+              className={`${inputClass("amount")} ct-input-with-prefix ${showChit && form.chitInstallmentMode !== "custom" ? "opacity-80 cursor-default" : ""}`}
             />
           </div>
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
@@ -310,9 +305,9 @@ const Add = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="ct-grid-2">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            <label className="ct-field-label">
               Start date <span className="text-gray-400 font-normal">(when it began)</span>
             </label>
             <input
@@ -325,7 +320,7 @@ const Add = () => {
             {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            <label className="ct-field-label">
               End date{" "}
               <span className="text-gray-400 font-normal">
                 {isSubscription ? "(optional — cancel reminder)" : "(optional)"}
@@ -344,7 +339,7 @@ const Add = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Next payment due</label>
+          <label className="ct-field-label">Next payment due</label>
           <input
             type="date"
             name="dueDate"
@@ -367,7 +362,7 @@ const Add = () => {
 
         {!showChit && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
+            <label className="ct-field-label">Repeat</label>
             <select name="repeatType" value={form.repeatType} onChange={handleChange} className={inputClass("repeatType")}>
               {REPEAT_OPTIONS.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -386,7 +381,7 @@ const Add = () => {
 
         {isOther && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Priority</label>
+            <label className="ct-field-label">Priority</label>
             <select name="priority" value={form.priority} onChange={handleChange} className={inputClass("priority")}>
               {OTHER_PRIORITY_OPTIONS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -405,7 +400,7 @@ const Add = () => {
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+          <label className="ct-field-label">
             {COPY.billName}{" "}
             {showInsurance ? (
               <span className="text-gray-400 font-normal">(optional — auto from policy)</span>
@@ -424,7 +419,7 @@ const Add = () => {
 
         {showInterest && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            <label className="ct-field-label">
               Annual interest % <span className="text-gray-400 font-normal">(optional)</span>
             </label>
             <input
@@ -443,7 +438,7 @@ const Add = () => {
 
         {salariedFamily && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+            <label className="ct-field-label">
               Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>
               <InfoTip text={CALC_HELP.householdPayerBillTag} />
             </label>
@@ -462,7 +457,7 @@ const Add = () => {
         )}
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+          <label className="ct-field-label">
             Notes <span className="text-gray-400 font-normal">(optional)</span>
           </label>
           <textarea
@@ -480,27 +475,27 @@ const Add = () => {
       </Card>
 
       {affordability && (
-        <Card className="space-y-2 border-indigo-100">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Affordability</span>
+        <Card className="ct-stack-sm ct-insight-accent">
+          <div className="ct-row" style={{ flexWrap: "wrap" }}>
+            <Caption className="font-semibold uppercase">Affordability</Caption>
             <span
               className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${affordabilityBadgeClass(affordability.tier)}`}
             >
               {affordability.label}
             </span>
           </div>
-          <p className="text-xs text-gray-600">
+          <Caption>
             After adding: ~₹{Math.round(affordability.newTotalBurden).toLocaleString()}/mo burden vs income (
             {affordability.committedPercent != null ? `${affordability.committedPercent}%` : "—"} committed). Free
             money ≈ ₹{Math.round(affordability.freeMoneyAfter).toLocaleString()}.
-          </p>
-          <p className="text-[11px] text-gray-400">Set monthly income in Profile if this shows “—”.</p>
+          </Caption>
+          <Caption>Set monthly income in Profile if this shows “—”.</Caption>
         </Card>
       )}
 
-      <Card className="bg-indigo-50 border-indigo-100 dark:bg-indigo-950/40 dark:border-indigo-800">
-        <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-200 mb-2">Quick tips</p>
-        <ul className="space-y-1.5 text-xs text-indigo-600 dark:text-indigo-300/90">
+      <Card className="ct-insight-accent ct-stack-sm">
+        <p className="ct-body-strong">Quick tips</p>
+        <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
           <li>• Data stays on this device only</li>
           <li>• {COPY.recordPaymentOnBills}</li>
           <li>• Set an end date on subscriptions to get a cancel reminder</li>

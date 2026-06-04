@@ -134,6 +134,14 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
       ) : (
         <p className="text-xs text-gray-500">Your browser does not support notifications.</p>
       )}
+
+      <button
+        type="button"
+        className="ct-btn ct-btn-ghost w-full"
+        onClick={() => updateSettings({ readNotificationIds: [] })}
+      >
+        Mark all notifications as read
+      </button>
     </Card>
   );
 }

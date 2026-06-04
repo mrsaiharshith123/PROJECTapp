@@ -4,9 +4,10 @@ import { todayYmd } from "../utils/dates.js";
 import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
 import { applyPaymentToCommitment } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
-import { emitLocalDataChanged } from "../storage/events.js";
+import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../storage/events.js";
 import {
   loadInitialAppState,
+  loadSettingsFromStorage,
   invalidateInitialAppStateCache,
   saveMonthlySnapshotsToStorage,
   saveGoalsToStorage,
@@ -26,12 +27,6 @@ import { canEditLending } from "../engines/lendingAgreement.js";
 import { mergeImportedAppState } from "../utils/dataImport.js";
 import { refreshAllChitCommitments } from "../utils/chitSync.js";
 import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
-import {
-  loadBusinessInvoicesFromStorage,
-  normalizeBusinessInvoice,
-  saveBusinessInvoicesToStorage,
-} from "../utils/businessInvoices.js";
-
 /** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
 const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
 
@@ -54,7 +49,6 @@ export function CommitTrackProvider({ children }) {
   const [settings, setSettings] = useState(() => loadInitialAppState().settings);
   const [monthlySnapshots, setMonthlySnapshots] = useState(() => loadInitialAppState().monthlySnapshots);
   const [goals, setGoals] = useState(() => loadInitialAppState().goals);
-  const [businessInvoicesAll, setBusinessInvoicesAll] = useState(() => loadBusinessInvoicesFromStorage());
   const [supplementalNotifications, setSupplementalNotifications] = useState([]);
 
   useEffect(() => {
@@ -66,6 +60,12 @@ export function CommitTrackProvider({ children }) {
     } catch {
       /* ignore */
     }
+  }, []);
+
+  useEffect(() => {
+    const onSettingsReset = () => setSettings(loadSettingsFromStorage());
+    window.addEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
+    return () => window.removeEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
   }, []);
 
   const persistCommitments = useCallback((updater) => {
@@ -130,17 +130,6 @@ export function CommitTrackProvider({ children }) {
     setGoals((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       saveGoalsToStorage(next);
-      invalidateInitialAppStateCache();
-      emitLocalDataChanged();
-      return next;
-    });
-  }, []);
-
-  const persistBusinessInvoices = useCallback((updater) => {
-    setBusinessInvoicesAll((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      const normalized = next.map((row) => normalizeBusinessInvoice(row));
-      saveBusinessInvoicesToStorage(normalized);
       invalidateInitialAppStateCache();
       emitLocalDataChanged();
       return next;
@@ -315,9 +304,12 @@ export function CommitTrackProvider({ children }) {
         }
         if (patch.householdScope != null && patch.householdScope !== "family") {
           next.householdScope = "single";
+          next.dependents = 0;
         }
-        if (patch.subscriptionTier != null && patch.subscriptionTier !== "power") {
-          next.subscriptionTier = "free";
+        if (patch.subscriptionTier != null) {
+          const t = patch.subscriptionTier;
+          next.subscriptionTier = ["free", "pro", "power"].includes(t) ? t : prev.subscriptionTier || "free";
+          if (next.subscriptionTier === "free") next.cloudSyncEnabled = false;
         }
         return next;
       });
@@ -405,59 +397,6 @@ export function CommitTrackProvider({ children }) {
     [persistSettings]
   );
 
-  const addBusinessInvoice = useCallback(
-    (raw) => {
-      const now = Date.now();
-      const row = normalizeBusinessInvoice({
-        ...raw,
-        id: raw.id ?? now,
-        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
-        createdAt: now,
-        updatedAt: now,
-      });
-      persistBusinessInvoices((prev) => [...prev, row]);
-    },
-    [persistBusinessInvoices, settings.activeProfileId]
-  );
-
-  const updateBusinessInvoice = useCallback(
-    (id, patch) => {
-      persistBusinessInvoices((prev) =>
-        prev.map((row) =>
-          String(row.id) !== String(id)
-            ? row
-            : normalizeBusinessInvoice({ ...row, ...patch, id: row.id, updatedAt: Date.now() })
-        )
-      );
-    },
-    [persistBusinessInvoices]
-  );
-
-  const deleteBusinessInvoice = useCallback(
-    (id) => {
-      persistBusinessInvoices((prev) => prev.filter((row) => String(row.id) !== String(id)));
-    },
-    [persistBusinessInvoices]
-  );
-
-  const markBusinessInvoicePaid = useCallback(
-    (id) => {
-      persistBusinessInvoices((prev) =>
-        prev.map((row) =>
-          String(row.id) !== String(id)
-            ? row
-            : normalizeBusinessInvoice({
-                ...row,
-                paid: true,
-                paidAt: todayStr,
-                updatedAt: Date.now(),
-              })
-        )
-      );
-    },
-    [persistBusinessInvoices, todayStr]
-  );
-
   const logSavingsToGoal = useCallback(
     (goalId, amount) => {
       const amt = Math.max(0, Number(amount) || 0);
@@ -491,11 +430,6 @@ export function CommitTrackProvider({ children }) {
     () => filterByProfile(goals, activeProfileId).filter((g) => g.active !== false && !g.archived),
     [goals, activeProfileId]
   );
-  const businessInvoices = useMemo(
-    () => filterByProfile(businessInvoicesAll, activeProfileId),
-    [businessInvoicesAll, activeProfileId]
-  );
-
   const importAppData = useCallback(
     (payload, options = {}) => {
       const merged = mergeImportedAppState(
@@ -516,17 +450,6 @@ export function CommitTrackProvider({ children }) {
       if (merged.monthlySnapshots?.length) {
         persistSnapshots(() => merged.monthlySnapshots);
       }
-      const incomingInvoices = Array.isArray(payload.businessInvoices) ? payload.businessInvoices : [];
-      if (incomingInvoices.length) {
-        const norm = incomingInvoices.map((row) => normalizeBusinessInvoice(row));
-        if (options.mode === "replace") {
-          persistBusinessInvoices(() => norm);
-        } else {
-          const map = new Map(businessInvoicesAll.map((r) => [String(r.id), r]));
-          for (const row of norm) map.set(String(row.id), row);
-          persistBusinessInvoices(() => [...map.values()]);
-        }
-      }
       return merged.summary;
     },
     [
@@ -535,13 +458,11 @@ export function CommitTrackProvider({ children }) {
       goals,
       settings,
       monthlySnapshots,
-      businessInvoicesAll,
       persistCommitments,
       persistLendings,
       persistGoals,
       persistSettings,
       persistSnapshots,
-      persistBusinessInvoices,
     ]
   );
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);
@@ -579,12 +500,6 @@ export function CommitTrackProvider({ children }) {
       markAllNotificationsRead,
       logSavingsToGoal,
       importAppData,
-      businessInvoices,
-      allBusinessInvoices: businessInvoicesAll,
-      addBusinessInvoice,
-      updateBusinessInvoice,
-      deleteBusinessInvoice,
-      markBusinessInvoicePaid,
     }),
     [
       profileCommitments,
@@ -617,12 +532,6 @@ export function CommitTrackProvider({ children }) {
       markAllNotificationsRead,
       logSavingsToGoal,
       importAppData,
-      businessInvoices,
-      businessInvoicesAll,
-      addBusinessInvoice,
-      updateBusinessInvoice,
-      deleteBusinessInvoice,
-      markBusinessInvoicePaid,
     ]
   );
 

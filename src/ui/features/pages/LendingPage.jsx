@@ -266,11 +266,11 @@ const Lending = () => {
   return (
     <div className="ct-page">
       <PageHeader
-        eyebrow="Debts"
-        title="Money"
+        eyebrow="Friends & family"
+        title="Lending"
         subtitle={
           <Caption className="mt-1 max-w-xs block">
-            Request money goes under debt; when someone accepts your link it shows as money lent.
+            Track money you lent or borrowed — request a link, record repayments, and trust notes stay on this device.
           </Caption>
         }
         actions={

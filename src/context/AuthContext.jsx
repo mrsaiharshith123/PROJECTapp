@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   getAuthSession,
+  getSupabaseClient,
   loadUserProfile,
   onAuthStateChanged,
   saveUserProfile,
@@ -8,14 +9,15 @@ import {
   signOutAuth,
   signUpWithEmail,
 } from "../services/supabase/auth.js";
-import {
-  ACCOUNT_ACTIVITY_EVENT,
-  activityFromAuthEvent,
-  clearAccountActivity,
-  getAccountActivity,
-  recordAccountActivity,
-} from "../services/accountActivity.js";
 import { formatAuthError } from "../utils/authErrors.js";
+import {
+  clearAccountSeedKeys,
+  clearSignupPending,
+  isProfilesTableMissingError,
+  isSignupPending,
+  markSignupPending,
+  resetLocalAccountFlags,
+} from "../utils/authSessionCleanup.js";
 import { log } from "../utils/logger.js";
 
 /** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
@@ -26,28 +28,72 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [isReady, setIsReady] = useState(false);
-  const [error, setError] = useState(null);
-  const [activity, setActivity] = useState(() => getAccountActivity());
+  const [profileResolved, setProfileResolved] = useState(false);
+  const [authNotice, setAuthNotice] = useState("");
 
-  const refreshActivity = useCallback(() => {
-    setActivity(getAccountActivity());
+  const hardSignOut = useCallback(async (userId, notice = "") => {
+    await signOutAuth();
+    clearAccountSeedKeys(userId);
+    clearSignupPending();
+    resetLocalAccountFlags();
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setProfileResolved(true);
+    if (notice) setAuthNotice(notice);
   }, []);
 
-  useEffect(() => {
-    const onActivity = () => refreshActivity();
-    window.addEventListener(ACCOUNT_ACTIVITY_EVENT, onActivity);
-    return () => window.removeEventListener(ACCOUNT_ACTIVITY_EVENT, onActivity);
-  }, [refreshActivity]);
+  const enforceServerProfile = useCallback(
+    async (userId, loadedProfile) => {
+      if (!userId) return;
+      if (isSignupPending()) return;
 
-  const refreshProfile = useCallback(async (userId) => {
-    if (!userId) {
-      setProfile(null);
-      return null;
-    }
-    const p = await loadUserProfile(userId);
-    setProfile(p);
-    return p;
-  }, []);
+      if (!loadedProfile) {
+        await hardSignOut(
+          userId,
+          "No account found on the server. Create your account again (run Supabase migrations if tables are missing).",
+        );
+        return;
+      }
+
+      if (!loadedProfile.onboarding_complete) {
+        markSignupPending();
+        return;
+      }
+      clearSignupPending();
+    },
+    [hardSignOut],
+  );
+
+  const refreshProfile = useCallback(
+    async (userId) => {
+      if (!userId) {
+        setProfile(null);
+        setProfileResolved(true);
+        return null;
+      }
+      setProfileResolved(false);
+      try {
+        const p = await loadUserProfile(userId);
+        setProfile(p);
+        setProfileResolved(true);
+        await enforceServerProfile(userId, p);
+        if (p?.onboarding_complete) clearSignupPending();
+        return p;
+      } catch (e) {
+        setProfileResolved(true);
+        if (isProfilesTableMissingError(e)) {
+          await hardSignOut(
+            userId,
+            "Account tables are missing in Supabase. Run migrations in supabase/migrations/, then create your account.",
+          );
+          return null;
+        }
+        throw e;
+      }
+    },
+    [enforceServerProfile, hardSignOut],
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -57,21 +103,12 @@ export function AuthProvider({ children }) {
         if (!mounted) return;
         setSession(s);
         setUser(u);
-        if (u?.id) {
-          await refreshProfile(u.id);
-          if (s) {
-            recordAccountActivity({
-              type: "session",
-              level: "info",
-              message: "Session restored on launch",
-            });
-          }
-        }
+        if (u?.id) await refreshProfile(u.id);
+        else setProfileResolved(true);
       })
       .catch((e) => {
-        const msg = formatAuthError(e);
-        log.auth.error("Auth init failed", { message: msg });
-        if (mounted) setError(msg);
+        log.auth.error("Auth init failed", { message: formatAuthError(e) });
+        if (mounted) setProfileResolved(true);
       })
       .finally(() => {
         if (mounted) setIsReady(true);
@@ -80,22 +117,26 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(async ({ event, session: s, user: u }) => {
       setSession(s);
       setUser(u);
-      setError(null);
-
-      const act = activityFromAuthEvent(event, u);
-      if (act) recordAccountActivity(act);
-      refreshActivity();
-
       if (!u?.id) {
         setProfile(null);
+        setProfileResolved(true);
         return;
+      }
+      const supabase = getSupabaseClient();
+      if (supabase && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data?.user) {
+          await hardSignOut(u.id, "Your session ended — sign in again.");
+          return;
+        }
       }
       try {
         await refreshProfile(u.id);
       } catch (e) {
-        const msg = formatAuthError(e);
-        log.auth.error("Profile refresh failed", { event });
-        setError(msg);
+        log.auth.error("Profile refresh failed", { message: formatAuthError(e) });
+        if (!isProfilesTableMissingError(e)) {
+          await hardSignOut(u.id, "Could not load your account. Sign in again.");
+        }
       }
     });
 
@@ -103,68 +144,34 @@ export function AuthProvider({ children }) {
       mounted = false;
       unsubscribe();
     };
-  }, [refreshProfile, refreshActivity]);
+  }, [refreshProfile, hardSignOut]);
 
   const signUp = useCallback(async (email, password, metadata = null) => {
-    setError(null);
-    try {
-      const data = await signUpWithEmail(email, password, metadata);
-      refreshActivity();
-      return data;
-    } catch (e) {
-      const msg = formatAuthError(e);
-      setError(msg);
-      throw e;
-    }
-  }, [refreshActivity]);
+    return signUpWithEmail(email, password, metadata);
+  }, []);
 
   const signIn = useCallback(async (email, password) => {
-    setError(null);
-    try {
-      const data = await signInWithEmail(email, password);
-      refreshActivity();
-      return data;
-    } catch (e) {
-      const msg = formatAuthError(e);
-      setError(msg);
-      throw e;
-    }
-  }, [refreshActivity]);
+    setAuthNotice("");
+    return signInWithEmail(email, password);
+  }, []);
 
   const signOut = useCallback(async () => {
-    setError(null);
-    try {
-      await signOutAuth();
-      refreshActivity();
-    } catch (e) {
-      const msg = formatAuthError(e);
-      setError(msg);
-      throw e;
-    }
-  }, [refreshActivity]);
+    const uid = user?.id;
+    setAuthNotice("");
+    await hardSignOut(uid);
+  }, [user?.id, hardSignOut]);
 
   const saveProfile = useCallback(
     async (patch) => {
       if (!user?.id) throw new Error("Please sign in first.");
-      setError(null);
-      try {
-        const next = await saveUserProfile(user.id, patch);
-        setProfile(next);
-        refreshActivity();
-        return next;
-      } catch (e) {
-        const msg = formatAuthError(e);
-        setError(msg);
-        throw e;
-      }
+      const next = await saveUserProfile(user.id, patch);
+      setProfile(next);
+      setProfileResolved(true);
+      if (patch.onboarding_complete) clearSignupPending();
+      return next;
     },
-    [user, refreshActivity],
+    [user],
   );
-
-  const clearActivity = useCallback(() => {
-    clearAccountActivity();
-    refreshActivity();
-  }, [refreshActivity]);
 
   const value = useMemo(
     () => ({
@@ -172,32 +179,18 @@ export function AuthProvider({ children }) {
       session,
       user,
       profile,
-      error,
+      profileResolved,
+      authNotice,
+      error: null,
       isLoggedIn: Boolean(user),
-      activity,
       signUp,
       signIn,
       signOut,
       saveProfile,
       refreshProfile: () => refreshProfile(user?.id),
-      refreshActivity,
-      clearActivity,
+      clearAuthNotice: () => setAuthNotice(""),
     }),
-    [
-      isReady,
-      session,
-      user,
-      profile,
-      error,
-      activity,
-      signUp,
-      signIn,
-      signOut,
-      saveProfile,
-      refreshProfile,
-      refreshActivity,
-      clearActivity,
-    ],
+    [isReady, session, user, profile, profileResolved, authNotice, signUp, signIn, signOut, saveProfile, refreshProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

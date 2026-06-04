@@ -1,34 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Card,
   InstallAppBanner,
   PageHeaderWithNotifications,
   ProfileSectionPicker,
   StatCard,
-  ProfileHeroCard,
+  PlansButton,
   ToneSurface,
-  Heading,
   Body,
   Caption,
 } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { getUserModeConfig } from "../../../constants/userModes.js";
-import { resolveUserMode, getIncomeLabel, hasPowerFeatures, isSalariedFamily } from "../../../constants/modeExperience.js";
-import {
-  computePaymentMonthStreak,
-  computeControlScore,
-  totalPaymentCountAndSum,
-} from "../../../utils/profileStats.js";
-import ProfileAvatar from "../profile/ProfileAvatar.jsx";
-import AccountPanel from "../auth/AccountPanel.jsx";
-import DataImportSection from "../profile/DataImportSection.jsx";
+import { resolveUserMode, getIncomeLabel } from "../../../constants/modeExperience.js";
+import { totalPaymentCountAndSum } from "../../../utils/profileStats.js";
+import ProfileCompactHeader from "../ProfileCompactHeader.jsx";
 import ProfileNotificationsSection from "../profile/ProfileNotificationsSection.jsx";
-import ProfileSecuritySection from "../profile/ProfileSecuritySection.jsx";
-import ProfileCloudSyncSection from "../profile/ProfileCloudSyncSection.jsx";
+import ProfileBackupSection from "../profile/ProfileBackupSection.jsx";
 import ProfileHistorySection from "../profile/ProfileHistorySection.jsx";
 import ProfilePersonalSection from "../profile/ProfilePersonalSection.jsx";
-import ProfileMoneySection from "../profile/ProfileMoneySection.jsx";
 import ProfileGuidanceSection from "../profile/ProfileGuidanceSection.jsx";
 import { COPY } from "../../../constants/copy.js";
 
@@ -37,11 +26,9 @@ const Profile = () => {
   const location = useLocation();
   const {
     commitments,
-    lendings,
     allCommitments,
     allLendings,
     allGoals,
-    allBusinessInvoices,
     settings,
     monthlySnapshots,
     getEffectiveStatus,
@@ -52,7 +39,13 @@ const Profile = () => {
     todayStr,
   } = useCommitTrack();
 
-  const [openSection, setOpenSection] = useState(location.state?.openSection ?? null);
+  const [openSection, setOpenSection] = useState(() => {
+    const fromNav = location.state?.openSection;
+    if (fromNav === "money" || fromNav === "cloud" || fromNav === "security" || fromNav === "import") {
+      return fromNav === "money" ? "personal" : "backup";
+    }
+    return fromNav ?? null;
+  });
 
   useEffect(() => {
     if (location.state?.openSection) {
@@ -60,36 +53,85 @@ const Profile = () => {
     }
   }, [location.state?.openSection, location.pathname, navigate]);
 
-  const streak = computePaymentMonthStreak(commitments, lendings);
-  const control = computeControlScore(commitments, getEffectiveStatus);
   const { count: paymentCount, sum: paymentSum } = totalPaymentCountAndSum(commitments);
   const incomeLabel = getIncomeLabel(settings);
-  const modeCfg = getUserModeConfig(resolveUserMode(settings));
-  const salariedFamily = isSalariedFamily(settings);
   const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
   const secondaryOnly =
     resolveUserMode(settings) === "salaried" &&
     incomeMissing &&
     Number(settings.secondaryMonthlyIncome) > 0;
 
+  const renderPanel = useCallback(
+    (id) => {
+      switch (id) {
+        case "guide":
+          return (
+            <ProfileGuidanceSection
+              onStartGuide={() => {
+                updateSettings({ appGuideComplete: false });
+                navigate("/", { state: { replayGuide: true } });
+              }}
+            />
+          );
+        case "personal":
+          return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} />;
+        case "backup":
+          return (
+            <ProfileBackupSection
+              allCommitments={allCommitments}
+              allLendings={allLendings}
+              allGoals={allGoals}
+              settings={settings}
+              monthlySnapshots={monthlySnapshots}
+            />
+          );
+        case "notifications":
+          return <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />;
+        case "history":
+          return (
+            <ProfileHistorySection
+              commitments={commitments}
+              getEffectiveStatus={getEffectiveStatus}
+              todayStr={todayStr}
+              deleteCommitment={deleteCommitment}
+              removeCommitmentPayment={removeCommitmentPayment}
+              updateCommitment={updateCommitment}
+            />
+          );
+        default:
+          return null;
+      }
+    },
+    [
+      allCommitments,
+      allGoals,
+      allLendings,
+      commitments,
+      deleteCommitment,
+      getEffectiveStatus,
+      monthlySnapshots,
+      navigate,
+      removeCommitmentPayment,
+      settings,
+      todayStr,
+      updateCommitment,
+      updateSettings,
+    ],
+  );
+
   return (
     <div className="ct-page pb-8">
-      <PageHeaderWithNotifications greeting="Profile" />
+      <PageHeaderWithNotifications greeting="Profile" headerActions={<PlansButton />} />
 
-      <ProfileHeroCard>
-        <ProfileAvatar settings={settings} updateSettings={updateSettings} />
-        <Heading level={2} className="mt-4">
-          {settings.displayName?.trim() || "CommitTrack user"}
-        </Heading>
-        <Caption className="mt-1 block">
-          {modeCfg.emoji} {modeCfg.label}
-          {salariedFamily ? " ? Family household" : ""}
-          {hasPowerFeatures(settings) ? " ? Pro" : ""}
+      <ProfileCompactHeader settings={settings} updateSettings={updateSettings} />
+
+      <ProfileSectionPicker openId={openSection} onSelect={setOpenSection} renderPanel={renderPanel} />
+
+      {!openSection && (
+        <Caption className="text-center block px-2">
+          Tap a section to expand it here. Tap again to collapse.
         </Caption>
-        <Caption className="mt-2 block opacity-80">Manage your financial world</Caption>
-      </ProfileHeroCard>
-
-      <AccountPanel />
+      )}
 
       {secondaryOnly && (
         <ToneSurface tone="info">
@@ -106,84 +148,19 @@ const Profile = () => {
           <Body className="font-semibold">Set your income</Body>
           <Caption className="block mt-1">
             Required for affordability, chit timing, loan planner, and pressure scores.{" "}
-            <button type="button" onClick={() => setOpenSection("money")} className="ct-link">
-              Open Money setup
+            <button type="button" onClick={() => setOpenSection("personal")} className="ct-link">
+              Open Personal & money
             </button>
           </Caption>
         </ToneSurface>
       )}
 
-      <div className="ct-grid-2">
+      <div className="ct-grid-2 ct-stats-compact">
         <StatCard value={commitments.length} label={COPY.billsStat} />
         <StatCard value={`\u20B9${paymentSum.toLocaleString("en-IN")}`} label={`Paid (${paymentCount})`} />
-        <StatCard value={`${streak} mo`} label="Streak" />
-        <StatCard value={control} label="Control score" valueClassName="ct-metric-value-accent" />
       </div>
 
       <InstallAppBanner />
-
-      <div className="ct-stack-sm">
-        <Caption className="font-semibold uppercase tracking-wide px-0.5">Settings</Caption>
-        <ProfileSectionPicker openId={openSection} onSelect={setOpenSection} />
-      </div>
-
-      {openSection === "guide" && (
-        <ProfileGuidanceSection
-          onStartGuide={() => {
-            updateSettings({ appGuideComplete: false });
-            navigate("/", { state: { replayGuide: true } });
-          }}
-        />
-      )}
-
-      {openSection === "personal" && (
-        <ProfilePersonalSection settings={settings} updateSettings={updateSettings} />
-      )}
-
-      {openSection === "money" && (
-        <ProfileMoneySection settings={settings} updateSettings={updateSettings} />
-      )}
-
-      {openSection === "notifications" && (
-        <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />
-      )}
-
-      {openSection === "cloud" && <ProfileCloudSyncSection />}
-
-      {openSection === "security" && (
-        <ProfileSecuritySection
-          allCommitments={allCommitments}
-          allLendings={allLendings}
-          allGoals={allGoals}
-          settings={settings}
-          monthlySnapshots={monthlySnapshots}
-          businessInvoices={allBusinessInvoices}
-          updateSettings={updateSettings}
-        />
-      )}
-
-      {openSection === "import" && (
-        <Card>
-          <DataImportSection />
-        </Card>
-      )}
-
-      {openSection === "history" && (
-        <ProfileHistorySection
-          commitments={commitments}
-          getEffectiveStatus={getEffectiveStatus}
-          todayStr={todayStr}
-          deleteCommitment={deleteCommitment}
-          removeCommitmentPayment={removeCommitmentPayment}
-          updateCommitment={updateCommitment}
-        />
-      )}
-
-      {!openSection && (
-        <Caption className="text-center block px-2">
-          Tap a section above to view or edit. Tap again to collapse.
-        </Caption>
-      )}
 
       <Caption className="text-center block pb-2">Saved automatically on this device.</Caption>
     </div>

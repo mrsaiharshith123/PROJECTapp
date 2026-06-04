@@ -48,18 +48,6 @@ export const FINANCIAL_CONCEPTS = {
     why: "Burden is the base for pressure, free cash, and forecasts.",
     action: "Mark bills paid on time to keep forecasts accurate.",
   },
-  receivables: {
-    title: "Receivables",
-    short: "Money customers still owe you.",
-    why: "Slow collections tighten day-to-day operating cash.",
-    action: "Record invoices and follow up on overdue clients.",
-  },
-  payables: {
-    title: "Payables",
-    short: "Vendor and operating bills you still need to pay.",
-    why: "Clustered payables create cashflow pressure even when revenue looks fine.",
-    action: "Prioritize overdue vendor bills in Bills.",
-  },
   volatility: {
     title: "Income consistency",
     short: "How steady your income has been across recent months.",
@@ -72,11 +60,17 @@ export const FINANCIAL_CONCEPTS = {
     why: "School fees, insurance, and rent spikes affect the whole home.",
     action: "Tag school and insurance bills for better household views.",
   },
-  businessStability: {
-    title: "Business stability",
-    short: "Operating health from receivables, payables, and obligations.",
-    why: "Profit on paper means little if collections lag or vendors stack up.",
-    action: "Balance collections with upcoming vendor dues.",
+  payStreak: {
+    title: "Pay streak",
+    short: "Consecutive months where you recorded at least one payment.",
+    why: "A steady streak usually means fewer surprises and better forecasts.",
+    action: "Log payments when you pay a bill or lending installment.",
+  },
+  billControl: {
+    title: "Bill control",
+    short: "How on-top you are with active bills right now.",
+    why: "Overdue and critical open items lower the score until you catch up.",
+    action: "Clear overdue bills in Bills, or adjust amounts if something changed.",
   },
 };
 

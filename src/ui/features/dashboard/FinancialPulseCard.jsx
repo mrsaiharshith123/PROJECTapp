@@ -12,7 +12,7 @@ import { Card } from "../../primitives/Card.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
-import { Heading } from "../../primitives/Text.jsx";
+import { Heading, Caption } from "../../primitives/Text.jsx";
 import { Surface } from "../../primitives/Surface.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
@@ -95,8 +95,8 @@ export default function FinancialPulseCard() {
     : [];
 
   return (
-    <Card className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <Card className="ct-stack">
+      <div className="ct-row-between" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
         <Heading level={2}>
           Financial pulse
           <ConceptHelp conceptId="stability" />
@@ -105,54 +105,53 @@ export default function FinancialPulseCard() {
       </div>
 
       {tab === "snapshot" && (
-        <div className="space-y-3 text-sm">
-          {narrative && (
-            <div className="rounded-xl bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800 p-3 space-y-2">
-              <p className="text-sm font-semibold text-indigo-950 dark:text-indigo-100">{narrative.headline}</p>
+        <div className="ct-stack text-sm">
+          {narrative && (narrative.strengths.length > 0 || narrative.weaknesses.length > 0) && (
+            <div className="ct-insight-accent ct-stack-sm">
               {narrative.strengths.length > 0 && (
-                <p className="text-xs text-gray-700 dark:text-slate-300">
-                  <span className="font-medium text-emerald-700 dark:text-emerald-400">Strengths: </span>
+                <Caption className="block">
+                  <span className="ct-text-success font-semibold">Strengths: </span>
                   {narrative.strengths.join(" · ")}
-                </p>
+                </Caption>
               )}
               {narrative.weaknesses.length > 0 && (
-                <p className="text-xs text-gray-700 dark:text-slate-300">
-                  <span className="font-medium text-amber-800 dark:text-amber-300">Watch: </span>
+                <Caption className="block">
+                  <span className="ct-text-warning font-semibold">Watch: </span>
                   {narrative.weaknesses.join(" · ")}
-                </p>
+                </Caption>
               )}
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs text-gray-500 dark:text-slate-400 inline-flex items-center">
+          <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
+            <Caption className="inline-flex items-center">
               Pressure
               <InfoTip text={CALC_HELP.pressureScore} />
-            </span>
+            </Caption>
             <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${intel.stability.badgeClass}`}>
               {pressureIntel?.emotionalLabel || intel.stability.label} · {intel.stability.score}/100
             </span>
           </div>
           {pressureIntel?.emotionalHint && (
-            <p className="text-xs text-gray-600 dark:text-slate-300 italic">{pressureIntel.emotionalHint}</p>
+            <Caption className="block italic">{pressureIntel.emotionalHint}</Caption>
           )}
           {pressureIntel?.trendMessage && (
-            <p className="text-xs text-gray-600 dark:text-slate-300">{pressureIntel.trendMessage}</p>
+            <Caption className="block">{pressureIntel.trendMessage}</Caption>
           )}
 
           {analyticsCopy.showPaycheckFlow && stable.income > 0 && (
             <p className="text-xs">
               <Link
                 to="/analytics#paycheck-flow"
-                className="font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 underline-offset-2 hover:underline"
+                className="ct-link"
               >
                 Paycheck flow in Analytics
               </Link>
-              <span className="text-gray-500 dark:text-slate-400"> — full salary → bills → free cash.</span>
+              <Caption className="inline"> — full salary → bills → free cash.</Caption>
             </p>
           )}
 
-          <p className="text-xs text-gray-600 dark:text-slate-300">
+          <Caption className="block">
             Health:{" "}
             <span className={`font-medium ${healthLevelBadgeClass(intel.health.level).split(" ").slice(1).join(" ")}`}>
               {intel.health.label} ({intel.health.score})
@@ -162,10 +161,10 @@ export default function FinancialPulseCard() {
             {stable.survival?.survivalMonths != null && stable.survival.survivalMonths < 99
               ? ` (${stable.survival.survivalMonths} mo)`
               : ""}
-          </p>
+          </Caption>
 
           {emergency && emergency.recommended > 0 && (
-            <Surface className="space-y-1">
+            <Surface className="ct-stack-sm">
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 inline-flex items-center">
                 Emergency reserve
                 <InfoTip text={CALC_HELP.emergencyReserve} />
@@ -196,15 +195,15 @@ export default function FinancialPulseCard() {
       )}
 
       {tab === "ahead" && ahead && (
-        <div className="space-y-3 text-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="ct-stack text-sm">
+          <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
             <p className="text-xs text-gray-500 dark:text-slate-400">
               Forecast + due weeks — same math as analytics, one place here.
             </p>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="ct-link !text-xs"
                 onClick={async () => {
                   const text = ahead.shareSummary || "";
                   const r = await shareOrCopyPlainText(text, { title: "CommitTrack stability" });
@@ -225,7 +224,7 @@ export default function FinancialPulseCard() {
           {ahead.dueWeeks?.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-2">Due in next ~4 weeks</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="ct-grid-4">
                 {ahead.dueWeeks.map((w) => (
                   <div
                     key={w.week ?? w.label}
@@ -295,7 +294,7 @@ export default function FinancialPulseCard() {
           )}
 
           {ahead.heavyMonths?.length > 0 && (
-            <p className="text-xs text-violet-800 dark:text-violet-200 bg-violet-50 dark:bg-violet-950/40 rounded-lg px-2 py-1.5">
+            <p className="ct-insight-violet">
               Busiest stretch: {ahead.heavyMonths[0].month} (~{formatInr(ahead.heavyMonths[0].due)} due)
             </p>
           )}
@@ -335,7 +334,7 @@ export default function FinancialPulseCard() {
           )}
 
           {ahead.creditCard?.insights?.length > 0 && (
-            <div className="rounded-lg border border-rose-100 dark:border-rose-900/50 bg-rose-50/80 dark:bg-rose-950/30 p-2 space-y-1">
+            <div className="ct-insight-danger ct-stack-sm">
               <p className="text-xs font-semibold text-rose-900 dark:text-rose-100">Credit cards</p>
               {ahead.creditCard.insights.map((line, i) => (
                 <p key={i} className="text-xs text-rose-900/90 dark:text-rose-100/90">
@@ -348,7 +347,7 @@ export default function FinancialPulseCard() {
       )}
 
       {tab === "pressure" && showPressure && (
-        <div className="space-y-3">
+        <div className="ct-stack">
           <p className="text-xs text-gray-500 dark:text-slate-400">
             {isFamily ? "Household pressure by category" : "Main pressure sources this month"}
             <InfoTip text={CALC_HELP.pressureWeight} />
@@ -385,13 +384,13 @@ export default function FinancialPulseCard() {
           )}
 
           {pressureIntel?.forecastMessage && (
-            <p className="text-xs rounded-lg bg-violet-50 dark:bg-violet-950/40 px-3 py-2 text-violet-900 dark:text-violet-100">
+            <p className="ct-insight-violet">
               {pressureIntel.forecastMessage}
             </p>
           )}
 
           {!isFamily && payoffRec && (
-            <p className="text-sm rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-800 px-3 py-2 text-indigo-900 dark:text-indigo-100">
+            <p className="ct-insight-accent">
               <span className="font-semibold">Focus first:</span> {payoffRec.name}
             </p>
           )}
@@ -399,7 +398,7 @@ export default function FinancialPulseCard() {
       )}
 
       {tab === "tips" && (
-        <div className="space-y-2">
+        <div className="ct-stack-sm">
           {tips.length === 0 ? (
             <p className="text-sm text-gray-500">No tips right now — you are in a calm stretch.</p>
           ) : (

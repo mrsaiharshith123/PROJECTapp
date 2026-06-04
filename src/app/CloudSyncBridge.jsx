@@ -11,9 +11,8 @@ import {
 import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
 import { log } from "../utils/logger.js";
-import { recordAccountActivity } from "../services/accountActivity.js";
 
-/** Background local-first → cloud sync (optional; never blocks UI). */
+/** Background local-first → Supabase account backup when signed in (never blocks UI). */
 export default function CloudSyncBridge() {
   const { user, isLoggedIn, isReady } = useAuth();
   const track = useCommitTrack();
@@ -47,12 +46,6 @@ export default function CloudSyncBridge() {
         })
         .catch((err) => {
           log.sync.warn("Startup cloud pull failed", { message: err instanceof Error ? err.message : String(err) });
-          recordAccountActivity({
-            type: "sync_error",
-            level: "warn",
-            message: "Could not sync from cloud on startup",
-            detail: err instanceof Error ? err.message : undefined,
-          });
         });
     }
 
@@ -70,7 +63,14 @@ export default function CloudSyncBridge() {
       cancelScheduledCloudPush();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- pull once per session; push via data-changed event
-  }, [isReady, isLoggedIn, user?.id, track.settings.cloudSyncEnabled, track.settings.subscriptionTier, track.importAppData]);
+  }, [
+    isReady,
+    isLoggedIn,
+    user?.id,
+    track.importAppData,
+    track.settings.cloudSyncEnabled,
+    track.settings.subscriptionTier,
+  ]);
 
   return null;
 }

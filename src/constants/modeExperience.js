@@ -4,7 +4,6 @@ import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 /** Income field label in Profile / Analytics. */
 export const MODE_INCOME_LABEL = {
   salaried: "Monthly salary",
-  business: "Monthly revenue",
   family: "Household income",
   power: "Monthly income",
 };
@@ -12,31 +11,29 @@ export const MODE_INCOME_LABEL = {
 /** Bill category ids shown when adding a commitment. */
 export const MODE_CATEGORY_IDS = {
   salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
-  business: ["Vendor", "Payroll", "Rent", "Software", "Tax", "EMI", "Utility", "Insurance", "Other"],
   family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Chit Fund", "Subscription", "Utility", "Loan", "Other"],
-  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Vendor", "Other"],
+  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Other"],
 };
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
-  business: ["afford", "bond", "goals"],
-  family: ["afford", "scenarios", "insurance", "emi", "loanTiming", "chit", "bond", "goals"],
-  power: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
+  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
 };
 
 export const MODE_TOOL_DEFS = {
-  afford: {
-    id: "afford",
-    title: "Can I afford this?",
-    subtitle: "Try a purchase before you commit",
+  planner: {
+    id: "planner",
+    title: "Plan & decide",
+    subtitle: "Afford · shocks · debt · goals",
     accent: "indigo",
   },
-  scenarios: {
-    id: "scenarios",
-    title: "What-if stress test",
-    subtitle: "Job loss, fees, partner income",
-    accent: "rose",
+  loan: {
+    id: "loan",
+    title: "Loan helpers",
+    subtitle: "Extra EMI · best month to pay",
+    accent: "violet",
   },
   insurance: {
     id: "insurance",
@@ -44,35 +41,11 @@ export const MODE_TOOL_DEFS = {
     subtitle: "Was the policy worth it?",
     accent: "teal",
   },
-  emi: {
-    id: "emi",
-    title: "Pay loan faster",
-    subtitle: "Extra EMI savings",
-    accent: "violet",
-  },
-  payoff: {
-    id: "payoff",
-    title: "Which debt first?",
-    subtitle: "Smallest vs highest rate",
-    accent: "amber",
-  },
-  goals: {
-    id: "goals",
-    title: "Savings goals",
-    subtitle: "Track a target",
-    accent: "indigo",
-  },
   chit: {
     id: "chit",
     title: "Chit timing",
     subtitle: "When to take the pot",
     accent: "yellow",
-  },
-  loanTiming: {
-    id: "loanTiming",
-    title: "Loan extra pay",
-    subtitle: "Best month to pay more",
-    accent: "violet",
   },
   bond: {
     id: "bond",
@@ -80,16 +53,17 @@ export const MODE_TOOL_DEFS = {
     subtitle: "Is this bond worth it?",
     accent: "indigo",
   },
+  incomeTax: {
+    id: "incomeTax",
+    title: "Income tax",
+    subtitle: "Simple salary estimate",
+    accent: "teal",
+  },
 };
 
 const MODE_TOOL_TITLES = {
-  business: {
-    afford: { title: "Can we afford this?", subtitle: "Vendor, hire, or equipment cost" },
-    goals: { title: "Business targets", subtitle: "Cash buffer or paydown goals" },
-  },
   family: {
-    afford: { title: "Household affordability", subtitle: "New bill impact on the home" },
-    scenarios: { title: "Household what-ifs", subtitle: "Second income, fees, shocks" },
+    planner: { title: "Household planner", subtitle: "Afford · shocks · debt · goals" },
   },
 };
 
@@ -100,13 +74,6 @@ export const MODE_ANALYTICS = {
     affordTitle: "Salary vs monthly bills",
     affordHint: "Income minus estimated monthly dues — your paycheck pressure read.",
     showPaycheckFlow: true,
-  },
-  business: {
-    monthTitle: "Cashflow this month",
-    monthHint: "Revenue vs vendor bills, payroll, and operating costs due this month.",
-    affordTitle: "Revenue vs operating costs",
-    affordHint: "Monthly revenue minus recurring business obligations.",
-    showPaycheckFlow: false,
   },
   family: {
     monthTitle: "Household month",
@@ -126,7 +93,6 @@ export const MODE_ANALYTICS = {
 
 export const MODE_DASHBOARD_TOOLS_HEADING = {
   salaried: "Salary tools",
-  business: "Business tools",
   family: "Household tools",
   power: "Power tools",
 };

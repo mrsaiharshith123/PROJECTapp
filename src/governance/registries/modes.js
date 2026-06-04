@@ -1,5 +1,5 @@
 /**
- * Mode capability registry — which systems each user mode may use.
+ * Mode capability registry — which systems each experience may use.
  * Audits compare code imports against these boundaries (advisory).
  */
 
@@ -10,15 +10,6 @@ export const MODE_CAPABILITIES = {
     engines: ["engines/survival.js", "engines/salaryBreakdown.js"],
     sharedEngines: ["engines/burden.js", "engines/forecast.js", "engines/pressureScore.js", "engines/intelligence.js"],
     isolatedUi: ["ui/features/dashboard/ModeIntelligenceSection.jsx"],
-  },
-  business: {
-    label: "Business owner",
-    engines: ["engines/modeBusiness.js"],
-    sharedEngines: ["engines/burden.js", "engines/forecast.js", "engines/pressureScore.js"],
-    isolatedUi: [
-      "ui/features/dashboard/BusinessModeDashboard.jsx",
-      "ui/features/dashboard/config/modeDashboardMetrics.js",
-    ],
   },
   family: {
     label: "Household (salaried + family scope)",
@@ -46,6 +37,5 @@ export const MODE_LOGIC_ALLOWLIST = [
   "ui/features/pages/ProfilePage.jsx",
   "hooks/useStabilityIntel.js",
   "hooks/useCommitIntel.js",
-  "engines/modeBusiness.js",
   "engines/modeFamily.js",
 ];

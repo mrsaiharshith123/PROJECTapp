@@ -28,11 +28,9 @@ export default function HomeOverviewCard() {
   const title =
     experienceMode === "salaried"
       ? "This month"
-      : experienceMode === "business"
-        ? "Cashflow"
-        : experienceMode === "family"
-          ? "Household month"
-          : modeCfg.label;
+      : experienceMode === "family"
+        ? "Household month"
+        : modeCfg.label;
 
   const footerLeft = (
     <>
@@ -45,12 +43,7 @@ export default function HomeOverviewCard() {
     </>
   );
 
-  const freeLabel =
-    experienceMode === "business"
-      ? "Operating buffer"
-      : experienceMode === "family"
-        ? "Household cash"
-        : "Free cash";
+  const freeLabel = experienceMode === "family" ? "Household cash" : "Free cash";
 
   const footerRight = (
     <>

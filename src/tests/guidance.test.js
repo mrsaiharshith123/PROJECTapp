@@ -17,13 +17,13 @@ describe("guidance", () => {
     expect(isAppSnapshot([])).toBe(false);
   });
 
-  it("has three onboarding experiences", () => {
-    expect(ONBOARDING_EXPERIENCES.map((e) => e.id)).toEqual(["salaried", "household", "business"]);
+  it("has salaried and household onboarding experiences", () => {
+    expect(ONBOARDING_EXPERIENCES.map((e) => e.id)).toEqual(["salaried", "household"]);
   });
 
-  it("builds mode-specific app tour", () => {
-    const steps = getAppTourSteps({ userMode: "business", householdScope: "single" });
+  it("builds household app tour", () => {
+    const steps = getAppTourSteps({ userMode: "salaried", householdScope: "family" });
     expect(steps.length).toBeGreaterThan(4);
-    expect(steps.some((s) => s.id === "mode-business")).toBe(true);
+    expect(steps.some((s) => s.id === "mode-family")).toBe(true);
   });
 });

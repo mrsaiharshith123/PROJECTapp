@@ -1,10 +1,10 @@
-# Local-first & CommitTrack Cloud Sync
+# Local-first & Supabase account backup
 
 ## Philosophy
 
 - **Local-first**: finance engines, dashboards, and persistence run on-device (`localStorage`).
-- **Optional cloud**: signed-in users may enable **CommitTrack Cloud** for backup, restore, and multi-device continuity.
-- **Offline-safe**: no network required for daily use; sync is debounced background work.
+- **Account backup**: signed-in users get a private Supabase row (`user_finance_snapshots`) under their auth user id — not a separate “cloud product”.
+- **Offline-safe**: no network required for daily use; backup is debounced background work after sign-in.
 
 ## Layers
 
@@ -16,7 +16,7 @@
 | Sync engine | `src/services/sync/syncEngine.js` | Push/pull, debounce, conflict (local-newer preference) |
 | Cloud sync | `src/services/sync/syncEngine.js` | Supabase `user_finance_snapshots` |
 | Bridge | `src/app/CloudSyncBridge.jsx` | Background sync when cloud enabled |
-| UI | `ProfileCloudSyncSection.jsx` | Enable cloud, backup now, restore |
+| UI | `ProfileCloudSyncSection.jsx` | Account backup, restore |
 
 ## Supabase
 
@@ -25,19 +25,21 @@ Migration: `supabase/migrations/*user_finance_snapshots.sql`
 - One row per `user_id` (full app snapshot JSONB).
 - **RLS**: `auth.uid() = user_id` for all operations.
 
-Apply in Supabase SQL editor or CLI before enabling cloud in production.
+Apply both migrations in Supabase SQL editor or CLI before production sign-in.
 
-## Tiers
+Also run `20260604150000_profiles.sql` for Account name/mode fields.
 
-| Tier | Behavior |
+## Who gets backup
+
+| Case | Behavior |
 |------|----------|
-| Free / local | Full app, no sign-in required, JSON export/import |
-| Cloud | Sign in + enable **CommitTrack Cloud** in Profile (or `subscriptionTier: power`) |
+| No sign-in | Full app on device; JSON export/import |
+| Signed in + Supabase keys | Auto backup to `user_finance_snapshots` (RLS per user) |
 
 ## Backup options
 
 - **Local**: JSON export in Profile → Local data & export.
-- **Cloud**: CommitTrack Cloud (`services/sync`) when signed in.
+- **Account**: Supabase snapshot when signed in (`services/sync`).
 
 ## Audits
 

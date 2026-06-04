@@ -1,0 +1,81 @@
+/**
+ * Light theme polish — removes dark-mode glare, glow, and low-contrast stacks.
+ */
+html[data-ui="ct"][data-theme="light"] .ct-hero-month,
+html[data-ui="ct"][data-theme="light"] .ct-card-hero,
+html[data-ui="ct"][data-theme="light"] .ct-card-glow,
+html[data-ui="ct"][data-theme="light"] .ct-card-hero-deep,
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel {
+  box-shadow: var(--ct-shadow-card);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-card-glow {
+  border-color: var(--ct-border-strong);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-hero-month:hover {
+  filter: none;
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-card-hero-deep {
+  background: linear-gradient(165deg, #f5f3ff 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-hero-wave {
+  background: linear-gradient(180deg, transparent, rgba(109, 74, 255, 0.06));
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-tool-tile:hover,
+html[data-ui="ct"][data-theme="light"] .ct-quick-action-icon {
+  box-shadow: var(--ct-shadow-card);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-segmented-tab-active {
+  box-shadow: none;
+  background: var(--ct-accent-soft);
+  color: var(--ct-accent);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-top-link-active {
+  box-shadow: none;
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-notif-overlay {
+  background: rgba(15, 23, 42, 0.25);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-tools-toast-btn {
+  box-shadow: var(--ct-shadow-card);
+  background: var(--ct-surface);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-insight-accent {
+  background: var(--ct-accent-soft);
+  border-color: var(--ct-border);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-guidance-micro {
+  background: var(--ct-surface);
+  border-color: var(--ct-border);
+  color: var(--ct-text-secondary);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-metric.ct-insight-info,
+html[data-ui="ct"][data-theme="light"] .ct-metric.ct-insight-warning,
+html[data-ui="ct"][data-theme="light"] .ct-metric.ct-insight {
+  border-color: var(--ct-border);
+}
+
+html[data-ui="ct"][data-theme="light"] [class*="bg-violet-5"],
+html[data-ui="ct"][data-theme="light"] [class*="dark:bg-violet-9"] {
+  background: var(--ct-insight-violet-bg) !important;
+}
+
+html[data-ui="ct"][data-theme="light"] [class*="from-indigo-6"],
+html[data-ui="ct"][data-theme="light"] [class*="from-slate-9"],
+html[data-ui="ct"][data-theme="light"] [class*="to-indigo-9"],
+html[data-ui="ct"][data-theme="light"] [class*="to-violet-7"] {
+  background: linear-gradient(160deg, var(--ct-hero-from) 0%, var(--ct-hero-mid) 50%, var(--ct-hero-to) 100%) !important;
+  box-shadow: var(--ct-shadow-card) !important;
+  border-color: var(--ct-border) !important;
+}

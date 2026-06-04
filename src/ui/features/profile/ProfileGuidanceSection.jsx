@@ -24,7 +24,7 @@ export default function ProfileGuidanceSection({ onStartGuide }) {
       <div>
         <Body className="font-semibold">Setup wizard</Body>
         <Caption className="block mt-1">
-          Review how you use CommitTrack (salaried, household, or business) and update income basics. Your bills stay as
+          Review how you use CommitTrack (salaried or household) and update income basics. Your bills stay as
           they are.
         </Caption>
       </div>

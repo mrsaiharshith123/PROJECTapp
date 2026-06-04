@@ -7,11 +7,6 @@ export const MODE_AVATAR_STYLES = {
     character: "👨‍💼",
     label: "Salaried pro",
   },
-  business: {
-    gradient: "from-amber-500 to-orange-700",
-    character: "🧑‍💼",
-    label: "Business owner",
-  },
   family: {
     gradient: "from-emerald-500 to-teal-600",
     character: "👨‍👩‍👧",

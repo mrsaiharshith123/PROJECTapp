@@ -10,7 +10,6 @@ export const APP_SNAPSHOT_VERSION = 1;
  *   settings: AppSettings,
  *   goals: unknown[],
  *   monthlySnapshots: unknown[],
- *   businessInvoices?: unknown[],
  * }} state
  */
 export function buildAppSnapshot(state) {
@@ -22,7 +21,6 @@ export function buildAppSnapshot(state) {
     settings: state.settings ?? {},
     goals: state.goals ?? [],
     monthlySnapshots: state.monthlySnapshots ?? [],
-    businessInvoices: state.businessInvoices ?? [],
   };
 }
 

@@ -41,8 +41,16 @@ export function formatAuthError(err) {
   if (code === "42703") {
     return "Profile saved with basic fields only — run latest database migration for full profile sync.";
   }
-  if (lower.includes("row-level security") || lower.includes("permission denied")) {
-    return "Account permission issue — sign out and in again, or contact support.";
+  if (code === "NO_AUTH_SESSION" || lower.includes("no_auth_session")) {
+    return "Account created. Confirm your email if required, then sign in to finish setup.";
+  }
+  if (
+    code === "42501" ||
+    lower.includes("row-level security") ||
+    lower.includes("permission denied") ||
+    lower.includes("violates row-level")
+  ) {
+    return "Could not save your profile in Supabase. In the SQL editor, run supabase/migrations/ (especially 20260604150000_profiles.sql and 20260604180000_profiles_signup_trigger.sql), then try again.";
   }
 
   return msg.length > 120 ? `${msg.slice(0, 117)}…` : msg;

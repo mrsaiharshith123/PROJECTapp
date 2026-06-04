@@ -44,6 +44,12 @@ describe("loadSettingsFromStorage — removed modes", () => {
     expect(s.userMode).toBe("salaried");
   });
 
+  it("migrates business to salaried", () => {
+    localStorage.setItem(key, JSON.stringify({ userMode: "business", monthlyIncome: 120000 }));
+    const s = loadSettingsFromStorage();
+    expect(s.userMode).toBe("salaried");
+  });
+
   it("merges removed mode tool order into salaried", () => {
     localStorage.setItem(
       key,
@@ -55,6 +61,6 @@ describe("loadSettingsFromStorage — removed modes", () => {
     const s = loadSettingsFromStorage();
     expect(s.userMode).toBe("salaried");
     expect(s.dashboardToolOrderByMode.freelancer).toBeUndefined();
-    expect(s.dashboardToolOrderByMode.salaried).toEqual(["emi", "goals", "afford"]);
+    expect(s.dashboardToolOrderByMode.salaried).toEqual(["loan", "planner"]);
   });
 });

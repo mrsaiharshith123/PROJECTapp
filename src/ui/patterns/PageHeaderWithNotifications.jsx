@@ -4,7 +4,7 @@ import { NotificationPanel } from "../features/NotificationPanel.jsx";
 import { AppHeader } from "./PageHeader.jsx";
 import { NotificationBell } from "./NotificationBell.jsx";
 
-export function PageHeaderWithNotifications({ greeting }) {
+export function PageHeaderWithNotifications({ greeting, headerActions }) {
   const { notificationUnread } = useCommitIntel();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -12,7 +12,12 @@ export function PageHeaderWithNotifications({ greeting }) {
     <>
       <AppHeader
         greeting={greeting}
-        actions={<NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />}
+        actions={
+          <div className="ct-row gap-2 shrink-0">
+            {headerActions}
+            <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
+          </div>
+        }
       />
       {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}
     </>

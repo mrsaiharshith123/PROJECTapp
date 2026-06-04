@@ -1,6 +1,5 @@
 import { Component } from "react";
 import { log } from "../../utils/logger.js";
-import { recordAccountActivity } from "../../services/accountActivity.js";
 
 export default class ErrorBoundary extends Component {
   state = { error: null };
@@ -13,12 +12,6 @@ export default class ErrorBoundary extends Component {
     log.app.error("UI crash", {
       message: error instanceof Error ? error.message : String(error),
       componentStack: info?.componentStack?.slice(0, 200),
-    });
-    recordAccountActivity({
-      type: "app_error",
-      level: "error",
-      message: "Something went wrong in the app",
-      detail: error instanceof Error ? error.message : undefined,
     });
   }
 

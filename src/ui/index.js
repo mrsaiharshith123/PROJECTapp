@@ -20,6 +20,7 @@ export { ListRow } from "./patterns/ListRow.jsx";
 export { InsightBanner } from "./patterns/InsightBanner.jsx";
 export { EmptyState } from "./patterns/EmptyState.jsx";
 export { ProgressBar } from "./patterns/ProgressBar.jsx";
+export { ChartShell } from "./patterns/ChartShell.jsx";
 export { StatCard } from "./patterns/StatCard.jsx";
 export { CountTile } from "./patterns/CountTile.jsx";
 export { ToneSurface } from "./patterns/ToneSurface.jsx";
@@ -27,6 +28,10 @@ export { NotificationBell } from "./patterns/NotificationBell.jsx";
 export { CategoryChip } from "./patterns/CategoryChip.jsx";
 export { PriorityBadge } from "./patterns/PriorityBadge.jsx";
 export { ProfileSectionPicker } from "./patterns/ProfileSectionPicker.jsx";
+export { PlansButton } from "./patterns/PlansButton.jsx";
+export { SettingsRow } from "./patterns/SettingsRow.jsx";
+export { BillCard } from "./patterns/BillCard.jsx";
+export { ProGate } from "./patterns/ProGate.jsx";
 
 export { HeroMonthCard } from "./features/HeroMonthCard.jsx";
 export { ToolTile } from "./features/ToolTile.jsx";

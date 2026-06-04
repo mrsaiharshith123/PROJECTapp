@@ -7,7 +7,6 @@ import { SRC, rel, walk } from "../lib/audit-core.mjs";
 import { MODE_CAPABILITIES, MODE_LOGIC_ALLOWLIST, MODE_IDS } from "../../src/governance/registries/modes.js";
 
 const MODE_ENGINE_IMPORT = {
-  modeBusiness: "business",
   modeFamily: "family",
 };
 

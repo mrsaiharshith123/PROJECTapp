@@ -5,7 +5,6 @@ import { buildSurvivalContext, lendingMonthlyOutflow } from "../engines/survival
 import { rankStressContributors } from "../engines/stressContributors.js";
 import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
-import { computeBusinessCashflow } from "../engines/modeBusiness.js";
 import { computeFamilyPressure } from "../engines/modeFamily.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { mergeExtendedInsights } from "../engines/insightsExtended.js";
@@ -93,19 +92,7 @@ export function useStabilityIntel() {
     ].filter(Boolean);
 
     let modeData = {};
-    if (baseMode === "business") {
-      modeData = {
-        business: computeBusinessCashflow(
-          ctx.commitments,
-          ctx.lendings,
-          ctx.getEffectiveStatus,
-          ctx.getEffectiveLendingStatus,
-          ctx.todayStr,
-          ctx.businessInvoices
-        ),
-      };
-      extraInsights.push(...(modeData.business.insights || []));
-    } else if (experienceMode === "family") {
+    if (experienceMode === "family") {
       modeData = {
         family: computeFamilyPressure(
           ctx.commitments,
@@ -141,7 +128,6 @@ export function useStabilityIntel() {
       goalCapacity: ahead?.goalCapacity || [],
       family: modeData.family || null,
       familyCalendar: ahead?.familyCalendar ?? null,
-      business: modeData.business ?? null,
       lendingOutflow: lendingMonthlyOutflow(ctx.lendings, ctx.getEffectiveLendingStatus, ctx.todayStr),
       stabilityInsights,
       ...modeData,
@@ -153,7 +139,6 @@ export function useStabilityIntel() {
     ctx.commitments,
     ctx.lendings,
     ctx.goals,
-    ctx.businessInvoices,
     ctx.settings,
     ctx.monthlySnapshots,
     ctx.todayStr,

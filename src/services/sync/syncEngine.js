@@ -1,6 +1,6 @@
 import { buildAppSnapshot } from "../../storage/appSnapshot.js";
 import { getSupabaseClient } from "../supabase/auth.js";
-import { recordAccountActivity } from "../accountActivity.js";
+import { hasPaidBackupTier } from "../../constants/subscriptionTiers.js";
 import { log } from "../../utils/logger.js";
 import { SYNC_TABLE, SYNC_MIN_PUSH_INTERVAL_MS } from "./constants.js";
 import { loadSyncMeta, saveSyncMeta } from "./syncMeta.js";
@@ -57,16 +57,25 @@ export function isCloudSyncConfigured() {
   return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
 }
 
-/** @param {import('../../types/context.js').AuthProfile | undefined} settings @param {boolean} isLoggedIn */
-export function canUseCloudSync(settings, isLoggedIn) {
+/**
+ * Supabase account backup: Pro/Power + enabled + signed in.
+ * @param {import('../../types/context.js').AppSettings | undefined} settings
+ * @param {boolean} isLoggedIn
+ */
+export function canUseAccountBackup(settings, isLoggedIn) {
   if (!isLoggedIn || !isCloudSyncConfigured()) return false;
-  return Boolean(settings?.cloudSyncEnabled) || settings?.subscriptionTier === "power";
+  if (!hasPaidBackupTier(settings)) return false;
+  return Boolean(settings?.cloudSyncEnabled);
+}
+
+export function canUseCloudSync(settings, isLoggedIn) {
+  return canUseAccountBackup(settings, isLoggedIn);
 }
 
 /**
  * @param {{
  *   userId: string,
- *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots, businessInvoices },
+ *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots },
  * }} ctx
  */
 export async function pushLocalSnapshotToCloud(ctx) {
@@ -74,7 +83,7 @@ export async function pushLocalSnapshotToCloud(ctx) {
   pushInFlight = true;
   try {
     const state = ctx.getState();
-    if (!canUseCloudSync(state.settings, true)) return { ok: false, reason: "disabled" };
+    if (!canUseAccountBackup(state.settings, true)) return { ok: false, reason: "disabled" };
 
     const meta = loadSyncMeta();
     if (meta.lastPushedAt) {
@@ -94,16 +103,9 @@ export async function pushLocalSnapshotToCloud(ctx) {
       pendingPush: false,
     });
     log.sync.info("Cloud backup saved", { userId: ctx.userId });
-    recordAccountActivity({ type: "sync_push", level: "success", message: "Cloud backup saved" });
     return { ok: true, updatedAt };
   } catch (err) {
     log.sync.error("Cloud push failed", { message: err instanceof Error ? err.message : String(err) });
-    recordAccountActivity({
-      type: "sync_error",
-      level: "error",
-      message: "Cloud backup failed",
-      detail: err instanceof Error ? err.message : undefined,
-    });
     throw err;
   } finally {
     pushInFlight = false;
@@ -113,7 +115,7 @@ export async function pushLocalSnapshotToCloud(ctx) {
 /**
  * @param {{
  *   userId: string,
- *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots, businessInvoices },
+ *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots },
  *   applySnapshot: (payload: object, options: { mode: string }) => unknown,
  *   preferLocal?: boolean,
  * }} ctx
@@ -140,16 +142,9 @@ export async function pullRemoteSnapshotToLocal(ctx) {
       pendingPush: false,
     });
     log.sync.info("Cloud restore applied", { userId: ctx.userId });
-    recordAccountActivity({ type: "sync_pull", level: "success", message: "Restored from cloud" });
     return { ok: true, summary, updatedAt: remote.updatedAt };
   } catch (err) {
     log.sync.error("Cloud pull failed", { message: err instanceof Error ? err.message : String(err) });
-    recordAccountActivity({
-      type: "sync_error",
-      level: "error",
-      message: "Cloud restore failed",
-      detail: err instanceof Error ? err.message : undefined,
-    });
     throw err;
   } finally {
     setTimeout(() => {

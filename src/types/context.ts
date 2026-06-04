@@ -12,6 +12,8 @@ export type AuthContextValue = {
   session: unknown;
   user: AuthUser | null;
   profile: AuthProfile | null;
+  profileResolved: boolean;
+  authNotice: string;
   error: string | null;
   isLoggedIn: boolean;
   signUp: (email: string, password: string, metadata?: AuthProfile | null) => Promise<unknown>;
@@ -19,16 +21,7 @@ export type AuthContextValue = {
   signOut: () => Promise<void>;
   saveProfile: (patch: AuthProfile) => Promise<AuthProfile | null>;
   refreshProfile: () => Promise<AuthProfile | null>;
-  activity: Array<{
-    id: string;
-    ts: string;
-    type: string;
-    level: string;
-    message: string;
-    detail?: string;
-  }>;
-  refreshActivity: () => void;
-  clearActivity: () => void;
+  clearAuthNotice: () => void;
 };
 
 export type CommitTrackContextValue = {
@@ -64,10 +57,4 @@ export type CommitTrackContextValue = {
   markAllNotificationsRead: (ids?: (string | number)[]) => void;
   logSavingsToGoal: (goalId: number | string, amount: number) => void;
   importAppData: (payload: AuthProfile, options?: AuthProfile) => unknown;
-  businessInvoices: AuthProfile[];
-  allBusinessInvoices: AuthProfile[];
-  addBusinessInvoice: (data: AuthProfile) => void;
-  updateBusinessInvoice: (id: number | string, patch: AuthProfile) => void;
-  deleteBusinessInvoice: (id: number | string) => void;
-  markBusinessInvoicePaid: (id: number | string) => void;
 };

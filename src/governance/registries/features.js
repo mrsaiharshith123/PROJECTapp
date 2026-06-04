@@ -50,6 +50,7 @@ export const FEATURES = [
       "engines/chitFund.js",
       "engines/bondAnalyzer.js",
       "engines/quickScenarios.js",
+      "engines/incomeTaxEstimate.js",
       "engines/insuranceCalculator.js",
     ],
     hooks: [],

@@ -45,10 +45,10 @@ export function runGuidanceAudit() {
     }
   }
 
-  if (ONBOARDING_EXPERIENCES.length < 3) {
+  if (ONBOARDING_EXPERIENCES.length < 2) {
     warnings.push({
       kind: "onboarding",
-      message: "Expected at least 3 onboarding experiences (salaried, household, business)",
+      message: "Expected at least 2 onboarding experiences (salaried, household)",
     });
   }
 
@@ -60,11 +60,15 @@ export function runGuidanceAudit() {
   const homePage = path.join(SRC, "ui", "features", "pages", "HomePage.jsx");
   if (fs.existsSync(homePage)) {
     const code = fs.readFileSync(homePage, "utf8");
-    if (!code.includes("GuidanceBanner") && !code.includes("getDashboardFocus")) {
+    const hasHomeGuidance =
+      code.includes("FinancialPulseCard") ||
+      code.includes("GuidanceBanner") ||
+      code.includes("getDashboardFocus");
+    if (!hasHomeGuidance) {
       advisories.push({
         kind: "dashboard-education",
         file: rel(homePage),
-        message: "Home dashboard may lack attention guidance (GuidanceBanner)",
+        message: "Home dashboard may lack attention guidance (Financial pulse or GuidanceBanner)",
       });
     }
     if (!code.includes("GuidedEmptyState")) {

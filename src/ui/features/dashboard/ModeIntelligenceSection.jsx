@@ -9,7 +9,6 @@ import { Badge } from "../../primitives/Badge.jsx";
 import { MetricTile } from "../../patterns/MetricTile.jsx";
 import { Heading, Body, Caption } from "../../primitives/Text.jsx";
 import { Grid, Stack } from "../../primitives/Stack.jsx";
-import BusinessModeDashboard from "./BusinessModeDashboard.jsx";
 import FamilyModeDashboard from "./FamilyModeDashboard.jsx";
 
 const SURVIVAL_COPY = {
@@ -44,7 +43,7 @@ function SalariedSurvivalPanel({ mode = "salaried" }) {
   );
 }
 
-/** Mode-specific home intelligence — salaried, household, or business. */
+/** Mode-specific home intelligence — salaried or household. */
 export default function ModeIntelligenceSection() {
   const { settings } = useCommitTrack();
   const stable = useStabilityIntel();
@@ -52,7 +51,6 @@ export default function ModeIntelligenceSection() {
 
   return (
     <Stack gap="md">
-      {mode === "business" && <BusinessModeDashboard />}
       {mode === "family" && <FamilyModeDashboard />}
       {(mode === "salaried" || mode === "power") && <SalariedSurvivalPanel mode={mode} />}
     </Stack>

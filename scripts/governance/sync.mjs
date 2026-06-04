@@ -8,7 +8,7 @@ import { SRC, rel, walk } from "../lib/audit-core.mjs";
 const ALLOWED_SUPABASE_UI = [
   "ui/features/auth/",
   "ui/features/profile/ProfileCloudSyncSection.jsx",
-  "ui/features/profile/DataImportSection.jsx",
+  "ui/features/profile/ProfileBackupSection.jsx",
 ];
 
 const FORBIDDEN_GOOGLE_BACKUP = [

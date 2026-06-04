@@ -18,13 +18,6 @@ const BY_KEY = {
       actionLabel: "Add household bill",
       actionPath: "/add",
     },
-    business: {
-      icon: "📋",
-      title: "No operating dues tracked",
-      hint: "Add vendor bills and client receivables to monitor cashflow pressure.",
-      actionLabel: "Add bill or invoice",
-      actionPath: "/add",
-    },
   },
   "bills-list": {
     salaried: {
@@ -39,13 +32,6 @@ const BY_KEY = {
       title: "Add shared household bills",
       hint: "School fees and renewals improve household safety scores.",
       actionLabel: "Add bill",
-      actionPath: "/add",
-    },
-    business: {
-      icon: "🏪",
-      title: "Track operating obligations",
-      hint: "Payroll, vendors, and tax dues feed your business stability view.",
-      actionLabel: "Add obligation",
       actionPath: "/add",
     },
   },
@@ -68,5 +54,5 @@ export function getEmptyStateGuidance(key, settings) {
       actionPath: "/add",
     };
   }
-  return bucket[mode] || bucket.salaried || bucket.business;
+  return bucket[mode] || bucket.salaried;
 }

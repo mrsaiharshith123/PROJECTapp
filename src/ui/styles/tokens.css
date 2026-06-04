@@ -1,30 +1,29 @@
 /**
- * CommitTrack reference palette (premium fintech dark UI)
- * Backgrounds: #0B1020, #121A2F | Cards: #1B233D | Accent: #7C5CFF
- * Success: #22C55E | Warning: #F59E0B | Danger: #EF4444
- * Text: #F5F7FA, #A8B2C7, #6E7B91
+ * CommitTrack design tokens — dark (default) and light via data-theme on <html>
  */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap");
 
-:root {
-  --ct-bg: #0b1020;
-  --ct-bg-elevated: #121a2f;
-  --ct-bg-deep: #060910;
-  --ct-surface: #1b233d;
-  --ct-surface-hover: #222b4a;
-  --ct-surface-inset: #151d33;
-  --ct-surface-glass: rgba(27, 35, 61, 0.88);
-  --ct-border: rgba(255, 255, 255, 0.08);
-  --ct-border-strong: rgba(255, 255, 255, 0.14);
-  --ct-border-accent: rgba(124, 92, 255, 0.4);
+html[data-ui="ct"] {
+  color-scheme: dark;
+
+  --ct-bg: #0d0d17;
+  --ct-bg-elevated: #141422;
+  --ct-bg-deep: #080810;
+  --ct-surface: #1a1a2e;
+  --ct-surface-hover: #222238;
+  --ct-surface-inset: #151525;
+  --ct-surface-glass: rgba(26, 26, 46, 0.92);
+  --ct-border: rgba(255, 255, 255, 0.07);
+  --ct-border-strong: rgba(255, 255, 255, 0.12);
+  --ct-border-accent: rgba(124, 92, 255, 0.45);
   --ct-accent: #7c5cff;
   --ct-accent-hover: #9178ff;
   --ct-accent-muted: #a78bfa;
-  --ct-accent-soft: rgba(124, 92, 255, 0.2);
+  --ct-accent-soft: rgba(124, 92, 255, 0.22);
   --ct-accent-glow: rgba(124, 92, 255, 0.55);
   --ct-hero-from: #3d2d7a;
-  --ct-hero-mid: #1b233d;
-  --ct-hero-to: #121a2f;
+  --ct-hero-mid: #1a1a2e;
+  --ct-hero-to: #12121f;
   --ct-success: #22c55e;
   --ct-success-text: #4ade80;
   --ct-success-soft: rgba(34, 197, 94, 0.18);
@@ -35,34 +34,126 @@
   --ct-danger-text: #f87171;
   --ct-danger-soft: rgba(239, 68, 68, 0.18);
   --ct-info: #38bdf8;
+  --ct-info-text: #7dd3fc;
   --ct-info-soft: rgba(56, 189, 248, 0.15);
   --ct-text: #f5f7fa;
   --ct-text-secondary: #a8b2c7;
   --ct-text-muted: #6e7b91;
+  --ct-chart-plot-bg: rgba(8, 8, 16, 0.35);
+  --ct-body-gradient-a: rgba(124, 92, 255, 0.14);
+  --ct-body-gradient-b: #1a1535;
+  --ct-font: "Inter", system-ui, sans-serif;
+  --ct-font-display: "Inter", system-ui, sans-serif;
   --ct-radius-sm: 0.75rem;
   --ct-radius: 1rem;
   --ct-radius-lg: 1.25rem;
   --ct-radius-xl: 1.5rem;
-  --ct-shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.7);
-  --ct-shadow-card: 0 8px 32px -12px rgba(0, 0, 0, 0.55);
+  --ct-shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.75);
+  --ct-shadow-card: 0 8px 32px -12px rgba(0, 0, 0, 0.6);
   --ct-shadow-glow: 0 0 40px -10px var(--ct-accent-glow);
-  --ct-nav-h: 4.25rem;
+  --ct-nav-h: 4.5rem;
+  --ct-nav-fab-size: 3.25rem;
+  --ct-card-grad-from: rgba(34, 34, 58, 0.95);
+  --ct-list-grad-to: rgba(26, 26, 46, 0.6);
+  --ct-insight-surface-end: rgba(27, 35, 61, 0.9);
+  --ct-nav-bar-bg: rgba(13, 13, 23, 0.94);
+  --ct-top-nav-bg: rgba(13, 13, 23, 0.92);
+  --ct-hero-inset-bg: rgba(0, 0, 0, 0.2);
+  --ct-hero-inset-border: rgba(255, 255, 255, 0.08);
+  --ct-progress-track-bg: rgba(255, 255, 255, 0.08);
+  --ct-modal-backdrop: rgba(0, 0, 0, 0.65);
+  --ct-health-strip-bg: linear-gradient(135deg, var(--ct-surface-inset) 0%, rgba(124, 92, 255, 0.12) 100%);
+  --ct-insight-violet-bg: rgba(124, 92, 255, 0.12);
+  --ct-chart-grid-stroke: rgba(255, 255, 255, 0.08);
+  --ct-card-danger-grad: linear-gradient(145deg, rgba(60, 20, 30, 0.5) 0%, rgba(27, 35, 61, 0.95) 100%);
 }
 
-html[data-ui="ct"] {
-  color-scheme: dark;
+html[data-ui="ct"][data-theme="light"] {
+  color-scheme: light;
+
+  --ct-bg: #eef1f8;
+  --ct-bg-elevated: #ffffff;
+  --ct-bg-deep: #e2e8f4;
+  --ct-surface: #ffffff;
+  --ct-surface-hover: #f8fafc;
+  --ct-surface-inset: #f1f5f9;
+  --ct-surface-glass: rgba(255, 255, 255, 0.92);
+  --ct-border: rgba(15, 23, 42, 0.08);
+  --ct-border-strong: rgba(15, 23, 42, 0.12);
+  --ct-border-accent: rgba(109, 74, 255, 0.35);
+  --ct-accent: #6d4aff;
+  --ct-accent-hover: #7c5cff;
+  --ct-accent-muted: #5b45c9;
+  --ct-accent-soft: rgba(109, 74, 255, 0.12);
+  --ct-accent-glow: rgba(109, 74, 255, 0.25);
+  --ct-hero-from: #e8e4ff;
+  --ct-hero-mid: #f5f3ff;
+  --ct-hero-to: #ffffff;
+  --ct-success: #16a34a;
+  --ct-success-text: #15803d;
+  --ct-success-soft: rgba(22, 163, 74, 0.12);
+  --ct-warning: #d97706;
+  --ct-warning-text: #b45309;
+  --ct-warning-soft: rgba(217, 119, 6, 0.12);
+  --ct-danger: #dc2626;
+  --ct-danger-text: #b91c1c;
+  --ct-danger-soft: rgba(220, 38, 38, 0.1);
+  --ct-info: #0284c7;
+  --ct-info-text: #0369a1;
+  --ct-info-soft: rgba(2, 132, 199, 0.1);
+  --ct-text: #1a1d2e;
+  --ct-text-secondary: #5c6478;
+  --ct-text-muted: #8b93a7;
+  --ct-chart-plot-bg: rgba(241, 245, 249, 0.9);
+  --ct-body-gradient-a: rgba(124, 92, 255, 0.08);
+  --ct-body-gradient-b: #e8ecf4;
+  --ct-shadow: 0 12px 40px -16px rgba(15, 23, 42, 0.12);
+  --ct-shadow-card: 0 8px 24px -12px rgba(15, 23, 42, 0.1);
+  --ct-shadow-glow: none;
+  --ct-card-grad-from: #ffffff;
+  --ct-list-grad-to: #f1f5f9;
+  --ct-insight-surface-end: #f8fafc;
+  --ct-nav-bar-bg: rgba(255, 255, 255, 0.96);
+  --ct-top-nav-bg: rgba(255, 255, 255, 0.96);
+  --ct-hero-inset-bg: rgba(109, 74, 255, 0.06);
+  --ct-hero-inset-border: var(--ct-border);
+  --ct-progress-track-bg: #e2e8f0;
+  --ct-modal-backdrop: rgba(15, 23, 42, 0.4);
+  --ct-health-strip-bg: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+  --ct-insight-violet-bg: rgba(109, 74, 255, 0.08);
+  --ct-chart-grid-stroke: rgba(15, 23, 42, 0.1);
+  --ct-card-danger-grad: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
 }
 
 html[data-ui="ct"] body {
-  font-family: "DM Sans", system-ui, sans-serif;
+  font-family: var(--ct-font);
   background:
-    radial-gradient(ellipse 100% 70% at 50% -15%, rgba(124, 92, 255, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 120% 80% at 50% -20%, #1a2248 0%, var(--ct-bg) 45%, var(--ct-bg-deep) 100%);
+    radial-gradient(ellipse 100% 60% at 50% -10%, var(--ct-body-gradient-a) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 80% at 50% -20%, var(--ct-body-gradient-b) 0%, var(--ct-bg) 48%, var(--ct-bg-deep) 100%);
   color: var(--ct-text);
   -webkit-font-smoothing: antialiased;
+}
+
+html[data-ui="ct"][data-theme="light"] body {
+  background: var(--ct-bg);
 }
 
 html[data-ui="ct"] .ct-display {
   font-weight: 700;
   letter-spacing: -0.02em;
+  font-family: var(--ct-font-display);
+}
+
+html[data-ui="ct"] .ct-text-accent {
+  color: var(--ct-accent-muted);
+}
+
+html[data-ui="ct"] .ct-amount-positive {
+  color: var(--ct-success-text);
+  font-weight: 700;
+}
+
+html[data-ui="ct"] .ct-amount-negative {
+  color: var(--ct-danger-text);
+  font-weight: 700;
 }

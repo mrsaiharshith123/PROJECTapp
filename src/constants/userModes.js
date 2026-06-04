@@ -1,23 +1,19 @@
-/** Primary nav (4 items). Analytics via Home month card; calculators on Home dashboard. */
+/** Primary bottom nav — Home · Lending · Add · Bills · Profile (analytics via Home hero) */
 export const NAV_ITEMS = [
   { to: "/", label: "Home", icon: "\u{1F3E0}" },
+  { to: "/lending", label: "Lending", icon: "\u{1F91D}" },
+  { to: "/add", label: "Add", icon: "+", fab: true },
   { to: "/commitments", label: "Bills", icon: "\u{1F4CB}" },
-  { to: "/lending", label: "Money", icon: "\u{1F91D}" },
   { to: "/profile", label: "Profile", icon: "\u{1F464}" },
 ];
 
-/** Modes users pick in onboarding / Profile (family via salaried + householdScope; power via subscription). */
-export const USER_MODE_IDS = ["salaried", "business"];
+/** Only user mode — household uses salaried + householdScope. */
+export const USER_MODE_IDS = ["salaried"];
 
-/** Removed modes — still read from old saves, migrated to salaried on load. */
-export const REMOVED_USER_MODE_IDS = ["freelancer", "student"];
+/** Removed modes — migrated to salaried on load. */
+export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
-/** Legacy ids still read from old saves — migrated on load. */
-export const LEGACY_USER_MODE_IDS = ["family", "power", ...REMOVED_USER_MODE_IDS];
-
-export const ALL_USER_MODE_IDS = [...USER_MODE_IDS, ...LEGACY_USER_MODE_IDS];
-
-const NAV_FULL = ["/", "/commitments", "/lending", "/profile"];
+const NAV_FULL = ["/", "/lending", "/add", "/commitments", "/profile", "/analytics"];
 
 export const USER_MODES = [
   {
@@ -29,18 +25,8 @@ export const USER_MODES = [
     showLending: true,
     showAffordabilityOnAdd: true,
   },
-  {
-    id: "business",
-    label: "Business owner",
-    emoji: "🏪",
-    description: "Cashflow, receivables, and vendor payments.",
-    navPaths: NAV_FULL,
-    showLending: true,
-    showAffordabilityOnAdd: false,
-  },
 ];
 
-/** Modes shown in onboarding / Profile dropdown. */
 export const SELECTABLE_USER_MODES = USER_MODES;
 
 const LEGACY_MODES = {

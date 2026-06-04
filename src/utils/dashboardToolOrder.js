@@ -4,17 +4,46 @@
  * @param {Array<{ id: string } & Record<string, unknown>>} defaultWidgets
  * @param {string[] | undefined} savedOrder
  */
+
+/** Merged tool ids — keeps saved tile order working after consolidation. */
+export const LEGACY_TOOL_ID_MAP = {
+  afford: "planner",
+  scenarios: "planner",
+  payoff: "planner",
+  goals: "planner",
+  emi: "loan",
+  loanTiming: "loan",
+};
+
+/**
+ * @param {string[] | undefined} ids
+ * @returns {string[]}
+ */
+export function remapLegacyToolOrderIds(ids) {
+  if (!Array.isArray(ids)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const raw of ids) {
+    const id = LEGACY_TOOL_ID_MAP[raw] || raw;
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
 /** @returns {Array<{ id: string } & Record<string, unknown>>} */
 export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   if (!Array.isArray(defaultWidgets) || defaultWidgets.length === 0) return [];
   const defaultIds = defaultWidgets.map((w) => w.id);
   const allowed = new Set(defaultIds);
-  if (!Array.isArray(savedOrder) || savedOrder.length === 0) return [...defaultWidgets];
+  const normalizedOrder = remapLegacyToolOrderIds(savedOrder);
+  if (normalizedOrder.length === 0) return [...defaultWidgets];
 
   const seen = new Set();
   /** @type {Array<{ id: string } & Record<string, unknown>>} */
   const out = [];
-  for (const id of savedOrder) {
+  for (const id of normalizedOrder) {
     if (!allowed.has(id) || seen.has(id)) continue;
     seen.add(id);
     const w = defaultWidgets.find((x) => x.id === id);
@@ -26,9 +55,9 @@ export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   return out;
 }
 
-const VALID_TOOL_ORDER_MODES = new Set(["salaried", "business", "family", "power"]);
-const REMOVED_TOOL_ORDER_MODES = new Set(["freelancer", "student"]);
-const TOOL_ORDER_MODE_PRIORITY = ["salaried", "business", "family", "power"];
+const VALID_TOOL_ORDER_MODES = new Set(["salaried", "family", "power"]);
+const REMOVED_TOOL_ORDER_MODES = new Set(["freelancer", "student", "business"]);
+const TOOL_ORDER_MODE_PRIORITY = ["salaried", "family", "power"];
 
 function toolOrderModeSortKey(mode) {
   if (REMOVED_TOOL_ORDER_MODES.has(mode)) return 100;
@@ -50,7 +79,7 @@ export function normalizeDashboardToolOrderByMode(raw) {
   for (const [mode, arr] of entries) {
     if (typeof mode !== "string" || mode.length > 20) continue;
     if (!Array.isArray(arr)) continue;
-    const ids = arr.map((x) => String(x || "").trim()).filter(Boolean);
+    const ids = remapLegacyToolOrderIds(arr.map((x) => String(x || "").trim()).filter(Boolean));
     if (ids.length === 0) continue;
 
     let key = mode;
