@@ -143,7 +143,8 @@ function checkDependencies() {
   const lsData = parseJson(ls.stdout || ls.stderr || "");
   if (lsData?.problems?.length) {
     errors += lsData.problems.length;
-    notes.push(`${lsData.problems.length} missing or invalid package(s)`);
+    notes.push(`${lsData.problems.length} missing or invalid package(s) — run: npm install`);
+    notes.push("Incomplete node_modules breaks tests, tsc, and build (not a tsconfig issue)");
   } else {
     notes.push("All declared dependencies installed");
   }
@@ -400,6 +401,9 @@ if (STRICT) {
 console.log(paint(C.dim, "  ● RED/FAIL = must fix · YELLOW/WARN = review · GREEN/PASS = clean"));
 console.log(
   paint(C.dim, "  ● Checks: env, deps, CSS, UI layout, code+UI depth, tests, types, build"),
+);
+console.log(
+  paint(C.dim, "  ● Governance scans: npm run audit:governance:quick · docs/08-governance.md"),
 );
 
 console.log();

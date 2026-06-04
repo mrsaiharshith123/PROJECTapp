@@ -54,9 +54,9 @@ Do not import UI from deleted `src/components/` paths.
 
 No complex math inside JSX. Add or extend engine functions and unit tests.
 
-## 3. Pages stay thin
+## 3. Pages & routing
 
-`src/pages/*.jsx` should only re-export from `ui/features/pages/*`. Routing and providers stay in `App.jsx`.
+Screens live in `ui/features/pages/*`. `App.jsx` imports them directly (lazy). Routing and providers stay in `App.jsx`.
 
 ## 4. TypeScript
 

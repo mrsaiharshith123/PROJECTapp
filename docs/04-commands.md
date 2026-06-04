@@ -18,11 +18,34 @@ All commands run from the project root (`PROJECTapp/`).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run audit` | **Full project audit** — one report, pass/fail (see [05-audit-and-quality.md](./05-audit-and-quality.md)) |
-| `npm run audit -- --strict` | Same audit; warnings (except large bundle) also fail |
-| `npm run audit:ui-depth` | List dead UI: unused exports, unmounted pages, orphan tools, buttons in unreachable files |
-| `npm run audit:ui-inventory` | Show wired Button/Fab/QuickAction counts + routes |
-| `npm run audit:merge` | **Advisory:** files/folders that could be merged to simplify the tree |
+| `npm run audit` / `audit:all` | **Full production gate** — env, deps, CSS, UI, code, tests, types, build |
+| `npm run audit -- --strict` | Same; most warnings also fail |
+| `npm run audit:governance:quick` | Fast governance-only scan |
+| `npm run audit:governance` | All governance audits (8 checks) |
+| `npm run audit:governance:full` | Governance + UI/CSS/depth/merge |
+| `npm run audit:summary` | Human-readable report from `reports/` |
+| `npm run audit:fix-deps` | `npm audit fix` for production deps |
+| `npm run audit:list` | List every audit id |
+| `npm run audit:report` | Write `reports/governance-latest.json` |
+
+### Focused governance
+
+| Command | Focus |
+|---------|--------|
+| `audit:design` | Design system & UI consistency |
+| `audit:architecture` | Layer boundaries, large files |
+| `audit:features` | Feature registry & cross-feature imports |
+| `audit:modes` | User mode isolation |
+| `audit:insights` | Insight engine overlap |
+| `audit:performance` | Heavy pages & render heuristics |
+| `audit:mobile` | Responsive / overflow risks |
+| `audit:charts` | Duplicate / similar UI |
+| `audit:ui` / `audit:styles` | Layout rules & CSS tokens |
+| `audit:ui-depth` / `audit:dead-code` | Unmounted screens, dead buttons |
+| `audit:merge` | Advisory file merge suggestions |
+| `audit:code` | ESLint + Knip only |
+
+See [08-governance.md](./08-governance.md).
 
 ### What `npm run audit` runs (order)
 
@@ -80,8 +103,20 @@ npm install
 cp .env.example .env    # if using Supabase locally
 npm run dev             # develop
 npm test                # after engine/utils changes
+npm run audit:governance:quick  # during large UI refactors
 npm run audit           # before push / PR
 ```
+
+## If `npm run audit` fails with many errors at once
+
+If you see **missing packages**, **Vitest not found**, **tsc not found**, and **build failed** together, `node_modules` is incomplete — not a code bug:
+
+```bash
+npm install
+npm run audit
+```
+
+OneDrive can sometimes interrupt `node_modules`; re-run `npm install` in the project root.
 
 ## Environment variables
 

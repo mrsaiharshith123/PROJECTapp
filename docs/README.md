@@ -11,5 +11,7 @@
 | [05-audit-and-quality.md](./05-audit-and-quality.md) | How `npm run audit` works (deep, incl. merge suggestions) |
 | [06-workflow.md](./06-workflow.md) | Day-to-day flow for new developers |
 | [07-repo-folders.md](./07-repo-folders.md) | `.cursor`, `.github`, `dist`, `dev-dist` — keep vs delete |
+| [08-governance.md](./08-governance.md) | Audit system, registries, engineering governance |
+| [architecture/](./architecture/) | Architecture, design system, modes, insights, features |
 
 **GitHub README** ([../README.md](../README.md)) is a short public summary and deploy notes — it links here for full detail.

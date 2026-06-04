@@ -6,7 +6,8 @@
     "scripts/**",
     "dist/**",
     "src/engines/__tests__/**",
-    "src/utils/__tests__/**"
+    "src/utils/__tests__/**",
+    "src/governance/**"
   ],
   "ignoreDependencies": ["sharp", "pdfkit", "gh-pages"],
   "ignoreExportsUsedInFile": true,

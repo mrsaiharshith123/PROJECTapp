@@ -240,7 +240,9 @@ function checkDuplicateBasenames() {
     if (paths.length < 2) continue;
     if (base === "index.js" || base.endsWith(".test.js")) continue;
     const hasUi = paths.some((p) => p.startsWith("src/ui/"));
-    const hasNonUi = paths.some((p) => !p.startsWith("src/ui/") && !p.includes("__tests__"));
+    const hasNonUi = paths.some(
+      (p) => !p.startsWith("src/ui/") && !p.includes("__tests__") && !p.startsWith("src/governance/"),
+    );
     if (hasUi && hasNonUi) {
       addError("duplicate-name", `Same filename in ui and elsewhere: ${base}`, paths.join(" | "));
     } else if (paths.length > 2) {
