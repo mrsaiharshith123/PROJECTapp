@@ -1,13 +1,30 @@
 import { createClient } from "@supabase/supabase-js";
 import { normalizePan } from "../../utils/pan.js";
+import { log } from "../../utils/logger.js";
+import { formatAuthError } from "../../utils/authErrors.js";
+import { recordAccountActivity } from "../accountActivity.js";
 
 let supabaseSingleton = null;
+
+function throwAuth(err, context) {
+  log.auth.error(context, { code: err?.code, status: err?.status });
+  recordAccountActivity({
+    type: "auth_error",
+    level: "error",
+    message: formatAuthError(err),
+    detail: context,
+  });
+  throw new Error(formatAuthError(err));
+}
 
 export function getSupabaseClient() {
   if (supabaseSingleton) return supabaseSingleton;
   const url = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return null;
+  if (!url || !anonKey) {
+    log.auth.warn("Supabase client not configured");
+    return null;
+  }
   supabaseSingleton = createClient(url, anonKey, {
     auth: {
       persistSession: true,
@@ -15,6 +32,7 @@ export function getSupabaseClient() {
       detectSessionInUrl: true,
     },
   });
+  log.auth.info("Supabase client initialized");
   return supabaseSingleton;
 }
 
@@ -24,32 +42,37 @@ export async function getAuthSession() {
   const supabase = getSupabaseClient();
   if (!supabase) return { session: null, user: null };
   const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
+  if (error) throwAuth(error, "Could not read session");
+  log.auth.debug("Session loaded", { hasSession: Boolean(data.session) });
   return { session: data.session, user: data.session?.user ?? null };
 }
 
 export async function signUpWithEmail(email, password, metadata = null) {
   const supabase = getSupabaseClient();
-  if (!supabase) throw new Error("Supabase is not configured.");
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Sign up");
+  log.auth.info("Sign up attempt");
   const options = metadata && typeof metadata === "object" ? { data: metadata } : undefined;
   const { data, error } = await supabase.auth.signUp({ email, password, options });
-  if (error) throw error;
+  if (error) throwAuth(error, "Sign up failed");
+  recordAccountActivity({ type: "sign_up", level: "success", message: "Account created" });
   return data;
 }
 
 export async function signInWithEmail(email, password) {
   const supabase = getSupabaseClient();
-  if (!supabase) throw new Error("Supabase is not configured.");
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Sign in");
+  log.auth.info("Sign in attempt");
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
+  if (error) throwAuth(error, "Sign in failed");
   return data;
 }
 
 export async function signOutAuth() {
   const supabase = getSupabaseClient();
   if (!supabase) return;
+  log.auth.info("Sign out");
   const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  if (error) throwAuth(error, "Sign out failed");
 }
 
 export function onAuthStateChanged(callback) {
@@ -57,8 +80,9 @@ export function onAuthStateChanged(callback) {
   if (!supabase) {
     return () => {};
   }
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    callback({ session, user: session?.user ?? null });
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    log.auth.info("Auth state change", { event, hasUser: Boolean(session?.user) });
+    callback({ event, session, user: session?.user ?? null });
   });
   return () => data.subscription.unsubscribe();
 }
@@ -71,14 +95,17 @@ export async function loadUserProfile(userId) {
     .select("*")
     .eq("id", userId)
     .maybeSingle();
-  if (error) throw error;
+  if (error) throwAuth(error, "Load profile failed");
+  log.auth.debug("Profile loaded", { userId });
   return data;
 }
 
 export async function saveUserProfile(userId, patch) {
   const supabase = getSupabaseClient();
-  if (!supabase) throw new Error("Supabase is not configured.");
-  if (!userId) throw new Error("No authenticated user.");
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Save profile");
+  if (!userId) throwAuth(new Error("No authenticated user."), "Save profile");
+  log.auth.info("Saving profile", { fields: Object.keys(patch || {}) });
+
   const basePayload = {
     id: userId,
     username: String(patch.username ?? "").trim(),
@@ -104,6 +131,7 @@ export async function saveUserProfile(userId, patch) {
     .select("*")
     .single();
   if (error?.code === "42703") {
+    log.auth.warn("Profile extended columns missing — fallback upsert");
     const fallback = await supabase
       .from(PROFILE_TABLE)
       .upsert(basePayload, { onConflict: "id" })
@@ -112,6 +140,7 @@ export async function saveUserProfile(userId, patch) {
     data = fallback.data;
     error = fallback.error;
   }
-  if (error) throw error;
+  if (error) throwAuth(error, "Save profile failed");
+  recordAccountActivity({ type: "profile_saved", level: "success", message: "Account profile updated" });
   return data;
 }

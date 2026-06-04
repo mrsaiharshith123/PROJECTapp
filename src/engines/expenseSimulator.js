@@ -29,18 +29,6 @@ const MODE_PRESETS = {
     software: { label: "Software / SaaS", repeatType: "monthly", category: "Software" },
     equipment: { label: "Equipment", repeatType: "none", category: "Equipment" },
   },
-  freelancer: {
-    software: { label: "Software / tools", repeatType: "monthly", category: "Software" },
-    client: { label: "Project cost", repeatType: "none", category: "Client" },
-    subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
-    equipment: { label: "Gear / equipment", repeatType: "none", category: "Equipment" },
-  },
-  student: {
-    subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
-    bnpl: { label: "BNPL purchase", repeatType: "monthly", category: "BNPL" },
-    gadget: { label: "One-off purchase", repeatType: "none", category: "Other" },
-    education: { label: "Course / fees", repeatType: "none", category: "Education" },
-  },
   family: {
     insurance: { label: "Family insurance", repeatType: "yearly", category: "Insurance" },
     school: { label: "School fees", repeatType: "yearly", category: "School" },
@@ -128,7 +116,7 @@ export function simulateNewExpense({
   const warnings = [];
   if (aff.tier === "dangerous" || aff.tier === "high_risk") {
     const incomeWord =
-      experienceMode === "business" ? "revenue" : experienceMode === "student" ? "budget" : "income";
+      experienceMode === "business" ? "revenue" : "income";
     warnings.push(`This raises commitments to about ${aff.committedPercent}% of ${incomeWord}.`);
   }
   if (aff.freeMoneyAfter < income * 0.15 && income > 0) {

@@ -6,16 +6,18 @@ export const NAV_ITEMS = [
   { to: "/profile", label: "Profile", icon: "\u{1F464}" },
 ];
 
-/** Modes users pick in onboarding / Profile (family merged into salaried; power via subscription). */
-export const USER_MODE_IDS = ["salaried", "business", "freelancer", "student"];
+/** Modes users pick in onboarding / Profile (family via salaried + householdScope; power via subscription). */
+export const USER_MODE_IDS = ["salaried", "business"];
+
+/** Removed modes — still read from old saves, migrated to salaried on load. */
+export const REMOVED_USER_MODE_IDS = ["freelancer", "student"];
 
 /** Legacy ids still read from old saves — migrated on load. */
-export const LEGACY_USER_MODE_IDS = ["family", "power"];
+export const LEGACY_USER_MODE_IDS = ["family", "power", ...REMOVED_USER_MODE_IDS];
 
 export const ALL_USER_MODE_IDS = [...USER_MODE_IDS, ...LEGACY_USER_MODE_IDS];
 
 const NAV_FULL = ["/", "/commitments", "/lending", "/profile"];
-const NAV_NO_LENDING = ["/", "/commitments", "/profile"];
 
 export const USER_MODES = [
   {
@@ -35,24 +37,6 @@ export const USER_MODES = [
     navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: false,
-  },
-  {
-    id: "freelancer",
-    label: "Freelancer / gig",
-    emoji: "🎯",
-    description: "Irregular income and flexible budgeting.",
-    navPaths: NAV_FULL,
-    showLending: true,
-    showAffordabilityOnAdd: true,
-  },
-  {
-    id: "student",
-    label: "Student",
-    emoji: "🎓",
-    description: "Education costs and simple budgeting.",
-    navPaths: NAV_NO_LENDING,
-    showLending: false,
-    showAffordabilityOnAdd: true,
   },
 ];
 
@@ -81,6 +65,7 @@ const LEGACY_MODES = {
 };
 
 export function getUserModeConfig(modeId) {
+  if (REMOVED_USER_MODE_IDS.includes(modeId)) return USER_MODES[0];
   return USER_MODES.find((m) => m.id === modeId) || LEGACY_MODES[modeId] || USER_MODES[0];
 }
 

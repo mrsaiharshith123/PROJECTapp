@@ -44,3 +44,10 @@ export { Screen, ScreenSection, MainContent } from "./layout/Screen.jsx";
 export { Navbar } from "./layout/Navbar.jsx";
 
 export { insightToneClass } from "./tokens/severity.js";
+
+export { ConceptHelp } from "./guidance/ConceptHelp.jsx";
+export { WhyInsightPanel } from "./guidance/WhyInsightPanel.jsx";
+export { GuidanceBanner } from "./guidance/GuidanceBanner.jsx";
+export { GuidedEmptyState } from "./guidance/GuidedEmptyState.jsx";
+export { MicroTipCard } from "./guidance/MicroTipCard.jsx";
+export { AppTourModal } from "./guidance/AppTourModal.jsx";

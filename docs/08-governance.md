@@ -34,6 +34,8 @@ npm run audit:fix-deps          # fix production npm audit issues
 | `audit:performance` | Heavy pages, hooks, chart usage |
 | `audit:mobile` | Overflow, viewport, fixed widths |
 | `audit:charts` | Duplicate/similar UI (alias: duplicates) |
+| `audit:guidance` | Guidance registries, onboarding, dashboard education |
+| `audit:tree` | File tree layout, UI-only placement, orphan screens (`--tree` prints src/) |
 | `audit:ui` / `audit:styles` / `audit:ui-depth` | Existing layout/CSS/screen wiring |
 
 ### Groups

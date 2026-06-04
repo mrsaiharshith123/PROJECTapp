@@ -1,30 +1,44 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, Button, inputClassName, Eyebrow, Caption } from "../../";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card, Button, inputClassName, Eyebrow, Caption, Body } from "../../";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
+import { ONBOARDING_EXPERIENCES, getOnboardingExperience } from "../../../guidance/index.js";
+import { getExperienceMode } from "../../../constants/modeExperience.js";
+
+function experienceIdFromSettings(settings) {
+  const mode = getExperienceMode(settings);
+  if (mode === "business") return "business";
+  if (mode === "family") return "household";
+  return "salaried";
+}
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { updateSettings } = useCommitTrack();
+  const [searchParams] = useSearchParams();
+  const replay = searchParams.get("replay") === "1";
+  const { settings, updateSettings } = useCommitTrack();
   const { saveProfile } = useAuth();
   const [step, setStep] = useState(0);
-  const [userMode, setUserMode] = useState("salaried");
-  const [householdScope, setHouseholdScope] = useState("single");
-  const [displayName, setDisplayName] = useState("");
-  const [monthlyIncome, setMonthlyIncome] = useState("");
-  const [businessType, setBusinessType] = useState("");
+  const [experienceId, setExperienceId] = useState(() => experienceIdFromSettings(settings));
+  const [displayName, setDisplayName] = useState(() => settings.displayName || "");
+  const [monthlyIncome, setMonthlyIncome] = useState(() =>
+    settings.monthlyIncome ? String(settings.monthlyIncome) : "",
+  );
+  const [businessType, setBusinessType] = useState(() => settings.businessType || "");
   const inputClass = inputClassName();
+
+  const experience = getOnboardingExperience(experienceId);
 
   const finish = async () => {
     const payload = {
-      userMode,
-      householdScope: userMode === "salaried" ? householdScope : "single",
+      userMode: experience.userMode,
+      householdScope: experience.householdScope,
       displayName: displayName.trim(),
       monthlyIncome: monthlyIncome === "" ? 0 : Math.max(0, Number(monthlyIncome) || 0),
       businessType: businessType.trim(),
       onboardingComplete: true,
+      ...(replay ? {} : { appGuideComplete: false }),
     };
     updateSettings(payload);
     try {
@@ -40,68 +54,71 @@ export default function Onboarding() {
     } catch {
       // Ignore profile sync errors to avoid blocking onboarding.
     }
-    navigate("/", { replace: true });
+    if (replay) {
+      navigate("/profile", { replace: true, state: { openSection: "guide" } });
+    } else {
+      navigate("/", { replace: true, state: { startGuide: true } });
+    }
   };
+
+  const titlePrefix = replay ? "Review" : "Welcome";
 
   if (step === 0) {
     return (
       <div className="ct-onboard-page">
         <div>
-          <Eyebrow>Welcome</Eyebrow>
-          <h1 className="ct-onboard-title">What best describes you?</h1>
-          <Caption className="block mt-2">We tailor menus and tips to your situation. Change anytime in Profile.</Caption>
+          <Eyebrow>{titlePrefix}</Eyebrow>
+          <h1 className="ct-onboard-title">{replay ? "Your CommitTrack mode" : "How do you manage money?"}</h1>
+          <Caption className="block mt-2">
+            {replay
+              ? "Update how we explain your dashboard. Your bills and history stay on this device."
+              : "Pick the closest fit. We keep explanations calm and changeable in Profile."}
+          </Caption>
         </div>
         <div className="ct-stack">
-          {SELECTABLE_USER_MODES.map((m) => (
+          {ONBOARDING_EXPERIENCES.map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => setUserMode(m.id)}
-              className={`ct-option-card ${userMode === m.id ? "ct-option-card-active" : ""}`}
+              onClick={() => setExperienceId(m.id)}
+              className={`ct-option-card ${experienceId === m.id ? "ct-option-card-active" : ""}`}
             >
               <span className="text-2xl mr-2">{m.emoji}</span>
               <span className="font-semibold">{m.label}</span>
-              <Caption className="block mt-1 ml-8">{m.description}</Caption>
+              <Caption className="block mt-1 ml-8">{m.tagline}</Caption>
             </button>
           ))}
         </div>
-        <Button type="button" variant="primary" size="lg" onClick={() => setStep(userMode === "salaried" ? 1 : 2)}>
-          Continue
-        </Button>
+        <div className="ct-row">
+          {replay && (
+            <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => navigate(-1)}>
+              Cancel
+            </Button>
+          )}
+          <Button type="button" variant="primary" size="lg" className={replay ? "flex-1" : ""} onClick={() => setStep(1)}>
+            Continue
+          </Button>
+        </div>
       </div>
     );
   }
 
-  if (step === 1 && userMode === "salaried") {
+  if (step === 1) {
     return (
       <div className="ct-onboard-page">
         <div>
-          <Eyebrow>Household</Eyebrow>
-          <h1 className="ct-onboard-title">Who are you planning for?</h1>
-          <Caption className="block mt-2">Family mode unlocks household tools, payer tags, and family profiles.</Caption>
-        </div>
-        <div className="ct-stack">
-          {[
-            { id: "single", label: "Just me", desc: "Personal salary, EMIs, and subscriptions." },
-            { id: "family", label: "Family household", desc: "Shared bills, school fees, second income, family members." },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setHouseholdScope(opt.id)}
-              className={`ct-option-card ${householdScope === opt.id ? "ct-option-card-active" : ""}`}
-            >
-              <span className="font-semibold">{opt.label}</span>
-              <Caption className="block mt-1">{opt.desc}</Caption>
-            </button>
-          ))}
+          <Eyebrow>{experience.label}</Eyebrow>
+          <h1 className="ct-onboard-title">What we will focus on</h1>
+          <Card variant="flat" className="ct-guidance-onboard-explain">
+            <Body className="!text-sm">{experience.explain}</Body>
+          </Card>
         </div>
         <div className="ct-row">
           <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => setStep(0)}>
             Back
           </Button>
           <Button type="button" variant="primary" size="lg" className="flex-1" onClick={() => setStep(2)}>
-            Continue
+            Sounds good
           </Button>
         </div>
       </div>
@@ -112,7 +129,8 @@ export default function Onboarding() {
     <div className="ct-onboard-page">
       <div>
         <Eyebrow>Setup</Eyebrow>
-        <h1 className="ct-onboard-title">A few basics</h1>
+        <h1 className="ct-onboard-title">{replay ? "Update basics" : "Just the essentials"}</h1>
+        <Caption className="block mt-2">You can add bills and fine-tune later — no rush.</Caption>
       </div>
       <Card className="ct-stack">
         <div>
@@ -125,17 +143,19 @@ export default function Onboarding() {
           />
         </div>
         <div>
-          <label className="ct-field-label">Monthly income (₹)</label>
+          <label className="ct-field-label">
+            {experience.userMode === "business" ? "Typical monthly revenue (₹)" : "Monthly income (₹)"}
+          </label>
           <input
             type="number"
             min="0"
             className={inputClass}
             value={monthlyIncome}
             onChange={(e) => setMonthlyIncome(e.target.value)}
-            placeholder="Helps pressure and affordability scores"
+            placeholder="Helps pressure and runway feel accurate"
           />
         </div>
-        {userMode === "business" && (
+        {experience.userMode === "business" && (
           <div>
             <label className="ct-field-label">Business type</label>
             <input
@@ -148,11 +168,11 @@ export default function Onboarding() {
         )}
       </Card>
       <div className="ct-row">
-        <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => setStep(userMode === "salaried" ? 1 : 0)}>
+        <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => setStep(1)}>
           Back
         </Button>
         <Button type="button" variant="primary" size="lg" className="flex-1" onClick={finish}>
-          Start using CommitTrack
+          {replay ? "Save changes" : "Start using CommitTrack"}
         </Button>
       </div>
     </div>

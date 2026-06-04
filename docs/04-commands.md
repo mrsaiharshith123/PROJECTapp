@@ -36,6 +36,7 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:architecture` | Layer boundaries, large files |
 | `audit:features` | Feature registry & cross-feature imports |
 | `audit:modes` | User mode isolation |
+| `audit:sync` | Local-first vs cloud sync boundaries |
 | `audit:insights` | Insight engine overlap |
 | `audit:performance` | Heavy pages & render heuristics |
 | `audit:mobile` | Responsive / overflow risks |

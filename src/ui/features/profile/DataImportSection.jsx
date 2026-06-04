@@ -1,20 +1,19 @@
 import { useState } from "react";
+import { Button, Caption, Body } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { previewImportCounts } from "../../../utils/dataImport.js";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { decryptBackupPayload, downloadEncryptedBackup } from "../../../services/drive/backup.js";
+import { useCloudSync } from "../../../hooks/useCloudSync.js";
 
 export default function DataImportSection() {
   const { importAppData } = useCommitTrack();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
+  const cloud = useCloudSync();
   const [preview, setPreview] = useState(null);
   const [pending, setPending] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [mode, setMode] = useState("merge");
-  const [busyDrive, setBusyDrive] = useState(false);
-
-  const makePassphrase = () => `${user?.id || ""}::${user?.email || ""}`;
 
   const onFile = (e) => {
     setError(null);
@@ -44,7 +43,7 @@ export default function DataImportSection() {
         importAppData(pending, { mode })
       );
       setResult(
-        `Imported: ${summary.addedCommitments} bills, ${summary.addedLendings} lending, ${summary.addedGoals} goals (${mode}).`
+        `Imported: ${summary.addedCommitments} bills, ${summary.addedLendings} lending, ${summary.addedGoals} goals (${mode}).`,
       );
       setPreview(null);
       setPending(null);
@@ -53,71 +52,47 @@ export default function DataImportSection() {
     }
   };
 
-  const restoreFromDrive = async () => {
+  const restoreFromCloud = async () => {
     setError(null);
     setResult(null);
-    if (!isLoggedIn || !user) {
-      setError("Login required before restoring from Google Drive.");
+    if (!isLoggedIn) {
+      setError("Sign in and enable CommitTrack Cloud to restore.");
       return;
     }
-    setBusyDrive(true);
-    try {
-      const fromDrive = await downloadEncryptedBackup();
-      if (!fromDrive?.payload) {
-        setError("No Google Drive backup found.");
-        return;
-      }
-      const data = await decryptBackupPayload(fromDrive.payload, makePassphrase());
-      const summary = /** @type {{ addedCommitments: number, addedLendings: number, addedGoals: number }} */ (
-        importAppData(data, { mode })
-      );
-      setResult(
-        `Restored from Drive: ${summary.addedCommitments} bills, ${summary.addedLendings} lending, ${summary.addedGoals} goals (${mode}).`
-      );
-    } catch (e) {
-      setError((e instanceof Error ? e.message : null) || "Restore from Google Drive failed.");
-    } finally {
-      setBusyDrive(false);
-    }
+    await cloud.forcePull();
+    if (cloud.message) setResult(cloud.message);
+    if (cloud.error) setError(cloud.error);
   };
 
   return (
-    <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-slate-700">
-      <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">Import JSON</p>
+    <div className="ct-stack pt-2 border-t border-[var(--ct-border)]">
+      <Body className="font-semibold !text-sm">Import JSON</Body>
       <select
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"
+        className="ct-field w-full"
         value={mode}
         onChange={(e) => setMode(e.target.value)}
       >
         <option value="merge">Merge — keep existing, add new (skip duplicate ids)</option>
         <option value="replace">Replace — overwrite lists from file</option>
       </select>
-      <input type="file" accept="application/json,.json" onChange={onFile} className="text-xs w-full" />
+      <input type="file" accept="application/json,.json" onChange={onFile} className="ct-field w-full !text-xs" />
       {preview && (
-        <p className="text-xs text-gray-600 dark:text-slate-400">
+        <Caption className="block">
           Preview: {preview.commitments} bills, {preview.lendings} lending, {preview.goals} goals
+          {preview.businessInvoices ? `, ${preview.businessInvoices} invoices` : ""}
           {preview.hasSettings ? ", includes settings" : ""}.
-        </p>
+        </Caption>
       )}
       {pending && (
-        <button
-          type="button"
-          onClick={runImport}
-          className="w-full py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
-        >
+        <Button type="button" variant="primary" onClick={runImport}>
           Confirm import
-        </button>
+        </Button>
       )}
-      <button
-        type="button"
-        onClick={restoreFromDrive}
-        disabled={busyDrive}
-        className="w-full py-2 rounded-xl border border-indigo-200 text-indigo-700 text-xs font-semibold disabled:opacity-60"
-      >
-        {busyDrive ? "Restoring..." : "Restore latest from Google Drive"}
-      </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      {result && <p className="text-xs text-emerald-700">{result}</p>}
+      <Button type="button" variant="secondary" disabled={cloud.busy} onClick={restoreFromCloud}>
+        {cloud.busy ? "Restoring…" : "Restore from CommitTrack Cloud"}
+      </Button>
+      {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
+      {result && <Caption className="block text-[var(--ct-success)]">{result}</Caption>}
     </div>
   );
 }

@@ -1,13 +1,11 @@
 import { getCategoryById } from "./categories.js";
-import { USER_MODE_IDS } from "./userModes.js";
+import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 
 /** Income field label in Profile / Analytics. */
 export const MODE_INCOME_LABEL = {
   salaried: "Monthly salary",
   business: "Monthly revenue",
-  freelancer: "Typical monthly income",
   family: "Household income",
-  student: "Monthly budget / allowance",
   power: "Monthly income",
 };
 
@@ -15,9 +13,7 @@ export const MODE_INCOME_LABEL = {
 export const MODE_CATEGORY_IDS = {
   salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
   business: ["Vendor", "Payroll", "Rent", "Software", "Tax", "EMI", "Utility", "Insurance", "Other"],
-  freelancer: ["Client", "Software", "Subscription", "Tax", "Equipment", "Insurance", "Utility", "Other"],
   family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Chit Fund", "Subscription", "Utility", "Loan", "Other"],
-  student: ["Subscription", "Education", "Transport", "Food", "BNPL", "Loan", "Other"],
   power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Vendor", "Other"],
 };
 
@@ -25,9 +21,7 @@ export const MODE_CATEGORY_IDS = {
 export const MODE_TOOL_IDS = {
   salaried: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
   business: ["afford", "bond", "goals"],
-  freelancer: ["afford", "scenarios", "payoff", "bond", "goals", "emi", "loanTiming"],
   family: ["afford", "scenarios", "insurance", "emi", "loanTiming", "chit", "bond", "goals"],
-  student: ["afford", "loanTiming", "bond", "goals"],
   power: ["afford", "scenarios", "insurance", "emi", "loanTiming", "payoff", "chit", "bond", "goals"],
 };
 
@@ -93,13 +87,6 @@ const MODE_TOOL_TITLES = {
     afford: { title: "Can we afford this?", subtitle: "Vendor, hire, or equipment cost" },
     goals: { title: "Business targets", subtitle: "Cash buffer or paydown goals" },
   },
-  freelancer: {
-    afford: { title: "Can I take this cost?", subtitle: "Gear, software, or contract spend" },
-  },
-  student: {
-    afford: { title: "Can I afford this?", subtitle: "Subs, BNPL, or one-off spend" },
-    goals: { title: "Savings goals", subtitle: "Emergency or semester fund" },
-  },
   family: {
     afford: { title: "Household affordability", subtitle: "New bill impact on the home" },
     scenarios: { title: "Household what-ifs", subtitle: "Second income, fees, shocks" },
@@ -121,26 +108,12 @@ export const MODE_ANALYTICS = {
     affordHint: "Monthly revenue minus recurring business obligations.",
     showPaycheckFlow: false,
   },
-  freelancer: {
-    monthTitle: "Income this month",
-    monthHint: "Typical income vs client bills and tools due this month.",
-    affordTitle: "Income vs monthly costs",
-    affordHint: "Buffer after recurring client and business costs.",
-    showPaycheckFlow: false,
-  },
   family: {
     monthTitle: "Household month",
     monthHint: "Shared income vs family bills due this month.",
     affordTitle: "Household income vs bills",
     affordHint: "What the home keeps after monthly obligations.",
     showPaycheckFlow: true,
-  },
-  student: {
-    monthTitle: "Budget this month",
-    monthHint: "Allowance or income vs subs and dues this month.",
-    affordTitle: "Budget vs spending",
-    affordHint: "Simple read on whether this month is within budget.",
-    showPaycheckFlow: false,
   },
   power: {
     monthTitle: "This month",
@@ -154,15 +127,13 @@ export const MODE_ANALYTICS = {
 export const MODE_DASHBOARD_TOOLS_HEADING = {
   salaried: "Salary tools",
   business: "Business tools",
-  freelancer: "Freelancer tools",
   family: "Household tools",
-  student: "Student tools",
   power: "Power tools",
 };
 
 export function resolveUserMode(settings) {
   const raw = settings?.userMode || "salaried";
-  if (raw === "family" || raw === "power") return "salaried";
+  if (raw === "family" || raw === "power" || REMOVED_USER_MODE_IDS.includes(raw)) return "salaried";
   return USER_MODE_IDS.includes(raw) ? raw : "salaried";
 }
 
@@ -238,11 +209,6 @@ export function getDashboardToolsHeading(settingsOrMode) {
       : settingsOrMode || "salaried";
   if (mode === "family") return MODE_DASHBOARD_TOOLS_HEADING.family;
   return MODE_DASHBOARD_TOOLS_HEADING[mode] || "Quick calculators";
-}
-
-export function showHomeRolePanel(settings) {
-  const mode = typeof settings === "object" ? getExperienceMode(settings) : settings;
-  return mode !== "salaried";
 }
 
 export function showSalariedStabilityCards(settings) {

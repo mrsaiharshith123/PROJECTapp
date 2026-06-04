@@ -21,6 +21,9 @@ import { runInsightsAudit } from "./governance/insights.mjs";
 import { runPerformanceAudit } from "./governance/performance.mjs";
 import { runMobileAudit } from "./governance/mobile.mjs";
 import { runDuplicatesAudit } from "./governance/duplicates.mjs";
+import { runSyncAudit } from "./governance/sync.mjs";
+import { runGuidanceAudit } from "./governance/guidance.mjs";
+import { runTreeAudit } from "./governance/tree.mjs";
 
 /** @type {{ id: string, label: string, group: string, quick: boolean, fn?: () => object, script?: string }[]} */
 const GOVERNANCE = [
@@ -32,6 +35,9 @@ const GOVERNANCE = [
   { id: "performance", label: "Performance heuristics", group: "frontend", quick: false, fn: runPerformanceAudit },
   { id: "mobile", label: "Mobile & responsive", group: "frontend", quick: true, fn: runMobileAudit },
   { id: "duplicates", label: "Duplicate & similar UI", group: "frontend", quick: false, fn: runDuplicatesAudit },
+  { id: "sync", label: "Local-first & cloud sync", group: "platform", quick: true, fn: runSyncAudit },
+  { id: "guidance", label: "Financial guidance & education", group: "product", quick: true, fn: runGuidanceAudit },
+  { id: "tree", label: "File tree & UI placement", group: "platform", quick: true, fn: runTreeAudit },
 ];
 
 const LEGACY = [

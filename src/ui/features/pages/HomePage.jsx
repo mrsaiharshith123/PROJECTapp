@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
@@ -14,6 +14,16 @@ import {
   ToolsDiscoveryToast,
 } from "../../";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
+import {
+  getHomeKpiTiles,
+  getHomeKpiCaption,
+} from "../dashboard/config/modeDashboardMetrics.js";
+import { getDashboardFocus, interpretHomeMetric } from "../../../guidance/index.js";
+import { getExperienceMode } from "../../../constants/modeExperience.js";
+import { GuidanceBanner } from "../../guidance/GuidanceBanner.jsx";
+import { GuidedEmptyState } from "../../guidance/GuidedEmptyState.jsx";
+import { MicroTipCard } from "../../guidance/MicroTipCard.jsx";
+import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { monthlyBurdenForCommitment } from "../../../engines/burden.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
@@ -28,7 +38,6 @@ import {
   MetricTile,
   ListRow,
   InsightBanner,
-  EmptyState,
   Heading,
   Body,
   Caption,
@@ -45,8 +54,12 @@ function formatDate(dateStr) {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr, updateSettings } =
+    useCommitTrack();
   const location = useLocation();
-  const { commitments, sortedCommitments, goals, settings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const navWantsTour = Boolean(location.state?.replayGuide || location.state?.startGuide);
+  const [tourDismissed, setTourDismissed] = useState(false);
+  const tourOpen = !tourDismissed && (navWantsTour || !settings.appGuideComplete);
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
   const income = combinedMonthlyIncome(settings);
@@ -62,6 +75,17 @@ const Home = () => {
   useEffect(() => {
     if (location.hash === "#dashboard-tools") scrollToTools();
   }, [location.hash, scrollToTools]);
+
+  useEffect(() => {
+    if (navWantsTour) {
+      navigate(location.pathname + location.hash, { replace: true, state: {} });
+    }
+  }, [navWantsTour, location.pathname, location.hash, navigate]);
+
+  const completeTour = () => {
+    updateSettings({ appGuideComplete: true });
+    setTourDismissed(true);
+  };
 
   const openRemaining = commitments.reduce(
     (s, c) => s + monthlyBurdenForCommitment(c, getEffectiveStatus),
@@ -90,8 +114,47 @@ const Home = () => {
   const stabilityLabel =
     stabilityScore >= 70 ? "Good" : stabilityScore >= 45 ? "Fair" : "Tight";
 
+  const homeKpis = useMemo(
+    () =>
+      getHomeKpiTiles({
+        settings,
+        monthSummary,
+        intel,
+        stable,
+        commitments,
+        getEffectiveStatus,
+        todayStr,
+      }),
+    [settings, monthSummary, intel, stable, commitments, getEffectiveStatus, todayStr],
+  );
+  const kpiCaption = getHomeKpiCaption(settings);
+  const experienceMode = getExperienceMode(settings);
+  const kpiInterpretation = useMemo(() => {
+    const primary = homeKpis.find((k) => k.conceptId === "stability" || k.conceptId === "businessStability" || k.conceptId === "householdSafety") || homeKpis[1];
+    if (!primary) return null;
+    return interpretHomeMetric(primary.label, primary.value, { mode: experienceMode });
+  }, [homeKpis, experienceMode]);
+  const dashboardFocus = useMemo(
+    () =>
+      getDashboardFocus({
+        settings,
+        overdueCount: overdue.length,
+        stabilityScore,
+        stable,
+      }),
+    [settings, overdue.length, stabilityScore, stable],
+  );
+
+  const microTipSeed = commitments.length + goals.length;
+
   return (
     <div className="ct-page">
+      <AppTourModal
+        settings={settings}
+        open={tourOpen}
+        onComplete={completeTour}
+        onDismiss={completeTour}
+      />
       <PageHeaderWithNotifications greeting={greeting} />
 
       {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
@@ -101,26 +164,32 @@ const Home = () => {
       )}
 
       <InstallAppBanner />
+      <GuidanceBanner focus={dashboardFocus} />
       <HomeOverviewCard />
 
       <Grid cols={4}>
-        <MetricTile label="Total Bills" value={commitments.length} />
-        <MetricTile label="Amount Due" value={formatInr(monthSummary.dueThisMonth)} valueClassName="ct-hero-metric-warn" />
-        <MetricTile
-          label="Cash Left"
-          value={
-            monthSummary.freeCash != null
-              ? formatInr(monthSummary.freeCash)
-              : intel.freeMoneyAfterBurden != null
-                ? formatInr(intel.freeMoneyAfterBurden)
-                : EM_DASH
-          }
-          valueClassName="ct-hero-metric-success"
-        />
-        <MetricTile label="Stability" value={`${stabilityScore}%`} valueClassName="" />
+        {homeKpis.map((kpi) => (
+          <MetricTile
+            key={kpi.label}
+            label={kpi.label}
+            value={kpi.value}
+            valueClassName={kpi.valueClassName}
+            caption={kpi.caption}
+            conceptId={kpi.conceptId}
+          />
+        ))}
       </Grid>
-      <Caption className="-mt-2 text-center block">Stability · {stabilityLabel}</Caption>
+      <Caption className="-mt-2 text-center block">
+        {kpiCaption}
+        {homeKpis.length === 4 && homeKpis.some((k) => k.label === "Stability")
+          ? ` · ${stabilityLabel}`
+          : ""}
+      </Caption>
+      {kpiInterpretation && (
+        <Caption className="-mt-1 text-center block opacity-90">{kpiInterpretation}</Caption>
+      )}
 
+      <MicroTipCard seed={microTipSeed} />
       <ModeIntelligenceSection />
       <FinancialPulseCard />
 
@@ -173,11 +242,7 @@ const Home = () => {
         }
       >
         {upcoming.length === 0 ? (
-          <EmptyState
-            icon={"\u{1F4C5}"}
-            title="Nothing due right now"
-            hint="Add bills or check History for paid items"
-          />
+          <GuidedEmptyState guidanceKey="home-upcoming" settings={settings} />
         ) : (
           <Stack gap="sm">
             {upcoming.map((item) => (

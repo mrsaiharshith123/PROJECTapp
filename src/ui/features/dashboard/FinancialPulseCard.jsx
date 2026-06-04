@@ -14,6 +14,8 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
 import { Heading } from "../../primitives/Text.jsx";
 import { Surface } from "../../primitives/Surface.jsx";
+import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
+import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
 
 const BASE_TABS = [
   { id: "snapshot", label: "Summary" },
@@ -95,7 +97,10 @@ export default function FinancialPulseCard() {
   return (
     <Card className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Heading level={2}>Financial pulse</Heading>
+        <Heading level={2}>
+          Financial pulse
+          <ConceptHelp conceptId="stability" />
+        </Heading>
         <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
       </div>
 
@@ -401,7 +406,15 @@ export default function FinancialPulseCard() {
             <ul className="space-y-2">
               {tips.slice(0, 10).map((ins) => (
                 <li key={ins.id} className={`text-sm rounded-lg px-3 py-2 border ${insightToneClass(ins.tone)}`}>
-                  {ins.text}
+                  <p>{ins.text}</p>
+                  <WhyInsightPanel
+                    insight={ins}
+                    context={{
+                      mode: settings.userMode,
+                      overdueCount: stable.overdueCount,
+                      stressTop: stress?.top,
+                    }}
+                  />
                 </li>
               ))}
             </ul>

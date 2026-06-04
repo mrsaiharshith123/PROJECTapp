@@ -12,7 +12,7 @@ PROJECTapp/
 │   ├── hooks/               React hooks (intel, PWA install, …)
 │   ├── engines/             Pure finance logic + __tests__/
 │   ├── constants/           Modes, categories, copy, symbols (no React)
-│   ├── services/            Supabase auth, notifications, Google Drive backup
+│   ├── services/            Supabase auth, cloud sync, notifications
 │   ├── utils/               Storage, dates, lending, repayment, migration
 │   ├── types/               TypeScript types (context, global augmentations)
 │   └── ui/                  ★ ALL visual UI (see below)
@@ -103,6 +103,7 @@ Wire engines from hooks (`useCommitIntel`, `useStabilityIntel`) or directly from
 | `audit-all.mjs` | Full project audit (`npm run audit`) |
 | `audit-ui.mjs` | UI location / class rules |
 | `audit-ui-depth.mjs` | Dead screens, unused barrel exports, orphan tool tiles |
+| `audit-tree` (`governance/tree.mjs`) | Folder layout, JSX placement, unreachable UI (`--tree`) |
 | `audit-code.mjs` | ESLint, Knip, imports, hygiene |
 | `audit-styles.mjs` | CSS compat (e.g. Safari prefixes) |
 | `generate-pwa-icons.mjs` | Called by `npm run build` |

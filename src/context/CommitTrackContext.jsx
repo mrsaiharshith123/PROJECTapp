@@ -4,8 +4,10 @@ import { todayYmd } from "../utils/dates.js";
 import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
 import { applyPaymentToCommitment } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
+import { emitLocalDataChanged } from "../storage/events.js";
 import {
   loadInitialAppState,
+  invalidateInitialAppStateCache,
   saveMonthlySnapshotsToStorage,
   saveGoalsToStorage,
   normalizeCommitment,
@@ -76,6 +78,8 @@ export function CommitTrackProvider({ children }) {
       );
       try {
         localStorage.setItem("commitments", JSON.stringify(normalized));
+        invalidateInitialAppStateCache();
+        emitLocalDataChanged();
       } catch {
         /* ignore */
       }
@@ -89,6 +93,8 @@ export function CommitTrackProvider({ children }) {
       const normalized = next.map((l) => normalizeLending(l));
       try {
         localStorage.setItem("lendings", JSON.stringify(normalized));
+        invalidateInitialAppStateCache();
+        emitLocalDataChanged();
       } catch {
         /* ignore */
       }
@@ -101,6 +107,8 @@ export function CommitTrackProvider({ children }) {
       const next = typeof updater === "function" ? updater(prev) : updater;
       try {
         localStorage.setItem("committrack_settings", JSON.stringify(next));
+        invalidateInitialAppStateCache();
+        emitLocalDataChanged();
       } catch {
         /* ignore */
       }
@@ -112,6 +120,8 @@ export function CommitTrackProvider({ children }) {
     setMonthlySnapshots((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       saveMonthlySnapshotsToStorage(next);
+      invalidateInitialAppStateCache();
+      emitLocalDataChanged();
       return next;
     });
   }, []);
@@ -120,6 +130,8 @@ export function CommitTrackProvider({ children }) {
     setGoals((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       saveGoalsToStorage(next);
+      invalidateInitialAppStateCache();
+      emitLocalDataChanged();
       return next;
     });
   }, []);
@@ -129,7 +141,9 @@ export function CommitTrackProvider({ children }) {
       const next = typeof updater === "function" ? updater(prev) : updater;
       const normalized = next.map((row) => normalizeBusinessInvoice(row));
       saveBusinessInvoicesToStorage(normalized);
-      return normalized;
+      invalidateInitialAppStateCache();
+      emitLocalDataChanged();
+      return next;
     });
   }, []);
 
@@ -502,6 +516,17 @@ export function CommitTrackProvider({ children }) {
       if (merged.monthlySnapshots?.length) {
         persistSnapshots(() => merged.monthlySnapshots);
       }
+      const incomingInvoices = Array.isArray(payload.businessInvoices) ? payload.businessInvoices : [];
+      if (incomingInvoices.length) {
+        const norm = incomingInvoices.map((row) => normalizeBusinessInvoice(row));
+        if (options.mode === "replace") {
+          persistBusinessInvoices(() => norm);
+        } else {
+          const map = new Map(businessInvoicesAll.map((r) => [String(r.id), r]));
+          for (const row of norm) map.set(String(row.id), row);
+          persistBusinessInvoices(() => [...map.values()]);
+        }
+      }
       return merged.summary;
     },
     [
@@ -510,11 +535,13 @@ export function CommitTrackProvider({ children }) {
       goals,
       settings,
       monthlySnapshots,
+      businessInvoicesAll,
       persistCommitments,
       persistLendings,
       persistGoals,
       persistSettings,
       persistSnapshots,
+      persistBusinessInvoices,
     ]
   );
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);

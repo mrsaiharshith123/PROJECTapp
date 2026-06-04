@@ -19,6 +19,16 @@ export type AuthContextValue = {
   signOut: () => Promise<void>;
   saveProfile: (patch: AuthProfile) => Promise<AuthProfile | null>;
   refreshProfile: () => Promise<AuthProfile | null>;
+  activity: Array<{
+    id: string;
+    ts: string;
+    type: string;
+    level: string;
+    message: string;
+    detail?: string;
+  }>;
+  refreshActivity: () => void;
+  clearActivity: () => void;
 };
 
 export type CommitTrackContextValue = {

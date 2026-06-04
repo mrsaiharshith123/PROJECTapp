@@ -1,4 +1,6 @@
 import { Component } from "react";
+import { log } from "../../utils/logger.js";
+import { recordAccountActivity } from "../../services/accountActivity.js";
 
 export default class ErrorBoundary extends Component {
   state = { error: null };
@@ -7,24 +9,33 @@ export default class ErrorBoundary extends Component {
     return { error };
   }
 
+  componentDidCatch(error, info) {
+    log.app.error("UI crash", {
+      message: error instanceof Error ? error.message : String(error),
+      componentStack: info?.componentStack?.slice(0, 200),
+    });
+    recordAccountActivity({
+      type: "app_error",
+      level: "error",
+      message: "Something went wrong in the app",
+      detail: error instanceof Error ? error.message : undefined,
+    });
+  }
+
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-white rounded-2xl border border-red-100 shadow-sm p-6 space-y-3">
-            <h1 className="text-lg font-bold text-gray-900">Something went wrong</h1>
-            <p className="text-sm text-gray-600">
-              CommitTrack hit an error while loading. Try refreshing. If it keeps happening, clear site data for
-              localhost in your browser settings.
+        <div className="ct-page ct-stack-center min-h-screen justify-center">
+          <div className="ct-card max-w-md w-full ct-stack">
+            <h1 className="ct-onboard-title">Something went wrong</h1>
+            <p className="ct-caption">
+              CommitTrack hit an error while loading. Try refreshing. If it keeps happening, clear site data for this
+              origin in your browser settings.
             </p>
-            <pre className="text-xs text-red-700 bg-red-50 rounded-lg p-3 overflow-auto max-h-40">
+            <pre className="ct-hero-inset text-xs overflow-auto max-h-40 text-[var(--ct-danger)]">
               {String(this.state.error?.message || this.state.error)}
             </pre>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="w-full py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl"
-            >
+            <button type="button" onClick={() => window.location.reload()} className="ct-btn ct-btn-primary">
               Reload
             </button>
           </div>

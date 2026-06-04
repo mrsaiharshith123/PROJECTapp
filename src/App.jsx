@@ -9,7 +9,7 @@ import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
-import AccountPanel from "./ui/features/auth/AccountPanel.jsx";
+import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -47,6 +47,7 @@ function MainShell() {
   return (
     <Screen>
       <ThemeSync />
+      <CloudSyncBridge />
       <Navbar />
       <NotificationSync />
       <MainContent>
@@ -66,7 +67,7 @@ function MainShell() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/onboarding" element={<Navigate to="/" replace />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
@@ -75,23 +76,12 @@ function MainShell() {
   );
 }
 
-function AuthShell() {
-  return (
-    <Screen narrow>
-      <ThemeSync />
-      <div className="mb-6">
-        <InstallAppBanner />
-      </div>
-      <AccountPanel />
-      <p className="ct-caption ct-caption-center mt-4">Login or create account to continue.</p>
-    </Screen>
-  );
-}
-
+/** Local-first: app runs without sign-in; cloud is optional in Profile. */
 function AppShell() {
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings, commitments } = useCommitTrack();
   const { isReady, isLoggedIn, user, profile, saveProfile } = useAuth();
   const onboarded = Boolean(settings?.onboardingComplete);
+  const hasLocalData = onboarded || commitments.length > 0;
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id) return;
@@ -137,7 +127,7 @@ function AppShell() {
         localStorage.setItem(key, "1");
       })
       .catch(() => {
-        // Keep app usable even when DB schema does not yet include onboarding columns.
+        /* Keep app usable even when DB schema does not yet include onboarding columns. */
       });
   }, [isLoggedIn, user, profile, settings, saveProfile]);
 
@@ -145,11 +135,11 @@ function AppShell() {
     return <PageLoader />;
   }
 
-  if (!isLoggedIn) {
-    return <AuthShell />;
+  if (!hasLocalData) {
+    return <OnboardingShell />;
   }
 
-  if (!onboarded) {
+  if (!onboarded && isLoggedIn) {
     return <OnboardingShell />;
   }
 

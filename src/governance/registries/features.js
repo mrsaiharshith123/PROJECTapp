@@ -61,7 +61,7 @@ export const FEATURES = [
     ui: ["ui/features/pages/ProfilePage.jsx", "ui/features/profile/"],
     engines: [],
     hooks: [],
-    notes: "Auth via services/supabase; backup via services/drive",
+    notes: "Auth via services/supabase; optional cloud via services/sync",
   },
   {
     id: "notifications",

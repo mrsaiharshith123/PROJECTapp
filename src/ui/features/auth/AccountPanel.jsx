@@ -1,13 +1,27 @@
 import { useMemo, useState } from "react";
-import { Card, Button, inputClassName, FormField } from "../../../ui";
+import { Card, Button, inputClassName, FormField, Body, Caption, Heading } from "../../index.js";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { isValidPan, maskPan, normalizePan } from "../../../utils/pan.js";
 import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
+import AccountActivityLog from "./AccountActivityLog.jsx";
 
 const inputClass = inputClassName();
 
 export default function AccountPanel() {
-  const { isReady, isLoggedIn, user, profile, error, signIn, signUp, signOut, saveProfile } = useAuth();
+  const {
+    isReady,
+    isLoggedIn,
+    user,
+    profile,
+    error,
+    activity,
+    signIn,
+    signUp,
+    signOut,
+    saveProfile,
+    clearActivity,
+    refreshActivity,
+  } = useAuth();
   const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +37,7 @@ export default function AccountPanel() {
   const [localError, setLocalError] = useState("");
 
   const savedPan = useMemo(() => profile?.pan || "", [profile?.pan]);
+  const displayError = localError || error;
 
   const handleAuth = async () => {
     setLocalError("");
@@ -35,6 +50,7 @@ export default function AccountPanel() {
     try {
       if (mode === "signin") {
         await signIn(email, password);
+        setNote("Signed in successfully.");
       } else {
         await signUp(email, password, {
           display_name: signupName.trim(),
@@ -43,8 +59,9 @@ export default function AccountPanel() {
           monthly_income: Math.max(0, Number(signupIncome) || 0),
           onboarding_complete: true,
         });
-        setNote("Account created. Please verify email if your project requires confirmation.");
+        setNote("Account created. Confirm your email if your project requires it.");
       }
+      refreshActivity();
     } catch (e) {
       setLocalError((e instanceof Error ? e.message : null) || "Authentication failed.");
     } finally {
@@ -69,6 +86,7 @@ export default function AccountPanel() {
       });
       setPan("");
       setNote("Account profile saved.");
+      refreshActivity();
     } catch (e) {
       setLocalError((e instanceof Error ? e.message : null) || "Could not save account profile.");
     } finally {
@@ -78,41 +96,45 @@ export default function AccountPanel() {
 
   if (!isReady) {
     return (
-      <Card className="space-y-2">
-        <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">Account</p>
-        <p className="text-xs text-gray-500">Loading account...</p>
+      <Card className="ct-stack">
+        <Heading level={3}>Account</Heading>
+        <Caption className="block">Loading account…</Caption>
       </Card>
     );
   }
 
   if (!isLoggedIn) {
     return (
-      <Card className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">Account</p>
-          <div className="flex gap-1">
+      <Card className="ct-stack">
+        <div className="ct-row-between">
+          <Heading level={3}>Account</Heading>
+          <div className="ct-row gap-2">
             <button
               type="button"
               onClick={() => setMode("signin")}
-              className={`px-2 py-1 text-xs rounded-lg ${mode === "signin" ? "bg-indigo-600 text-white" : "bg-gray-100"}`}
+              className={`ct-chip ${mode === "signin" ? "ct-chip-active" : ""}`}
             >
               Login
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className={`px-2 py-1 text-xs rounded-lg ${mode === "signup" ? "bg-indigo-600 text-white" : "bg-gray-100"}`}
+              className={`ct-chip ${mode === "signup" ? "ct-chip-active" : ""}`}
             >
               Create
             </button>
           </div>
         </div>
+        <Caption className="block">
+          Optional — local data works without an account. Sign in for cloud backup and multi-device sync.
+        </Caption>
         <input
           type="email"
           className={inputClass}
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
         />
         <input
           type="password"
@@ -120,6 +142,7 @@ export default function AccountPanel() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete={mode === "signin" ? "current-password" : "new-password"}
         />
         {mode === "signup" && (
           <>
@@ -165,32 +188,34 @@ export default function AccountPanel() {
           </>
         )}
         <Button type="button" disabled={busy} onClick={handleAuth} size="lg">
-          {busy ? "Please wait..." : mode === "signin" ? "Login" : "Create account"}
+          {busy ? "Please wait…" : mode === "signin" ? "Login" : "Create account"}
         </Button>
-        {(localError || error) && <p className="text-xs text-red-600">{localError || error}</p>}
-        {note && <p className="text-xs text-emerald-700">{note}</p>}
+        {displayError && <Caption className="block text-[var(--ct-danger)]">{displayError}</Caption>}
+        {note && <Caption className="block text-[var(--ct-success)]">{note}</Caption>}
+
+        <div className="border-t border-[var(--ct-border)] pt-3">
+          <Body className="font-semibold !text-sm">Recent account events</Body>
+          <AccountActivityLog activity={activity} />
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="space-y-3">
-      <div className="flex items-start justify-between gap-3">
+    <Card className="ct-stack">
+      <div className="ct-row-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">Account</p>
-          <p className="text-xs text-gray-500">{user?.email}</p>
+          <Heading level={3}>Account</Heading>
+          <Caption className="block mt-0.5">{user?.email}</Caption>
+          <Caption className="block mt-1 text-[var(--ct-success)]">Signed in · session active</Caption>
         </div>
-        <button
-          type="button"
-          onClick={signOut}
-          className="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg"
-        >
+        <Button type="button" variant="outline" size="sm" onClick={signOut} className="!w-auto shrink-0">
           Logout
-        </button>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-2">
-        <label className="text-xs font-semibold text-gray-700 dark:text-slate-300">Username</label>
+      <div className="ct-stack-sm">
+        <label className="ct-field-label">Username</label>
         <input
           className={inputClass}
           value={username || profile?.username || ""}
@@ -199,39 +224,35 @@ export default function AccountPanel() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-2">
-        <label className="text-xs font-semibold text-gray-700 dark:text-slate-300">PAN (format validation only)</label>
+      <div className="ct-stack-sm">
+        <label className="ct-field-label">PAN (format validation only)</label>
         <input
           className={inputClass}
           value={showPan ? pan || savedPan : pan || maskPan(savedPan)}
           onChange={(e) => setPan(e.target.value)}
           placeholder="ABCDE1234F"
         />
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setShowPan((v) => !v)}
-            className="text-xs text-indigo-600 font-semibold"
-          >
+        <div className="ct-row-between">
+          <button type="button" onClick={() => setShowPan((v) => !v)} className="ct-link !text-xs">
             {showPan ? "Hide PAN" : "Show PAN"}
           </button>
-          <span className="text-[11px] text-gray-500">
-            Status: {profile?.pan_verified ? "Verified" : "Not verified"}
-          </span>
+          <Caption>Status: {profile?.pan_verified ? "Verified" : "Not verified"}</Caption>
         </div>
       </div>
 
-      <Button
-        type="button"
-        disabled={busy}
-        onClick={handleSaveKyc}
-        size="lg"
-        className="!bg-emerald-600 hover:!bg-emerald-700"
-      >
+      <Button type="button" disabled={busy} onClick={handleSaveKyc} size="lg" variant="primary">
         Save account info
       </Button>
-      {(localError || error) && <p className="text-xs text-red-600">{localError || error}</p>}
-      {note && <p className="text-xs text-emerald-700">{note}</p>}
+      {displayError && <Caption className="block text-[var(--ct-danger)]">{displayError}</Caption>}
+      {note && <Caption className="block text-[var(--ct-success)]">{note}</Caption>}
+
+      <div className="border-t border-[var(--ct-border)] pt-3 ct-stack-sm">
+        <div className="ct-row-between">
+          <Body className="font-semibold !text-sm">Account activity</Body>
+          <Caption className="!text-[10px]">On this device</Caption>
+        </div>
+        <AccountActivityLog activity={activity} onClear={clearActivity} />
+      </div>
     </Card>
   );
 }

@@ -10,7 +10,7 @@
 | Engines | `engines/` | Pure finance: forecast, pressure, survival, lending, insights |
 | Utils | `utils/` | Dates, storage, migrations, lending helpers |
 | Constants | `constants/` | Modes, categories, copy, nav |
-| Services | `services/` | Supabase auth, notifications, Drive backup |
+| Services | `services/` | Supabase auth, cloud sync, notifications |
 | UI | `ui/` | All visual UI — primitives, patterns, features, pages |
 | Governance | `governance/` | Registries for audits (not loaded in production bundle) |
 

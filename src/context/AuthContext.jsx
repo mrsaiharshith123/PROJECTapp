@@ -8,6 +8,15 @@ import {
   signOutAuth,
   signUpWithEmail,
 } from "../services/supabase/auth.js";
+import {
+  ACCOUNT_ACTIVITY_EVENT,
+  activityFromAuthEvent,
+  clearAccountActivity,
+  getAccountActivity,
+  recordAccountActivity,
+} from "../services/accountActivity.js";
+import { formatAuthError } from "../utils/authErrors.js";
+import { log } from "../utils/logger.js";
 
 /** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
 const AuthContext = createContext(/** @type {import('../types/context.js').AuthContextValue | null} */ (null));
@@ -18,6 +27,17 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
+  const [activity, setActivity] = useState(() => getAccountActivity());
+
+  const refreshActivity = useCallback(() => {
+    setActivity(getAccountActivity());
+  }, []);
+
+  useEffect(() => {
+    const onActivity = () => refreshActivity();
+    window.addEventListener(ACCOUNT_ACTIVITY_EVENT, onActivity);
+    return () => window.removeEventListener(ACCOUNT_ACTIVITY_EVENT, onActivity);
+  }, [refreshActivity]);
 
   const refreshProfile = useCallback(async (userId) => {
     if (!userId) {
@@ -31,6 +51,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
+    log.auth.info("Auth provider starting");
     getAuthSession()
       .then(async ({ session: s, user: u }) => {
         if (!mounted) return;
@@ -38,18 +59,33 @@ export function AuthProvider({ children }) {
         setUser(u);
         if (u?.id) {
           await refreshProfile(u.id);
+          if (s) {
+            recordAccountActivity({
+              type: "session",
+              level: "info",
+              message: "Session restored on launch",
+            });
+          }
         }
       })
       .catch((e) => {
-        if (mounted) setError((e instanceof Error ? e.message : null) || "Could not initialize auth.");
+        const msg = formatAuthError(e);
+        log.auth.error("Auth init failed", { message: msg });
+        if (mounted) setError(msg);
       })
       .finally(() => {
         if (mounted) setIsReady(true);
       });
-    const unsubscribe = onAuthStateChanged(async ({ session: s, user: u }) => {
+
+    const unsubscribe = onAuthStateChanged(async ({ event, session: s, user: u }) => {
       setSession(s);
       setUser(u);
       setError(null);
+
+      const act = activityFromAuthEvent(event, u);
+      if (act) recordAccountActivity(act);
+      refreshActivity();
+
       if (!u?.id) {
         setProfile(null);
         return;
@@ -57,42 +93,78 @@ export function AuthProvider({ children }) {
       try {
         await refreshProfile(u.id);
       } catch (e) {
-        setError((e instanceof Error ? e.message : null) || "Could not load profile.");
+        const msg = formatAuthError(e);
+        log.auth.error("Profile refresh failed", { event });
+        setError(msg);
       }
     });
+
     return () => {
       mounted = false;
       unsubscribe();
     };
-  }, [refreshProfile]);
+  }, [refreshProfile, refreshActivity]);
 
   const signUp = useCallback(async (email, password, metadata = null) => {
     setError(null);
-    const data = await signUpWithEmail(email, password, metadata);
-    return data;
-  }, []);
+    try {
+      const data = await signUpWithEmail(email, password, metadata);
+      refreshActivity();
+      return data;
+    } catch (e) {
+      const msg = formatAuthError(e);
+      setError(msg);
+      throw e;
+    }
+  }, [refreshActivity]);
 
   const signIn = useCallback(async (email, password) => {
     setError(null);
-    const data = await signInWithEmail(email, password);
-    return data;
-  }, []);
+    try {
+      const data = await signInWithEmail(email, password);
+      refreshActivity();
+      return data;
+    } catch (e) {
+      const msg = formatAuthError(e);
+      setError(msg);
+      throw e;
+    }
+  }, [refreshActivity]);
 
   const signOut = useCallback(async () => {
     setError(null);
-    await signOutAuth();
-  }, []);
+    try {
+      await signOutAuth();
+      refreshActivity();
+    } catch (e) {
+      const msg = formatAuthError(e);
+      setError(msg);
+      throw e;
+    }
+  }, [refreshActivity]);
 
   const saveProfile = useCallback(
     async (patch) => {
-      if (!user?.id) throw new Error("Please login first.");
+      if (!user?.id) throw new Error("Please sign in first.");
       setError(null);
-      const next = await saveUserProfile(user.id, patch);
-      setProfile(next);
-      return next;
+      try {
+        const next = await saveUserProfile(user.id, patch);
+        setProfile(next);
+        refreshActivity();
+        return next;
+      } catch (e) {
+        const msg = formatAuthError(e);
+        setError(msg);
+        throw e;
+      }
     },
-    [user]
+    [user, refreshActivity],
   );
+
+  const clearActivity = useCallback(() => {
+    clearAccountActivity();
+    refreshActivity();
+  }, [refreshActivity]);
 
   const value = useMemo(
     () => ({
@@ -102,13 +174,30 @@ export function AuthProvider({ children }) {
       profile,
       error,
       isLoggedIn: Boolean(user),
+      activity,
       signUp,
       signIn,
       signOut,
       saveProfile,
       refreshProfile: () => refreshProfile(user?.id),
+      refreshActivity,
+      clearActivity,
     }),
-    [isReady, session, user, profile, error, signUp, signIn, signOut, saveProfile, refreshProfile]
+    [
+      isReady,
+      session,
+      user,
+      profile,
+      error,
+      activity,
+      signUp,
+      signIn,
+      signOut,
+      saveProfile,
+      refreshProfile,
+      refreshActivity,
+      clearActivity,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -9,8 +9,6 @@ import { MODE_CAPABILITIES, MODE_LOGIC_ALLOWLIST, MODE_IDS } from "../../src/gov
 const MODE_ENGINE_IMPORT = {
   modeBusiness: "business",
   modeFamily: "family",
-  modeFreelancer: "freelancer",
-  modeStudent: "student",
 };
 
 export function runModesAudit() {

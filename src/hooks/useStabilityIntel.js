@@ -6,9 +6,7 @@ import { rankStressContributors } from "../engines/stressContributors.js";
 import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
 import { computeBusinessCashflow } from "../engines/modeBusiness.js";
-import { computeFreelancerVolatility, clientDependencyInsight } from "../engines/modeFreelancer.js";
 import { computeFamilyPressure } from "../engines/modeFamily.js";
-import { computeStudentBudget } from "../engines/modeStudent.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { mergeExtendedInsights } from "../engines/insightsExtended.js";
 import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
@@ -107,12 +105,6 @@ export function useStabilityIntel() {
         ),
       };
       extraInsights.push(...(modeData.business.insights || []));
-    } else if (baseMode === "freelancer") {
-      const vol = computeFreelancerVolatility(ctx.monthlySnapshots, income);
-      const client = clientDependencyInsight(ctx.lendings);
-      modeData = { freelancer: vol };
-      extraInsights.push(...(vol.insights || []));
-      if (client) extraInsights.push(client);
     } else if (experienceMode === "family") {
       modeData = {
         family: computeFamilyPressure(
@@ -129,17 +121,6 @@ export function useStabilityIntel() {
         Math.max(0, Number(ctx.settings.secondaryMonthlyIncome) || 0)
       );
       if (payerIns) extraInsights.push(payerIns);
-    } else if (baseMode === "student") {
-      modeData = {
-        student: computeStudentBudget(
-          ctx.commitments,
-          ctx.settings,
-          ctx.getEffectiveStatus,
-          ctx.todayStr,
-          intel
-        ),
-      };
-      extraInsights.push(...(modeData.student.insights || []));
     }
 
     const stabilityInsights = mergeExtendedInsights(intel.insights, extraInsights);
@@ -147,6 +128,7 @@ export function useStabilityIntel() {
     return {
       mode: experienceMode,
       income,
+      overdueCount,
       burdenRatio,
       survival,
       stress,
@@ -160,8 +142,6 @@ export function useStabilityIntel() {
       family: modeData.family || null,
       familyCalendar: ahead?.familyCalendar ?? null,
       business: modeData.business ?? null,
-      freelancer: modeData.freelancer ?? null,
-      student: modeData.student ?? null,
       lendingOutflow: lendingMonthlyOutflow(ctx.lendings, ctx.getEffectiveLendingStatus, ctx.todayStr),
       stabilityInsights,
       ...modeData,

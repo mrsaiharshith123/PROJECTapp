@@ -1,6 +1,10 @@
 import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
-import { USER_MODE_IDS, ALL_USER_MODE_IDS } from "../constants/userModes.js";
+import {
+  USER_MODE_IDS,
+  ALL_USER_MODE_IDS,
+  REMOVED_USER_MODE_IDS,
+} from "../constants/userModes.js";
 import { enrichLendingFinancials } from "./lendingFinancials.js";
 import { computeContractPaymentLedger } from "./billPaymentProgress.js";
 import { currentCycleRemainingAmount } from "./commitmentPayments.js";
@@ -9,6 +13,7 @@ import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
+import { loadBusinessInvoicesFromStorage } from "./businessInvoices.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
@@ -396,6 +401,10 @@ export function migrateLegacySavedTowardGoals(settings, goals) {
 
 let cachedInitialAppState;
 
+export function invalidateInitialAppStateCache() {
+  cachedInitialAppState = undefined;
+}
+
 export function loadInitialAppState() {
   if (cachedInitialAppState) return cachedInitialAppState;
   const settings = loadSettingsFromStorage();
@@ -409,6 +418,16 @@ export function loadInitialAppState() {
     monthlySnapshots: loadMonthlySnapshotsFromStorage(),
   };
   return cachedInitialAppState;
+}
+
+/** Fresh read for cloud sync / export (bypasses in-memory cache). */
+export function loadFullAppStateForSync() {
+  invalidateInitialAppStateCache();
+  const base = loadInitialAppState();
+  return {
+    ...base,
+    businessInvoices: loadBusinessInvoicesFromStorage(),
+  };
 }
 
 export function saveGoalsToStorage(goals) {
@@ -452,6 +471,7 @@ const DEFAULT_SETTINGS = {
   /** "free" | "power" — subscription unlocks power features */
   subscriptionTier: "free",
   onboardingComplete: false,
+  appGuideComplete: false,
   savedTowardGoals: 0,
   readNotificationIds: [],
   activeProfileId: "default",
@@ -464,6 +484,8 @@ const DEFAULT_SETTINGS = {
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
   dashboardToolOrderByMode: {},
+  /** Optional CommitTrack Cloud continuity (requires sign-in). */
+  cloudSyncEnabled: false,
 };
 
 export function loadSettingsFromStorage() {
@@ -485,6 +507,9 @@ export function loadSettingsFromStorage() {
         mode = "salaried";
         subscriptionTier = "power";
       }
+      if (REMOVED_USER_MODE_IDS.includes(mode)) {
+        mode = "salaried";
+      }
       if (!USER_MODE_IDS.includes(mode)) {
         mode = "salaried";
       }
@@ -497,6 +522,10 @@ export function loadSettingsFromStorage() {
         householdScope,
         subscriptionTier,
         onboardingComplete: "onboardingComplete" in o ? Boolean(o.onboardingComplete) : false,
+        appGuideComplete:
+          "appGuideComplete" in o
+            ? Boolean(o.appGuideComplete)
+            : Boolean(o.onboardingComplete),
         savedTowardGoals: Math.max(0, Number(o.savedTowardGoals) || 0),
         readNotificationIds: Array.isArray(o.readNotificationIds)
           ? o.readNotificationIds.map(String)
@@ -514,6 +543,7 @@ export function loadSettingsFromStorage() {
         profiles: normalizeProfiles(o.profiles),
         remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,
         dashboardToolOrderByMode: normalizeDashboardToolOrderByMode(o.dashboardToolOrderByMode),
+        cloudSyncEnabled: Boolean(o.cloudSyncEnabled),
       };
     }
   } catch {

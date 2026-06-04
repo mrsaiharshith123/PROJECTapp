@@ -45,9 +45,16 @@ export default function HomeOverviewCard() {
     </>
   );
 
+  const freeLabel =
+    experienceMode === "business"
+      ? "Operating buffer"
+      : experienceMode === "family"
+        ? "Household cash"
+        : "Free cash";
+
   const footerRight = (
     <>
-      Free cash{" "}
+      {freeLabel}{" "}
       <strong className="ct-hero-metric-success">
         {monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
       </strong>

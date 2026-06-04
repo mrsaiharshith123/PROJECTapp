@@ -26,6 +26,16 @@ export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   return out;
 }
 
+const VALID_TOOL_ORDER_MODES = new Set(["salaried", "business", "family", "power"]);
+const REMOVED_TOOL_ORDER_MODES = new Set(["freelancer", "student"]);
+const TOOL_ORDER_MODE_PRIORITY = ["salaried", "business", "family", "power"];
+
+function toolOrderModeSortKey(mode) {
+  if (REMOVED_TOOL_ORDER_MODES.has(mode)) return 100;
+  const i = TOOL_ORDER_MODE_PRIORITY.indexOf(mode);
+  return i >= 0 ? i : 99;
+}
+
 /**
  * @param {unknown} raw
  * @returns {Record<string, string[]>}
@@ -34,10 +44,30 @@ export function normalizeDashboardToolOrderByMode(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return /** @type {Record<string, string[]>} */ ({});
   /** @type {Record<string, string[]>} */
   const out = {};
-  for (const [mode, arr] of Object.entries(raw)) {
+  const entries = Object.entries(raw).sort(
+    ([a], [b]) => toolOrderModeSortKey(a) - toolOrderModeSortKey(b),
+  );
+  for (const [mode, arr] of entries) {
     if (typeof mode !== "string" || mode.length > 20) continue;
     if (!Array.isArray(arr)) continue;
-    out[mode] = arr.map((x) => String(x || "").trim()).filter(Boolean);
+    const ids = arr.map((x) => String(x || "").trim()).filter(Boolean);
+    if (ids.length === 0) continue;
+
+    let key = mode;
+    if (REMOVED_TOOL_ORDER_MODES.has(mode)) key = "salaried";
+    if (!VALID_TOOL_ORDER_MODES.has(key)) continue;
+
+    if (out[key]) {
+      const seen = new Set(out[key]);
+      for (const id of ids) {
+        if (!seen.has(id)) {
+          seen.add(id);
+          out[key].push(id);
+        }
+      }
+    } else {
+      out[key] = ids;
+    }
   }
   return out;
 }

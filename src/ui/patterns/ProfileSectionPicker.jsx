@@ -1,11 +1,13 @@
 import { Body, Caption } from "../primitives/Text.jsx";
 
 const SECTIONS = [
+  { id: "guide", label: "App guide", hint: "Tutorial & setup replay" },
   { id: "personal", label: "Personal Information", hint: "Name, mode, household" },
   { id: "money", label: "Money Setup", hint: "Income, currency, budgets" },
   { id: "notifications", label: "Notifications", hint: "Reminders & alerts" },
-  { id: "security", label: "Security & Backup", hint: "PIN, export, reset" },
-  { id: "import", label: "Import Data", hint: "Restore from file" },
+  { id: "cloud", label: "CommitTrack Cloud", hint: "Optional sync & backup" },
+  { id: "security", label: "Local data & export", hint: "Device storage, JSON" },
+  { id: "import", label: "Import Data", hint: "File or cloud restore" },
   { id: "history", label: "Payment History", hint: "Past bills & edits" },
 ];
 

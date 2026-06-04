@@ -42,7 +42,7 @@ export default function ProfileMoneySection({ settings, updateSettings }) {
           />
         </ProfileField>
       )}
-      {["salaried", "freelancer"].includes(userMode) && (
+      {userMode === "salaried" && (
         <ProfileField label="Income you enter is" hint={CALC_HELP.incomeEntryBasis}>
           <select
             className={profileInputClass}

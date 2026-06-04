@@ -12,20 +12,10 @@ export const MODE_AVATAR_STYLES = {
     character: "🧑‍💼",
     label: "Business owner",
   },
-  freelancer: {
-    gradient: "from-violet-500 to-fuchsia-600",
-    character: "🧑‍🎨",
-    label: "Freelancer",
-  },
   family: {
     gradient: "from-emerald-500 to-teal-600",
     character: "👨‍👩‍👧",
     label: "Family",
-  },
-  student: {
-    gradient: "from-sky-400 to-blue-600",
-    character: "🧑‍🎓",
-    label: "Student",
   },
   power: {
     gradient: "from-gray-800 to-indigo-900",

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
   InstallAppBanner,
@@ -24,18 +25,23 @@ import AccountPanel from "../auth/AccountPanel.jsx";
 import DataImportSection from "../profile/DataImportSection.jsx";
 import ProfileNotificationsSection from "../profile/ProfileNotificationsSection.jsx";
 import ProfileSecuritySection from "../profile/ProfileSecuritySection.jsx";
+import ProfileCloudSyncSection from "../profile/ProfileCloudSyncSection.jsx";
 import ProfileHistorySection from "../profile/ProfileHistorySection.jsx";
 import ProfilePersonalSection from "../profile/ProfilePersonalSection.jsx";
 import ProfileMoneySection from "../profile/ProfileMoneySection.jsx";
+import ProfileGuidanceSection from "../profile/ProfileGuidanceSection.jsx";
 import { COPY } from "../../../constants/copy.js";
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     commitments,
     lendings,
     allCommitments,
     allLendings,
     allGoals,
+    allBusinessInvoices,
     settings,
     monthlySnapshots,
     getEffectiveStatus,
@@ -46,7 +52,13 @@ const Profile = () => {
     todayStr,
   } = useCommitTrack();
 
-  const [openSection, setOpenSection] = useState(null);
+  const [openSection, setOpenSection] = useState(location.state?.openSection ?? null);
+
+  useEffect(() => {
+    if (location.state?.openSection) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.openSection, location.pathname, navigate]);
 
   const streak = computePaymentMonthStreak(commitments, lendings);
   const control = computeControlScore(commitments, getEffectiveStatus);
@@ -115,6 +127,15 @@ const Profile = () => {
         <ProfileSectionPicker openId={openSection} onSelect={setOpenSection} />
       </div>
 
+      {openSection === "guide" && (
+        <ProfileGuidanceSection
+          onStartGuide={() => {
+            updateSettings({ appGuideComplete: false });
+            navigate("/", { state: { replayGuide: true } });
+          }}
+        />
+      )}
+
       {openSection === "personal" && (
         <ProfilePersonalSection settings={settings} updateSettings={updateSettings} />
       )}
@@ -127,6 +148,8 @@ const Profile = () => {
         <ProfileNotificationsSection settings={settings} updateSettings={updateSettings} />
       )}
 
+      {openSection === "cloud" && <ProfileCloudSyncSection />}
+
       {openSection === "security" && (
         <ProfileSecuritySection
           allCommitments={allCommitments}
@@ -134,6 +157,7 @@ const Profile = () => {
           allGoals={allGoals}
           settings={settings}
           monthlySnapshots={monthlySnapshots}
+          businessInvoices={allBusinessInvoices}
           updateSettings={updateSettings}
         />
       )}

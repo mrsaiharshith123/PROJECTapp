@@ -4,6 +4,7 @@ import {
   normalizeLending,
   normalizeProfiles,
 } from "./migrateStorage.js";
+import { isAppSnapshot } from "../storage/appSnapshot.js";
 
 const SCHEMA_VERSION = 1;
 
@@ -20,8 +21,8 @@ function dedupeById(items) {
  * @returns {{ commitments, lendings, goals, settings, monthlySnapshots, summary }}
  */
 export function mergeImportedAppState(current, payload, { mode = "merge" } = {}) {
-  if (!payload || typeof payload !== "object") {
-    throw new Error("Invalid file — expected a JSON object.");
+  if (!isAppSnapshot(payload)) {
+    throw new Error("Invalid file — expected a CommitTrack export JSON object.");
   }
 
   const incomingCommitments = Array.isArray(payload.commitments) ? payload.commitments : [];
@@ -78,11 +79,12 @@ export function mergeImportedAppState(current, payload, { mode = "merge" } = {})
 }
 
 export function previewImportCounts(payload) {
-  if (!payload || typeof payload !== "object") return null;
+  if (!isAppSnapshot(payload)) return null;
   return {
     commitments: Array.isArray(payload.commitments) ? payload.commitments.length : 0,
     lendings: Array.isArray(payload.lendings) ? payload.lendings.length : 0,
     goals: Array.isArray(payload.goals) ? payload.goals.length : 0,
+    businessInvoices: Array.isArray(payload.businessInvoices) ? payload.businessInvoices.length : 0,
     hasSettings: Boolean(payload.settings),
   };
 }

@@ -1,7 +1,5 @@
-import { Card } from "../../../ui";
-import { useState } from "react";
-import { useAuth } from "../../../context/AuthContext.jsx";
-import { encryptBackupPayload, uploadEncryptedBackup } from "../../../services/drive/backup.js";
+import { Card, Caption, Body, Heading } from "../../index.js";
+import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
 
 export default function ProfileSecuritySection({
   allCommitments,
@@ -9,95 +7,54 @@ export default function ProfileSecuritySection({
   allGoals,
   settings,
   monthlySnapshots,
+  businessInvoices,
   updateSettings,
 }) {
-  const { isLoggedIn, user } = useAuth();
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const makePassphrase = () => `${user?.id || ""}::${user?.email || ""}`;
-
-  const backupToDrive = async () => {
-    if (!isLoggedIn || !user) {
-      setMessage("Login required before Google Drive backup.");
-      return;
-    }
-    setBusy(true);
-    setMessage("");
-    try {
-      const payload = {
-        commitments: allCommitments,
-        lendings: allLendings,
-        settings,
-        monthlySnapshots,
-        goals: allGoals,
-      };
-      const encrypted = await encryptBackupPayload(payload, makePassphrase());
-      await uploadEncryptedBackup(encrypted);
-      setMessage("Google Drive backup saved.");
-    } catch (e) {
-      setMessage((e instanceof Error ? e.message : null) || "Could not backup to Google Drive.");
-    } finally {
-      setBusy(false);
-    }
+  const exportJson = () => {
+    const payload = buildAppSnapshot({
+      commitments: allCommitments,
+      lendings: allLendings,
+      settings,
+      monthlySnapshots,
+      goals: allGoals,
+      businessInvoices,
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "committrack-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <Card className="space-y-3">
+    <Card className="ct-stack">
       <div>
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Security & data</h3>
-        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-          Everything stays on this device unless you export. No account password — protect your phone.
-        </p>
+        <Heading level={3}>Data on this device</Heading>
+        <Caption className="mt-1 block">
+          Local-first storage — your operating system runs here. Optional cloud continuity is in CommitTrack Cloud.
+        </Caption>
       </div>
 
-      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 p-3 text-xs text-gray-600 dark:text-slate-300 space-y-1">
-        <p>• Data is stored in your browser local storage.</p>
-        <p>• Export JSON regularly as backup.</p>
-        <p>• Clearing site data will erase CommitTrack.</p>
+      <div className="ct-hero-inset ct-stack gap-1 !text-xs">
+        <p>• Finance data lives in browser local storage on this device.</p>
+        <p>• Export JSON anytime for your own archive.</p>
+        <p>• Clearing site data removes local CommitTrack data.</p>
       </div>
 
-      <button
-        type="button"
-        className="w-full flex items-center justify-between py-3 px-1 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 text-left"
-        onClick={() => {
-          const payload = {
-            commitments: allCommitments,
-            lendings: allLendings,
-            settings,
-            monthlySnapshots,
-            goals: allGoals,
-          };
-          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "committrack-export.json";
-          a.click();
-          URL.revokeObjectURL(url);
-        }}
-      >
-        <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Export JSON backup</span>
-        <span className="text-gray-400">›</span>
+      <button type="button" className="ct-list-row w-full text-left" onClick={exportJson}>
+        <Body className="font-semibold">Export JSON backup</Body>
+        <Caption className="block mt-0.5">Manual file backup — works without cloud</Caption>
       </button>
 
       <button
         type="button"
-        disabled={busy}
-        className="w-full py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800 text-sm font-medium text-indigo-700 dark:text-indigo-300 disabled:opacity-60"
-        onClick={backupToDrive}
-      >
-        {busy ? "Backing up..." : "Backup to Google Drive"}
-      </button>
-
-      <button
-        type="button"
-        className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-700 dark:text-slate-200"
+        className="ct-btn ct-btn-ghost w-full"
         onClick={() => updateSettings({ readNotificationIds: [] })}
       >
         Mark all notifications as read
       </button>
-      {message && <p className="text-xs text-gray-600 dark:text-slate-300">{message}</p>}
     </Card>
   );
 }

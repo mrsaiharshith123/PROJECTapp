@@ -1,9 +1,3 @@
-interface Window {
-  google?: {
-    accounts?: { oauth2?: { initTokenClient: (config: unknown) => { requestAccessToken: () => void } } };
-  };
-}
-
 interface Navigator {
   standalone?: boolean;
 }
