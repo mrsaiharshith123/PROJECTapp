@@ -69,7 +69,8 @@ Do not disable checks to “make it pass” without team agreement.
 ## 5. Secrets & env
 
 - `.env` is local only — **never commit**
-- Production: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in GitHub Actions secrets (see root README)
+- Production: set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_RAZORPAY_KEY_ID` where payments are enabled (see root README)
+- Copy `.env.example` — never commit real keys
 - Audit fails if `.env` is tracked by git
 
 ## 6. Quality gate before you finish
@@ -91,7 +92,7 @@ npm run audit -- --strict
 Audit depth checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
 
 - Barrel exports in `ui/index.js` must be used somewhere in `src/`
-- Every `*Page.jsx` must have a route + `src/pages/` shell
+- Every `*Page.jsx` must have a route in `App.jsx` (lazy import from `ui/features/pages/`)
 - Dashboard tool ids in `modeExperience.js` must have a handler in `DashboardTools.jsx`
 - UI files unreachable from `App.jsx` / `pages/` are flagged
 

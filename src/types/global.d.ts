@@ -16,3 +16,27 @@ type ExtendedPermissionName = PermissionName | "periodic-background-sync";
 interface Permissions {
   query(permissionDesc: { name: ExtendedPermissionName }): Promise<PermissionStatus>;
 }
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  prefill?: { name?: string; email?: string };
+  theme?: { color?: string };
+  handler?: (response: { razorpay_payment_id: string }) => void;
+  modal?: { ondismiss?: () => void };
+}
+
+interface RazorpayInstance {
+  open(): void;
+}
+
+interface RazorpayConstructor {
+  new (options: RazorpayOptions): RazorpayInstance;
+}
+
+interface Window {
+  Razorpay?: RazorpayConstructor;
+}

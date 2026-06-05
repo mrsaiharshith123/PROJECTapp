@@ -14,10 +14,21 @@ Outside `src/ui/`, use only `ct-*` layout classes from `components.css` (e.g. `c
 
 ## Navigation
 
-Bottom bar (mobile): **Home · Lending · Add (FAB) · Bills · Profile** — see `NAV_ITEMS` in `constants/userModes.js` and `layout/Navbar.jsx`.
+Bottom bar (mobile): **Home · Bills · Add (FAB) · Lending · Profile** — see `NAV_ITEMS` in `constants/userModes.js` and `layout/Navbar.jsx`.
 
 Analytics opens from the Home month hero card (`/analytics`). Lending is the full borrow/lend flow at `/lending`.
 
 Charts live on **Analytics only** — one chart at a time with `FilterChips` to switch views. Theme: `data-theme="light"|"dark"` on `<html>` (Profile → Appearance); charts follow via `getChartTheme()`.
 
-See `docs/03-rules.md` for full project rules.
+## Product UI map (current)
+
+| Screen | Path |
+|--------|------|
+| Home (scroll dashboard) | `features/pages/HomePage.jsx` |
+| Analytics | `features/pages/AnalyticsPage.jsx` |
+| Tools | embedded on Home via `dashboard/DashboardTools.jsx` |
+| Plans / upgrades | `profile/PlansModal.jsx` |
+
+Deferred UX (see `docs/09-implementation-status.md`): OS launcher home, `/paycheck` page, legal-details modal.
+
+See `docs/03-rules.md` and `docs/README.md` for full project rules.

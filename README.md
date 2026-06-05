@@ -22,6 +22,7 @@ npm run audit        # full quality gate before PR
 | All npm commands | [docs/04-commands.md](./docs/04-commands.md) |
 | How audit works (deep) | [docs/05-audit-and-quality.md](./docs/05-audit-and-quality.md) |
 | Day-to-day workflow | [docs/06-workflow.md](./docs/06-workflow.md) |
+| What's built vs planned (V1) | [docs/09-implementation-status.md](./docs/09-implementation-status.md) |
 | `dist` / `dev-dist` clutter | [docs/07-repo-folders.md](./docs/07-repo-folders.md) |
 
 ## Scripts (summary)
@@ -44,6 +45,7 @@ Add repository secrets for production builds:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
+- `VITE_RAZORPAY_KEY_ID` (optional — Pro/Power upgrades; use test key in dev)
 
 ## Build outputs (do not commit)
 

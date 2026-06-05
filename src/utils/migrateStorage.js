@@ -478,6 +478,8 @@ const DEFAULT_SETTINGS = {
   dashboardToolOrderByMode: {},
   /** Legacy flag — backup is on whenever signed in + Supabase configured. */
   cloudSyncEnabled: false,
+  /** Day of month (1–31) salary credits — used by paycheck flow when UI is wired. */
+  salaryCreditDay: null,
 };
 
 export function loadSettingsFromStorage() {
@@ -538,6 +540,10 @@ export function loadSettingsFromStorage() {
         remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,
         dashboardToolOrderByMode: normalizeDashboardToolOrderByMode(o.dashboardToolOrderByMode),
         cloudSyncEnabled: Boolean(o.cloudSyncEnabled),
+        salaryCreditDay:
+          o.salaryCreditDay != null && o.salaryCreditDay !== ""
+            ? Math.min(31, Math.max(1, Math.floor(Number(o.salaryCreditDay) || 0)))
+            : null,
       };
     }
   } catch {

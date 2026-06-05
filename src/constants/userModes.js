@@ -1,9 +1,9 @@
-/** Primary bottom nav — Home · Lending · Add · Bills · Profile (analytics via Home hero) */
+/** Primary bottom nav — Home · Bills · Add · Lending · Profile (analytics via Home hero) */
 export const NAV_ITEMS = [
   { to: "/", label: "Home", icon: "\u{1F3E0}" },
-  { to: "/lending", label: "Lending", icon: "\u{1F91D}" },
-  { to: "/add", label: "Add", icon: "+", fab: true },
   { to: "/commitments", label: "Bills", icon: "\u{1F4CB}" },
+  { to: "/add", label: "Add", icon: "+", fab: true },
+  { to: "/lending", label: "Lending", icon: "\u{1F91D}" },
   { to: "/profile", label: "Profile", icon: "\u{1F464}" },
 ];
 
@@ -13,7 +13,7 @@ export const USER_MODE_IDS = ["salaried"];
 /** Removed modes — migrated to salaried on load. */
 export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
-const NAV_FULL = ["/", "/lending", "/add", "/commitments", "/profile", "/analytics"];
+const NAV_FULL = ["/", "/commitments", "/add", "/lending", "/profile", "/analytics"];
 
 export const USER_MODES = [
   {

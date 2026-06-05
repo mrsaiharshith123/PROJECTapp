@@ -38,3 +38,24 @@ Registry: `src/governance/registries/modes.js`
 ## Tools per mode
 
 `MODE_TOOL_IDS` in `modeExperience.js` drives calculator tiles on Home.
+
+**Current tool ids (all salaried experiences):**
+
+| Id | Panel / modal |
+|----|----------------|
+| `planner` | `MoneyPlannerPanel` — afford, what-if, debt, goals |
+| `loan` | `LoanToolsPanel` — extra EMI, best month |
+| `insurance` | `InsuranceCalculatorModal` |
+| `chit` | `ChitFundAdvisor` |
+| `bond` | `BondAdvisor` (Power tier) |
+| `incomeTax` | `IncomeTaxPanel` |
+
+Reorder per mode via `settings.dashboardToolOrderByMode` (persisted in `migrateStorage.js`).
+
+## Subscription vs mode
+
+- **User mode** = salaried + `householdScope` (`single` | `family`).
+- **Subscription tier** = `free` | `pro` | `power` — unlocks backup, reports, `ProGate` features.
+- Legacy save `userMode: power` migrates to `subscriptionTier: power`, `userMode: salaried`.
+
+See [../09-implementation-status.md](../09-implementation-status.md) for V1 scope.

@@ -12,7 +12,7 @@ PROJECTapp/
 │   ├── hooks/               React hooks (intel, PWA install, …)
 │   ├── engines/             Pure finance logic + __tests__/
 │   ├── constants/           Modes, categories, copy, symbols (no React)
-│   ├── services/            Supabase auth, cloud sync, notifications
+│   ├── services/            Supabase auth, sync, notifications, Razorpay, OTP confirmation
 │   ├── utils/               Storage, dates, lending, repayment, migration
 │   ├── types/               TypeScript types (context, global augmentations)
 │   └── ui/                  ★ ALL visual UI (see below)
@@ -49,7 +49,7 @@ src/ui/
 ├── primitives/           Card, Button, Input, Text, Modal, Badge, Stack, …
 ├── patterns/             PageHeader, ListRow, MetricTile, FormField, …
 ├── features/             Product screens & widgets
-│   ├── pages/            Full-page screens (used by src/pages/)
+│   ├── pages/            Full-page screens (lazy-loaded from App.jsx)
 │   ├── dashboard/        Home dashboard sections
 │   ├── modals/           Bill/lending/insurance modals
 │   ├── tools/            Calculator forms & advisors
@@ -68,7 +68,7 @@ src/ui/
 |-------------------|------------|
 | New button, card, modal style | `ui/primitives/` or `ui/patterns/` + styles in `ui/styles/components.css` |
 | New home widget | `ui/features/dashboard/` |
-| New full page | `ui/features/pages/` + `src/pages/` shell + route |
+| New full page | `ui/features/pages/` + lazy `<Route>` in `App.jsx` |
 | New calculator / tool modal | `ui/features/tools/` + wire tool id in `DashboardTools.jsx` and `constants/modeExperience.js` |
 | Affordability / forecast math | `engines/` + test in `engines/__tests__/` |
 | New bill field / storage | `utils/migrateStorage.js`, `utils/commitmentStatus.js`, Add/Edit UI |
@@ -88,11 +88,26 @@ No React imports. Examples:
 | Engine | Purpose |
 |--------|---------|
 | `pressureScore.js`, `burden.js` | Income vs obligations |
-| `stabilityPlan.js`, `survival.js` | Runway, ahead plan |
+| `stabilityPlan.js`, `survival.js`, `stabilityNarrative.js` | Runway, ahead plan, pulse copy |
+| `salaryBreakdown.js`, `incomeTaxEstimate.js` | Paycheck flow, tax estimator |
+| `subscriptionLeak.js` | Subscription audit insights |
+| `lendingAgreement.js`, `lendingTrust.js` | Promissory note text, trust scores |
 | `chitFund.js` | Chit installments |
-| `quickScenarios.js` | What-if stress |
+| `quickScenarios.js` | What-if stress (in `MoneyPlannerPanel`) |
 | `notifications.js` | In-app feed + contextual reminder copy |
 | `forecastSeries.js` | Cashflow months |
+| `financialHealth.js` | Health score tile |
+
+## `src/services/` — integrations (no React)
+
+| Service | Purpose |
+|---------|---------|
+| `supabase/auth.js` | Sign-in, profile upsert (merge-safe onboarding flag) |
+| `sync/syncEngine.js` | Cloud backup bridge |
+| `notifications/*` | PWA reminders, delivery |
+| `razorpay.js` | Client checkout for Pro/Power (verify server-side before prod) |
+| `otpConfirmation.js` | Declared lender/borrower confirmation refs (not Aadhaar eSign) |
+| `smsAutoDetect.js` | SMS parse helpers for commitment detect modal |
 
 Wire engines from hooks (`useCommitIntel`, `useStabilityIntel`) or directly from UI event handlers — never duplicate formulas in JSX.
 

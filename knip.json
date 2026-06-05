@@ -19,6 +19,7 @@
     "src/ui/patterns/**": ["exports", "duplicates"],
     "src/ui/features/**": ["exports", "duplicates"],
     "src/ui/layout/**": ["exports", "duplicates"],
-    "src/constants/userModes.js": ["duplicates"]
+    "src/constants/userModes.js": ["duplicates"],
+    "src/guidance/**": ["exports"]
   }
 }

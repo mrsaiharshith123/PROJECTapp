@@ -3,7 +3,8 @@
 ## Philosophy
 
 - **One visual home**: `src/ui/` owns all presentation.
-- **Tokens first**: colors, spacing, radii in `ui/styles/tokens.css` and `components.css`.
+- **Tokens first**: colors, spacing, radii in `ui/styles/tokens.css`, `components.css`, and `theme-light.css`.
+- **Themes**: `data-theme="light" | "dark"` on `<html>`; user picks light, dark, or system in Profile (`utils/theme.js`, `app/ThemeSync.jsx`).
 - **Primitives → patterns → features** — do not skip layers for one-off screens.
 
 ## Typography & text
@@ -20,7 +21,8 @@ Use `Heading`, `Body`, `Caption` from `ui/primitives/Text.jsx` — not ad-hoc `t
 
 | Role | Hex |
 |------|-----|
-| Background | `#0B1020` / `#121A2F` |
+| Background (dark) | `#0B1020` / `#121A2F` |
+| Background (light) | tokens in `theme-light.css` |
 | Card | `#1B233D` |
 | Accent | `#7C5CFF` |
 | Success | `#22C55E` |

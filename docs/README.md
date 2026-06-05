@@ -12,6 +12,8 @@
 | [06-workflow.md](./06-workflow.md) | Day-to-day flow for new developers |
 | [07-repo-folders.md](./07-repo-folders.md) | `.cursor`, `.github`, `dist`, `dev-dist` — keep vs delete |
 | [08-governance.md](./08-governance.md) | Audit system, registries, engineering governance |
+| [09-implementation-status.md](./09-implementation-status.md) | **What’s built vs deferred** — V1 scope, payments, legal lending, roadmap |
 | [architecture/](./architecture/) | Architecture, design system, modes, insights, features |
+| [architecture/PaymentsAndLending.md](./architecture/PaymentsAndLending.md) | Razorpay, promissory notes, confirmation service |
 
 **GitHub README** ([../README.md](../README.md)) is a short public summary and deploy notes — it links here for full detail.

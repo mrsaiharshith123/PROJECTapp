@@ -28,10 +28,25 @@
 ### New page / route
 
 1. `ui/features/pages/MyPage.jsx` — screen
-2. `src/pages/My.jsx` — `export { default } from "../ui/features/pages/MyPage.jsx"`
-3. `App.jsx` — `<Route path="/my" element={<My />} />`
-4. `constants/userModes.js` — nav item if it belongs in bottom nav
-5. `npm run audit:ui-depth`
+2. `App.jsx` — lazy import + `<Route path="/my" element={<MyPage />} />`
+3. `constants/userModes.js` / `Navbar.jsx` — nav item if it belongs in bottom nav
+4. `npm run audit:ui-depth`
+
+### Payments (Pro / Power)
+
+1. `constants/subscriptionTiers.js` — tier ids, `PLAN_PRESENTATION`, `PRO_FEATURES`
+2. `services/razorpay.js` — client checkout only
+3. `ui/features/profile/PlansModal.jsx` — upgrade UI
+4. `ui/patterns/ProGate.jsx` — gate features by tier
+5. **Before production:** add server-side payment verification (Supabase Edge Function) — do not trust client-only success
+
+### Lending legal export
+
+1. Extend lending record fields in `utils/lendingRecord.js` / context if needed
+2. `engines/lendingAgreement.js` — `buildPromissoryNoteText()`
+3. `utils/agreementExport.js` — `generateLegalAgreementHtml()`
+4. Optional UI: legal-details modal (deferred — see [09-implementation-status.md](./09-implementation-status.md))
+5. Tests: `engines/__tests__/numberToWords.test.js`
 
 ### New shared UI component
 
@@ -63,6 +78,7 @@ Reviewers should see:
 | Can I use Tailwind here? | [03-rules.md](./03-rules.md) |
 | What does audit check? | [05-audit-and-quality.md](./05-audit-and-quality.md) |
 | Product / modes | [01-overview.md](./01-overview.md) + `constants/modeExperience.js` |
+| What's built vs planned | [09-implementation-status.md](./09-implementation-status.md) |
 
 ## Docs maintenance
 

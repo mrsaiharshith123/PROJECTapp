@@ -1,73 +1,4 @@
-/** Download printable HTML loan agreement (local trust documentation only). */
-export function downloadLendingAgreementHtml(lending, settings = {}) {
-  const lender = lending.type === "lent" ? settings.displayName || "Lender" : lending.personName;
-  const borrower = lending.type === "lent" ? lending.personName : settings.displayName || "Borrower";
-  const principal = Number(lending.principalAmount ?? lending.totalAmount) || 0;
-  const schedule = lending.repaymentSchedule || [];
-  const scheduleRows = schedule
-    .slice(0, 24)
-    .map(
-      (r) =>
-        `<tr><td>${r.installmentNumber}</td><td>${escapeHtml(r.dueDate)}</td><td>₹${Number(r.totalPayment).toLocaleString()}</td><td>${r.paymentStatus}</td></tr>`
-    )
-    .join("");
-
-  const custom = lending.agreementText?.trim();
-  const body = custom
-    ? `<pre style="white-space:pre-wrap;font-family:inherit">${escapeHtml(custom)}</pre>`
-    : `
-    <p>This informal loan agreement is recorded in CommitTrack on ${new Date().toLocaleDateString("en-IN")}. It is a private record only — not legal advice or enforceable counsel.</p>
-    <h2>Parties</h2>
-    <ul>
-      <li><strong>Lender:</strong> ${escapeHtml(lender)}</li>
-      <li><strong>Borrower:</strong> ${escapeHtml(borrower)}</li>
-      <li><strong>Relationship:</strong> ${escapeHtml(lending.relationshipTag || "Other")}</li>
-    </ul>
-    <h2>Loan terms</h2>
-    <ul>
-      <li><strong>Principal:</strong> ₹${principal.toLocaleString()}</li>
-      <li><strong>Interest rate:</strong> ${Number(lending.interestRate) || 0}% (${escapeHtml(lending.interestType || "simple")})</li>
-      <li><strong>Total payable:</strong> ₹${Number(lending.totalPayable || principal).toLocaleString()}</li>
-      <li><strong>Interest component:</strong> ₹${Number(lending.interestAmount || 0).toLocaleString()}</li>
-      <li><strong>Repayment:</strong> ${escapeHtml(lending.repaymentFrequency || "monthly")} · ₹${Number(lending.expectedInstallment || 0).toLocaleString()} per installment</li>
-      <li><strong>Period:</strong> ${escapeHtml(lending.startDate || "—")} to ${escapeHtml(lending.endDate || "—")}</li>
-      <li><strong>Outstanding:</strong> ₹${Number(lending.remainingBalance ?? lending.remainingAmount).toLocaleString()}</li>
-    </ul>
-    ${
-      scheduleRows
-        ? `<h2>Repayment schedule (summary)</h2><table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;font-size:12px"><thead><tr><th>#</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead><tbody>${scheduleRows}</tbody></table>`
-        : ""
-    }
-    <h2>Clauses</h2>
-    <ol>
-      <li>Repayments are tracked locally in CommitTrack; no funds move through this app.</li>
-      <li>Both parties agree to the schedule above in good faith.</li>
-      <li>Late payments may affect trust scores shown in the app only.</li>
-    </ol>
-    <h2>Signatures</h2>
-    <p>Lender: _________________________ &nbsp; Date: __________</p>
-    <p>Borrower: ______________________ &nbsp; Date: __________</p>
-    <h2>Witness (optional)</h2>
-    <p>Witness: ________________________ &nbsp; Date: __________</p>
-    ${
-      lending.agreementAcceptedAt
-        ? `<p><em>Marked accepted in CommitTrack: ${new Date(lending.agreementAcceptedAt).toLocaleString("en-IN")}</em></p>`
-        : ""
-    }
-  `;
-
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Loan agreement – ${escapeHtml(lending.personName)}</title>
-  <style>body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;color:#111;line-height:1.5} h1,h2{margin-top:1.25em}</style></head>
-  <body><h1>Loan agreement</h1>${body}</body></html>`;
-
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `committrack-agreement-${lending.id}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { buildPromissoryNoteText } from "../engines/lendingAgreement.js";
 
 function escapeHtml(s) {
   return String(s)
@@ -75,4 +6,64 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function textToHtml(text) {
+  return escapeHtml(text)
+    .split("\n")
+    .map((line) => {
+      if (line.startsWith("--- ") && line.endsWith(" ---")) {
+        return `<h2>${escapeHtml(line.replace(/^---\s*|\s*---$/g, ""))}</h2>`;
+      }
+      if (line === "PROMISSORY NOTE") return `<h1>${line}</h1>`;
+      if (!line.trim()) return "<br/>";
+      return `<p>${line}</p>`;
+    })
+    .join("\n");
+}
+
+/** Returns self-contained printable HTML for a promissory note. */
+export function generateLegalAgreementHtml(lending, settings = {}) {
+  const bodyText = lending.agreementText?.trim() || buildPromissoryNoteText(lending, settings);
+  const stamped = lending.esignStatus === "completed";
+  const banner = stamped
+    ? `<div class="banner ok">✓ Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
+    : `<div class="banner warn">⚠ Not stamped — Print on stamp paper for full legal enforceability. Or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Promissory Note — ${escapeHtml(lending.personName || "Loan")}</title>
+<style>
+  @page { size: A4; margin: 2.5cm; }
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 18cm; margin: 0 auto; padding: 1.5cm; color: #111; line-height: 1.55; font-size: 12pt; }
+  h1 { font-size: 16pt; text-align: center; letter-spacing: 0.05em; margin-bottom: 1em; }
+  h2 { font-size: 11pt; margin-top: 1.25em; border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
+  p { margin: 0.35em 0; }
+  .banner { padding: 0.6em 0.8em; margin-bottom: 1.2em; border-radius: 4px; font-size: 10pt; font-family: system-ui, sans-serif; }
+  .banner.warn { background: #fff8e6; border: 1px solid #e6c200; color: #664d00; }
+  .banner.ok { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+  .footer { margin-top: 2em; padding-top: 0.5em; border-top: 1px solid #ddd; font-size: 9pt; color: #555; text-align: center; }
+  @media print { .banner { break-inside: avoid; } }
+</style>
+</head>
+<body>
+${banner}
+${textToHtml(bodyText)}
+<div class="footer">CommitTrack — Private Record — ${new Date().toLocaleDateString("en-IN")}</div>
+</body>
+</html>`;
+}
+
+/** Download printable HTML promissory note. */
+export function downloadLendingAgreementHtml(lending, settings = {}) {
+  const html = generateLegalAgreementHtml(lending, settings);
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `committrack-promissory-note-${lending.id}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
 }

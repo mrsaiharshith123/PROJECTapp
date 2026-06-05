@@ -6,10 +6,12 @@ CommitTrack is a **local-first PWA** for tracking **financial commitments** (bil
 
 - **Commitments** — recurring or one-off obligations with due dates, amounts, categories, and payment history.
 - **Pressure & stability** — engines compute burden vs income, survival runway, forecasts, and insights.
-- **Modes** — salaried (single or household); tools and copy change per experience (`constants/modeExperience.js`).
+- **Modes (V1)** — **salaried only**: single or **family** household (`householdScope`). Removed modes (freelancer, student, business) migrate to salaried on load. Tools and copy live in `constants/modeExperience.js`.
+- **Subscriptions** — `free` / `pro` / `power` tiers (`constants/subscriptionTiers.js`). Pro/Power unlock features via `ProGate`; upgrades use Razorpay client checkout (`services/razorpay.js`).
 - **Storage** — local-first on device; optional **CommitTrack Cloud** sync via Supabase (`docs/architecture/LocalFirstSync.md`).
-- **Lending** — track money lent/borrowed with agreements, schedules, and trust scoring.
+- **Lending** — track money lent/borrowed with schedules, trust scoring, WhatsApp share cards, and **promissory-note export** (`engines/lendingAgreement.js`, `utils/agreementExport.js`). Full legal-details UI is deferred — see [09-implementation-status.md](./09-implementation-status.md).
 - **Optional cloud** — Supabase auth/profile when env vars are set; core data still persists in the browser.
+- **Appearance** — light, dark, or system theme (`data-theme` on `<html>`, `utils/theme.js`).
 
 ## Tech stack
 
@@ -46,4 +48,4 @@ User action (UI in src/ui/)
 
 ## Who this doc is for
 
-Anyone cloning the repo: implement features in the layers described in [02-project-structure.md](./02-project-structure.md) and follow [03-rules.md](./03-rules.md) before opening a PR.
+Anyone cloning the repo: read [09-implementation-status.md](./09-implementation-status.md) for what’s already built, then [02-project-structure.md](./02-project-structure.md) and [03-rules.md](./03-rules.md) before opening a PR.

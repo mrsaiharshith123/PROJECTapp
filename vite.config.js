@@ -10,6 +10,19 @@ const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `$
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("recharts") || id.includes("d3-")) return "charts";
+          if (id.includes("@supabase")) return "supabase";
+          if (id.includes("react-router") || id.includes("react-dom") || id.includes("/react/")) return "react-vendor";
+          if (id.includes("date-fns")) return "date-fns";
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

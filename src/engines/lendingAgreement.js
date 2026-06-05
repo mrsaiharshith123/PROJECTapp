@@ -1,5 +1,174 @@
 import { trustScoreForPerson, lendingTrustByPerson, trustSummaryLine } from "./lendingTrust.js";
 
+const ONES = [
+  "",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+  "Eleven",
+  "Twelve",
+  "Thirteen",
+  "Fourteen",
+  "Fifteen",
+  "Sixteen",
+  "Seventeen",
+  "Eighteen",
+  "Nineteen",
+];
+const TENS = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+function twoDigits(n) {
+  if (n < 20) return ONES[n];
+  const t = Math.floor(n / 10);
+  const o = n % 10;
+  return `${TENS[t]}${o ? ` ${ONES[o]}` : ""}`.trim();
+}
+
+/** Converts integer rupees to Indian English words (lakhs/crores). */
+export function numberToWords(n) {
+  const num = Math.floor(Math.max(0, Number(n) || 0));
+  if (num === 0) return "Zero";
+  const parts = [];
+  const crore = Math.floor(num / 10000000);
+  const lakh = Math.floor((num % 10000000) / 100000);
+  const thousand = Math.floor((num % 100000) / 1000);
+  const hundred = Math.floor((num % 1000) / 100);
+  const rest = num % 100;
+  if (crore) parts.push(`${twoDigits(crore)} Crore`);
+  if (lakh) parts.push(`${twoDigits(lakh)} Lakh`);
+  if (thousand) parts.push(`${twoDigits(thousand)} Thousand`);
+  if (hundred) parts.push(`${ONES[hundred]} Hundred`);
+  if (rest) parts.push(twoDigits(rest));
+  return parts.join(" ");
+}
+
+function formatFullDate(d = new Date()) {
+  const day = d.getDate();
+  const suffix =
+    day % 10 === 1 && day !== 11 ? "st" : day % 10 === 2 && day !== 12 ? "nd" : day % 10 === 3 && day !== 13 ? "rd" : "th";
+  return `${day}${suffix} ${d.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}`;
+}
+
+function partyNames(lending, settings) {
+  const isLent = lending.type === "lent";
+  const borrower =
+    lending.borrowerFullName ||
+    (isLent ? lending.personName : settings.displayName) ||
+    "Borrower";
+  const lender =
+    lending.lenderFullName ||
+    (isLent ? settings.displayName : lending.personName) ||
+    "Lender";
+  return { borrower, lender };
+}
+
+/** Court-structured promissory note text (India). */
+export function buildPromissoryNoteText(lending, settings = {}) {
+  const { borrower, lender } = partyNames(lending, settings);
+  const principal = Number(lending.principalAmount ?? lending.totalAmount) || 0;
+  const rate = Number(lending.interestRate) || 0;
+  const interestType = lending.interestType || "simple";
+  const city = lending.agreementCity || "India";
+  const dateStr = formatFullDate(new Date());
+  const penalty = Number(lending.penaltyRatePerMonth) || 2;
+  const purpose = lending.loanPurpose || lending.notes || lending.purpose || "Personal requirement";
+  const schedule = lending.repaymentSchedule || [];
+  const installmentAmt = Number(lending.expectedInstallment) || 0;
+  const freq = lending.repaymentFrequency || lending.repaymentType || "monthly";
+
+  const scheduleLines =
+    schedule.length > 0
+      ? schedule
+          .map(
+            (r) =>
+              `  ${r.installmentNumber}. ${r.dueDate} — ₹${Number(r.totalPayment).toLocaleString("en-IN")} (${r.paymentStatus || "pending"})`
+          )
+          .join("\n")
+      : `  Lump sum by ${lending.endDate || lending.dueDate || "agreed date"} — ₹${principal.toLocaleString("en-IN")}`;
+
+  const lines = [
+    "PROMISSORY NOTE",
+    "",
+    `Date: ${city}, ${dateStr}`,
+    "",
+    `For value received, I/We ${borrower}, residing at ${lending.borrowerAddress || "[borrower address]"} (hereinafter "the Borrower") promise to pay ${lender}, residing at ${lending.lenderAddress || "[lender address]"} (hereinafter "the Holder/Lender") or order, the sum of Rupees ${numberToWords(principal)} only (₹${principal.toLocaleString("en-IN")}) with interest at ${rate}% per annum (${interestType}) on the unpaid balance.`,
+    "",
+    "--- LOAN DETAILS ---",
+    `Principal (figures): ₹${principal.toLocaleString("en-IN")}`,
+    `Principal (words): ${numberToWords(principal)} Rupees only`,
+    `Date of advance: ${lending.startDate || dateStr}`,
+    `Purpose: ${purpose}`,
+    `Repayment mode: ${freq === "lumpsum" ? `Lump sum by ${lending.endDate || lending.dueDate}` : `${freq} installments of ₹${installmentAmt.toLocaleString("en-IN")}`}`,
+    `Final repayment date: ${lending.endDate || lending.dueDate || "As per schedule"}`,
+    `Penalty on default: ${penalty}% per month on outstanding balance`,
+    "",
+    "--- REPAYMENT SCHEDULE ---",
+    scheduleLines,
+    "",
+    "--- IDENTIFICATION ---",
+    lending.idProofType && lending.idProofLast4
+      ? `Borrower ID proof: ${lending.idProofType} ending ${lending.idProofLast4}`
+      : "Borrower ID proof: To be verified at execution",
+    "",
+    "--- DEFAULT CONSEQUENCES ---",
+    "In the event of non-payment of any installment on its due date, the entire outstanding principal and accrued interest shall become immediately due and payable at the option of the Lender. The Lender shall be entitled to initiate recovery proceedings including but not limited to: (a) filing a summary suit under Order XXXVII of the Code of Civil Procedure 1908; (b) lodging a complaint under the Indian Contract Act 1872; (c) any other legal remedy available under the laws of India.",
+  ];
+
+  if (lending.arbitrationClause !== false) {
+    lines.push(
+      "",
+      "--- ARBITRATION ---",
+      `Any dispute arising out of or in connection with this agreement shall be referred to arbitration in accordance with the Arbitration and Conciliation Act 1996. The seat of arbitration shall be ${city}. The arbitration shall be conducted by a sole arbitrator agreed upon by both parties.`
+    );
+  }
+
+  lines.push(
+    "",
+    "--- GOVERNING LAW ---",
+    `This agreement is governed by the laws of India. Jurisdiction for disputes shall be the courts of ${city}.`,
+    "",
+    "--- SIGNATURES ---",
+    `Borrower: ${borrower}`,
+    lending.borrowerConfirmedAt || lending.esignStatus === "completed"
+      ? `Confirmed: ${lending.borrowerConfirmedAt || lending.esignCompletedAt || "Aadhaar eSign completed"}`
+      : "Signature: _________________________   Date: __________",
+    "",
+    `Lender/Holder: ${lender}`,
+    lending.lenderConfirmedAt
+      ? `Confirmed: ${lending.lenderConfirmedAt}${lending.lenderConfirmationRef ? ` (Ref: ${lending.lenderConfirmationRef})` : ""}`
+      : "Signature: _________________________   Date: __________"
+  );
+
+  if (lending.witness1Name) {
+    lines.push("", `Witness: ${lending.witness1Name}${lending.witness1Phone ? ` · Phone: ${lending.witness1Phone}` : ""}`);
+  } else {
+    lines.push("", "Witness: _________________________   Phone: __________");
+  }
+
+  if (lending.collateralDescription || lending.collateral) {
+    lines.push("", "--- SECURITY / COLLATERAL ---", lending.collateralDescription || lending.collateral);
+  }
+
+  lines.push(
+    "",
+    "--- STAMP DUTY NOTICE ---",
+    "Note: This promissory note requires applicable stamp duty under the Indian Stamp Act 1899 for enforceability in court. Print on stamp paper of appropriate denomination for your state, or pay stamp duty + penalty at the Sub-Registrar's office if not stamped at execution.",
+    "",
+    "--- GENERATION METADATA ---",
+    `Generated via CommitTrack on ${new Date().toLocaleString("en-IN")}. CommitTrack is a financial tracking tool, not a legal service. For amounts above ₹1,00,000 or complex arrangements, consult a qualified advocate.`
+  );
+
+  return lines.join("\n");
+}
+
+/** @deprecated Prefer buildPromissoryNoteText — kept for offer share flow. */
 export function buildAgreementText({
   borrowerName,
   lenderName,
@@ -9,28 +178,24 @@ export function buildAgreementText({
   collateral,
   purpose,
 }) {
-  const lines = [
-    "PRIVATE LOAN REQUEST & AGREEMENT (CommitTrack)",
-    "",
-    `Borrower: ${borrowerName}`,
-    `Lender: ${lenderName || "(name added when accepted)"}`,
-    `Principal: \u20B9${Number(amount).toLocaleString("en-IN")}`,
-    `Annual interest: ${interestRate}% (simple, for tracking only)`,
-    `Repayment due date: ${dueDate}`,
-  ];
-  if (purpose) lines.push(`Purpose: ${purpose}`);
-  if (collateral) {
-    lines.push("");
-    lines.push("Security / collateral offered:");
-    lines.push(collateral);
-  }
-  lines.push(
-    "",
-    "The borrower agrees to repay on the terms above. The lender agrees to fund after reviewing the trust score and signing below.",
-    "",
-    "Both parties agree this document is stored locally in CommitTrack for personal records."
+  return buildPromissoryNoteText(
+    {
+      type: "borrowed",
+      personName: lenderName,
+      borrowerFullName: borrowerName,
+      lenderFullName: lenderName || "",
+      principalAmount: amount,
+      totalAmount: amount,
+      interestRate,
+      endDate: dueDate,
+      dueDate,
+      loanPurpose: purpose,
+      collateralDescription: collateral,
+      penaltyRatePerMonth: 2,
+      arbitrationClause: true,
+    },
+    { displayName: lenderName }
   );
-  return lines.join("\n");
 }
 
 export function borrowerTrustSnapshot(lendings, borrowerName) {
@@ -100,9 +265,14 @@ export function buildOfferShareUrl(offer, origin = "") {
 
 /** Both parties signed and record is locked — terms cannot be changed until settled or mutual cancel. */
 export function isAgreementFullyLocked(lending) {
-  if (!lending?.agreementLocked || !lending?.agreementAccepted) return false;
-  const rem = Number(lending.remainingAmount) || 0;
+  if (!lending) return false;
+  const rem = Number(lending.remainingAmount ?? lending.remainingBalance) || 0;
   if (rem <= 0 || lending.status === "complete") return false;
+
+  if (lending.lenderConfirmedAt && lending.borrowerConfirmedAt) return true;
+  if (lending.esignStatus === "completed") return true;
+
+  if (!lending.agreementLocked || !lending.agreementAccepted) return false;
   return true;
 }
 
