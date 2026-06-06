@@ -39,4 +39,8 @@ interface RazorpayConstructor {
 
 interface Window {
   Razorpay?: RazorpayConstructor;
+  __commitTrackDev?: {
+    simulatePayment?: (tier: "pro" | "power") => Promise<{ paymentId: string; tier: "pro" | "power" }>;
+    resetSubscription?: () => { tier: "free" };
+  };
 }

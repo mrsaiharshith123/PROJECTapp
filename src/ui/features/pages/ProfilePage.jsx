@@ -9,8 +9,10 @@ import {
   ToneSurface,
   Body,
   Caption,
+  Button,
 } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import { resolveUserMode, getIncomeLabel } from "../../../constants/modeExperience.js";
 import { totalPaymentCountAndSum } from "../../../utils/profileStats.js";
 import ProfileCompactHeader from "../ProfileCompactHeader.jsx";
@@ -24,6 +26,8 @@ import { COPY } from "../../../constants/copy.js";
 const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoggedIn, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
   const {
     commitments,
     allCommitments,
@@ -161,6 +165,25 @@ const Profile = () => {
       </div>
 
       <InstallAppBanner />
+
+      {isLoggedIn && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={signingOut}
+          onClick={async () => {
+            setSigningOut(true);
+            try {
+              await signOut();
+            } finally {
+              setSigningOut(false);
+            }
+          }}
+        >
+          {signingOut ? "Signing out…" : "Log out"}
+        </Button>
+      )}
 
       <Caption className="text-center block pb-2">Saved automatically on this device.</Caption>
     </div>

@@ -4,6 +4,11 @@ import { computeControlScore } from "../utils/profileStats.js";
 
 /** @typedef {"excellent" | "good" | "caution" | "risky"} HealthLevel */
 
+function isOpenBill(commitment, getEffectiveStatus) {
+  const status = getEffectiveStatus(commitment);
+  return status !== "paid" && status !== "skipped";
+}
+
 /**
  * Proprietary 0–100 financial health score (not a credit score).
  */
@@ -17,21 +22,33 @@ export function computeFinancialHealthScore(input) {
     freeMoneyAfterBurden,
   } = input;
 
-  let score = 72;
-  const overdue = commitments.filter((c) => getEffectiveStatus(c) === "overdue").length;
+  const list = commitments || [];
+  const overdue = list.filter((c) => getEffectiveStatus(c) === "overdue").length;
+  const openBills = list.filter((c) => isOpenBill(c, getEffectiveStatus));
+
+  if (openBills.length === 0 && overdue === 0) {
+    return {
+      score: 100,
+      level: "excellent",
+      label: "Excellent",
+      openRemaining: openRemaining ?? 0,
+    };
+  }
+
+  let score = 100;
   score -= overdue * 12;
 
-  const ratio = income > 0 ? totalMonthlyBurden(commitments, getEffectiveStatus) / income : 0;
-  score -= Math.min(35, Math.round(ratio * 40));
+  const ratio = income > 0 ? totalMonthlyBurden(list, getEffectiveStatus) / income : 0;
+  score -= Math.min(45, Math.round(ratio * 50));
 
-  if (freeMoneyAfterBurden < 5000 && income > 0) score -= 10;
+  if (income > 0 && freeMoneyAfterBurden < 5000) score -= 10;
   if (freeMoneyAfterBurden < 0) score -= 15;
 
-  const streak = computePaymentMonthStreak(commitments, lendings);
-  score += Math.min(10, streak * 2);
+  const streak = computePaymentMonthStreak(list, lendings);
+  score += Math.min(5, streak);
 
-  const control = computeControlScore(commitments, getEffectiveStatus);
-  score += Math.round((control - 70) * 0.15);
+  const control = computeControlScore(list, getEffectiveStatus);
+  score -= Math.round((100 - control) * 0.25);
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 

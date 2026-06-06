@@ -4,7 +4,7 @@ import { NotificationPanel } from "../features/NotificationPanel.jsx";
 import { AppHeader } from "./PageHeader.jsx";
 import { NotificationBell } from "./NotificationBell.jsx";
 
-export function PageHeaderWithNotifications({ greeting, headerActions }) {
+export function PageHeaderWithNotifications({ greeting, headerActions, showBrand = true }) {
   const { notificationUnread } = useCommitIntel();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -12,6 +12,7 @@ export function PageHeaderWithNotifications({ greeting, headerActions }) {
     <>
       <AppHeader
         greeting={greeting}
+        showBrand={showBrand}
         actions={
           <div className="ct-row gap-2 shrink-0">
             {headerActions}

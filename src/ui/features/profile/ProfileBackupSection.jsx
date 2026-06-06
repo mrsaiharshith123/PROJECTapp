@@ -1,12 +1,16 @@
 import { useCallback, useState } from "react";
-import { Card, Caption, Body, Heading, Button } from "../../index.js";
+import { useNavigate } from "react-router-dom";
+import { Card, Caption, Body, Heading, Button, Modal } from "../../index.js";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import { buildAnnualReportData } from "../../../engines/annualReport.js";
 import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";
 import { previewImportCounts } from "../../../utils/dataImport.js";
+import { clearAllLocalData } from "../../../utils/migrateStorage.js";
+import { deleteAccountData } from "../../../services/supabase/auth.js";
 import ProfileCloudSyncSection from "./ProfileCloudSyncSection.jsx";
 
 /**
@@ -19,13 +23,18 @@ export default function ProfileBackupSection({
   settings,
   monthlySnapshots,
 }) {
+  const navigate = useNavigate();
   const ctx = useCommitTrack();
+  const { user } = useAuth();
   const { importAppData } = ctx;
   const [preview, setPreview] = useState(null);
   const [pending, setPending] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [mode, setMode] = useState("merge");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const handleAnnualReport = useCallback(() => {
     const report = buildAnnualReportData({
@@ -94,6 +103,23 @@ export default function ProfileBackupSection({
     }
   };
 
+  const handleDeleteAllData = async () => {
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      clearAllLocalData();
+      if (user?.id) {
+        await deleteAccountData(user.id);
+      }
+      setConfirmDelete(false);
+      navigate("/", { replace: true });
+      window.location.reload();
+    } catch (err) {
+      setDeleteError((err instanceof Error ? err.message : null) || "Could not delete account data.");
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="ct-stack">
       <ProfileCloudSyncSection />
@@ -133,6 +159,54 @@ export default function ProfileBackupSection({
           {result && <Caption className="block text-[var(--ct-success)]">{result}</Caption>}
         </div>
       </Card>
+
+      <Card className="ct-stack">
+        <div>
+          <Heading level={3}>Delete all data</Heading>
+          <Caption className="mt-1 block">
+            Permanently erase all bills, lending, and settings on this device
+            {user?.id ? " and your cloud profile" : ""}. This cannot be undone.
+          </Caption>
+        </div>
+        <Button type="button" variant="danger" onClick={() => setConfirmDelete(true)}>
+          Delete all data
+        </Button>
+      </Card>
+
+      {confirmDelete && (
+        <Modal
+          title="Delete all data?"
+          onClose={() => !deleting && setConfirmDelete(false)}
+        >
+          <div className="ct-stack-sm">
+            <Body className="!text-sm">
+              This removes all local data and{user?.id ? " deletes your Supabase profile." : " signs you out of cloud sync."}{" "}
+              Export a backup first if you need your records.
+            </Body>
+            {deleteError && <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption>}
+            <div className="ct-row">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                disabled={deleting}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                className="flex-1"
+                disabled={deleting}
+                onClick={handleDeleteAllData}
+              >
+                {deleting ? "Deleting…" : "Yes, delete everything"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       <ProGate featureId="health_report">
         <div className="ct-plan-row">

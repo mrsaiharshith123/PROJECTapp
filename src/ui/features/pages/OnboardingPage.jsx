@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Card, Button, inputClassName, Eyebrow, Caption, Body } from "../../";
+import { Card, Button, inputClassName, Eyebrow, Caption, Body, ToneSurface } from "../../";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
+import { recordConsent } from "../../../utils/dpdpConsent.js";
 import { ONBOARDING_EXPERIENCES, getOnboardingExperience } from "../../../guidance/index.js";
 import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { templateToCommitment } from "../../../utils/onboardingTemplates.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { validateOnboardingFields } from "../../../utils/profileSetup.js";
+import { routerBasename } from "../../../utils/basePath.js";
 
 const QUICK_COMMITMENT_TEMPLATES = [
   { emoji: "🏠", label: "Home / rent", category: "Rent", defaultAmount: 15000 },
@@ -167,13 +169,40 @@ export default function Onboarding() {
             </button>
           ))}
         </div>
+        <ToneSurface tone="info">
+          <Caption className="font-semibold block">Before we begin</Caption>
+          <Body className="!text-sm mt-1">
+            CommitTrack stores your financial data locally on your device. If you enable cloud sync, an
+            encrypted copy is saved securely in Supabase. We never sell your data or use it for
+            advertising. Your PAN and phone number are used only for financial tracking.
+          </Body>
+          <button
+            type="button"
+            className="ct-link !text-xs mt-2"
+            onClick={() => {
+              const base = routerBasename() ? `${routerBasename()}/privacy` : "/privacy";
+              window.open(base, "_blank", "noopener,noreferrer");
+            }}
+          >
+            Read our privacy policy →
+          </button>
+        </ToneSurface>
         <div className="ct-row">
           {replay && (
             <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => navigate(-1)}>
               Cancel
             </Button>
           )}
-          <Button type="button" variant="primary" size="lg" className={replay ? "flex-1" : ""} onClick={() => setStep(1)}>
+          <Button
+            type="button"
+            variant="primary"
+            size="lg"
+            className={replay ? "flex-1" : ""}
+            onClick={() => {
+              recordConsent(user?.id || "anonymous");
+              setStep(1);
+            }}
+          >
             Continue
           </Button>
         </div>

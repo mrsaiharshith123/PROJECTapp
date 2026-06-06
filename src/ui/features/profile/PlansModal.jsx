@@ -5,11 +5,11 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { PLAN_PRESENTATION } from "../../../constants/subscriptionTiers.js";
 import { openRazorpayCheckout } from "../../../services/razorpay.js";
-
-const TIER_AMOUNTS = {
-  pro: 79900,
-  power: 149900,
-};
+import { saveSubscriptionTier } from "../../../services/supabase/auth.js";
+import {
+  completeSimulatedSubscriptionUpgrade,
+  isPaymentSimulationEnabled,
+} from "../../../services/simulateSubscriptionPayment.js";
 
 /**
  * @param {{ open: boolean, onClose: () => void }} props
@@ -20,35 +20,49 @@ export default function PlansModal({ open, onClose }) {
   const { user } = useAuth();
   const current = settings.subscriptionTier || "free";
   const [paying, setPaying] = useState(null);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [msg, setMsg] = useState({ type: "", text: "" });
 
   if (!open) return null;
 
-  const handleUpgrade = (tier) => {
-    const amountPaise = TIER_AMOUNTS[tier];
-    if (!amountPaise) return;
+  const simulatePay = isPaymentSimulationEnabled();
 
-    setSuccessMsg("");
-    setErrorMsg("");
+  const handleUpgrade = (tier) => {
+    setMsg({ type: "", text: "" });
     setPaying(tier);
+
+    if (simulatePay) {
+      completeSimulatedSubscriptionUpgrade({ tier, userId: user?.id, updateSettings })
+        .then(() => {
+          setMsg({
+            type: "success",
+            text: `[Test] Simulated payment — you're on ${tier}. Pro features unlocked.`,
+          });
+        })
+        .catch((err) => {
+          setMsg({ type: "error", text: err?.message || "Simulation failed." });
+          console.error("Simulated payment:", err);
+        })
+        .finally(() => setPaying(null));
+      return;
+    }
+
+    const amountPaise = tier === "pro" ? 79900 : 149900;
 
     openRazorpayCheckout({
       amountPaise,
-      description: `CommitTrack ${tier === "pro" ? "Pro" : "Power"} — annual`,
+      description: `CommitTrack ${tier === "pro" ? "Pro" : "Power"} Annual`,
       prefillName: settings.displayName || "",
       prefillEmail: user?.email || "",
-      onSuccess: (paymentId) => {
+      onSuccess: async (paymentId) => {
+        await saveSubscriptionTier(user?.id, tier, paymentId);
         updateSettings({ subscriptionTier: tier });
-        setSuccessMsg(`You're now on ${tier.charAt(0).toUpperCase() + tier.slice(1)}! Payment ID: ${paymentId}`);
+        setMsg({ type: "success", text: `You're now on ${tier}! Welcome.` });
         setPaying(null);
       },
       onDismiss: () => setPaying(null),
       onError: (err) => {
-        const msg = err instanceof Error ? err.message : "Payment could not be completed. Please try again.";
-        if (!String(msg).toLowerCase().includes("dismiss")) {
-          setErrorMsg(msg);
-        }
+        setMsg({ type: "error", text: "Payment could not be completed. Please try again." });
+        console.error("Razorpay:", err);
         setPaying(null);
       },
     });
@@ -61,14 +75,18 @@ export default function PlansModal({ open, onClose }) {
           Free = local only. Pro & Power add account backup and advanced reports.
         </Caption>
 
-        {successMsg && (
-          <ToneSurface tone="success">
-            <Caption>{successMsg}</Caption>
+        {simulatePay && (
+          <ToneSurface tone="warning">
+            <Caption className="block">
+              Test mode: upgrades simulate payment (no Razorpay). Console:{" "}
+              <code className="text-[11px]">__commitTrackDev.simulatePayment(&quot;pro&quot;)</code>
+            </Caption>
           </ToneSurface>
         )}
-        {errorMsg && (
-          <ToneSurface tone="danger">
-            <Caption>{errorMsg}</Caption>
+
+        {msg.text && (
+          <ToneSurface tone={msg.type === "success" ? "success" : "danger"}>
+            <Caption>{msg.text}</Caption>
           </ToneSurface>
         )}
 
@@ -88,7 +106,7 @@ export default function PlansModal({ open, onClose }) {
               </div>
               <div className="shrink-0 flex flex-col gap-1 items-end">
                 {isCurrent ? (
-                  <Caption className="font-semibold">Active</Caption>
+                  <Badge tone="success">Current plan ✓</Badge>
                 ) : isPaid ? (
                   <Button
                     type="button"
@@ -97,7 +115,11 @@ export default function PlansModal({ open, onClose }) {
                     disabled={paying !== null}
                     onClick={() => handleUpgrade(plan.tier)}
                   >
-                    {paying === plan.tier ? "Processing…" : `Upgrade to ${plan.title}`}
+                    {paying === plan.tier
+                      ? "Processing..."
+                      : simulatePay
+                        ? `Simulate ${plan.title}`
+                        : `Upgrade to ${plan.title}`}
                   </Button>
                 ) : (
                   <Button
@@ -117,7 +139,11 @@ export default function PlansModal({ open, onClose }) {
           );
         })}
 
-        <Caption className="block">Payments processed by Razorpay. Cancel anytime from Profile.</Caption>
+        <Caption className="block">
+          {simulatePay
+            ? "Production builds use Razorpay. This dev session skips real checkout."
+            : "Payments processed by Razorpay. Cancel anytime from Profile."}
+        </Caption>
 
         {current === "free" && (
           <button

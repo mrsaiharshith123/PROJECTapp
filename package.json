@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:simulate-pay": "node scripts/dev-simulate-pay.mjs",
+    "preview:simulate-pay": "node scripts/dev-simulate-pay.mjs preview",
     "build": "node scripts/generate-pwa-icons.mjs && vite build && node scripts/copy-404.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

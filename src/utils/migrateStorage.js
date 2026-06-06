@@ -12,6 +12,9 @@ import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
+import { STORAGE_KEYS } from "../storage/keys.js";
+import { CONSENT_KEY } from "./dpdpConsent.js";
+import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
@@ -550,4 +553,32 @@ export function loadSettingsFromStorage() {
     /* ignore */
   }
   return { ...DEFAULT_SETTINGS };
+}
+
+/** Wipes all device-local CommitTrack data (DPDP erasure). Does not sign out. */
+export function clearAllLocalData() {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.commitments);
+    localStorage.removeItem(STORAGE_KEYS.lendings);
+    localStorage.removeItem(STORAGE_KEYS.settings);
+    localStorage.removeItem(STORAGE_KEYS.monthlySnapshots);
+    localStorage.removeItem(STORAGE_KEYS.goals);
+    localStorage.removeItem(STORAGE_KEYS.syncMeta);
+    localStorage.removeItem(CONSENT_KEY);
+    localStorage.setItem(STORAGE_KEYS.schemaVersion, String(CURRENT_SCHEMA_VERSION));
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (
+        key?.startsWith("committrack_auth_seeded_") ||
+        key?.startsWith("committrack_profile_seeded_")
+      ) {
+        localStorage.removeItem(key);
+      }
+    }
+    invalidateInitialAppStateCache();
+    emitLocalDataChanged();
+    emitSettingsReset();
+  } catch {
+    /* ignore */
+  }
 }

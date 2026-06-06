@@ -63,6 +63,10 @@ export function buildProfileUpsertPayload(userId, existing, patch) {
   const panVerified =
     p.pan_verified !== undefined ? Boolean(p.pan_verified) : Boolean(ex.pan_verified);
 
+  let subscriptionTier = "free";
+  if (p.subscription_tier === "power" || ex.subscription_tier === "power") subscriptionTier = "power";
+  else if (p.subscription_tier === "pro" || ex.subscription_tier === "pro") subscriptionTier = "pro";
+
   return {
     id: userId,
     username,
@@ -75,6 +79,7 @@ export function buildProfileUpsertPayload(userId, existing, patch) {
     monthly_income: monthlyIncome,
     onboarding_complete: onboardingComplete,
     phone,
+    subscription_tier: subscriptionTier,
   };
 }
 
@@ -239,4 +244,64 @@ export async function saveUserProfile(userId, patch) {
   }
   if (error) throwAuth(error, "Save profile failed");
   return data;
+}
+
+/** @returns {Promise<"free"|"pro"|"power">} */
+export async function loadSubscriptionTier(userId) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !userId) return "free";
+  try {
+    const { data, error } = await supabase
+      .from(PROFILE_TABLE)
+      .select("subscription_tier")
+      .eq("id", userId)
+      .maybeSingle();
+    if (error) return "free";
+    const tier = data?.subscription_tier;
+    if (tier === "pro" || tier === "power") return tier;
+    return "free";
+  } catch {
+    return "free";
+  }
+}
+
+/**
+ * @param {string} userId
+ * @param {"free"|"pro"|"power"} tier
+ * @param {string} [paymentId]
+ * @returns {Promise<boolean>}
+ */
+export async function saveSubscriptionTier(userId, tier, paymentId = "") {
+  const supabase = getSupabaseClient();
+  if (!supabase || !userId) return false;
+  try {
+    await requireActiveSession(supabase);
+    const { error } = await supabase.from(PROFILE_TABLE).upsert(
+      {
+        id: userId,
+        subscription_tier: tier,
+        razorpay_payment_id: paymentId || null,
+        subscription_updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * DPDP Act 2023 S.12 right to erasure.
+ * Caller must also run clearAllLocalData() from migrateStorage.js to erase device-local data.
+ * @param {string} userId
+ */
+export async function deleteAccountData(userId) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !userId) throw new Error("Not signed in");
+  await requireActiveSession(supabase);
+  const { error } = await supabase.from(PROFILE_TABLE).delete().eq("id", userId);
+  if (error) throwAuth(error, "Delete account failed");
+  await signOutAuth();
+  return { ok: true };
 }

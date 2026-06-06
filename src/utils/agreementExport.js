@@ -1,4 +1,26 @@
 import { buildPromissoryNoteText } from "../engines/lendingAgreement.js";
+import { getSupabaseClient } from "../services/supabase/auth.js";
+
+/** @param {string} text */
+export async function hashText(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** @param {object} lending @param {object} [settings] */
+export async function sealAgreement(lending, settings = {}) {
+  const text = lending.agreementText?.trim() || buildPromissoryNoteText(lending, settings);
+  const hash = await hashText(text);
+  return { text, hash, sealedAt: new Date().toISOString() };
+}
+
+/** @param {string} text @param {string} expectedHash */
+export async function verifyAgreement(text, expectedHash) {
+  const hash = await hashText(text);
+  return hash === expectedHash;
+}
 
 function escapeHtml(s) {
   return String(s)
@@ -29,6 +51,9 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
   const banner = stamped
     ? `<div class="banner ok">✓ Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
     : `<div class="banner warn">⚠ Not stamped — Print on stamp paper for full legal enforceability. Or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
+  const hashBanner = lending.agreementHash
+    ? `<div class="banner ok">✓ Integrity seal (SHA-256): ${escapeHtml(lending.agreementHash)} · Sealed ${escapeHtml(lending.agreementSealedAt || "")}</div>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -50,6 +75,7 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
 </head>
 <body>
 ${banner}
+${hashBanner}
 ${textToHtml(bodyText)}
 <div class="footer">CommitTrack — Private Record — ${new Date().toLocaleDateString("en-IN")}</div>
 </body>
@@ -66,4 +92,41 @@ export function downloadLendingAgreementHtml(lending, settings = {}) {
   a.download = `committrack-promissory-note-${lending.id}.html`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Seal agreement with SHA-256, optionally persist hash, and download HTML. */
+export async function sealAndDownloadAgreement(lending, settings = {}, userId = null) {
+  const { text, hash, sealedAt } = await sealAgreement(
+    { ...lending, agreementText: lending.agreementText },
+    settings
+  );
+  const html = generateLegalAgreementHtml(
+    { ...lending, agreementText: text, agreementHash: hash, agreementSealedAt: sealedAt },
+    settings
+  );
+
+  if (userId) {
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      await supabase
+        .from("agreement_hashes")
+        .insert({
+          user_id: userId,
+          lending_id: String(lending.id),
+          agreement_hash: hash,
+          sealed_at: sealedAt,
+        })
+        .then(() => {})
+        .catch(console.error);
+    }
+  }
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `committrack-agreement-${lending.id}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  return { hash, sealedAt };
 }

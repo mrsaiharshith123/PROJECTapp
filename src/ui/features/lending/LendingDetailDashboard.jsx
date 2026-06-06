@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useAuth } from "../../../context/AuthContext.jsx";
 import { buildLendingDashboard } from "../../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
-import { downloadLendingAgreementHtml } from "../../../utils/agreementExport.js";
+import { sealAndDownloadAgreement } from "../../../utils/agreementExport.js";
 import { canEditLending, repaymentModeLabel } from "../../../engines/lendingAgreement.js";
 import { Button } from "../../index.js";
 import {
@@ -27,6 +28,7 @@ export default function LendingDetailDashboard({
   onAddProof,
 }) {
   const { settings, updateLending, allLendings } = useCommitTrack();
+  const { user } = useAuth();
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
     [lending, settings]
@@ -143,7 +145,9 @@ export default function LendingDetailDashboard({
           variant="outline"
           size="sm"
           className="flex-1 min-w-[120px]"
-          onClick={() => downloadLendingAgreementHtml({ ...lending, agreementText: agreementDraft }, settings)}
+          onClick={() =>
+            sealAndDownloadAgreement({ ...lending, agreementText: agreementDraft }, settings, user?.id)
+          }
         >
           Print agreement
         </Button>

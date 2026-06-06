@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
-import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getUserModeConfig } from "../../../constants/userModes.js";
 import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -12,6 +12,7 @@ import { HeroMonthCard } from "../HeroMonthCard.jsx";
 export default function HomeOverviewCard() {
   const navigate = useNavigate();
   const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const intel = useCommitIntel();
   const experienceMode = getExperienceMode(settings);
   const modeCfg = getUserModeConfig(settings.userMode || "salaried");
   const income = combinedMonthlyIncome(settings);
@@ -21,9 +22,26 @@ export default function HomeOverviewCard() {
     [commitments, getEffectiveStatus, todayStr, income]
   );
 
-  const active = commitments.filter((c) => isActiveBill(c, getEffectiveStatus, todayStr));
-  const subs = active.filter((c) => c.category === "Subscription");
-  const emis = active.filter((c) => c.category === "EMI");
+  const overdueCount = useMemo(
+    () => commitments.filter((c) => getEffectiveStatus(c) === "overdue").length,
+    [commitments, getEffectiveStatus]
+  );
+
+  const health = intel.health;
+  const pressure = intel.stability;
+  const statusLine = health ? (
+    <>
+      Health <strong>{health.score}</strong> · {health.label}
+      {pressure?.score != null && (
+        <> · Pressure {pressure.label} <strong>{pressure.score}</strong>/100</>
+      )}
+      {overdueCount === 0 ? (
+        <> · <span className="ct-text-success">All caught up</span></>
+      ) : (
+        <> · <span className="ct-text-warning">{overdueCount} overdue</span></>
+      )}
+    </>
+  ) : null;
 
   const title =
     experienceMode === "salaried"
@@ -65,20 +83,7 @@ export default function HomeOverviewCard() {
       paidPct={monthSummary.paidPct}
       footerLeft={footerLeft}
       footerRight={footerRight}
-      footerRow2Left={
-        experienceMode === "salaried" || experienceMode === "family" ? (
-          <>
-            EMIs <strong>{emis.length}</strong>
-          </>
-        ) : null
-      }
-      footerRow2Right={
-        experienceMode === "salaried" || experienceMode === "family" ? (
-          <>
-            Subs <strong>{subs.length}</strong>
-          </>
-        ) : null
-      }
+      statusLine={statusLine}
       onClick={() => navigate("/analytics")}
     />
   );

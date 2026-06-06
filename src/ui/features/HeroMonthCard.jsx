@@ -11,8 +11,9 @@ export function HeroMonthCard({
   paidPct,
   footerLeft,
   footerRight,
-  footerRow2Left,
-  footerRow2Right,
+  footerRow2Left = undefined,
+  footerRow2Right = undefined,
+  statusLine = undefined,
   onClick,
   className = "",
 }) {
@@ -55,6 +56,10 @@ export function HeroMonthCard({
         {footerRow2Left != null && <p className="ct-body !text-xs">{footerRow2Left}</p>}
         {footerRow2Right != null && <p className="ct-body !text-xs text-right">{footerRow2Right}</p>}
       </div>
+
+      {statusLine ? (
+        <p className="ct-hero-inset mt-2 mx-1 ct-body !text-xs text-center">{statusLine}</p>
+      ) : null}
 
       <div className="ct-hero-wave" aria-hidden />
       <p className="ct-caption text-center pb-3 pt-2">Tap for full analytics →</p>

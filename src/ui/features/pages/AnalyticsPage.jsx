@@ -1,19 +1,16 @@
 import { useMemo } from "react";
 import { format, subMonths } from "date-fns";
-import { Card, InfoTip, PageHeader, Body, Caption } from "../../";
+import { Card, InfoTip, PageHeader, Body, Caption, Heading } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
-import { MoneyMonthPanel } from "../analytics/MoneyMonthPanel.jsx";
-import { MoneyAffordPanel } from "../analytics/MoneyAffordPanel.jsx";
-import { InsightStatCard } from "../analytics/InsightStatCard.jsx";
-import { DueHeatmapCard } from "../analytics/DueHeatmapCard.jsx";
+import { FinancialPulseCard } from "../../";
+import ModeIntelligenceSection from "../dashboard/ModeIntelligenceSection.jsx";
+import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { getCategoryById } from "../../../constants/categories.js";
 import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import {
   snapshotsToPressureTrend,
   debtReductionFromSnapshots,
   recurringGrowthSeries,
-  buildDueHeatmap,
   lendingPrincipalInterestTotals,
   lendingCompletionStats,
   freeCashflowTrend,
@@ -25,12 +22,9 @@ import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
-import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
 import { formatInr, EM_DASH, ARROW } from "../../../constants/symbols.js";
-import { PROFILE_SETTINGS_HINT } from "../../../constants/plainLanguage.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
-import SubscriptionLeakCard from "../analytics/SubscriptionLeakCard.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { getAnalyticsCopy, getIncomeLabel, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
@@ -133,18 +127,6 @@ const Analytics = () => {
   const freeMoney = Math.max(0, cashMetrics.freeMoney);
   const monthlyBurden = cashMetrics.monthlyBurden;
 
-  const biggestCategory = pieData[0] || null;
-
-  const highestRecurring = useMemo(() => {
-    let best = null;
-    for (const c of commitments) {
-      if (!c.repeatType || c.repeatType === "none") continue;
-      const amt = Number(c.amount) || 0;
-      if (!best || amt > best.amount) best = { name: c.name, amount: amt, repeatType: c.repeatType };
-    }
-    return best;
-  }, [commitments]);
-
   const pressureTrend = useMemo(() => snapshotsToPressureTrend(monthlySnapshots, 8), [monthlySnapshots]);
   const debtReduction = useMemo(() => debtReductionFromSnapshots(monthlySnapshots), [monthlySnapshots]);
   const recurringPaidTrend = useMemo(
@@ -161,54 +143,40 @@ const Analytics = () => {
     [commitments, income, getEffectiveStatus, todayStr, lendings, getEffectiveLendingStatus]
   );
 
-  const dueHeatmap = useMemo(
-    () =>
-      buildDueHeatmap(commitments, lendings, todayStr || todayYmd(), getEffectiveStatus, (l) =>
-        getEffectiveLendingStatus(l)
-      ),
-    [commitments, lendings, todayStr, getEffectiveStatus, getEffectiveLendingStatus]
-  );
   const lendingTotals = useMemo(() => lendingPrincipalInterestTotals(lendings), [lendings]);
   const lendingStats = useMemo(
     () => lendingCompletionStats(lendings, getEffectiveLendingStatus),
     [lendings, getEffectiveLendingStatus]
   );
   const freeCashTrend = useMemo(() => freeCashflowTrend(monthlySnapshots, 8), [monthlySnapshots]);
-  const maxHeatAmount = Math.max(1, ...dueHeatmap.map((b) => b.amount));
-
   const monthFooter =
     (monthBreakdown.duePercentOfIncome
-      ? `Planned bills this month are ${monthBreakdown.duePercentOfIncome} of your income. `
-      : `${PROFILE_SETTINGS_HINT} `) +
-    "Due shows what is still owed this month; Left matches Due after payments. Free cash = income minus paid.";
+      ? `${monthBreakdown.duePercentOfIncome} of income committed this month. `
+      : "") +
+    `Recurring burden ≈ ${formatInr(monthlyBurden)}/mo · Still owed overall: ${formatInr(openPressure)} · Free after recurring dues: ${formatInr(freeMoney)}.`;
+
+  const microTipSeed = commitments.length;
 
   return (
     <div className="ct-page">
       <PageHeader
         title="Analytics"
         eyebrow="Money picture"
-        subtitle="Simple summaries first. Extra charts are optional."
+        subtitle="Charts and forecasts — your Home month card is the daily snapshot."
       />
       {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
         <Caption className="ct-text-accent">Profile: {settings.activeProfileId}</Caption>
       )}
 
-      <MoneyMonthPanel
-        title={analyticsCopy.monthTitle}
-        monthLabel={monthBreakdown.monthLabel}
-        hint={analyticsCopy.monthHint}
-        metrics={[
-          { label: "Due", value: formatInr(monthBreakdown.dueThisMonth), tip: CALC_HELP.dueThisMonth },
-          { label: "Paid", value: formatInr(monthBreakdown.paidThisMonth), tone: "success" },
-          { label: "Left", value: formatInr(monthBreakdown.leftThisMonth), tone: "warn" },
-          {
-            label: "Free cash",
-            value: monthBreakdown.freeCash != null ? formatInr(monthBreakdown.freeCash) : EM_DASH,
-            tip: CALC_HELP.freeCash,
-          },
-        ]}
-        footer={monthFooter}
-      >
+      <FinancialPulseCard microTipSeed={microTipSeed} />
+
+      <Card className="ct-stack" id="paycheck-flow">
+        <div>
+          <Heading level={3}>Paycheck & burden</Heading>
+          <Caption className="block mt-1">
+            How salary splits across bills — same Due/Paid/Free numbers as Home, with the full breakdown.
+          </Caption>
+        </div>
         <PaycheckBreakdown
           breakdown={paycheckFlow}
           incomeStepLabel={incomeLabel}
@@ -217,56 +185,15 @@ const Analytics = () => {
           creditCard={cardPressureAnalytics}
           sensitivityRows={paycheckSensitivity}
         />
-      </MoneyMonthPanel>
+        <Caption>{monthFooter}</Caption>
+      </Card>
 
-      <MoneyAffordPanel
-        title={analyticsCopy.affordTitle}
-        hint={analyticsCopy.affordHint}
-        rows={[
-          { label: incomeLabel, value: formatInr(income) },
-          {
-            label: "Monthly burden",
-            value: formatInr(monthlyBurden),
-            tone: "warn",
-            tip: CALC_HELP.monthlyBurden,
-            sub: (
-              <>
-                Still owed overall: {formatInr(openPressure)}
-                <InfoTip text={CALC_HELP.openBalance} />
-              </>
-            ),
-          },
-          {
-            label: "Free after dues",
-            value: formatInr(freeMoney),
-            tone: "success",
-            tip: CALC_HELP.freeAfterDues,
-            sub: `${incomeLabel} minus estimated monthly dues`,
-          },
-        ]}
-      />
-
-      <div className="ct-grid-2">
-        <InsightStatCard
-          eyebrow="Biggest category"
-          icon={biggestCategory ? getCategoryById(biggestCategory.name).icon : undefined}
-          title={biggestCategory ? getCategoryById(biggestCategory.name).label : undefined}
-          detail={biggestCategory ? `${formatInr(biggestCategory.value)} open` : undefined}
-          empty="No open bills"
-        />
-        <InsightStatCard
-          eyebrow="Highest recurring"
-          title={highestRecurring?.name}
-          detail={
-            highestRecurring
-              ? `${formatInr(highestRecurring.amount)} ${EM_DASH} ${repeatTypeLabel(highestRecurring.repeatType)}`
-              : undefined
-          }
-          empty="No recurring items"
-        />
-      </div>
-
-      <DueHeatmapCard buckets={dueHeatmap} maxAmount={maxHeatAmount} />
+      {isSalariedFamily(settings) && (
+        <>
+          <ModeIntelligenceSection />
+          <FamilyCalendarWidget />
+        </>
+      )}
 
       {lendings.length > 0 && (
         <Card className="ct-stack">
@@ -287,8 +214,6 @@ const Analytics = () => {
           </div>
         </Card>
       )}
-
-      <SubscriptionLeakCard />
 
       <AnalyticsChartPanel
         forecastSeries={forecastSeries}

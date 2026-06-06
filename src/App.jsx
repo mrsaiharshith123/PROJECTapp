@@ -23,6 +23,7 @@ const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
+const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 
 function PageLoader() {
   return (
@@ -54,10 +55,13 @@ function OnboardingShell() {
       <div className="mb-6">
         <InstallAppBanner />
       </div>
-      <Routes>
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="*" element={<Navigate to="/onboarding" replace />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="*" element={<Navigate to="/onboarding" replace />} />
+        </Routes>
+      </Suspense>
     </Screen>
   );
 }
@@ -86,6 +90,7 @@ function MainShell() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/auth" element={<Navigate to="/profile" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />

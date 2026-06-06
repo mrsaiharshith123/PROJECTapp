@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { healthLevelBadgeClass } from "../../../engines/financialHealth.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
-import { showSalariedStabilityCards, getAnalyticsCopy, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { Card } from "../../primitives/Card.jsx";
@@ -16,6 +14,7 @@ import { Heading, Caption } from "../../primitives/Text.jsx";
 import { Surface } from "../../primitives/Surface.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
+import { pickMicroTip } from "../../../guidance/index.js";
 
 const BASE_TABS = [
   { id: "snapshot", label: "Summary" },
@@ -60,13 +59,13 @@ function mergeTips(intel, stable) {
 }
 
 /** One card with Summary / Pressure / Tips — replaces stacked insight sections on Home. */
-export default function FinancialPulseCard() {
+export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const { settings } = useCommitTrack();
+  const microTip = pickMicroTip(microTipSeed);
   const showPressure = showSalariedStabilityCards(settings);
   const isFamily = isSalariedFamily(settings);
-  const analyticsCopy = getAnalyticsCopy(settings);
   const ahead = stable.ahead;
 
   const tips = useMemo(() => mergeTips(intel, stable), [intel, stable]);
@@ -106,6 +105,8 @@ export default function FinancialPulseCard() {
 
       {tab === "snapshot" && (
         <div className="ct-stack text-sm">
+          <Caption className="block ct-guidance-micro">{microTip}</Caption>
+
           {narrative && (narrative.strengths.length > 0 || narrative.weaknesses.length > 0) && (
             <div className="ct-insight-accent ct-stack-sm">
               {narrative.strengths.length > 0 && (
@@ -139,30 +140,6 @@ export default function FinancialPulseCard() {
             <Caption className="block">{pressureIntel.trendMessage}</Caption>
           )}
 
-          {analyticsCopy.showPaycheckFlow && stable.income > 0 && (
-            <p className="text-xs">
-              <Link
-                to="/analytics#paycheck-flow"
-                className="ct-link"
-              >
-                Paycheck flow in Analytics
-              </Link>
-              <Caption className="inline"> — full salary → bills → free cash.</Caption>
-            </p>
-          )}
-
-          <Caption className="block">
-            Health:{" "}
-            <span className={`font-medium ${healthLevelBadgeClass(intel.health.level).split(" ").slice(1).join(" ")}`}>
-              {intel.health.label} ({intel.health.score})
-            </span>
-            <InfoTip text={CALC_HELP.healthScore} />
-            {" · "}Runway: {stable.survival?.tierLabel || "—"}
-            {stable.survival?.survivalMonths != null && stable.survival.survivalMonths < 99
-              ? ` (${stable.survival.survivalMonths} mo)`
-              : ""}
-          </Caption>
-
           {emergency && emergency.recommended > 0 && (
             <Surface className="ct-stack-sm">
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 inline-flex items-center">
@@ -179,18 +156,6 @@ export default function FinancialPulseCard() {
             </Surface>
           )}
 
-          {intel.subscriptionLeak?.classified?.length > 0 && (
-            <div className="text-xs text-gray-600 dark:text-slate-300">
-              <p className="font-semibold mb-1">Subscriptions</p>
-              <ul className="space-y-0.5">
-                {intel.subscriptionLeak.classified.slice(0, 4).map((s) => (
-                  <li key={s.name}>
-                    {s.name} — {s.tag} · {formatInr(s.monthly)}/mo
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
 
@@ -198,7 +163,7 @@ export default function FinancialPulseCard() {
         <div className="ct-stack text-sm">
           <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
             <p className="text-xs text-gray-500 dark:text-slate-400">
-              Forecast + due weeks — same math as analytics, one place here.
+              Next ~4 weeks of dues, month forecast, and pay-order suggestions.
             </p>
             <div className="flex items-center gap-2 shrink-0">
               <button

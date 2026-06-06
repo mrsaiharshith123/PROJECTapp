@@ -4,7 +4,7 @@ import { recurringGrowthSeries } from "./analyticsSeries.js";
  * Detect growth in recurring spend from snapshots + live recurring bills.
  */
 export function detectLifestyleInflation(commitments, getEffectiveStatus) {
-  const series = recurringGrowthSeries(commitments, getEffectiveStatus, 9);
+  const series = recurringGrowthSeries(commitments || [], getEffectiveStatus, 9);
   if (series.length < 2) {
     return {
       hasTrend: false,
@@ -26,7 +26,7 @@ export function detectLifestyleInflation(commitments, getEffectiveStatus) {
       ? Math.round(((last.recurringPaid - first.recurringPaid) / first.recurringPaid) * 100)
       : null;
 
-  const subs = commitments.filter(
+  const subs = (commitments || []).filter(
     (c) => c.category === "Subscription" && getEffectiveStatus(c) !== "paid"
   );
   const subMonthly = subs.reduce((s, c) => s + (Number(c.amount) || 0), 0);

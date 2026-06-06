@@ -26,6 +26,7 @@ import {
 } from "../../../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
 import { COPY } from "../../../constants/copy.js";
+import { PROFILE_SETTINGS_HINT } from "../../../constants/plainLanguage.js";
 import { evaluateNewCommitmentAffordability, affordabilityBadgeClass } from "../../../engines/affordability.js";
 import { getUserModeConfig } from "../../../constants/userModes.js";
 import { estimatePriorSpend } from "../../../utils/billLifecycle.js";
@@ -489,7 +490,7 @@ const Add = () => {
             {affordability.committedPercent != null ? `${affordability.committedPercent}%` : "—"} committed). Free
             money ≈ ₹{Math.round(affordability.freeMoneyAfter).toLocaleString()}.
           </Caption>
-          <Caption>Set monthly income in Profile if this shows “—”.</Caption>
+          <Caption>{PROFILE_SETTINGS_HINT}</Caption>
         </Card>
       )}
 

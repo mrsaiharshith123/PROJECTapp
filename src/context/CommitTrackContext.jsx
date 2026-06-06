@@ -5,6 +5,8 @@ import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
 import { applyPaymentToCommitment } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
 import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../storage/events.js";
+import { useAuth } from "./AuthContext.jsx";
+import { loadSubscriptionTier } from "../services/supabase/auth.js";
 import {
   loadInitialAppState,
   loadSettingsFromStorage,
@@ -27,6 +29,10 @@ import { canEditLending } from "../engines/lendingAgreement.js";
 import { mergeImportedAppState } from "../utils/dataImport.js";
 import { refreshAllChitCommitments } from "../utils/chitSync.js";
 import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
+import {
+  registerDevSubscriptionTools,
+  unregisterDevSubscriptionTools,
+} from "../utils/devSubscriptionTools.js";
 /** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
 const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
 
@@ -42,6 +48,7 @@ function sortCommitments(list) {
 }
 
 export function CommitTrackProvider({ children }) {
+  const { user } = useAuth();
   const [commitments, setCommitments] = useState(() =>
     refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
   );
@@ -67,6 +74,25 @@ export function CommitTrackProvider({ children }) {
     window.addEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
     return () => window.removeEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    loadSubscriptionTier(user.id)
+      .then((tier) => {
+        setSettings((prev) => {
+          if (tier === (prev.subscriptionTier || "free")) return prev;
+          const next = { ...prev, subscriptionTier: tier };
+          try {
+            localStorage.setItem("committrack_settings", JSON.stringify(next));
+            invalidateInitialAppStateCache();
+          } catch {
+            /* ignore */
+          }
+          return next;
+        });
+      })
+      .catch(() => {});
+  }, [user?.id]);
 
   const persistCommitments = useCallback((updater) => {
     setCommitments((prev) => {
@@ -316,6 +342,11 @@ export function CommitTrackProvider({ children }) {
     },
     [persistSettings]
   );
+
+  useEffect(() => {
+    registerDevSubscriptionTools({ updateSettings, userId: user?.id ?? null });
+    return () => unregisterDevSubscriptionTools();
+  }, [updateSettings, user?.id]);
 
   const addGoal = useCallback(
     (raw) => {

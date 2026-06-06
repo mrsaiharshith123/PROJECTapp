@@ -19,12 +19,12 @@ export function PageHeader({ title, eyebrow, subtitle, actions }) {
   );
 }
 
-export function AppHeader({ greeting, actions }) {
+export function AppHeader({ greeting, actions, showBrand = true }) {
   return (
     <Row between>
       <div>
-        <Caption>CommitTrack</Caption>
-        <p className="ct-greeting mt-0.5">{greeting}</p>
+        {showBrand && <Caption>CommitTrack</Caption>}
+        <p className={`ct-greeting ${showBrand ? "mt-0.5" : ""}`}>{greeting}</p>
       </div>
       {actions}
     </Row>
