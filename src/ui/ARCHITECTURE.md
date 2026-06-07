@@ -22,6 +22,19 @@ Charts live on **Analytics only** — one chart at a time with `FilterChips` to 
 
 **Language:** Profile → Language picker (`I18nProvider`). See `docs/10-i18n.md`.
 
+## Profile hub
+
+`ProfilePage.jsx` composes hub widgets from `features/profile/hub/`:
+
+| Piece | File | Notes |
+|-------|------|-------|
+| Identity hero + stability chips | `ProfileIdentityHero.jsx` | Stability / flex / backup on hero |
+| Status widgets | `ProfileStatusWidgets.jsx` | Four financial status cards |
+| Journey strip | `ProfileJourneyStrip.jsx` | Above control center |
+| Control center | `ProfileControlCenterGrid.jsx` | 3-column tiles → settings panels |
+| Admin entry | `ProfileAdminEntry.jsx` | **Admin only** — Product intelligence → `/admin` |
+| Settings panels | `ProfileSettingsHub.jsx` | Expandable sections from tile groups |
+
 ## Product UI map (current)
 
 | Screen | Path |
@@ -30,7 +43,10 @@ Charts live on **Analytics only** — one chart at a time with `FilterChips` to 
 | Analytics | `features/pages/AnalyticsPage.jsx` |
 | Tools | embedded on Home via `dashboard/DashboardTools.jsx` |
 | Plans / upgrades | `profile/PlansModal.jsx` |
+| Admin intelligence (internal) | `features/pages/AdminPage.jsx` — `/admin`; entry via Profile for admins only |
 
 Deferred UX (see `docs/09-implementation-status.md`): OS launcher home, `/paycheck` page, legal-details modal.
+
+Admin setup and analytics rules: `docs/architecture/AdminAnalytics.md`.
 
 See `docs/03-rules.md` and `docs/README.md` for full project rules.

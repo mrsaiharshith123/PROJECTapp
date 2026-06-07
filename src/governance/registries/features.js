@@ -80,6 +80,19 @@ export const FEATURES = [
     engines: [],
     hooks: [],
   },
+  {
+    id: "admin-intelligence",
+    name: "Product intelligence (internal)",
+    layer: "platform",
+    ui: [
+      "ui/features/pages/AdminPage.jsx",
+      "ui/features/admin/",
+      "ui/features/profile/hub/ProfileAdminEntry.jsx",
+    ],
+    engines: [],
+    hooks: ["hooks/useAdminOverview.js"],
+    notes: "Requires profiles.is_admin + Supabase admin migrations; see docs/architecture/AdminAnalytics.md",
+  },
 ];
 
 export const FEATURE_IDS = FEATURES.map((f) => f.id);

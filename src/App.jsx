@@ -11,6 +11,8 @@ import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
+import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
+import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
@@ -25,6 +27,7 @@ const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
+const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 
 function PageLoader() {
   const { t } = useTranslation();
@@ -54,6 +57,7 @@ function OnboardingShell() {
   return (
     <Screen narrow>
       <ThemeSync />
+      <AnalyticsBridge />
       <div className="mb-6">
         <InstallAppBanner />
       </div>
@@ -73,6 +77,7 @@ function MainShell() {
     <Screen>
       <ThemeSync />
       <CloudSyncBridge />
+      <AnalyticsBridge />
       <Navbar />
       <NotificationSync />
       <MainContent>
@@ -92,6 +97,14 @@ function MainShell() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/admin"
+              element={
+                <RequireAdmin>
+                  <Admin />
+                </RequireAdmin>
+              }
+            />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/auth" element={<Navigate to="/profile" replace />} />

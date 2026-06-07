@@ -19,6 +19,9 @@ import {
   resetLocalAccountFlags,
 } from "../utils/authSessionCleanup.js";
 import { log } from "../utils/logger.js";
+import { trackEvent } from "../services/analytics/trackEvent.js";
+import { ANALYTICS_EVENTS } from "../services/analytics/eventNames.js";
+import { setAnalyticsUser, clearAnalyticsUser } from "../services/analytics/analyticsHub.js";
 
 /** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
 const AuthContext = createContext(/** @type {import('../types/context.js').AuthContextValue | null} */ (null));
@@ -40,6 +43,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     setProfile(null);
     setProfileResolved(true);
+    clearAnalyticsUser();
+    trackEvent(ANALYTICS_EVENTS.AUTH_SIGN_OUT, { module: "auth" });
     if (notice) setAuthNotice(notice);
   }, []);
 
@@ -147,12 +152,24 @@ export function AuthProvider({ children }) {
   }, [refreshProfile, hardSignOut]);
 
   const signUp = useCallback(async (email, password, metadata = null) => {
-    return signUpWithEmail(email, password, metadata);
+    const result = await signUpWithEmail(email, password, metadata);
+    const uid = result?.user?.id;
+    if (uid) {
+      setAnalyticsUser(uid);
+      trackEvent(ANALYTICS_EVENTS.AUTH_SIGN_UP, { module: "auth" });
+    }
+    return result;
   }, []);
 
   const signIn = useCallback(async (email, password) => {
     setAuthNotice("");
-    return signInWithEmail(email, password);
+    const result = await signInWithEmail(email, password);
+    const uid = result?.user?.id;
+    if (uid) {
+      setAnalyticsUser(uid);
+      trackEvent(ANALYTICS_EVENTS.AUTH_SIGN_IN, { module: "auth" });
+    }
+    return result;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -183,6 +200,7 @@ export function AuthProvider({ children }) {
       authNotice,
       error: null,
       isLoggedIn: Boolean(user),
+      isAdmin: Boolean(profile?.is_admin),
       signUp,
       signIn,
       signOut,

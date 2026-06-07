@@ -12,7 +12,7 @@
 | Constants | `constants/` | Modes, categories, copy keys, nav |
 | i18n | `i18n/` | Messages, `useTranslation`, locale helpers — [10-i18n.md](../10-i18n.md) |
 | Guidance | `guidance/` | Education registries (copy keys; UI in `ui/guidance/`) |
-| Services | `services/` | Supabase auth, cloud sync, notifications, Razorpay, OTP confirmation |
+| Services | `services/` | Supabase auth, cloud sync, product analytics, notifications, Razorpay, OTP confirmation |
 | UI | `ui/` | All visual UI — primitives, patterns, features, pages |
 | Governance | `governance/` | Registries for audits (not loaded in production bundle) |
 
@@ -50,6 +50,14 @@
 3. `downloadLendingAgreementHtml()` — triggered from lending detail UI; no separate legal modal required for basic export.
 4. `otpConfirmation.js` — confirmation refs for future signing UI; not Aadhaar eSign.
 
+## Admin intelligence & analytics
+
+1. **Instrumentation** — `AnalyticsBridge` in `App.jsx` tracks page views, module opens, and session heartbeats for signed-in users.
+2. **API** — `trackEvent()` from `services/analytics/trackEvent.js` (never insert `app_events` from UI).
+3. **Storage** — Supabase `app_events` when cloud env is set; RLS limits users to own rows; admins read all via `is_committrack_admin()`.
+4. **Dashboard** — `/admin` + `admin_product_overview()` RPC; Profile shows **Product intelligence** tile only when `profile.is_admin`.
+5. **Grant admin** — Supabase SQL only (`grant_committrack_admin`). See [AdminAnalytics.md](./AdminAnalytics.md).
+
 ## Future-proofing (partial / planned)
 
 - **Server payment verify** — Supabase Edge Function (not implemented).
@@ -62,6 +70,7 @@
 ## Related docs
 
 - [DesignSystem.md](./DesignSystem.md)
+- [AdminAnalytics.md](./AdminAnalytics.md)
 - [FeatureRegistry.md](./FeatureRegistry.md)
 - [ModeArchitecture.md](./ModeArchitecture.md)
 - [../08-governance.md](../08-governance.md)

@@ -38,6 +38,9 @@ export function formatAuthError(err) {
   if (lower.includes("not configured") || lower.includes("supabase")) {
     return "Cloud account is not available in this build.";
   }
+  if (lower.includes("infinite recursion") && lower.includes("policy")) {
+    return "Account security policy error — run supabase/migrations/20260606010000_fix_admin_rls_recursion.sql in Supabase SQL Editor.";
+  }
   if (code === "42703") {
     return "Profile saved with basic fields only — run latest database migration for full profile sync.";
   }

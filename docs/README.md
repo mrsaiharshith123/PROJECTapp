@@ -16,5 +16,6 @@
 | [10-i18n.md](./10-i18n.md) | **22 languages + English** — keys, scripts, wiring rules |
 | [architecture/](./architecture/) | Architecture, design system, modes, insights, features |
 | [architecture/PaymentsAndLending.md](./architecture/PaymentsAndLending.md) | Razorpay, promissory notes, confirmation service |
+| [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md) | **Admin intelligence** — `/admin`, tracking, Supabase migrations, granting admin |
 
 **GitHub README** ([../README.md](../README.md)) is a short public summary and deploy notes — it links here for full detail.

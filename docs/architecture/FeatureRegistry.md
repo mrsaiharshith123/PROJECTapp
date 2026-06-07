@@ -13,6 +13,7 @@ Source of truth: `src/governance/registries/features.js`
 | `subscriptions` | Pro / Power gates | `ProGate`, `PlansButton`, `PlansModal` | `subscriptionTiers.js` |
 | `notifications` | Bell / reminders | `NotificationPanel` | notifications, reminders |
 | `onboarding` | First-run | `OnboardingPage` | — |
+| `admin-intelligence` | Product intelligence (internal) | `AdminPage`, `profile/hub/ProfileAdminEntry` | `analytics/*`, `admin_product_overview` RPC |
 
 ## Adding a feature
 

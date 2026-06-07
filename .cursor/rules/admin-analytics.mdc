@@ -1,0 +1,45 @@
+---
+description: Admin intelligence and product analytics conventions
+globs:
+  - src/**/*
+  - supabase/**/*
+  - docs/**/*
+---
+
+# Admin intelligence
+
+Full handbook: `docs/architecture/AdminAnalytics.md`
+
+## Product surface
+
+- **Dashboard** — `/admin` inside CommitTrack (`src/ui/features/pages/AdminPage.jsx`, `src/ui/features/admin/`). No separate admin site.
+- **Profile entry** — `ProfileAdminEntry.jsx` below Control center; **render only when `isAdmin`**; hidden for all other users. Do not add admin to `Navbar.jsx`.
+- **Route guard** — `RequireAdmin` + server RPC `admin_product_overview()` — never expose cross-user data without admin check.
+
+## Access control
+
+- **Flag** — `profiles.is_admin = true` only.
+- **Grant** — Supabase SQL Editor: `SELECT grant_committrack_admin('<uuid>');` (after migration `20260606020000_fix_admin_grant_trigger.sql`).
+- **Client** — `AuthContext` exposes `isAdmin`; cannot self-promote (DB trigger blocks API updates).
+
+## Tracking
+
+- Use `trackEvent()` from `src/services/analytics/trackEvent.js` — never insert `app_events` from UI directly.
+- Stable names in `src/services/analytics/eventNames.js` (`ANALYTICS_EVENTS`).
+- Background instrumentation: `src/app/AnalyticsBridge.jsx` (mounted in `App.jsx`).
+- Future providers: `registerAnalyticsProvider()` in `analyticsHub.js` (PostHog, Plausible, etc.).
+
+## Privacy
+
+Track modules, onboarding steps, sessions — **not** PAN, bill amounts, SMS content, or message bodies.
+
+## Supabase migrations (order matters)
+
+1. `20260606000000_admin_analytics.sql`
+2. `20260606010000_fix_admin_rls_recursion.sql` — required for login after (1)
+3. `20260606020000_fix_admin_grant_trigger.sql` — required to persist `is_admin` grants
+
+## i18n
+
+- Profile: `profileHub.adminLabel`, `profileHub.adminTile`
+- Dashboard: `admin.*` keys — run `npm run sync:i18n` after adding English keys.

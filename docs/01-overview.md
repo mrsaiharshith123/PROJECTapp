@@ -11,6 +11,7 @@ CommitTrack is a **local-first PWA** for tracking **financial commitments** (bil
 - **Storage** — local-first on device; optional **CommitTrack Cloud** sync via Supabase (`docs/architecture/LocalFirstSync.md`).
 - **Lending** — track money lent/borrowed with schedules, trust scoring, WhatsApp share cards, and **promissory-note export** (`engines/lendingAgreement.js`, `utils/agreementExport.js`). Full legal-details UI is deferred — see [09-implementation-status.md](./09-implementation-status.md).
 - **Optional cloud** — Supabase auth/profile when env vars are set; core data still persists in the browser.
+- **Admin intelligence (internal)** — role-gated `/admin` dashboard and Profile entry for `is_admin` users; privacy-safe product events in Supabase (`docs/architecture/AdminAnalytics.md`).
 - **Appearance** — light, dark, or system theme (`data-theme` on `<html>`, `utils/theme.js`).
 - **Languages** — English + 22 scheduled languages of India (`src/i18n/`). Profile language picker; RTL for Urdu. See [10-i18n.md](./10-i18n.md).
 

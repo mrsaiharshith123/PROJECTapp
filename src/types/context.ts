@@ -16,6 +16,7 @@ export type AuthContextValue = {
   authNotice: string;
   error: string | null;
   isLoggedIn: boolean;
+  isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: AuthProfile | null) => Promise<unknown>;
   signIn: (email: string, password: string) => Promise<unknown>;
   signOut: () => Promise<void>;

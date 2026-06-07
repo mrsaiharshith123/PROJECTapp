@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, Button, inputClassName, Eyebrow, Caption, Body, ToneSurface } from "../../";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
@@ -12,6 +12,8 @@ import { validateOnboardingFields } from "../../../utils/profileSetup.js";
 import { routerBasename } from "../../../utils/basePath.js";
 import { getCategoryById } from "../../../constants/categories.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { trackEvent } from "../../../services/analytics/trackEvent.js";
+import { ANALYTICS_EVENTS } from "../../../services/analytics/eventNames.js";
 
 const QUICK_COMMITMENT_TEMPLATES = [
   { label: "Home / rent", category: "Rent", defaultAmount: 15000 },
@@ -55,6 +57,14 @@ export default function Onboarding() {
   const inputClass = inputClassName();
 
   const experience = getOnboardingExperience(experienceId);
+
+  useEffect(() => {
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_STEP, {
+      module: "onboarding",
+      step: String(step),
+      properties: { experience: experienceId },
+    });
+  }, [step, experienceId]);
 
   const validateBasics = () => {
     const draft = {
@@ -102,6 +112,10 @@ export default function Onboarding() {
     } catch {
       // Ignore profile sync errors to avoid blocking onboarding.
     }
+    trackEvent(ANALYTICS_EVENTS.ONBOARDING_COMPLETE, {
+      module: "onboarding",
+      properties: { experience: experienceId, bills_added: selectedLabels.size },
+    });
     if (replay) {
       navigate("/profile", { replace: true, state: { openSection: "guide" } });
     } else {

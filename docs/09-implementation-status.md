@@ -19,7 +19,8 @@ Last reviewed: June 2026.
 | Area | Status | Key paths |
 |------|--------|-----------|
 | Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*` |
-| Commitments / Add / Profile | ✅ | `ui/features/pages/*` |
+| Commitments / Add | ✅ | `ui/features/pages/*` |
+| Profile hub (control center, journey, widgets) | ✅ | `ui/features/profile/hub/*`, `ProfilePage.jsx` |
 | Analytics + charts (chip switcher) | ✅ | `AnalyticsPage.jsx`, `analytics/*` |
 | Dashboard tools (6 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax` — `modeExperience.js`, `DashboardTools.jsx` |
 | Light / dark / system theme | ✅ | `utils/theme.js`, `app/ThemeSync.jsx`, `ui/styles/theme-light.css` |
@@ -30,8 +31,22 @@ Last reviewed: June 2026.
 | Stability narrative in Financial pulse | ✅ | `engines/stabilityNarrative.js`, `FinancialPulseCard.jsx` |
 | Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` |
 | Annual health report (Pro) | ✅ | `ProfileBackupSection.jsx` |
-| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — ~503 keys, audit parity |
+| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — ~631 keys, audit parity |
 | i18n — Home, pulse, commitments, profile | ✅ Partial UI | See [10-i18n.md](./10-i18n.md) for wired vs pending screens |
+
+## Shipped — admin intelligence (internal)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Product analytics pipeline | ✅ | `services/analytics/*`, `app/AnalyticsBridge.jsx` |
+| Supabase `app_events` + admin RPC | ✅ | `supabase/migrations/2026060600*.sql` |
+| Admin dashboard `/admin` | ✅ | `ui/features/pages/AdminPage.jsx`, `ui/features/admin/*` |
+| Profile entry (admin-only) | ✅ | `ui/features/profile/hub/ProfileAdminEntry.jsx` |
+| Route guard + `isAdmin` auth flag | ✅ | `app/RequireAdmin.jsx`, `AuthContext.jsx` |
+
+**Setup:** apply all three admin migrations in order, then `SELECT grant_committrack_admin('<uuid>');` in Supabase SQL Editor. Full detail: [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md).
+
+**Not tracked:** bill amounts, PAN, SMS content, or other sensitive financial/identity fields.
 
 ## Shipped — payments & legal (backend-heavy)
 
@@ -81,7 +96,7 @@ Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuratio
 
 ## Tests & quality
 
-- **166** unit tests (`npm test`) — engines, utils, services, i18n
+- **178** unit tests (`npm test`) — engines, utils, services, analytics, i18n
 - Gate: `npm run audit` (includes copy tone + i18n key parity)
 
 ## Related docs
@@ -90,3 +105,4 @@ Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuratio
 - [architecture/Architecture.md](./architecture/Architecture.md) — layers & data flow
 - [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) — salaried / family tools
 - [10-i18n.md](./10-i18n.md) — languages, scripts, coverage
+- [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md) — admin dashboard, events, migrations

@@ -2,6 +2,8 @@
 -- CommitTrack — FINAL Supabase schema (paste entire file in SQL Editor → Run)
 -- Safe to re-run on a fresh project or after partial migrations.
 -- Tables: profiles · user_finance_snapshots · agreement_hashes
+-- Admin analytics (is_admin, app_events, admin RPC): see migrations/2026060600*.sql
+-- Handbook: docs/architecture/AdminAnalytics.md · supabase/README.md
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ── 1. profiles (account + subscription) ───────────────────────────────────

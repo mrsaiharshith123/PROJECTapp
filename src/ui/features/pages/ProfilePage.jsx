@@ -19,6 +19,7 @@ import ProfileStatusWidgets from "../profile/hub/ProfileStatusWidgets.jsx";
 import ProfileControlCenterGrid from "../profile/hub/ProfileControlCenterGrid.jsx";
 import ProfileJourneyStrip from "../profile/hub/ProfileJourneyStrip.jsx";
 import ProfileSettingsHub from "../profile/hub/ProfileSettingsHub.jsx";
+import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -174,6 +175,7 @@ const Profile = () => {
       <ProfileStatusWidgets hub={hub} />
       <ProfileJourneyStrip hub={hub} />
       <ProfileControlCenterGrid openId={openSection} onSelect={setOpenSection} />
+      <ProfileAdminEntry />
       <ProfileSettingsHub openId={openSection} onSelect={setOpenSection} renderPanel={renderPanel} />
 
       <InstallAppBanner />

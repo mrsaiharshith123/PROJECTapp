@@ -7,7 +7,7 @@ PROJECTapp/
 ├── scripts/                 Build & audit tooling (Node, not app runtime)
 ├── src/
 │   ├── main.jsx, App.jsx    App entry + routing + I18nProvider
-│   ├── app/                 App glue (ThemeSync, NotificationSync, ModeRoute, ToolsRedirect)
+│   ├── app/                 App glue (ThemeSync, AnalyticsBridge, RequireAdmin, ModeRoute, ToolsRedirect)
 │   ├── context/             React providers (CommitTrack, Auth)
 │   ├── hooks/               React hooks (intel, PWA install, …)
 │   ├── i18n/                Translations — 22 langs + en (see docs/10-i18n.md)
@@ -15,10 +15,11 @@ PROJECTapp/
 │   ├── constants/           Modes, categories, copy keys, symbols (no React)
 │   ├── guidance/            Education registries + explain helpers (not UI)
 │   ├── governance/          Audit registries (not in production bundle)
-│   ├── services/            Supabase auth, sync, notifications, Razorpay, OTP confirmation
+│   ├── services/            Supabase auth, sync, analytics, notifications, Razorpay, OTP confirmation
 │   ├── utils/               Storage, dates, lending, repayment, migration
 │   ├── types/               TypeScript types (context, global augmentations)
 │   └── ui/                  ★ ALL visual UI (see below)
+├── supabase/                Migrations + schema snapshot (see supabase/README.md)
 ├── tsconfig.json            TypeScript (checkJs on src/)
 ├── eslint.config.js
 ├── package.json
@@ -38,6 +39,7 @@ Routes are declared in `src/App.jsx` and lazy-load screens from `ui/features/pag
 | `/analytics` | `ui/features/pages/AnalyticsPage.jsx` |
 | `/tools` | `app/ToolsRedirect.jsx` → Home dashboard |
 | `/profile` | `ui/features/pages/ProfilePage.jsx` |
+| `/admin` | `ui/features/pages/AdminPage.jsx` — `RequireAdmin` guard; not in bottom nav |
 | `/onboarding` | `ui/features/pages/OnboardingPage.jsx` |
 | `/lend/offer` | `ui/features/pages/LendingOfferReviewPage.jsx` |
 
@@ -57,7 +59,8 @@ src/ui/
 │   ├── modals/           Bill/lending/insurance modals
 │   ├── tools/            Calculator forms & advisors
 │   ├── lending/          Lending-specific UI
-│   ├── profile/          Profile sections
+│   ├── profile/          Profile sections + `hub/` (control center, admin entry)
+│   ├── admin/            Internal product intelligence widgets
 │   ├── analytics/        Charts & breakdowns
 │   └── auth/             Account panel
 ├── layout/               Screen shell, Navbar, ErrorBoundary
@@ -112,6 +115,9 @@ No React imports. Examples:
 | `razorpay.js` | Client checkout for Pro/Power (verify server-side before prod) |
 | `otpConfirmation.js` | Declared lender/borrower confirmation refs (not Aadhaar eSign) |
 | `smsAutoDetect.js` | SMS parse helpers for commitment detect modal |
+| `analytics/trackEvent.js` | Public product-event API — fan-out via `analyticsHub.js` |
+| `analytics/adminIntel.js` | Admin check + `admin_product_overview()` RPC |
+| `analytics/providers/supabaseProvider.js` | Writes `app_events` when Supabase configured |
 
 Wire engines from hooks (`useCommitIntel`, `useStabilityIntel`) or directly from UI event handlers — never duplicate formulas in JSX.
 
