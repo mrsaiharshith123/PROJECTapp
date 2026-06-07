@@ -26,7 +26,7 @@ export default function AdminGrowthChart({ points = [] }) {
               fontSize: "12px",
             }}
           />
-          <Bar dataKey="signups" fill="var(--ct-accent)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="signups" fill="var(--ct-accent)" radius={[8, 8, 0, 0]} style={{ filter: "drop-shadow(0 0 8px var(--ct-chart-line-glow))" }} />
         </BarChart>
       </ResponsiveContainer>
     </ChartShell>

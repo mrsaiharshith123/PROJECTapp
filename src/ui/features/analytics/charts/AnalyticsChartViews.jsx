@@ -107,9 +107,9 @@ export function PressureLineChart({ data, theme }) {
           type="monotone"
           dataKey="pressure"
           stroke={t.series.accent}
-          strokeWidth={2.5}
-          dot={{ r: 3, fill: t.series.accentSoft }}
-          activeDot={{ r: 5 }}
+          strokeWidth={t.lineWidth}
+          dot={{ r: t.dotRadius, fill: t.series.accentSoft }}
+          activeDot={{ r: t.dotRadius + 2 }}
           name="Score"
         />
       </LineChart>
@@ -149,8 +149,8 @@ export function FreeCashLineChart({ data, theme }) {
           type="monotone"
           dataKey="freeMoney"
           stroke={t.series.success}
-          strokeWidth={2.5}
-          dot={{ r: 3, fill: t.series.success }}
+          strokeWidth={t.lineWidth}
+          dot={{ r: t.dotRadius, fill: t.series.success }}
           name="Free cash"
         />
       </LineChart>

@@ -1,5 +1,5 @@
 /**
- * Light theme polish — removes dark-mode glare, glow, and low-contrast stacks.
+ * Light theme polish — softer glass, reduced neon glow.
  */
 html[data-ui="ct"][data-theme="light"] .ct-hero-month,
 html[data-ui="ct"][data-theme="light"] .ct-card-hero,
@@ -15,6 +15,7 @@ html[data-ui="ct"][data-theme="light"] .ct-card-glow {
 
 html[data-ui="ct"][data-theme="light"] .ct-hero-month:hover {
   filter: none;
+  transform: none;
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-card-hero-deep {
@@ -28,6 +29,7 @@ html[data-ui="ct"][data-theme="light"] .ct-hero-wave {
 html[data-ui="ct"][data-theme="light"] .ct-tool-tile:hover,
 html[data-ui="ct"][data-theme="light"] .ct-quick-action-icon {
   box-shadow: var(--ct-shadow-card);
+  transform: none;
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-segmented-tab-active {
@@ -38,6 +40,22 @@ html[data-ui="ct"][data-theme="light"] .ct-segmented-tab-active {
 
 html[data-ui="ct"][data-theme="light"] .ct-top-link-active {
   box-shadow: none;
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-bottom-nav {
+  box-shadow: var(--ct-shadow-dock);
+  border-color: var(--ct-border);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-nav-fab {
+  box-shadow:
+    0 12px 32px -8px rgba(109, 74, 255, 0.28),
+    0 0 0 4px rgba(255, 255, 255, 0.96);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-chart-plot .recharts-line-curve,
+html[data-ui="ct"][data-theme="light"] .ct-chart-plot .recharts-bar-rectangle {
+  filter: none;
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-notif-overlay {

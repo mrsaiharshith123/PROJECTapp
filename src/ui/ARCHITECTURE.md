@@ -2,13 +2,14 @@
 
 All visual UI lives under `src/ui/`. Pages and features import from `src/ui` or `src/ui/index.js` only.
 
-## Design system (reference mockup)
+## Design system (Cyber Glass Fintech OS)
 
-- **Tokens:** `src/ui/styles/tokens.css` — `#0D0D17` background, `#1A1A2E` cards, `#7C5CFF` accent
-- **Components:** `src/ui/styles/components.css` — layout, nav, cards, chips, lists
+- **Tokens:** `src/ui/styles/tokens.css` — Obsidian `#07070A`, Midnight Indigo `#121225`, Electric Violet `#7C4DFF`, Neon Lavender `#9B6DFF`
+- **Components:** `src/ui/styles/components.css` — Aurora glass cards, pulse panels, frost filters, floating neon dock, neon pill buttons
 - **Primitives:** `Card`, `Button`, `Input`, `Text` in `src/ui/primitives/`
-- **Patterns:** `ListRow`, `StatCard`, `SettingsRow`, `PageHeader`, `FilterChips`, `BillCard`, `MoneyMonthPanel`, etc.
-- **Legacy Tailwind:** stray `text-gray-*` / `bg-indigo-*` inside the app shell are remapped in `components.css` while screens migrate.
+- **Patterns:** `ListRow`, `StatCard`, `PageHeader`, `FilterChips`, etc.
+- **Icons:** Phosphor via `CtIcon` — no emojis as UI icons
+- **Charts:** `getChartTheme()` in `src/ui/tokens/chartTheme.js` — neon minimal Recharts styling
 
 Outside `src/ui/`, use only `ct-*` layout classes from `components.css` (e.g. `ct-page`, `ct-stack`).
 
