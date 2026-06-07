@@ -35,9 +35,8 @@ import {
   Caption,
   Button,
   ProgressBar,
-  QuickAction,
-  QuickActionRow,
 } from "../../index.js";
+import HomeQuickActions from "../home/HomeQuickActions.jsx";
 
 function formatDate(dateStr) {
   if (!dateStr) return EM_DASH;
@@ -133,16 +132,7 @@ const Home = () => {
       <InstallAppBanner />
       <HomeOverviewCard />
 
-      <ScreenSection title={t("home.quickActions")}>
-        <QuickActionRow>
-          <QuickAction icon="📅" label={t("home.actionCalendar")} onClick={() => setCalendarOpen(true)} />
-          <QuickAction icon="+" label={t("copy.addBill")} onClick={() => navigate("/add")} />
-          <QuickAction icon="🤝" label={t("nav.lending")} onClick={() => navigate("/lending")} />
-          <QuickAction icon="💰" label={t("home.actionAddIncome")} onClick={() => navigate("/profile")} />
-          <QuickAction icon="🧮" label={t("tools.calculators")} onClick={scrollToTools} />
-          <QuickAction icon="📊" label={t("nav.analytics")} onClick={() => navigate("/analytics")} />
-        </QuickActionRow>
-      </ScreenSection>
+      <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
 
       <MicroTipCard seed={commitments.length + goals.length} />
 

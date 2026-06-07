@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { Card, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName, BillCard, Caption } from "../../";
+import { Card, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName, BillCard, Caption, EmptyState } from "../../";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
@@ -206,11 +207,11 @@ const Commitments = () => {
           <>
             <button
               type="button"
-              className="ct-btn ct-btn-ghost ct-btn-sm"
+              className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
               aria-label={t("bills.detectSms")}
               onClick={() => setSmsOpen(true)}
             >
-              📱
+              <CtIcon name="device-mobile" size={22} />
             </button>
             <Fab type="button" onClick={() => navigate("/add")} aria-label={copy.addBill}>
               +
@@ -318,13 +319,11 @@ const Commitments = () => {
       </Card>
 
       {sortedCommitments.length === 0 && (
-        <Card className="ct-stack-center" style={{ padding: "3rem 1.25rem", textAlign: "center" }}>
-          <p className="text-4xl mb-3" aria-hidden>
-            {"\uD83D\uDCCB"}
-          </p>
-          <p className="ct-body-strong">{copy.noBills}</p>
-          <Caption>{t("bills.emptyHint", { action: copy.addBill })}</Caption>
-        </Card>
+        <EmptyState
+          icon="clipboard-text"
+          title={copy.noBills}
+          hint={t("bills.emptyHint", { action: copy.addBill })}
+        />
       )}
 
       {sortedCommitments.length > 0 && activeBills.length === 0 && (

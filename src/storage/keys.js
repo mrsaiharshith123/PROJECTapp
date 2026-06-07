@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   settings: "committrack_settings",
   monthlySnapshots: "committrack_monthly_snapshots",
   goals: "committrack_goals",
+  dailySpends: "committrack_daily_spends",
   schemaVersion: "committrack_schema_version",
   syncMeta: "committrack_sync_meta",
 };

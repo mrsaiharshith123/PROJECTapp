@@ -106,7 +106,7 @@ export default function PlansModal({ open, onClose }) {
               </div>
               <div className="shrink-0 flex flex-col gap-1 items-end">
                 {isCurrent ? (
-                  <Badge tone="success">Current plan ✓</Badge>
+                  <Badge tone="success">Current plan</Badge>
                 ) : isPaid ? (
                   <Button
                     type="button"

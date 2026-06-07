@@ -95,7 +95,7 @@ export default function HomeOverviewCard() {
     <HeroMonthCard
       title={title}
       monthLabel={monthLabel}
-      emoji={modeCfg.emoji}
+      icon={modeCfg.icon}
       left={formatInr(monthSummary.leftThisMonth)}
       paid={formatInr(monthSummary.paidThisMonth)}
       due={formatInr(monthSummary.dueThisMonth)}

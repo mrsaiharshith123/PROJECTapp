@@ -1,11 +1,12 @@
 import { cn } from "../utils/cn.js";
 import { ProgressBar } from "../patterns/ProgressBar.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { CtIcon } from "../icons/CtIcon.jsx";
 
 export function HeroMonthCard({
   title,
   monthLabel,
-  emoji,
+  icon,
   left,
   paid,
   due,
@@ -38,9 +39,11 @@ export function HeroMonthCard({
           <p className="ct-eyebrow">{title}</p>
           <p className="ct-caption mt-0.5">{monthLabel}</p>
         </div>
-        <span className="text-2xl" aria-hidden>
-          {emoji}
-        </span>
+        {icon && (
+          <span className="ct-hero-month-icon" aria-hidden>
+            <CtIcon name={icon} size={28} />
+          </span>
+        )}
       </div>
 
       <div className="ct-grid-3 gap-2 px-1">

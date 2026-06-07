@@ -1,0 +1,23 @@
+---
+description: Use Phosphor icons instead of emoji in UI
+globs:
+  - src/**/*
+---
+
+# Icons — no emoji
+
+**Do not use Unicode emoji** in UI, constants, or copy (e.g. 📱 🏠 💰 👤).
+
+Use **`CtIcon`** from `src/ui/icons/CtIcon.jsx` with semantic keys registered in that file:
+
+```jsx
+import { CtIcon } from "../icons/CtIcon.jsx";
+<CtIcon name="device-mobile" size={22} />
+```
+
+- Weight: **`regular`** (Phosphor Regular) unless a design spec says otherwise.
+- Store icon keys as plain strings in constants (`categories.js`, `userModes.js`, `symbols.js`) — never emoji literals.
+- Text symbols like `+`, `›`, `—`, `₹` are fine; pictorial emoji are not.
+- Profile avatars use `CtIcon` with keys from `profileAvatars.js`, not emoji characters.
+
+When adding a new icon, register it in `CtIcon.jsx` (`ICON_REGISTRY`) and reuse the key everywhere.

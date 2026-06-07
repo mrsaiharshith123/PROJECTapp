@@ -37,6 +37,14 @@ export function explainInsight(insight, ctx = {}) {
       reasons: ["Active savings goals need monthly room in free cash."],
     },
     {
+      match: /txn-|delivery|restaurant|lifestyle leak|discretionary/i,
+      reasons: ["Daily spends and merchant patterns feed this signal.", "Small recurring purchases can reduce monthly flexibility."],
+    },
+    {
+      match: /medical|health/i,
+      reasons: ["Health-related spends are survival-category and can spike in tight months."],
+    },
+    {
       match: /pressure|burden|committed/i,
       reasons: ["Monthly obligations grew relative to income."],
     },

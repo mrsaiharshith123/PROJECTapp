@@ -4,13 +4,14 @@ import { navItemsForMode } from "../../constants/userModes.js";
 import { resolveUserMode } from "../../constants/modeExperience.js";
 import { useTranslation } from "../../i18n/I18nProvider.jsx";
 import { cn } from "../utils/cn.js";
+import { CtIcon } from "../icons/CtIcon.jsx";
 
 function Brand() {
   const { t } = useTranslation();
   return (
     <div className="ct-brand">
       <span className="ct-brand-mark" aria-hidden>
-        💰
+        <CtIcon name="wallet" size={22} />
       </span>
       <span className="ct-brand-text">
         <span className="ct-brand-name">{t("brand.appName")}</span>
@@ -18,6 +19,13 @@ function Brand() {
       </span>
     </div>
   );
+}
+
+function NavIcon({ item }) {
+  if (item.icon === "+") {
+    return <span className="ct-nav-fab-plus">+</span>;
+  }
+  return <CtIcon name={item.icon} size={22} />;
 }
 
 export function Navbar() {
@@ -66,7 +74,9 @@ export function Navbar() {
                     aria-label={t("nav.fabAria")}
                     onClick={() => navigate(item.to)}
                   >
-                    <span className="ct-nav-fab-icon">{item.icon}</span>
+                    <span className="ct-nav-fab-icon">
+                      <NavIcon item={item} />
+                    </span>
                   </button>
                 </div>
               );
@@ -78,7 +88,9 @@ export function Navbar() {
                 end={item.to === "/"}
                 className={({ isActive }) => cn("ct-nav-item", isActive && "ct-nav-item-active")}
               >
-                <span className="ct-nav-icon">{item.icon}</span>
+                <span className="ct-nav-icon">
+                  <NavIcon item={item} />
+                </span>
                 <span className="ct-nav-label">{navLabel(item)}</span>
               </NavLink>
             );

@@ -14,6 +14,7 @@ export const INSIGHT_PRODUCERS = [
   { id: "subscription-leak", path: "engines/subscriptionLeak.js", domain: "subscriptions" },
   { id: "financial-health", path: "engines/financialHealth.js", domain: "health" },
   { id: "notifications", path: "engines/notifications.js", domain: "reminders" },
+  { id: "transaction-intel", path: "engines/transactionIntel.js", domain: "transactions" },
 ];
 
 export const INSIGHT_TONES = ["critical", "warning", "caution", "neutral", "positive"];

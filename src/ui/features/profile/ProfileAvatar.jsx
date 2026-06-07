@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { Button, Caption } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
 import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 
@@ -43,8 +44,8 @@ export default function ProfileAvatar({ settings, updateSettings, size = "lg", c
       {imageUrl ? (
         <img src={imageUrl} alt="" className="w-full h-full object-cover" />
       ) : (
-        <span className="select-none" role="img" aria-label={style.label}>
-          {style.character}
+        <span className="ct-avatar-icon flex items-center justify-center w-full h-full" role="img" aria-label={style.label}>
+          <CtIcon name={style.icon} size={compact ? 22 : 32} />
         </span>
       )}
     </div>

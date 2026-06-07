@@ -51,6 +51,10 @@ export type CommitTrackContextValue = {
   addGoal: (data: AuthProfile) => void;
   updateGoal: (id: number | string, patch: AuthProfile) => void;
   deleteGoal: (id: number | string) => void;
+  addDailySpend: (data: AuthProfile) => void;
+  deleteDailySpend: (id: number | string) => void;
+  dailySpends: AuthProfile[];
+  allDailySpends: AuthProfile[];
   supplementalNotifications: AuthProfile[];
   pushInAppNotification: (item: AuthProfile) => void;
   markNotificationRead: (id: string) => void;

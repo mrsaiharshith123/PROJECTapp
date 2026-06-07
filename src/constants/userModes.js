@@ -1,10 +1,10 @@
 /** Primary bottom nav — Home · Bills · Add · Lending · Profile (analytics via Home hero) */
 export const NAV_ITEMS = [
-  { to: "/", labelKey: "nav.home", icon: "\u{1F3E0}" },
-  { to: "/commitments", labelKey: "nav.bills", icon: "\u{1F4CB}" },
+  { to: "/", labelKey: "nav.home", icon: "house" },
+  { to: "/commitments", labelKey: "nav.bills", icon: "clipboard-text" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
-  { to: "/lending", labelKey: "nav.lending", icon: "\u{1F91D}" },
-  { to: "/profile", labelKey: "nav.profile", icon: "\u{1F464}" },
+  { to: "/lending", labelKey: "nav.lending", icon: "handshake" },
+  { to: "/profile", labelKey: "nav.profile", icon: "user" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */
@@ -19,7 +19,7 @@ export const USER_MODES = [
   {
     id: "salaried",
     label: "Salaried",
-    emoji: "💼",
+    icon: "briefcase",
     description: "Salary, EMIs, and subscriptions — single or family household.",
     navPaths: NAV_FULL,
     showLending: true,
@@ -33,7 +33,7 @@ const LEGACY_MODES = {
   family: {
     id: "family",
     label: "Family household",
-    emoji: "👨‍👩‍👧",
+    icon: "users-three",
     description: "Shared expenses and joint goals.",
     navPaths: NAV_FULL,
     showLending: true,
@@ -42,7 +42,7 @@ const LEGACY_MODES = {
   power: {
     id: "power",
     label: "Power user",
-    emoji: "⚡",
+    icon: "lightning",
     description: "All features enabled.",
     navPaths: NAV_FULL,
     showLending: true,

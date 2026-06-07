@@ -132,7 +132,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
                   <td className="py-1.5 pr-2">{r.discountPct}%</td>
                   <td className="py-1.5 pr-2">{formatInr(r.payout)}</td>
                   <td className="py-1.5 pr-2">{formatInr(r.loss)}</td>
-                  <td className="py-1.5">{r.lossOk ? "✓" : "—"}</td>
+                  <td className="py-1.5">{r.lossOk ? "Yes" : "—"}</td>
                 </tr>
               ))}
             </tbody>

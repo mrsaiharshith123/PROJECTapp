@@ -10,18 +10,20 @@ import { templateToCommitment } from "../../../utils/onboardingTemplates.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { validateOnboardingFields } from "../../../utils/profileSetup.js";
 import { routerBasename } from "../../../utils/basePath.js";
+import { getCategoryById } from "../../../constants/categories.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const QUICK_COMMITMENT_TEMPLATES = [
-  { emoji: "🏠", label: "Home / rent", category: "Rent", defaultAmount: 15000 },
-  { emoji: "🏦", label: "Home loan EMI", category: "EMI", defaultAmount: 25000 },
-  { emoji: "🚗", label: "Car loan EMI", category: "EMI", defaultAmount: 8000 },
-  { emoji: "📺", label: "OTT / streaming", category: "Subscription", defaultAmount: 649 },
-  { emoji: "🛡️", label: "Insurance", category: "Insurance", defaultAmount: 2000 },
-  { emoji: "📈", label: "SIP / MF", category: "SIP", defaultAmount: 5000 },
-  { emoji: "🪙", label: "Chit fund", category: "Chit Fund", defaultAmount: 3000 },
-  { emoji: "📚", label: "School fees", category: "School", defaultAmount: 10000 },
-  { emoji: "💳", label: "Credit card", category: "Credit Card", defaultAmount: 5000 },
-  { emoji: "⚡", label: "Electricity", category: "Utility", defaultAmount: 1200 },
+  { label: "Home / rent", category: "Rent", defaultAmount: 15000 },
+  { label: "Home loan EMI", category: "EMI", defaultAmount: 25000 },
+  { label: "Car loan EMI", category: "EMI", defaultAmount: 8000 },
+  { label: "OTT / streaming", category: "Subscription", defaultAmount: 649 },
+  { label: "Insurance", category: "Insurance", defaultAmount: 2000 },
+  { label: "SIP / MF", category: "SIP", defaultAmount: 5000 },
+  { label: "Chit fund", category: "Chit Fund", defaultAmount: 3000 },
+  { label: "School fees", category: "School", defaultAmount: 10000 },
+  { label: "Credit card", category: "Credit Card", defaultAmount: 5000 },
+  { label: "Electricity", category: "Utility", defaultAmount: 1200 },
 ];
 
 function experienceIdFromSettings(settings) {
@@ -163,7 +165,9 @@ export default function Onboarding() {
               onClick={() => setExperienceId(m.id)}
               className={`ct-option-card ${experienceId === m.id ? "ct-option-card-active" : ""}`}
             >
-              <span className="text-2xl mr-2">{m.emoji}</span>
+              <span className="inline-flex mr-2 shrink-0">
+                <CtIcon name={m.icon} size={24} />
+              </span>
               <span className="font-semibold">{m.label}</span>
               <Caption className="block mt-1 ml-8">{m.tagline}</Caption>
             </button>
@@ -307,7 +311,9 @@ export default function Onboarding() {
                 onClick={() => toggleTemplate(t.label)}
                 className={`ct-option-card ${active ? "ct-option-card-active" : ""}`}
               >
-                <span className="text-xl mr-2">{t.emoji}</span>
+                <span className="inline-flex mr-2 shrink-0">
+                  <CtIcon name={getCategoryById(t.category).icon} size={20} />
+                </span>
                 <span className="font-semibold text-sm">{t.label}</span>
               </button>
             );

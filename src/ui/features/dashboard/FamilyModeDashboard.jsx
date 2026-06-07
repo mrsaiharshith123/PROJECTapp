@@ -78,7 +78,7 @@ export default function FamilyModeDashboard() {
   return (
     <Stack gap="md">
       <ModeHeroCard
-        emoji="👨‍👩‍👧"
+        icon="users-three"
         title="Household finances"
         subtitle={
           settings.activeProfileId && settings.activeProfileId !== "default"

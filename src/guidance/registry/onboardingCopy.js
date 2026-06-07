@@ -3,7 +3,7 @@
 export const ONBOARDING_EXPERIENCES = [
   {
     id: "salaried",
-    emoji: "💼",
+    icon: "briefcase",
     label: "Salaried",
     tagline: "Personal salary and monthly commitments",
     explain:
@@ -13,7 +13,7 @@ export const ONBOARDING_EXPERIENCES = [
   },
   {
     id: "household",
-    emoji: "👨‍👩‍👧",
+    icon: "users-three",
     label: "Household / Family",
     tagline: "Shared home finances",
     explain:

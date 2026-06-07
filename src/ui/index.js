@@ -1,4 +1,5 @@
 export { cn } from "./utils/cn.js";
+export { CtIcon } from "./icons/CtIcon.jsx";
 
 export { Text, Heading, Eyebrow, Body, Caption } from "./primitives/Text.jsx";
 export { Card } from "./primitives/Card.jsx";

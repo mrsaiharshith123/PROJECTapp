@@ -4,20 +4,22 @@ export const EM_DASH = "\u2014";
 export const ARROW = "\u2192";
 export const CHEVRON = "\u203A";
 
+/** Semantic icon keys — render with CtIcon in UI. */
 export const STATUS_ICONS = {
-  paid: "\u2705",
-  pending: "\u{1F4C5}",
-  overdue: "\u26A0\uFE0F",
-  upnext: "\u{1F501}",
+  paid: "check",
+  pending: "calendar",
+  overdue: "warning",
+  upnext: "arrows-clockwise",
 };
 
 export const TOOL_ICONS = {
-  planner: "\u{1F9EE}",
-  loan: "\u{1F4C9}",
-  insurance: "\u{1F6E1}\uFE0F",
-  chit: "\u{1FA99}",
-  bond: "\u{1F9FE}",
-  incomeTax: "\u{1F4B8}",
+  planner: "calculator",
+  loan: "chart-line-down",
+  insurance: "shield",
+  chit: "coin",
+  bond: "receipt",
+  incomeTax: "currency-inr",
+  logSpend: "note-pencil",
 };
 
 export function formatInr(amount) {

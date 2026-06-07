@@ -24,6 +24,7 @@ import { runDuplicatesAudit } from "./governance/duplicates.mjs";
 import { runSyncAudit } from "./governance/sync.mjs";
 import { runGuidanceAudit } from "./governance/guidance.mjs";
 import { runTreeAudit } from "./governance/tree.mjs";
+import { runTransactionsAudit } from "./governance/transactions.mjs";
 
 /** @type {{ id: string, label: string, group: string, quick: boolean, fn?: () => object, script?: string }[]} */
 const GOVERNANCE = [
@@ -32,6 +33,7 @@ const GOVERNANCE = [
   { id: "features", label: "Feature dependencies", group: "platform", quick: true, fn: runFeaturesAudit },
   { id: "modes", label: "User mode isolation", group: "product", quick: true, fn: runModesAudit },
   { id: "insights", label: "Insight engines", group: "product", quick: false, fn: runInsightsAudit },
+  { id: "transactions", label: "Transaction intelligence", group: "product", quick: true, fn: runTransactionsAudit },
   { id: "performance", label: "Performance heuristics", group: "frontend", quick: false, fn: runPerformanceAudit },
   { id: "mobile", label: "Mobile & responsive", group: "frontend", quick: true, fn: runMobileAudit },
   { id: "duplicates", label: "Duplicate & similar UI", group: "frontend", quick: false, fn: runDuplicatesAudit },

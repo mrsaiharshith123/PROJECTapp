@@ -17,9 +17,13 @@ async function loadLocale(file) {
   return mod.default || mod;
 }
 
-/** @param {Record<string, string>} messages */
-function serializeLocale(messages) {
-  const lines = ["export default {"];
+/** @param {Record<string, string>} messages @param {string} [file] */
+function serializeLocale(messages, file = "") {
+  const headers = {
+    "ks.js": "/** Kashmiri (ks) locale — CommitTrack messages */\n",
+    "ur.js": "/** Urdu (ur) locale — CommitTrack messages */\n",
+  };
+  const lines = [headers[file] || "", "export default {"].filter(Boolean);
   for (const [key, value] of Object.entries(messages)) {
     lines.push(`  ${JSON.stringify(key)}: ${JSON.stringify(String(value))},`);
   }
@@ -36,14 +40,14 @@ async function main() {
     const filePath = path.join(MESSAGES_DIR, file);
     const messages = await loadLocale(filePath);
     let changed = false;
+    const pruned = {};
     for (const key of sourceKeys) {
-      if (!(key in messages)) {
-        messages[key] = en[key];
-        changed = true;
-      }
+      pruned[key] = key in messages ? messages[key] : en[key];
+      if (!(key in messages)) changed = true;
     }
+    if (Object.keys(messages).length !== sourceKeys.length) changed = true;
     if (changed) {
-      fs.writeFileSync(filePath, serializeLocale(messages), "utf8");
+      fs.writeFileSync(filePath, serializeLocale(pruned, file), "utf8");
       updated += 1;
       console.log(`Updated ${file}`);
     }

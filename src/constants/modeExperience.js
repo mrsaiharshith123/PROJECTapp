@@ -10,9 +10,9 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
-  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
-  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
+  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
+  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -51,6 +51,12 @@ export const MODE_TOOL_DEFS = {
     title: "Income tax",
     subtitle: "Simple salary estimate",
     accent: "teal",
+  },
+  logSpend: {
+    id: "logSpend",
+    title: "Log spend",
+    subtitle: "Quick daily expense note",
+    accent: "indigo",
   },
 };
 

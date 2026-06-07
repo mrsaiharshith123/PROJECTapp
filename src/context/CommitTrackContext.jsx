@@ -13,6 +13,7 @@ import {
   invalidateInitialAppStateCache,
   saveMonthlySnapshotsToStorage,
   saveGoalsToStorage,
+  saveDailySpendsToStorage,
   normalizeCommitment,
   normalizeLending,
   normalizeGoal,
@@ -34,6 +35,7 @@ import {
   unregisterDevSubscriptionTools,
 } from "../utils/devSubscriptionTools.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
+import { normalizeDailySpend, filterDailySpendsByProfile } from "../utils/dailySpends.js";
 /** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
 const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
 
@@ -57,6 +59,7 @@ export function CommitTrackProvider({ children }) {
   const [settings, setSettings] = useState(() => loadInitialAppState().settings);
   const [monthlySnapshots, setMonthlySnapshots] = useState(() => loadInitialAppState().monthlySnapshots);
   const [goals, setGoals] = useState(() => loadInitialAppState().goals);
+  const [dailySpends, setDailySpends] = useState(() => loadInitialAppState().dailySpends);
   const [supplementalNotifications, setSupplementalNotifications] = useState([]);
 
   useEffect(() => {
@@ -157,6 +160,16 @@ export function CommitTrackProvider({ children }) {
     setGoals((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       saveGoalsToStorage(next);
+      invalidateInitialAppStateCache();
+      emitLocalDataChanged();
+      return next;
+    });
+  }, []);
+
+  const persistDailySpends = useCallback((updater) => {
+    setDailySpends((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      saveDailySpendsToStorage(next);
       invalidateInitialAppStateCache();
       emitLocalDataChanged();
       return next;
@@ -395,6 +408,25 @@ export function CommitTrackProvider({ children }) {
     [persistGoals]
   );
 
+  const addDailySpend = useCallback(
+    (raw) => {
+      const spend = normalizeDailySpend({
+        ...raw,
+        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        createdAt: Date.now(),
+      });
+      persistDailySpends((prev) => [spend, ...prev].slice(0, 500));
+    },
+    [persistDailySpends, settings.activeProfileId]
+  );
+
+  const deleteDailySpend = useCallback(
+    (id) => {
+      persistDailySpends((prev) => prev.filter((s) => String(s.id) !== String(id)));
+    },
+    [persistDailySpends]
+  );
+
   const pushInAppNotification = useCallback((item) => {
     const row = {
       id: item.id || `local-${Date.now()}`,
@@ -465,6 +497,10 @@ export function CommitTrackProvider({ children }) {
     () => filterByProfile(goals, activeProfileId).filter((g) => g.active !== false && !g.archived),
     [goals, activeProfileId]
   );
+  const profileDailySpends = useMemo(
+    () => filterDailySpendsByProfile(dailySpends, activeProfileId),
+    [dailySpends, activeProfileId]
+  );
   const importAppData = useCallback(
     (payload, options = {}) => {
       const merged = mergeImportedAppState(
@@ -510,6 +546,8 @@ export function CommitTrackProvider({ children }) {
       allLendings: lendings,
       goals: profileGoals,
       allGoals: goals,
+      dailySpends: profileDailySpends,
+      allDailySpends: dailySpends,
       activeProfileId,
       settings,
       monthlySnapshots,
@@ -529,6 +567,8 @@ export function CommitTrackProvider({ children }) {
       addGoal,
       updateGoal,
       deleteGoal,
+      addDailySpend,
+      deleteDailySpend,
       supplementalNotifications,
       pushInAppNotification,
       markNotificationRead,
@@ -544,6 +584,8 @@ export function CommitTrackProvider({ children }) {
       lendings,
       profileGoals,
       goals,
+      dailySpends,
+      profileDailySpends,
       activeProfileId,
       settings,
       monthlySnapshots,
@@ -561,6 +603,8 @@ export function CommitTrackProvider({ children }) {
       addGoal,
       updateGoal,
       deleteGoal,
+      addDailySpend,
+      deleteDailySpend,
       supplementalNotifications,
       pushInAppNotification,
       markNotificationRead,

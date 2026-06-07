@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { dismissToolsNudge, isToolsNudgeDismissed } from "../../../utils/toolsDiscoveryStorage.js";
 import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const SCROLL_IDLE_MS = 220;
 
@@ -60,8 +61,8 @@ export default function ToolsDiscoveryToast({ variant = "home" }) {
     >
       <div className="relative">
         <button type="button" onClick={goToTools} className="ct-tools-toast-btn">
-          <span className="text-base leading-none shrink-0" aria-hidden>
-            {"\u{1F9EE}"}
+          <span className="ct-tools-toast-icon shrink-0" aria-hidden>
+            <CtIcon name="calculator" size={22} />
           </span>
           <div className="min-w-0">
             <Body className="!text-[11px] font-semibold leading-tight text-[var(--ct-text)]">

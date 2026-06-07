@@ -249,7 +249,7 @@ const Add = () => {
             <option value="">Select category</option>
             {billCategories.map((cat) => (
               <option key={cat.id} value={cat.id}>
-                {cat.icon} {cat.label}
+                {cat.label}
               </option>
             ))}
           </select>

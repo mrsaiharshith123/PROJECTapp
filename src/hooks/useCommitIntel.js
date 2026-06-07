@@ -22,6 +22,11 @@ import { forecastInsights } from "../engines/forecast.js";
 import { subscriptionLeakReport } from "../engines/subscriptionLeak.js";
 import { getEffectiveLendingStatus } from "../utils/lendingStatus.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
+import {
+  transactionInsightsForMerge,
+  buildTransactionLifeFeed,
+  buildTransactionInsights,
+} from "../services/transactions/index.js";
 
 export function useCommitIntel() {
   const {
@@ -29,6 +34,7 @@ export function useCommitIntel() {
     lendings,
     settings,
     monthlySnapshots,
+    dailySpends,
     todayStr,
     getEffectiveStatus,
     supplementalNotifications,
@@ -61,7 +67,23 @@ export function useCommitIntel() {
       subscriptionYearlyCostInsight(commitments, getEffectiveStatus),
       emiBurdenPercentInsight(commitments, income, getEffectiveStatus),
     ].filter(Boolean);
-    const insights = mergeExtendedInsights(baseInsights, extended);
+
+    const txnInput = {
+      commitments,
+      lendings,
+      settings,
+      dailySpends: dailySpends || [],
+      todayStr,
+      getEffectiveStatus,
+      getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      burdenRatio,
+      freeCash: cash.freeMoney,
+    };
+    const transactionInsights = transactionInsightsForMerge(txnInput);
+    const transactionFeed = buildTransactionLifeFeed(txnInput, 4);
+    const transactionRhythmNote = buildTransactionInsights(txnInput).rhythmNote;
+
+    const insights = mergeExtendedInsights(baseInsights, [...extended, ...transactionInsights]);
 
     const score = computeCanonicalPressureScore({
       commitments,
@@ -129,6 +151,8 @@ export function useCommitIntel() {
       forecast,
       subscriptionLeak,
       yearlyBurden,
+      transactionFeed,
+      transactionRhythmNote,
     };
   }, [
     commitments,
@@ -136,6 +160,7 @@ export function useCommitIntel() {
     settings,
     supplementalNotifications,
     monthlySnapshots,
+    dailySpends,
     todayStr,
     getEffectiveStatus,
   ]);

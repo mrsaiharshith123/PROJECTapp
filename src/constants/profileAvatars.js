@@ -1,20 +1,20 @@
 import { getUserModeConfig } from "./userModes.js";
 
-/** Cartoon-style avatar per user mode (large emoji on themed gradient). */
+/** Default avatar icon per user mode (on themed gradient). */
 export const MODE_AVATAR_STYLES = {
   salaried: {
     gradient: "from-slate-600 to-indigo-700",
-    character: "👨‍💼",
+    icon: "briefcase",
     label: "Salaried pro",
   },
   family: {
     gradient: "from-emerald-500 to-teal-600",
-    character: "👨‍👩‍👧",
+    icon: "users-three",
     label: "Family",
   },
   power: {
     gradient: "from-gray-800 to-indigo-900",
-    character: "🦸",
+    icon: "user-circle",
     label: "Power user",
   },
 };

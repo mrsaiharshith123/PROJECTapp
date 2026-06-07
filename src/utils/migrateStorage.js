@@ -12,15 +12,17 @@ import { refreshAllChitCommitments } from "./chitSync.js";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
+import { normalizeHomeQuickActionOrder } from "./homeQuickActionOrder.js";
 import { STORAGE_KEYS } from "../storage/keys.js";
 import { CONSENT_KEY } from "./dpdpConsent.js";
 import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
+import { normalizeDailySpend } from "./dailySpends.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 export const SCHEMA_VERSION_KEY = "committrack_schema_version";
-export const CURRENT_SCHEMA_VERSION = 9;
+export const CURRENT_SCHEMA_VERSION = 10;
 
 function normalizeCategory(raw) {
   const s = String(raw || "").trim();
@@ -399,6 +401,25 @@ export function migrateLegacySavedTowardGoals(settings, goals) {
   return { settings: nextSettings, goals: nextGoals };
 }
 
+export function loadDailySpendsFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.dailySpends);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.map((s) => normalizeDailySpend(s)) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDailySpendsToStorage(spends) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.dailySpends, JSON.stringify(spends));
+  } catch {
+    /* ignore */
+  }
+}
+
 let cachedInitialAppState;
 
 export function invalidateInitialAppStateCache() {
@@ -416,6 +437,7 @@ export function loadInitialAppState() {
     settings: migrated.settings,
     goals: migrated.goals,
     monthlySnapshots: loadMonthlySnapshotsFromStorage(),
+    dailySpends: loadDailySpendsFromStorage(),
   };
   return cachedInitialAppState;
 }
@@ -480,6 +502,7 @@ const DEFAULT_SETTINGS = {
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
   dashboardToolOrderByMode: {},
+  homeQuickActionOrder: [],
   /** Legacy flag — backup is on whenever signed in + Supabase configured. */
   cloudSyncEnabled: false,
   /** Day of month (1–31) salary credits — used by paycheck flow when UI is wired. */
@@ -545,6 +568,7 @@ export function loadSettingsFromStorage() {
         profiles: normalizeProfiles(o.profiles),
         remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,
         dashboardToolOrderByMode: normalizeDashboardToolOrderByMode(o.dashboardToolOrderByMode),
+        homeQuickActionOrder: normalizeHomeQuickActionOrder(o.homeQuickActionOrder),
         cloudSyncEnabled: Boolean(o.cloudSyncEnabled),
         salaryCreditDay:
           o.salaryCreditDay != null && o.salaryCreditDay !== ""
@@ -567,6 +591,7 @@ export function clearAllLocalData() {
     localStorage.removeItem(STORAGE_KEYS.settings);
     localStorage.removeItem(STORAGE_KEYS.monthlySnapshots);
     localStorage.removeItem(STORAGE_KEYS.goals);
+    localStorage.removeItem(STORAGE_KEYS.dailySpends);
     localStorage.removeItem(STORAGE_KEYS.syncMeta);
     localStorage.removeItem(CONSENT_KEY);
     localStorage.setItem(STORAGE_KEYS.schemaVersion, String(CURRENT_SCHEMA_VERSION));

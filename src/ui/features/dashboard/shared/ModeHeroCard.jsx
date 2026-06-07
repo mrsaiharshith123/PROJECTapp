@@ -1,5 +1,6 @@
 import { Card } from "../../../primitives/Card.jsx";
 import { Caption } from "../../../primitives/Text.jsx";
+import { CtIcon } from "../../../icons/CtIcon.jsx";
 
 function HeroMetric({ label, value, sub, tone = "default" }) {
   const valueClass =
@@ -22,13 +23,13 @@ function HeroMetric({ label, value, sub, tone = "default" }) {
 }
 
 /** Mode hero strip: title + 2×2 metrics + optional tip. */
-export default function ModeHeroCard({ title, subtitle, emoji, metrics = [], tip }) {
+export default function ModeHeroCard({ title, subtitle, icon, metrics = [], tip }) {
   return (
     <Card variant="hero" className="!pb-3">
       <div className="ct-row items-start gap-3 pb-3">
-        {emoji && (
-          <span className="text-2xl leading-none" aria-hidden>
-            {emoji}
+        {icon && (
+          <span className="ct-hero-month-icon shrink-0" aria-hidden>
+            <CtIcon name={icon} size={28} />
           </span>
         )}
         <div className="min-w-0">

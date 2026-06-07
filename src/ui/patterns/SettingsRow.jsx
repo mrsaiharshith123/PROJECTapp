@@ -1,4 +1,5 @@
 import { Body, Caption } from "../primitives/Text.jsx";
+import { CtIcon } from "../icons/CtIcon.jsx";
 
 /**
  * Profile / settings list row (mockup style with chevron).
@@ -12,7 +13,11 @@ export function SettingsRow({ icon, label, hint, onClick, active = false }) {
       className={`ct-list-row w-full text-left ${active ? "ct-settings-tile-active" : ""}`}
     >
       <div className="ct-row min-w-0 flex-1 gap-3">
-        {icon && <span className="ct-icon-box">{icon}</span>}
+        {icon && (
+          <span className="ct-icon-box">
+            <CtIcon name={icon} size={20} />
+          </span>
+        )}
         <div className="min-w-0">
           <Body className={`font-semibold block truncate ${active ? "ct-text-accent" : ""}`}>{label}</Body>
           {hint && <Caption className="block truncate mt-0.5">{hint}</Caption>}

@@ -28,74 +28,89 @@ function ProfileField({ label, hint, required, children }) {
   );
 }
 
-export default function ProfilePersonalSection({ settings, updateSettings }) {
+/**
+ * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
+ */
+export default function ProfilePersonalSection({ settings, updateSettings, part = "full" }) {
   const { t } = useTranslation();
   const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const userMode = resolveUserMode(settings);
+  const showAppearance = part === "full" || part === "appearance";
+  const showIdentity = part === "full" || part === "identity";
+  const showMoney = part === "full" || part === "money";
+  const showAccount = part === "full" || part === "account";
+
+  const appearanceField = (
+    <ProfileField label={t("profile.appearance")}>
+      <div className="ct-grid-3">
+        {[
+          { id: "light", labelKey: "appearance.light" },
+          { id: "dark", labelKey: "appearance.dark" },
+          { id: "system", labelKey: "appearance.system" },
+        ].map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => {
+              updateSettings({ colorScheme: opt.id });
+              applyColorScheme(opt.id);
+            }}
+            className={`ct-option-card !py-2.5 ${(settings.colorScheme || "system") === opt.id ? "ct-option-card-active" : ""}`}
+          >
+            <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
+          </button>
+        ))}
+      </div>
+    </ProfileField>
+  );
 
   return (
     <Card className="ct-stack">
-      <ProfileLanguageSection updateSettings={updateSettings} />
+      {showAppearance && <ProfileLanguageSection updateSettings={updateSettings} />}
+      {showAppearance && appearanceField}
 
-      <div>
-        <Heading level={3}>{t("profile.aboutYou.title")}</Heading>
-        <Caption className="block mt-1">{t("profile.aboutYou.subtitle")}</Caption>
-      </div>
+      {showIdentity && (
+        <>
+          <div>
+            <Heading level={3}>{t("profile.aboutYou.title")}</Heading>
+            <Caption className="block mt-1">{t("profile.aboutYou.subtitle")}</Caption>
+          </div>
 
-      <ProfileAvatar settings={settings} updateSettings={updateSettings} />
+          <ProfileAvatar settings={settings} updateSettings={updateSettings} />
 
-      <ProfileField label={t("profile.displayName")} hint={t("profile.displayNameHint")}>
-        <input
-          className={profileInputClass}
-          value={settings.displayName ?? ""}
-          onChange={(e) => updateSettings({ displayName: e.target.value })}
-          placeholder={t("profile.displayNamePlaceholder")}
-        />
-      </ProfileField>
+          <ProfileField label={t("profile.displayName")} hint={t("profile.displayNameHint")}>
+            <input
+              className={profileInputClass}
+              value={settings.displayName ?? ""}
+              onChange={(e) => updateSettings({ displayName: e.target.value })}
+              placeholder={t("profile.displayNamePlaceholder")}
+            />
+          </ProfileField>
 
-      <ProfileField label={t("profile.phone")} hint={t("profile.phoneHint")}>
-        <input
-          type="tel"
-          className={profileInputClass}
-          value={settings.phoneNumber ?? ""}
-          onChange={(e) => updateSettings({ phoneNumber: e.target.value.replace(/\D/g, "").slice(0, 12) })}
-          placeholder="9876543210"
-          inputMode="numeric"
-        />
-      </ProfileField>
+          <ProfileField label={t("profile.phone")} hint={t("profile.phoneHint")}>
+            <input
+              type="tel"
+              className={profileInputClass}
+              value={settings.phoneNumber ?? ""}
+              onChange={(e) => updateSettings({ phoneNumber: e.target.value.replace(/\D/g, "").slice(0, 12) })}
+              placeholder="9876543210"
+              inputMode="numeric"
+            />
+          </ProfileField>
 
-      <ProfileField label={t("profile.appearance")}>
-        <div className="ct-grid-3">
-          {[
-            { id: "light", labelKey: "appearance.light" },
-            { id: "dark", labelKey: "appearance.dark" },
-            { id: "system", labelKey: "appearance.system" },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => {
-                updateSettings({ colorScheme: opt.id });
-                applyColorScheme(opt.id);
-              }}
-              className={`ct-option-card !py-2.5 ${(settings.colorScheme || "system") === opt.id ? "ct-option-card-active" : ""}`}
-            >
-              <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
-            </button>
-          ))}
-        </div>
-      </ProfileField>
-
-      {salariedFamily && (
-        <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
-          <Caption className="font-semibold block">{t("profile.familyProfiles.title")}</Caption>
-          <Caption className="block">{t("profile.familyProfiles.subtitle")}</Caption>
-          <ProfileManager />
-        </div>
+          {salariedFamily && (
+            <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
+              <Caption className="font-semibold block">{t("profile.familyProfiles.title")}</Caption>
+              <Caption className="block">{t("profile.familyProfiles.subtitle")}</Caption>
+              <ProfileManager />
+            </div>
+          )}
+        </>
       )}
 
-      <div className="ct-stack pt-2 border-t border-[var(--ct-border)]">
+      {showMoney && (
+        <div className="ct-stack pt-2 border-t border-[var(--ct-border)]">
         <div>
           <Heading level={3}>{t("profile.moneySetup.title")}</Heading>
           <Caption className="block mt-1">{t("profile.moneySetup.subtitle")}</Caption>
@@ -144,6 +159,25 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
           </ProfileField>
         )}
 
+        {userMode === "salaried" && (
+          <ProfileField label={t("profile.salaryCreditDay")} hint={t("profile.salaryCreditDayHint")}>
+            <input
+              type="number"
+              min="1"
+              max="31"
+              className={profileInputClass}
+              value={settings.salaryCreditDay == null ? "" : String(settings.salaryCreditDay)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                updateSettings({
+                  salaryCreditDay: raw === "" ? null : Math.min(31, Math.max(1, Math.floor(Number(raw) || 1))),
+                });
+              }}
+              placeholder="1"
+            />
+          </ProfileField>
+        )}
+
         <ProfileField label={t("profile.liquidSavings")} hint={t("profile.liquidSavingsHint")}>
           <input
             type="number"
@@ -171,7 +205,7 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
           >
             {SELECTABLE_USER_MODES.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.emoji} {t("mode.salaried")}
+                {t("mode.salaried")}
               </option>
             ))}
           </select>
@@ -214,9 +248,10 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
             />
           </ProfileField>
         )}
-      </div>
+        </div>
+      )}
 
-      <AccountSettingsBlock />
+      {showAccount && <AccountSettingsBlock />}
     </Card>
   );
 }

@@ -15,9 +15,11 @@ import BondAdvisor from "../tools/BondAdvisor.jsx";
 import MoneyPlannerPanel from "../tools/MoneyPlannerPanel.jsx";
 import LoanToolsPanel from "../tools/LoanToolsPanel.jsx";
 import IncomeTaxPanel from "../tools/IncomeTaxPanel.jsx";
+import LogSpendModal from "../modals/LogSpendModal.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useDragReorder } from "../../hooks/useDragReorder.js";
 
 /** Calculator widgets + modals — embedded on Home dashboard. */
 export default function DashboardTools() {
@@ -31,7 +33,7 @@ export default function DashboardTools() {
       return {
         id: tool.id,
         accent: String(tool.accent || "indigo"),
-        icon: TOOL_ICONS[tool.id] || "🧮",
+        icon: TOOL_ICONS[tool.id] || "calculator",
         title: t(keys.titleKey),
         subtitle: t(keys.subtitleKey),
       };
@@ -44,6 +46,8 @@ export default function DashboardTools() {
 
   const closeTool = () => setActiveTool(null);
 
+  const widgetIds = useMemo(() => widgets.map((w) => w.id), [widgets]);
+
   const persistToolOrder = (orderedIds) => {
     const prev =
       settings.dashboardToolOrderByMode && typeof settings.dashboardToolOrderByMode === "object"
@@ -53,13 +57,7 @@ export default function DashboardTools() {
     updateSettings({ dashboardToolOrderByMode: prev });
   };
 
-  const moveTool = (fromIndex, toIndex) => {
-    if (toIndex < 0 || toIndex >= widgets.length || fromIndex === toIndex) return;
-    const ids = widgets.map((w) => w.id);
-    const [moved] = ids.splice(fromIndex, 1);
-    ids.splice(toIndex, 0, moved);
-    persistToolOrder(ids);
-  };
+  const { getDragProps } = useDragReorder(widgetIds, persistToolOrder);
 
   const resetToolOrder = () => {
     const prev =
@@ -95,39 +93,21 @@ export default function DashboardTools() {
         </div>
       </div>
       <div className="ct-grid-2">
-        {widgets.map((widget, i) =>
+        {widgets.map((widget) =>
           reorderTools ? (
-            <div key={widget.id} className="ct-row" style={{ alignItems: "stretch" }}>
-              <div className="ct-stack-sm shrink-0">
-                <button
-                  type="button"
-                  disabled={i === 0}
-                  aria-label={t("tools.moveUp")}
-                  onClick={() => moveTool(i, i - 1)}
-                  className="ct-btn ct-btn-outline ct-btn-sm"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  disabled={i === widgets.length - 1}
-                  aria-label={t("tools.moveDown")}
-                  onClick={() => moveTool(i, i + 1)}
-                  className="ct-btn ct-btn-outline ct-btn-sm"
-                >
-                  ↓
-                </button>
-              </div>
-              <div className="flex-1 min-w-0">
-                <ToolTile
-                  icon={widget.icon}
-                  title={widget.title}
-                  subtitle={widget.subtitle}
-                  accent={widget.accent}
-                  onClick={() => {}}
-                  disabled
-                />
-              </div>
+            <div
+              key={widget.id}
+              className="ct-drag-tile-wrap"
+              {...getDragProps(widget.id, { enabled: true })}
+            >
+              <ToolTile
+                icon={widget.icon}
+                title={widget.title}
+                subtitle={widget.subtitle}
+                accent={widget.accent}
+                onClick={() => {}}
+                disabled
+              />
             </div>
           ) : (
             <ToolTile
@@ -185,6 +165,8 @@ export default function DashboardTools() {
           <IncomeTaxPanel />
         </Modal>
       )}
+
+      {activeTool === "logSpend" && <LogSpendModal onClose={closeTool} />}
     </section>
   );
 }

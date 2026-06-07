@@ -2,6 +2,7 @@ import { createElement } from "react";
 import { Row } from "../primitives/Stack.jsx";
 import { Body, Caption } from "../primitives/Text.jsx";
 import { Badge } from "../primitives/Badge.jsx";
+import { CtIcon } from "../icons/CtIcon.jsx";
 
 /**
  * @param {{ icon?: string, title: string, subtitle?: string, amount?: string, amountTone?: 'positive' | 'negative' | 'neutral', status?: string, statusTone?: string, onClick?: () => void, as?: string }} props
@@ -26,7 +27,11 @@ export function ListRow({
   const inner = (
     <>
       <Row className="min-w-0 flex-1">
-        {icon && <span className="ct-icon-box">{icon}</span>}
+        {icon && (
+          <span className="ct-icon-box">
+            <CtIcon name={icon} size={20} />
+          </span>
+        )}
         <div className="min-w-0">
           <Body className="font-semibold text-[var(--ct-text)] truncate block">{title}</Body>
           {subtitle && <Caption className="block truncate">{subtitle}</Caption>}

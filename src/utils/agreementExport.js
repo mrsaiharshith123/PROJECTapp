@@ -49,10 +49,10 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
   const bodyText = lending.agreementText?.trim() || buildPromissoryNoteText(lending, settings);
   const stamped = lending.esignStatus === "completed";
   const banner = stamped
-    ? `<div class="banner ok">✓ Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
-    : `<div class="banner warn">⚠ Not stamped — Print on stamp paper for full legal enforceability. Or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
+    ? `<div class="banner ok">OK — Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
+    : `<div class="banner warn">Warning — Not stamped — Print on stamp paper for full legal enforceability. Or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
   const hashBanner = lending.agreementHash
-    ? `<div class="banner ok">✓ Integrity seal (SHA-256): ${escapeHtml(lending.agreementHash)} · Sealed ${escapeHtml(lending.agreementSealedAt || "")}</div>`
+    ? `<div class="banner ok">OK — Integrity seal (SHA-256): ${escapeHtml(lending.agreementHash)} · Sealed ${escapeHtml(lending.agreementSealedAt || "")}</div>`
     : "";
 
   return `<!DOCTYPE html>

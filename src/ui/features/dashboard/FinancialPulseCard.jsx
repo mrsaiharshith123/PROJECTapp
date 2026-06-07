@@ -51,6 +51,9 @@ function mergeTips(intel, stable) {
   if (stable.pressureIntel?.forecastMessage) {
     add({ id: "pressure-forecast", tone: "info", text: stable.pressureIntel.forecastMessage });
   }
+  for (const item of (intel.transactionFeed || []).slice(0, 2)) {
+    add({ id: item.id, tone: item.tone || "neutral", text: item.text });
+  }
   return out;
 }
 
@@ -361,6 +364,10 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <p className="ct-insight-violet">
               {pressureIntel.forecastMessage}
             </p>
+          )}
+
+          {intel.transactionRhythmNote && (
+            <p className="ct-insight-violet">{intel.transactionRhythmNote}</p>
           )}
 
           {!isFamily && payoffRec && (

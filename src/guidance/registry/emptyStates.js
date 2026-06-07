@@ -5,14 +5,14 @@ import { getExperienceMode } from "../../constants/modeExperience.js";
 const BY_KEY = {
   "home-upcoming": {
     salaried: {
-      icon: "📅",
+      icon: "calendar",
       titleKey: "empty.upcoming.title",
       hintKey: "empty.upcoming.hint",
       actionLabelKey: "empty.upcoming.action",
       actionPath: "/add",
     },
     family: {
-      icon: "🏠",
+      icon: "house",
       titleKey: "empty.homeUpcoming.family.title",
       hintKey: "empty.homeUpcoming.family.hint",
       actionLabelKey: "empty.homeUpcoming.family.action",
@@ -21,14 +21,14 @@ const BY_KEY = {
   },
   "bills-list": {
     salaried: {
-      icon: "📋",
+      icon: "clipboard-text",
       titleKey: "empty.billsList.salaried.title",
       hintKey: "empty.billsList.salaried.hint",
       actionLabelKey: "empty.billsList.salaried.action",
       actionPath: "/add",
     },
     family: {
-      icon: "👨‍👩‍👧",
+      icon: "users-three",
       titleKey: "empty.billsList.family.title",
       hintKey: "empty.billsList.family.hint",
       actionLabelKey: "empty.billsList.family.action",
@@ -47,7 +47,7 @@ export function getEmptyStateGuidance(key, settings) {
   const bucket = BY_KEY[key];
   if (!bucket) {
     return {
-      icon: "📋",
+      icon: "clipboard-text",
       titleKey: "empty.fallback.title",
       hintKey: "empty.fallback.hint",
       actionLabelKey: "empty.fallback.action",
