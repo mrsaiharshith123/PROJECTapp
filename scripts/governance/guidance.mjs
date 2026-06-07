@@ -6,6 +6,7 @@ import path from "path";
 import { ROOT, SRC, rel } from "../lib/audit-core.mjs";
 import { FINANCIAL_CONCEPTS } from "../../src/guidance/registry/concepts.js";
 import { ONBOARDING_EXPERIENCES } from "../../src/guidance/registry/onboardingCopy.js";
+import { runCopyToneAudit } from "../lib/copy-tone-rules.mjs";
 
 const JARGON_RE = /\b(EBITDA|amortization|liquidity ratio|NPV|IRR|capital expenditure)\b/i;
 const UI_GUIDANCE = path.join(SRC, "ui", "guidance");
@@ -102,6 +103,24 @@ export function runGuidanceAudit() {
         message: "Financial pulse tips should expose WhyInsightPanel",
       });
     }
+  }
+
+  const tone = runCopyToneAudit();
+  for (const item of tone.errorItems) {
+    errors.push({
+      kind: "informal-copy",
+      file: item.file,
+      line: item.line,
+      message: `${item.rule}: ${item.message}`,
+    });
+  }
+  for (const item of tone.warningItems) {
+    advisories.push({
+      kind: "informal-copy",
+      file: item.file,
+      line: item.line,
+      message: `${item.rule}: ${item.message}`,
+    });
   }
 
   return {

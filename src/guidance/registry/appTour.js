@@ -1,7 +1,7 @@
 import { getExperienceMode } from "../../constants/modeExperience.js";
 
 /**
- * Lightweight app guide — calm copy, not a slideshow deck.
+ * App guide — concise, professional copy.
  * @typedef {{ id: string, title: string, body: string, tip?: string }} TourStep
  */
 
@@ -9,42 +9,42 @@ const COMMON = [
   {
     id: "welcome",
     title: "Welcome to CommitTrack",
-    body: "This app helps you see financial pressure, stability, and what to do next — in plain language, not spreadsheets.",
-    tip: "You can reopen this guide anytime from Profile → App guide.",
+    body: "CommitTrack presents financial pressure, stability, and next steps in clear terms — without spreadsheets.",
+    tip: "You may reopen this guide from Profile → App guide.",
   },
   {
     id: "kpis",
-    title: "Top numbers",
-    body: "The row at the top is your quick read: what is due, cash left, and how stable this month looks. Tap the small ℹ on a label when you want a short explanation.",
+    title: "Summary figures",
+    body: "The top row shows amounts due, cash remaining, and monthly stability. Select the ℹ icon beside a label for a brief explanation.",
   },
   {
     id: "pulse",
     title: "Financial pulse",
-    body: "Open Summary, Pressure, and Tips here. Tips explain why something appeared — use “Why am I seeing this?” when you want transparency.",
+    body: "Review Summary, Pressure, and Tips here. Use “Why is this shown?” when you need the reason behind a recommendation.",
   },
   {
     id: "add",
-    title: "Add your world",
-    body: "Bills, EMIs, and subscriptions feed every score. The more honest your list, the smarter the guidance.",
-    tip: "Quick actions at the bottom jump to Add bill, Lending, or Profile.",
+    title: "Enter your obligations",
+    body: "Bills, EMIs, and subscriptions feed each score. Complete and accurate entries improve the quality of guidance.",
+    tip: "Quick actions navigate to Add bill, Lending, or Profile.",
   },
   {
     id: "profile",
-    title: "Profile & settings",
-    body: "Income, mode, notifications, and account backup live in Profile. Change your experience anytime — we adapt the language to match.",
+    title: "Profile and settings",
+    body: "Income, mode, notifications, and account backup are managed in Profile. You may change your experience at any time.",
   },
 ];
 
 const MODE_TAIL = {
   salaried: {
     id: "mode-salaried",
-    title: "Your personal view",
-    body: "We focus on paycheck pressure, EMIs, free cash, and emergency readiness. Start by adding your largest monthly commitments.",
+    title: "Personal view",
+    body: "The dashboard emphasizes paycheck pressure, EMIs, free cash, and emergency readiness. Begin with your largest monthly commitments.",
   },
   family: {
     id: "mode-family",
-    title: "Your household view",
-    body: "We highlight shared bills, school fees, and household safety — so the whole home feels understandable, not just one salary.",
+    title: "Household view",
+    body: "The dashboard highlights shared bills, school fees, and household safety across all income sources.",
   },
 };
 

@@ -26,10 +26,12 @@ import { formatInr, EM_DASH, ARROW } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
-import { getAnalyticsCopy, getIncomeLabel, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 
 const Analytics = () => {
+  const { t } = useTranslation();
   const {
     commitments,
     lendings,
@@ -80,7 +82,7 @@ const Analytics = () => {
   }, [commitments, getEffectiveStatus]);
 
   const analyticsCopy = getAnalyticsCopy(settings);
-  const incomeLabel = getIncomeLabel(settings);
+  const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
 
   const paycheckFlow = useMemo(
@@ -160,9 +162,9 @@ const Analytics = () => {
   return (
     <div className="ct-page">
       <PageHeader
-        title="Analytics"
-        eyebrow="Money picture"
-        subtitle="Charts and forecasts — your Home month card is the daily snapshot."
+        title={t("analytics.title")}
+        eyebrow={t("home.insight")}
+        subtitle={t("analytics.homeSnapshotHint")}
       />
       {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
         <Caption className="ct-text-accent">Profile: {settings.activeProfileId}</Caption>
@@ -172,10 +174,8 @@ const Analytics = () => {
 
       <Card className="ct-stack" id="paycheck-flow">
         <div>
-          <Heading level={3}>Paycheck & burden</Heading>
-          <Caption className="block mt-1">
-            How salary splits across bills — same Due/Paid/Free numbers as Home, with the full breakdown.
-          </Caption>
+          <Heading level={3}>{t("analytics.paycheckBurden")}</Heading>
+          <Caption className="block mt-1">{t("analytics.paycheckSubtitle")}</Caption>
         </div>
         <PaycheckBreakdown
           breakdown={paycheckFlow}

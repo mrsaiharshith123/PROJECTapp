@@ -10,6 +10,16 @@
 
 ## Adding a feature (checklist)
 
+### New user-facing copy / translation
+
+1. Add key(s) to `src/i18n/messages/en.js`
+2. `npm run sync:i18n` — propagate to all locale files
+3. Wire UI with `useTranslation()` → `t("your.key")`
+4. `npm run i18n:translate` (or hand-edit critical strings)
+5. `npm run audit:i18n` and `npm run audit`
+
+See [10-i18n.md](./10-i18n.md).
+
 ### New bill field or commitment behavior
 
 1. `utils/migrateStorage.js` / `normalizeCommitment` — schema
@@ -78,6 +88,7 @@ Reviewers should see:
 | Can I use Tailwind here? | [03-rules.md](./03-rules.md) |
 | What does audit check? | [05-audit-and-quality.md](./05-audit-and-quality.md) |
 | Product / modes | [01-overview.md](./01-overview.md) + `constants/modeExperience.js` |
+| i18n / languages | [10-i18n.md](./10-i18n.md) |
 | What's built vs planned | [09-implementation-status.md](./09-implementation-status.md) |
 
 ## Docs maintenance

@@ -1,37 +1,37 @@
 import { getExperienceMode } from "../../constants/modeExperience.js";
 
-/** @typedef {{ icon: string, title: string, hint: string, actionLabel?: string, actionPath?: string }} EmptyGuidance */
+/** @typedef {{ icon: string, titleKey: string, hintKey: string, actionLabelKey?: string, actionPath?: string }} EmptyGuidance */
 
 const BY_KEY = {
   "home-upcoming": {
     salaried: {
       icon: "📅",
-      title: "No upcoming bills yet",
-      hint: "Add your first commitment to see due dates and monthly pressure.",
-      actionLabel: "Add a bill",
+      titleKey: "empty.upcoming.title",
+      hintKey: "empty.upcoming.hint",
+      actionLabelKey: "empty.upcoming.action",
       actionPath: "/add",
     },
     family: {
       icon: "🏠",
-      title: "Household calendar is clear",
-      hint: "Add rent, school, insurance, or shared bills to forecast family stability.",
-      actionLabel: "Add household bill",
+      titleKey: "empty.homeUpcoming.family.title",
+      hintKey: "empty.homeUpcoming.family.hint",
+      actionLabelKey: "empty.homeUpcoming.family.action",
       actionPath: "/add",
     },
   },
   "bills-list": {
     salaried: {
       icon: "📋",
-      title: "Start tracking commitments",
-      hint: "EMIs, rent, and subscriptions help CommitTrack explain pressure and free cash.",
-      actionLabel: "Add first bill",
+      titleKey: "empty.billsList.salaried.title",
+      hintKey: "empty.billsList.salaried.hint",
+      actionLabelKey: "empty.billsList.salaried.action",
       actionPath: "/add",
     },
     family: {
       icon: "👨‍👩‍👧",
-      title: "Add shared household bills",
-      hint: "School fees and renewals improve household safety scores.",
-      actionLabel: "Add bill",
+      titleKey: "empty.billsList.family.title",
+      hintKey: "empty.billsList.family.hint",
+      actionLabelKey: "empty.billsList.family.action",
       actionPath: "/add",
     },
   },
@@ -48,9 +48,9 @@ export function getEmptyStateGuidance(key, settings) {
   if (!bucket) {
     return {
       icon: "📋",
-      title: "Nothing here yet",
-      hint: "Add data to unlock insights.",
-      actionLabel: "Get started",
+      titleKey: "empty.fallback.title",
+      hintKey: "empty.fallback.hint",
+      actionLabelKey: "empty.fallback.action",
       actionPath: "/add",
     };
   }

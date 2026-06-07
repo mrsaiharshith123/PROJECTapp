@@ -152,7 +152,7 @@ export default function Onboarding() {
           <Caption className="block mt-2">
             {replay
               ? "Update how we explain your dashboard. Your bills stay on this account."
-              : "Pick the closest fit. We keep explanations calm and changeable in Profile."}
+              : "Select the option that best matches your situation. Explanations can be updated in Profile."}
           </Caption>
         </div>
         <div className="ct-stack">
@@ -225,7 +225,7 @@ export default function Onboarding() {
             Back
           </Button>
           <Button type="button" variant="primary" size="lg" className="flex-1" onClick={() => setStep(2)}>
-            Sounds good
+            Continue
           </Button>
         </div>
       </div>
@@ -291,7 +291,7 @@ export default function Onboarding() {
     return (
       <div className="ct-onboard-page">
         <div>
-          <Eyebrow>Quick start</Eyebrow>
+          <Eyebrow>Initial setup</Eyebrow>
           <h1 className="ct-onboard-title">What do you pay regularly?</h1>
           <Caption className="block mt-2">
             Optional — tap bills or EMIs you want to add now. You can skip and add them later.
@@ -339,7 +339,7 @@ export default function Onboarding() {
             Back
           </Button>
           <Button type="button" variant="outline" size="lg" className="flex-1" onClick={finish}>
-            Skip for now
+            Skip
           </Button>
           <Button type="button" variant="primary" size="lg" className="flex-1" onClick={addSelectedAndFinish}>
             Add selected & start

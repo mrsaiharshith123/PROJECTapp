@@ -7,13 +7,13 @@ export const CHART_VIEWS = [
   },
   {
     id: "payments",
-    label: "What you paid",
-    hint: "Bill payments you already recorded, month by month.",
+    label: "Payments recorded",
+    hint: "Bill payments recorded, month by month.",
   },
   {
     id: "categories",
-    label: "What you still owe",
-    hint: "Open balances grouped by type (rent, loan, etc.).",
+    label: "Open balances",
+    hint: "Outstanding balances grouped by category (rent, loan, and similar).",
   },
 ];
 

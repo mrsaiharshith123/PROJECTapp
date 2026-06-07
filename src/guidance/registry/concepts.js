@@ -7,7 +7,7 @@
 export const FINANCIAL_CONCEPTS = {
   pressureScore: {
     title: "Pressure score",
-    short: "How loaded your recurring bills feel compared to income.",
+    short: "How heavily recurring bills weigh on income.",
     why: "High pressure means less room if income pauses or a surprise expense hits.",
     action: "Review EMIs and subscriptions, or add income in Profile if it changed.",
     calc: "Based on monthly bill burden vs your income.",
@@ -39,7 +39,7 @@ export const FINANCIAL_CONCEPTS = {
   emergency: {
     title: "Emergency readiness",
     short: "Whether savings can cover several months of typical burn.",
-    why: "A buffer reduces stress when income or health surprises happen.",
+    why: "A reserve reduces risk when income or health circumstances change.",
     action: "Set liquid savings in Profile.",
   },
   burden: {
@@ -63,12 +63,12 @@ export const FINANCIAL_CONCEPTS = {
   payStreak: {
     title: "Pay streak",
     short: "Consecutive months where you recorded at least one payment.",
-    why: "A steady streak usually means fewer surprises and better forecasts.",
+    why: "Consistent payments support more reliable forecasts.",
     action: "Log payments when you pay a bill or lending installment.",
   },
   billControl: {
     title: "Bill control",
-    short: "How on-top you are with active bills right now.",
+    short: "How current you are with active bill payments.",
     why: "Overdue and critical open items lower the score until you catch up.",
     action: "Clear overdue bills in Bills, or adjust amounts if something changed.",
   },

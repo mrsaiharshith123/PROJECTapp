@@ -14,6 +14,7 @@ import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
+import { I18nProvider, useTranslation } from "./i18n/index.js";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -26,9 +27,10 @@ const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferRe
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 
 function PageLoader() {
+  const { t } = useTranslation();
   return (
     <div className="ct-loader ct-caption" role="status">
-      Loading…
+      {t("common.loading")}
     </div>
   );
 }
@@ -193,19 +195,21 @@ function App() {
     <BrowserRouter basename={routerBasename()}>
       <AuthProvider>
         <CommitTrackProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route
-                path="/lend/offer"
-                element={
-                  <RequireAuth>
-                    <LendingOfferReview />
-                  </RequireAuth>
-                }
-              />
-              <Route path="*" element={<AppShell />} />
-            </Routes>
-          </Suspense>
+          <I18nProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route
+                  path="/lend/offer"
+                  element={
+                    <RequireAuth>
+                      <LendingOfferReview />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="*" element={<AppShell />} />
+              </Routes>
+            </Suspense>
+          </I18nProvider>
         </CommitTrackProvider>
       </AuthProvider>
     </BrowserRouter>

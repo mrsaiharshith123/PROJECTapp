@@ -1,6 +1,6 @@
 # CommitTrack
 
-Local-first PWA for **commitments, pressure, and household/salary cashflow** — not a full expense tracker. Data stays in the browser (`localStorage`); optional Supabase for auth/profile.
+**CommitTrack by Daloy Tech** — local-first PWA for **commitments, pressure, and household/salary cashflow** (not a full expense tracker). Data stays in the browser (`localStorage`); optional Supabase for auth/profile. Supports **English + 22 Indian languages**.
 
 ## Quick start
 
@@ -23,6 +23,7 @@ npm run audit        # full quality gate before PR
 | How audit works (deep) | [docs/05-audit-and-quality.md](./docs/05-audit-and-quality.md) |
 | Day-to-day workflow | [docs/06-workflow.md](./docs/06-workflow.md) |
 | What's built vs planned (V1) | [docs/09-implementation-status.md](./docs/09-implementation-status.md) |
+| i18n (22 languages) | [docs/10-i18n.md](./docs/10-i18n.md) |
 | `dist` / `dev-dist` clutter | [docs/07-repo-folders.md](./docs/07-repo-folders.md) |
 
 ## Scripts (summary)

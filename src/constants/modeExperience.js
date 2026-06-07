@@ -1,13 +1,6 @@
 import { getCategoryById } from "./categories.js";
 import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 
-/** Income field label in Profile / Analytics. */
-export const MODE_INCOME_LABEL = {
-  salaried: "Monthly salary",
-  family: "Household income",
-  power: "Monthly income",
-};
-
 /** Bill category ids shown when adding a commitment. */
 export const MODE_CATEGORY_IDS = {
   salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
@@ -38,7 +31,7 @@ export const MODE_TOOL_DEFS = {
   insurance: {
     id: "insurance",
     title: "Insurance",
-    subtitle: "Was the policy worth it?",
+    subtitle: "Evaluate policy value",
     accent: "teal",
   },
   chit: {
@@ -50,7 +43,7 @@ export const MODE_TOOL_DEFS = {
   bond: {
     id: "bond",
     title: "Bond check",
-    subtitle: "Is this bond worth it?",
+    subtitle: "Evaluate bond suitability",
     accent: "indigo",
   },
   incomeTax: {
@@ -91,12 +84,6 @@ export const MODE_ANALYTICS = {
   },
 };
 
-export const MODE_DASHBOARD_TOOLS_HEADING = {
-  salaried: "Salary tools",
-  family: "Household tools",
-  power: "Power tools",
-};
-
 export function resolveUserMode(settings) {
   const raw = settings?.userMode || "salaried";
   if (raw === "family" || raw === "power" || REMOVED_USER_MODE_IDS.includes(raw)) return "salaried";
@@ -123,12 +110,15 @@ export function getExperienceMode(settings) {
   return resolveUserMode(settings);
 }
 
-export function getIncomeLabel(settingsOrMode) {
+/** i18n key for income field label. */
+export function getIncomeLabelKey(settingsOrMode) {
   const mode =
     typeof settingsOrMode === "object" && settingsOrMode !== null
       ? getExperienceMode(settingsOrMode)
       : settingsOrMode || "salaried";
-  return MODE_INCOME_LABEL[mode] || MODE_INCOME_LABEL.salaried;
+  if (mode === "family") return "income.household";
+  if (mode === "power") return "income.monthly";
+  return "income.monthlySalary";
 }
 
 export function getAnalyticsCopy(settingsOrMode) {
@@ -168,13 +158,27 @@ export function getToolsForMode(settingsOrMode) {
     .filter(Boolean);
 }
 
-export function getDashboardToolsHeading(settingsOrMode) {
+/** @param {string | object} settingsOrMode */
+export function getDashboardToolsHeadingKey(settingsOrMode) {
   const mode =
     typeof settingsOrMode === "object" && settingsOrMode !== null
       ? getExperienceMode(settingsOrMode)
       : settingsOrMode || "salaried";
-  if (mode === "family") return MODE_DASHBOARD_TOOLS_HEADING.family;
-  return MODE_DASHBOARD_TOOLS_HEADING[mode] || "Quick calculators";
+  if (mode === "family") return "tools.householdTools";
+  if (mode === "power") return "tools.powerTools";
+  return "tools.salaryTools";
+}
+
+/** @param {string} toolId @param {string | object} settingsOrMode */
+export function getToolTileKeys(toolId, settingsOrMode) {
+  const mode =
+    typeof settingsOrMode === "object" && settingsOrMode !== null
+      ? getExperienceMode(settingsOrMode)
+      : settingsOrMode || "salaried";
+  if (mode === "family" && toolId === "planner") {
+    return { titleKey: "tools.householdPlanner.title", subtitleKey: "tools.householdPlanner.subtitle" };
+  }
+  return { titleKey: `tools.${toolId}.title`, subtitleKey: `tools.${toolId}.subtitle` };
 }
 
 export function showSalariedStabilityCards(settings) {

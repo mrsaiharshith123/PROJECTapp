@@ -1,43 +1,40 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Button, Body, Caption } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 
 /** Settings: replay app guide or review setup wizard. */
 export default function ProfileGuidanceSection({ onStartGuide }) {
   const navigate = useNavigate();
   const { settings } = useCommitTrack();
+  const { t } = useTranslation();
 
   return (
     <Card className="ct-stack">
       <div>
-        <Body className="font-semibold">App guide</Body>
-        <Caption className="block mt-1">
-          A short walkthrough of Home, Financial pulse, and where to add bills — calm steps you can skip anytime.
-        </Caption>
+        <Body className="font-semibold">{t("guide.appGuide.title")}</Body>
+        <Caption className="block mt-1">{t("guide.appGuide.subtitle")}</Caption>
       </div>
       <Button type="button" variant="primary" onClick={onStartGuide}>
-        Start app guide
+        {t("guide.startGuide")}
       </Button>
 
       <div className="border-t border-[var(--ct-border)] pt-4" />
 
       <div>
-        <Body className="font-semibold">Setup wizard</Body>
-        <Caption className="block mt-1">
-          Review how you use CommitTrack (salaried or household) and update income basics. Your bills stay as
-          they are.
-        </Caption>
+        <Body className="font-semibold">{t("guide.setup.title")}</Body>
+        <Caption className="block mt-1">{t("guide.setup.subtitle")}</Caption>
       </div>
       <Button
         type="button"
         variant="outline"
         onClick={() => navigate("/onboarding?replay=1", { state: { fromProfile: true } })}
       >
-        Review setup
+        {t("guide.reviewSetup")}
       </Button>
 
       {settings.appGuideComplete && (
-        <Caption className="block opacity-80">Last guide was completed on this device. Tap above to see it again.</Caption>
+        <Caption className="block opacity-80">{t("guide.completedNote")}</Caption>
       )}
     </Card>
   );

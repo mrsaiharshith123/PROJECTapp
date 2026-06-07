@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Card } from "../../../ui";
+import { Card, Caption, Body, Heading, Button } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import {
   getNotificationPermission,
   requestNotificationPermission,
@@ -11,6 +12,7 @@ import {
 } from "../../../services/notifications/index.js";
 
 export default function ProfileNotificationsSection({ settings, updateSettings }) {
+  const { t } = useTranslation();
   const { pushInAppNotification } = useCommitTrack();
   const supported = isNotificationSupported();
   const [, setPermRefresh] = useState(0);
@@ -27,15 +29,9 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
     setBusy(false);
     if (result === "granted") {
       await registerPeriodicReminderSync();
-      setStatus({
-        type: "ok",
-        text: "Browser alerts enabled. Add app to Home Screen for alerts when the app is closed.",
-      });
+      setStatus({ type: "ok", text: t("notifications.enabledOk") });
     } else if (result === "denied") {
-      setStatus({
-        type: "err",
-        text: "Blocked in browser settings. Allow notifications for this site, then try again.",
-      });
+      setStatus({ type: "err", text: t("notifications.deniedErr") });
     }
   };
 
@@ -49,99 +45,66 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
       await requestServiceWorkerReminderFlush();
       pushInAppNotification({
         id: `test-${Date.now()}`,
-        message: "Test reminder — notifications are working on this device.",
+        message: t("notifications.testInApp"),
         urgency: "normal",
       });
-      setStatus({
-        type: "ok",
-        text: "Sent to your system notification panel and the in-app bell. Swipe down on phone to see it.",
-      });
+      setStatus({ type: "ok", text: t("notifications.testOk") });
     } else if (result.reason === "denied" || result.reason === "blocked") {
-      setStatus({ type: "err", text: "Permission denied. Enable alerts in browser or OS settings." });
+      setStatus({ type: "err", text: t("notifications.testDenied") });
     } else if (result.reason === "unsupported") {
-      setStatus({ type: "err", text: "This browser does not support notifications." });
+      setStatus({ type: "err", text: t("notifications.testUnsupported") });
     } else {
-      setStatus({
-        type: "err",
-        text: "Could not show alert. Install the app (Add to Home Screen) or use Chrome/Edge.",
-      });
+      setStatus({ type: "err", text: t("notifications.testFail") });
     }
     setBusy(false);
   };
 
   return (
-    <Card className="space-y-4">
+    <Card className="ct-stack">
       <div>
-        <h3 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Notifications</h3>
-        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-          System tray alerts on this device plus in-app reminders (bell on Home).
-        </p>
+        <Heading level={3}>{t("notifications.title")}</Heading>
+        <Caption className="block mt-1">{t("notifications.subtitle")}</Caption>
       </div>
 
-      <label className="flex items-center justify-between gap-3 py-2">
-        <span className="text-sm text-gray-700 dark:text-slate-300">Bill & due reminders</span>
+      <label className="ct-row-between py-2">
+        <Body className="!text-sm">{t("notifications.billReminders")}</Body>
         <input
           type="checkbox"
           checked={settings.remindersEnabled !== false}
           onChange={(e) => updateSettings({ remindersEnabled: e.target.checked })}
-          className="w-5 h-5 rounded border-gray-300 text-indigo-600"
+          className="ct-checkbox"
         />
       </label>
 
       {supported ? (
-        <div className="rounded-xl bg-gray-50 dark:bg-slate-800/80 p-3 space-y-3">
-          <p className="text-xs text-gray-600 dark:text-slate-300">
-            Browser permission: <span className="font-semibold capitalize">{perm}</span>
-          </p>
-          <div className="flex flex-wrap gap-2">
+        <div className="ct-surface-inset ct-stack-sm !p-3 rounded-[var(--ct-radius)]">
+          <Caption>
+            {t("notifications.permission")}: <span className="font-semibold capitalize">{perm}</span>
+          </Caption>
+          <div className="ct-row-wrap">
             {perm !== "granted" && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleEnable}
-                className="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold disabled:opacity-60"
-              >
-                Enable browser alerts
-              </button>
+              <Button type="button" size="sm" disabled={busy} onClick={handleEnable}>
+                {t("notifications.enableAlerts")}
+              </Button>
             )}
-            <button
-              type="button"
-              disabled={busy}
-              onClick={handleTest}
-              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-xs font-semibold text-gray-700 dark:text-slate-200 disabled:opacity-60"
-            >
-              {busy ? "Sending…" : "Send test"}
-            </button>
+            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleTest}>
+              {busy ? t("common.sending") : t("notifications.sendTest")}
+            </Button>
           </div>
           {status && (
-            <p
-              className={`text-xs rounded-lg px-3 py-2 ${
-                status.type === "ok"
-                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200"
-                  : "bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100"
-              }`}
-            >
+            <Caption className={status.type === "ok" ? "text-[var(--ct-success)]" : "text-[var(--ct-warning)]"}>
               {status.text}
-            </p>
+            </Caption>
           )}
-          <p className="text-[11px] text-gray-500 dark:text-slate-400 leading-relaxed">
-            For YouTube-style alerts in your phone&apos;s notification panel: install the app (Add to
-            Home Screen), allow notifications, and keep reminders on. Due/overdue bills notify in the
-            tray when you leave the app or every few hours (Android/Chrome). iPhone needs the home-screen
-            app icon — Safari tabs alone cannot background-notify.
-          </p>
+          <Caption className="block opacity-80 leading-relaxed">{t("notifications.installHint")}</Caption>
         </div>
       ) : (
-        <p className="text-xs text-gray-500">Your browser does not support notifications.</p>
+        <Caption>{t("notifications.unsupported")}</Caption>
       )}
 
-      <button
-        type="button"
-        className="ct-btn ct-btn-ghost w-full"
-        onClick={() => updateSettings({ readNotificationIds: [] })}
-      >
-        Mark all notifications as read
-      </button>
+      <Button type="button" variant="ghost" className="w-full" onClick={() => updateSettings({ readNotificationIds: [] })}>
+        {t("notifications.markRead")}
+      </Button>
     </Card>
   );
 }

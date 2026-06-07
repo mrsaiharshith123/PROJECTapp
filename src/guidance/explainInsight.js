@@ -14,7 +14,7 @@ export function explainInsight(insight, ctx = {}) {
     },
     {
       match: /subscription|sub-/i,
-      reasons: ["Recurring subscriptions add to monthly burden.", "Optional spend stacks quietly over time."],
+      reasons: ["Recurring subscriptions add to monthly burden.", "Optional recurring expenses accumulate gradually over time."],
     },
     {
       match: /emi|loan|debt/i,

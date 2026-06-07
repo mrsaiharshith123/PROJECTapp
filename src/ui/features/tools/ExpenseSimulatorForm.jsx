@@ -6,11 +6,18 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { freeMoneyAfterBurden } from "../../../engines/pressureScore.js";
 import { computeLoanEmi, interestFromLoan, totalRepaymentFromEmi } from "../../../utils/loanEmi.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import {
+  presetLabelKey,
+  translateAffordabilityLabel,
+  translateAffordWarning,
+} from "../../../i18n/affordLabels.js";
 
 const LOAN_PRESETS = new Set(["emi", "home_loan", "car_loan", "personal_loan"]);
 
 /** Affordability simulator — EMI presets support product price, rate, and tenure. */
 export default function ExpenseSimulatorForm() {
+  const { t } = useTranslation();
   const { commitments, settings, getEffectiveStatus } = useCommitTrack();
   const presets = getExpensePresetsForMode(settings);
   const presetKeys = Object.keys(presets);
@@ -28,7 +35,7 @@ export default function ExpenseSimulatorForm() {
 
   const loanPrincipal = Math.max(
     0,
-    (Number(productPrice) || 0) - Math.max(0, Number(downPayment) || 0)
+    (Number(productPrice) || 0) - Math.max(0, Number(downPayment) || 0),
   );
   const tenure = Math.max(1, Math.floor(Number(tenureMonths) || 0));
   const rate = Math.max(0, Number(interestRate) || 0);
@@ -67,11 +74,15 @@ export default function ExpenseSimulatorForm() {
         })
       : null;
 
+  const presetLabel = (key) => {
+    const labelKey = presetLabelKey(key);
+    const translated = t(labelKey);
+    return translated !== labelKey ? translated : presets[key]?.label ?? key;
+  };
+
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500 dark:text-slate-400">
-        Try a new cost before you add it as a bill. Results use your current income and commitments.
-      </p>
+      <p className="text-xs text-gray-500 dark:text-slate-400">{t("tools.afford.intro")}</p>
       <div className="flex flex-wrap gap-2">
         {presetKeys.map((key) => (
           <button
@@ -84,14 +95,18 @@ export default function ExpenseSimulatorForm() {
                 : "border-gray-200 text-gray-600 dark:border-slate-600 dark:text-slate-400"
             }`}
           >
-            {presets[key].label}
+            {presetLabel(key)}
           </button>
         ))}
       </div>
       <input
         type="number"
         min="0"
-        placeholder={isLoanPreset && useLoanCalc ? "Or enter EMI directly (₹)" : "Amount (₹)"}
+        placeholder={
+          isLoanPreset && useLoanCalc
+            ? t("tools.afford.emiDirectPlaceholder")
+            : t("tools.afford.amountPlaceholder")
+        }
         className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
@@ -106,7 +121,7 @@ export default function ExpenseSimulatorForm() {
               onChange={(e) => setUseLoanCalc(e.target.checked)}
               className="rounded border-gray-300"
             />
-            Calculate EMI from product price & interest
+            {t("tools.afford.loanCalcLabel")}
           </label>
           {useLoanCalc && (
             <>
@@ -114,7 +129,7 @@ export default function ExpenseSimulatorForm() {
                 <input
                   type="number"
                   min="0"
-                  placeholder="Product price (₹)"
+                  placeholder={t("tools.afford.productPrice")}
                   className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
                   value={productPrice}
                   onChange={(e) => setProductPrice(e.target.value)}
@@ -122,7 +137,7 @@ export default function ExpenseSimulatorForm() {
                 <input
                   type="number"
                   min="0"
-                  placeholder="Down payment (₹)"
+                  placeholder={t("tools.afford.downPayment")}
                   className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
                   value={downPayment}
                   onChange={(e) => setDownPayment(e.target.value)}
@@ -131,7 +146,7 @@ export default function ExpenseSimulatorForm() {
                   type="number"
                   min="0"
                   step="0.1"
-                  placeholder="Interest % p.a."
+                  placeholder={t("tools.afford.interestRate")}
                   className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
@@ -139,7 +154,7 @@ export default function ExpenseSimulatorForm() {
                 <input
                   type="number"
                   min="1"
-                  placeholder="Tenure (months)"
+                  placeholder={t("tools.afford.tenure")}
                   className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
                   value={tenureMonths}
                   onChange={(e) => setTenureMonths(e.target.value)}
@@ -147,8 +162,12 @@ export default function ExpenseSimulatorForm() {
               </div>
               {computedEmi > 0 && (
                 <p className="text-xs text-indigo-800 dark:text-indigo-200">
-                  EMI ≈ {formatInr(computedEmi)}/mo · Total {formatInr(totalRepaymentFromEmi(computedEmi, tenure))} over{" "}
-                  {tenure} mo · Interest ≈ {formatInr(interestFromLoan(loanPrincipal, computedEmi, tenure))}
+                  {t("tools.afford.emiSummary", {
+                    emi: formatInr(computedEmi),
+                    total: formatInr(totalRepaymentFromEmi(computedEmi, tenure)),
+                    months: tenure,
+                    interest: formatInr(interestFromLoan(loanPrincipal, computedEmi, tenure)),
+                  })}
                 </p>
               )}
             </>
@@ -160,22 +179,32 @@ export default function ExpenseSimulatorForm() {
           <span
             className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${affordabilityBadgeClass(sim.affordability.tier)}`}
           >
-            {sim.affordability.label}
+            {translateAffordabilityLabel(t, sim.affordability)}
           </span>
           {sim.loanMeta && (
             <p className="text-xs text-gray-600 dark:text-slate-400">
-              Loan on {formatInr(sim.loanMeta.productPrice)} (down {formatInr(sim.loanMeta.downPayment)}) ·{" "}
-              {sim.loanMeta.interestRate}% · {sim.loanMeta.tenureMonths} mo
+              {t("tools.afford.loanOn", {
+                price: formatInr(sim.loanMeta.productPrice),
+                down: formatInr(sim.loanMeta.downPayment),
+                rate: sim.loanMeta.interestRate,
+                months: sim.loanMeta.tenureMonths,
+              })}
             </p>
           )}
           <p className="text-gray-700 dark:text-slate-300">
-            Free cash after: {formatInr(Math.round(sim.affordability.freeMoneyAfter))}
-            {sim.affordability.committedPercent != null ? ` (${sim.affordability.committedPercent}% committed)` : ""}
+            {t("tools.afford.freeCashAfter", {
+              amount: formatInr(Math.round(sim.affordability.freeMoneyAfter)),
+            })}
+            {sim.affordability.committedPercent != null
+              ? ` ${t("tools.afford.committedSuffix", { percent: sim.affordability.committedPercent })}`
+              : ""}
           </p>
           {sim.beforeSurvival && sim.afterSurvival && (
             <p className="text-xs text-gray-600 dark:text-slate-400">
-              Survival if income stops: {sim.beforeSurvival.survivalMonths ?? "—"} mo →{" "}
-              {sim.afterSurvival.survivalMonths ?? "—"} mo after this cost
+              {t("tools.afford.survival", {
+                before: sim.beforeSurvival.survivalMonths ?? "—",
+                after: sim.afterSurvival.survivalMonths ?? "—",
+              })}
             </p>
           )}
           {sim.warnings.map((w, i) => (
@@ -183,7 +212,7 @@ export default function ExpenseSimulatorForm() {
               key={i}
               className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-lg px-2 py-1.5"
             >
-              {w}
+              {translateAffordWarning(t, w)}
             </p>
           ))}
         </div>

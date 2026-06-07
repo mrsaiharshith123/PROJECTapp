@@ -30,6 +30,8 @@ Last reviewed: June 2026.
 | Stability narrative in Financial pulse | ✅ | `engines/stabilityNarrative.js`, `FinancialPulseCard.jsx` |
 | Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` |
 | Annual health report (Pro) | ✅ | `ProfileBackupSection.jsx` |
+| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — ~503 keys, audit parity |
+| i18n — Home, pulse, commitments, profile | ✅ Partial UI | See [10-i18n.md](./10-i18n.md) for wired vs pending screens |
 
 ## Shipped — payments & legal (backend-heavy)
 
@@ -58,6 +60,7 @@ Collected when legal-details UI is built; engine/export already read them:
 
 | Phase | Description |
 |-------|-------------|
+| Full i18n on all screens | Add/Edit bills, lending, onboarding, auth, analytics charts, tool panels, engine insight text |
 | OS launcher home | Status bar (pressure / health / runway) + module tile grid instead of scroll dashboard |
 | Paycheck page | `/paycheck` route, salary-day auto-navigate, Profile “salary credit day” field |
 | Planning page | `/planning` — tools moved off Home |
@@ -78,11 +81,12 @@ Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuratio
 
 ## Tests & quality
 
-- **102** unit tests (`npm test`) — includes `numberToWords`, `otpConfirmation`, engines/utils
-- Gate: `npm run audit` before merge
+- **166** unit tests (`npm test`) — engines, utils, services, i18n
+- Gate: `npm run audit` (includes copy tone + i18n key parity)
 
 ## Related docs
 
 - [02-project-structure.md](./02-project-structure.md) — where to add code
 - [architecture/Architecture.md](./architecture/Architecture.md) — layers & data flow
 - [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) — salaried / family tools
+- [10-i18n.md](./10-i18n.md) — languages, scripts, coverage

@@ -35,7 +35,7 @@ export default function PlansModal({ open, onClose }) {
         .then(() => {
           setMsg({
             type: "success",
-            text: `[Test] Simulated payment — you're on ${tier}. Pro features unlocked.`,
+            text: `[Test] Simulated payment complete. Your plan is now ${tier}. Pro features are enabled.`,
           });
         })
         .catch((err) => {
@@ -56,7 +56,7 @@ export default function PlansModal({ open, onClose }) {
       onSuccess: async (paymentId) => {
         await saveSubscriptionTier(user?.id, tier, paymentId);
         updateSettings({ subscriptionTier: tier });
-        setMsg({ type: "success", text: `You're now on ${tier}! Welcome.` });
+        setMsg({ type: "success", text: `Your plan is now ${tier}. Thank you for subscribing.` });
         setPaying(null);
       },
       onDismiss: () => setPaying(null),

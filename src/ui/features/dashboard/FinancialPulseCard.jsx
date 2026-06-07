@@ -15,12 +15,8 @@ import { Surface } from "../../primitives/Surface.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
 import { pickMicroTip } from "../../../guidance/index.js";
-
-const BASE_TABS = [
-  { id: "snapshot", label: "Summary" },
-  { id: "pressure", label: "Pressure" },
-  { id: "tips", label: "Tips" },
-];
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 
 function mergeTips(intel, stable) {
   const seen = new Set();
@@ -60,10 +56,11 @@ function mergeTips(intel, stable) {
 
 /** One card with Summary / Pressure / Tips — replaces stacked insight sections on Home. */
 export default function FinancialPulseCard({ microTipSeed = 0 }) {
+  const { t } = useTranslation();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const { settings } = useCommitTrack();
-  const microTip = pickMicroTip(microTipSeed);
+  const microTipKey = pickMicroTip(microTipSeed);
   const showPressure = showSalariedStabilityCards(settings);
   const isFamily = isSalariedFamily(settings);
   const ahead = stable.ahead;
@@ -77,9 +74,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const family = stable.family;
 
   const tabDefs = useMemo(() => {
-    if (!ahead) return BASE_TABS;
-    return [BASE_TABS[0], { id: "ahead", label: "Ahead" }, ...BASE_TABS.slice(1)];
-  }, [ahead]);
+    const base = [
+      { id: "snapshot", label: t("pulse.tabSummary") },
+      { id: "pressure", label: t("pulse.tabPressure") },
+      { id: "tips", label: t("pulse.tabTips") },
+    ];
+    if (!ahead) return base;
+    return [base[0], { id: "ahead", label: t("pulse.tabAhead") }, ...base.slice(1)];
+  }, [ahead, t]);
 
   const defaultTab = showPressure && (stress?.top?.length || family?.grouped) ? "pressure" : "snapshot";
   const [tab, setTab] = useState(defaultTab);
@@ -97,7 +99,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
     <Card className="ct-stack">
       <div className="ct-row-between" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
         <Heading level={2}>
-          Financial pulse
+          {t("pulse.title")}
           <ConceptHelp conceptId="stability" />
         </Heading>
         <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
@@ -105,19 +107,19 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
       {tab === "snapshot" && (
         <div className="ct-stack text-sm">
-          <Caption className="block ct-guidance-micro">{microTip}</Caption>
+          <Caption className="block ct-guidance-micro">{t(microTipKey)}</Caption>
 
           {narrative && (narrative.strengths.length > 0 || narrative.weaknesses.length > 0) && (
             <div className="ct-insight-accent ct-stack-sm">
               {narrative.strengths.length > 0 && (
                 <Caption className="block">
-                  <span className="ct-text-success font-semibold">Strengths: </span>
+                  <span className="ct-text-success font-semibold">{t("pulse.strengths")} </span>
                   {narrative.strengths.join(" · ")}
                 </Caption>
               )}
               {narrative.weaknesses.length > 0 && (
                 <Caption className="block">
-                  <span className="ct-text-warning font-semibold">Watch: </span>
+                  <span className="ct-text-warning font-semibold">{t("pulse.watch")} </span>
                   {narrative.weaknesses.join(" · ")}
                 </Caption>
               )}
@@ -126,11 +128,12 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
             <Caption className="inline-flex items-center">
-              Pressure
+              {t("pulse.pressure")}
               <InfoTip text={CALC_HELP.pressureScore} />
             </Caption>
             <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${intel.stability.badgeClass}`}>
-              {pressureIntel?.emotionalLabel || intel.stability.label} · {intel.stability.score}/100
+              {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)} ·{" "}
+              {intel.stability.score}/100
             </span>
           </div>
           {pressureIntel?.emotionalHint && (
@@ -143,7 +146,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
           {emergency && emergency.recommended > 0 && (
             <Surface className="ct-stack-sm">
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 inline-flex items-center">
-                Emergency reserve
+                {t("pulse.emergencyReserve")}
                 <InfoTip text={CALC_HELP.emergencyReserve} />
               </p>
               <p className="text-xs text-gray-500">{emergency.message}</p>
@@ -163,7 +166,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
         <div className="ct-stack text-sm">
           <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
             <p className="text-xs text-gray-500 dark:text-slate-400">
-              Next ~4 weeks of dues, month forecast, and pay-order suggestions.
+              {t("pulse.aheadIntro")}
             </p>
             <div className="flex items-center gap-2 shrink-0">
               <button
@@ -171,14 +174,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
                 className="ct-link !text-xs"
                 onClick={async () => {
                   const text = ahead.shareSummary || "";
-                  const r = await shareOrCopyPlainText(text, { title: "CommitTrack stability" });
-                  if (r.method === "share") setShareHint("Shared");
-                  else if (r.method === "clipboard") setShareHint("Copied");
+                  const r = await shareOrCopyPlainText(text, { title: t("pulse.shareTitle") });
+                  if (r.method === "share") setShareHint(t("pulse.shared"));
+                  else if (r.method === "clipboard") setShareHint(t("pulse.copied"));
                   else setShareHint("");
                   if (r.ok) setTimeout(() => setShareHint(""), 2500);
                 }}
               >
-                Share summary
+                {t("pulse.shareSummary")}
               </button>
               {shareHint ? (
                 <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">{shareHint}</span>
@@ -188,14 +191,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {ahead.dueWeeks?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-2">Due in next ~4 weeks</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-2">{t("pulse.dueNextWeeks")}</p>
               <div className="ct-grid-4">
                 {ahead.dueWeeks.map((w) => (
                   <div
                     key={w.week ?? w.label}
                     className="ct-inset p-2 text-xs"
                   >
-                    <p className="font-semibold text-gray-800 dark:text-slate-100">{w.label || `Week ${(w.week ?? 0) + 1}`}</p>
+                    <p className="font-semibold text-gray-800 dark:text-slate-100">{w.label || t("pulse.weekN", { n: (w.week ?? 0) + 1 })}</p>
                     <p className="text-gray-600 dark:text-slate-400 mt-0.5">{formatInr(w.amount || 0)}</p>
                     {w.items?.length > 0 && (
                       <ul className="mt-1 space-y-0.5 text-[11px] text-gray-500 dark:text-slate-400 truncate">
@@ -214,13 +217,13 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {ahead.forecastMonths?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">Next months (dues vs free)</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.nextMonths")}</p>
               <ul className="space-y-1 text-xs text-gray-600 dark:text-slate-300">
                 {ahead.forecastMonths.slice(0, 6).map((m) => (
                   <li key={m.monthKey || m.month} className="flex justify-between gap-2">
                     <span>{m.month}</span>
                     <span className="shrink-0">
-                      {formatInr(m.due)} due · {formatInr(m.free)} free
+                      {t("pulse.dueFree", { due: formatInr(m.due), free: formatInr(m.free) })}
                     </span>
                   </li>
                 ))}
@@ -230,14 +233,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {isFamily && ahead.familyCalendar?.heavyMonths?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">Household heavy months</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.householdHeavy")}</p>
               <ul className="space-y-1">
                 {ahead.familyCalendar.heavyMonths.map((m) => (
                   <li
                     key={m.monthKey}
                     className="text-xs rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-2 py-1.5 text-amber-900 dark:text-amber-100"
                   >
-                    <span className="font-semibold">{m.label}</span> — ~{formatInr(m.amount)} due
+                    {t("pulse.heavyDue", { label: m.label, amount: formatInr(m.amount) })}
                   </li>
                 ))}
               </ul>
@@ -246,7 +249,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {isFamily && family?.heavyRenewals?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">Large renewals</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.largeRenewals")}</p>
               <ul className="text-xs text-gray-600 dark:text-slate-300 space-y-0.5">
                 {family.heavyRenewals.slice(0, 5).map((r) => (
                   <li key={`${r.name}-${r.dueDate}`}>
@@ -260,13 +263,16 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {ahead.heavyMonths?.length > 0 && (
             <p className="ct-insight-violet">
-              Busiest stretch: {ahead.heavyMonths[0].month} (~{formatInr(ahead.heavyMonths[0].due)} due)
+              {t("pulse.highestObligations", {
+                month: ahead.heavyMonths[0].month,
+                due: formatInr(ahead.heavyMonths[0].due),
+              })}
             </p>
           )}
 
           {ahead.goalCapacity?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">Goals vs free cash</p>
+              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.goalsVsFreeCash")}</p>
               <ul className="space-y-1 text-xs text-gray-600 dark:text-slate-300">
                 {ahead.goalCapacity.slice(0, 5).map((g) => (
                   <li key={g.id} className="flex justify-between gap-2">
@@ -283,14 +289,17 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
           {ahead.billPriority?.plan?.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">
-                Suggested pay order {ahead.billPriority.coversAll ? "" : `(short ~${formatInr(ahead.billPriority.shortfall)})`}
+                {ahead.billPriority.coversAll
+                  ? t("pulse.suggestedPayOrder")
+                  : t("pulse.suggestedPayOrderShort", { amount: formatInr(ahead.billPriority.shortfall) })}
               </p>
               <ol className="space-y-1 text-xs text-gray-600 dark:text-slate-300 list-decimal list-inside">
                 {ahead.billPriority.plan.map((row) => (
                   <li key={row.id}>
                     {row.name}{" "}
                     <span className={row.canPay ? "text-emerald-700 dark:text-emerald-400" : "text-amber-800 dark:text-amber-200"}>
-                      {`(${formatInr(row.amount)}${row.canPay ? " — fits free cash" : " — tight"})`}
+                      ({formatInr(row.amount)}
+                      {row.canPay ? ` — ${t("pulse.withinFreeCash")}` : ` — ${t("pulse.exceedsFreeCash")}`})
                     </span>
                   </li>
                 ))}
@@ -300,7 +309,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {ahead.creditCard?.insights?.length > 0 && (
             <div className="ct-insight-danger ct-stack-sm">
-              <p className="text-xs font-semibold text-rose-900 dark:text-rose-100">Credit cards</p>
+              <p className="text-xs font-semibold text-rose-900 dark:text-rose-100">{t("pulse.creditCards")}</p>
               {ahead.creditCard.insights.map((line, i) => (
                 <p key={i} className="text-xs text-rose-900/90 dark:text-rose-100/90">
                   {line}
@@ -314,7 +323,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
       {tab === "pressure" && showPressure && (
         <div className="ct-stack">
           <p className="text-xs text-gray-500 dark:text-slate-400">
-            {isFamily ? "Household pressure by category" : "Main pressure sources this month"}
+            {isFamily ? t("pulse.householdPressure") : t("pulse.mainPressure")}
             <InfoTip text={CALC_HELP.pressureWeight} />
           </p>
 
@@ -331,7 +340,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             </ol>
           ) : stress?.top?.length ? (
             <>
-              <p className="text-xs font-medium text-gray-700 dark:text-slate-200">Main pressure sources:</p>
+              <p className="text-xs font-medium text-gray-700 dark:text-slate-200">{t("pulse.mainPressureList")}</p>
               <ol className="space-y-2">
                 {stress.top.map((r, i) => (
                   <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
@@ -345,7 +354,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               </ol>
             </>
           ) : (
-            <p className="text-sm text-gray-500">No active bills yet. Add commitments to see pressure here.</p>
+            <p className="text-sm text-gray-500">{t("pulse.noActiveBills")}</p>
           )}
 
           {pressureIntel?.forecastMessage && (
@@ -356,7 +365,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
 
           {!isFamily && payoffRec && (
             <p className="ct-insight-accent">
-              <span className="font-semibold">Focus first:</span> {payoffRec.name}
+              <span className="font-semibold">{t("pulse.focusFirst")}</span> {payoffRec.name}
             </p>
           )}
         </div>
@@ -365,7 +374,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
       {tab === "tips" && (
         <div className="ct-stack-sm">
           {tips.length === 0 ? (
-            <p className="text-sm text-gray-500">No tips right now — you are in a calm stretch.</p>
+            <p className="text-sm text-gray-500">{t("pulse.noTips")}</p>
           ) : (
             <ul className="space-y-2">
               {tips.slice(0, 10).map((ins) => (

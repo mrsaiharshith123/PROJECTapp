@@ -23,7 +23,7 @@ export default function SmsDetectModal({ open, onClose }) {
     reset();
     const parsed = parseSmsForDebit(sms);
     if (!parsed) {
-      setError("Doesn't look like a bank debit SMS.");
+      setError("The text does not match the expected format for a bank debit SMS.");
       return;
     }
     setDebit(parsed);

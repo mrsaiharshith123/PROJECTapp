@@ -40,7 +40,7 @@ export function analyzeGoalBalance(goals, ctx) {
     insights.push({
       id: "goal-debt-save",
       tone: "warning",
-      text: "Paying down debt and building savings at the same time is hard on thin free cash — pick a primary focus for now.",
+      text: "Paying down debt and building savings simultaneously is difficult on limited free cash — prioritize one objective.",
     });
   }
 
@@ -54,7 +54,7 @@ export function analyzeGoalBalance(goals, ctx) {
     tensions.length > 0
       ? `Current finances may struggle to support ${tensions.join(", ")} at the same time.`
       : active.length >= 2 && burdenRatio > 0.5
-        ? "Multiple goals are active — stagger targets so one big milestone does not starve the rest."
+        ? "Multiple goals are active — stagger targets so one milestone does not reduce progress on the others."
         : null;
 
   return {

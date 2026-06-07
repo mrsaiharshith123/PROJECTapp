@@ -1,5 +1,6 @@
 import { cn } from "../utils/cn.js";
 import { ProgressBar } from "../patterns/ProgressBar.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.jsx";
 
 export function HeroMonthCard({
   title,
@@ -17,8 +18,21 @@ export function HeroMonthCard({
   onClick,
   className = "",
 }) {
+  const { t } = useTranslation();
+
+  const metrics = [
+    { label: t("home.left"), value: left },
+    { label: t("home.paid"), value: paid, valueClass: "ct-hero-metric-success" },
+    { label: t("home.due"), value: due, valueClass: "ct-hero-metric-warn" },
+  ];
+
   return (
-    <button type="button" onClick={onClick} className={cn("ct-hero-month", className)} aria-label="Open analytics">
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn("ct-hero-month", className)}
+      aria-label={t("home.openAnalytics")}
+    >
       <div className="ct-row-between px-1 pt-1 pb-2">
         <div className="text-left">
           <p className="ct-eyebrow">{title}</p>
@@ -30,11 +44,7 @@ export function HeroMonthCard({
       </div>
 
       <div className="ct-grid-3 gap-2 px-1">
-        {[
-          { label: "Left", value: left },
-          { label: "Paid", value: paid, valueClass: "ct-hero-metric-success" },
-          { label: "Due", value: due, valueClass: "ct-hero-metric-warn" },
-        ].map((m) => (
+        {metrics.map((m) => (
           <div key={m.label} className="ct-hero-inset">
             <p className="ct-caption font-semibold uppercase">{m.label}</p>
             <p className={cn("ct-hero-metric mt-1", m.valueClass)}>{m.value}</p>
@@ -44,7 +54,7 @@ export function HeroMonthCard({
 
       <div className="px-1 mt-3">
         <div className="ct-row-between ct-caption mb-1">
-          <span>Month progress</span>
+          <span>{t("home.monthProgress")}</span>
           <span>{paidPct}%</span>
         </div>
         <ProgressBar value={paidPct} />
@@ -62,7 +72,7 @@ export function HeroMonthCard({
       ) : null}
 
       <div className="ct-hero-wave" aria-hidden />
-      <p className="ct-caption text-center pb-3 pt-2">Tap for full analytics →</p>
+      <p className="ct-caption text-center pb-3 pt-2">{t("home.tapAnalytics")}</p>
     </button>
   );
 }

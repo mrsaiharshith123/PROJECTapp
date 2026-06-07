@@ -1,10 +1,10 @@
 /** Primary bottom nav — Home · Bills · Add · Lending · Profile (analytics via Home hero) */
 export const NAV_ITEMS = [
-  { to: "/", label: "Home", icon: "\u{1F3E0}" },
-  { to: "/commitments", label: "Bills", icon: "\u{1F4CB}" },
-  { to: "/add", label: "Add", icon: "+", fab: true },
-  { to: "/lending", label: "Lending", icon: "\u{1F91D}" },
-  { to: "/profile", label: "Profile", icon: "\u{1F464}" },
+  { to: "/", labelKey: "nav.home", icon: "\u{1F3E0}" },
+  { to: "/commitments", labelKey: "nav.bills", icon: "\u{1F4CB}" },
+  { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
+  { to: "/lending", labelKey: "nav.lending", icon: "\u{1F91D}" },
+  { to: "/profile", labelKey: "nav.profile", icon: "\u{1F464}" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */

@@ -15,6 +15,7 @@ import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
 import { STORAGE_KEYS } from "../storage/keys.js";
 import { CONSENT_KEY } from "./dpdpConsent.js";
 import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
+import { normalizeAppLanguage } from "../i18n/languages.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
@@ -483,6 +484,8 @@ const DEFAULT_SETTINGS = {
   cloudSyncEnabled: false,
   /** Day of month (1–31) salary credits — used by paycheck flow when UI is wired. */
   salaryCreditDay: null,
+  /** BCP-47-ish app locale: en + 22 scheduled Indian languages */
+  appLanguage: "en",
 };
 
 export function loadSettingsFromStorage() {
@@ -547,6 +550,7 @@ export function loadSettingsFromStorage() {
           o.salaryCreditDay != null && o.salaryCreditDay !== ""
             ? Math.min(31, Math.max(1, Math.floor(Number(o.salaryCreditDay) || 0)))
             : null,
+        appLanguage: normalizeAppLanguage(o.appLanguage),
       };
     }
   } catch {

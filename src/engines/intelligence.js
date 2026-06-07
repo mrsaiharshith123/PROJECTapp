@@ -39,7 +39,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "free-cash-low",
       tone: "warning",
-      text: `Your free cash after typical monthly burden may be tight (obligations use a large share of income).`,
+      text: `Free cash after typical monthly obligations may be limited (obligations use a large share of income).`,
     });
   }
 
@@ -47,13 +47,13 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "burden-danger",
       tone: "critical",
-      text: "EMI-style burden crossed a dangerous range vs income. Pause new bills if possible.",
+      text: "EMI-style burden is in a high range relative to income. Defer new commitments if possible.",
     });
   } else if (ratio != null && ratio > 0.6) {
     insights.push({
       id: "burden-risk",
       tone: "warning",
-      text: "Monthly bill burden is elevated vs income—worth re-checking discretionary spends.",
+      text: "Monthly bill burden is elevated relative to income — review discretionary spending.",
     });
   }
 
@@ -62,7 +62,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "subs-weight",
       tone: "info",
-      text: `Subscriptions add roughly ₹${Math.round(subs).toLocaleString()}/mo to your baseline—small leaks compound.`,
+      text: `Subscriptions add roughly ₹${Math.round(subs).toLocaleString()}/mo to your baseline — recurring costs accumulate over time.`,
     });
   }
 
@@ -74,7 +74,7 @@ export function generateCommitmentInsights(ctx) {
       insights.push({
         id: "open-up",
         tone: "warning",
-        text: `Open bill balance jumped vs last snapshot (${prev.month} → ${last.month}).`,
+        text: `Open bill balance increased compared with the prior snapshot (${prev.month} → ${last.month}).`,
       });
     }
     if (last.openRemainingSum < prev.openRemainingSum * 0.92) {
@@ -91,7 +91,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "multi-overdue",
       tone: "critical",
-      text: `${overdueCount} items are overdue—clearing them first usually lowers stress fastest.`,
+      text: `${overdueCount} items are overdue — clearing them first usually reduces pressure most directly.`,
     });
   }
 
@@ -106,7 +106,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "paying-habit",
       tone: "positive",
-      text: `You recorded ₹${Math.round(paidThisMonth).toLocaleString()} in payments this month—consistency builds runway.`,
+      text: `You recorded ₹${Math.round(paidThisMonth).toLocaleString()} in payments this month — consistent payments improve financial runway.`,
     });
   }
 

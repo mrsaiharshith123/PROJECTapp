@@ -2,10 +2,13 @@ import { Card, Caption, Heading, inputClassName } from "../../index.js";
 import ProfileManager from "./ProfileManager.jsx";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
-import { isSalariedFamily, getIncomeLabel, resolveUserMode } from "../../../constants/modeExperience.js";
-import { SELECTABLE_USER_MODES, getUserModeConfig } from "../../../constants/userModes.js";
+import { isSalariedFamily, resolveUserMode } from "../../../constants/modeExperience.js";
+import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { applyColorScheme } from "../../../utils/theme.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import ProfileLanguageSection from "./ProfileLanguageSection.jsx";
+import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 
 const profileInputClass = inputClassName();
 
@@ -26,30 +29,32 @@ function ProfileField({ label, hint, required, children }) {
 }
 
 export default function ProfilePersonalSection({ settings, updateSettings }) {
+  const { t } = useTranslation();
   const salariedFamily = isSalariedFamily(settings);
-  const incomeLabel = getIncomeLabel(settings);
-  const modeCfg = getUserModeConfig(resolveUserMode(settings));
+  const incomeLabel = t(getIncomeLabelKey(settings));
   const userMode = resolveUserMode(settings);
 
   return (
     <Card className="ct-stack">
+      <ProfileLanguageSection updateSettings={updateSettings} />
+
       <div>
-        <Heading level={3}>About you</Heading>
-        <Caption className="block mt-1">Name, look & feel, and how we label your experience.</Caption>
+        <Heading level={3}>{t("profile.aboutYou.title")}</Heading>
+        <Caption className="block mt-1">{t("profile.aboutYou.subtitle")}</Caption>
       </div>
 
       <ProfileAvatar settings={settings} updateSettings={updateSettings} />
 
-      <ProfileField label="Display name" hint="How we greet you on the dashboard.">
+      <ProfileField label={t("profile.displayName")} hint={t("profile.displayNameHint")}>
         <input
           className={profileInputClass}
           value={settings.displayName ?? ""}
           onChange={(e) => updateSettings({ displayName: e.target.value })}
-          placeholder="Your name"
+          placeholder={t("profile.displayNamePlaceholder")}
         />
       </ProfileField>
 
-      <ProfileField label="Mobile number" hint="10-digit Indian mobile linked to your account.">
+      <ProfileField label={t("profile.phone")} hint={t("profile.phoneHint")}>
         <input
           type="tel"
           className={profileInputClass}
@@ -60,12 +65,12 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
         />
       </ProfileField>
 
-      <ProfileField label="Appearance">
+      <ProfileField label={t("profile.appearance")}>
         <div className="ct-grid-3">
           {[
-            { id: "light", label: "Light" },
-            { id: "dark", label: "Dark" },
-            { id: "system", label: "System" },
+            { id: "light", labelKey: "appearance.light" },
+            { id: "dark", labelKey: "appearance.dark" },
+            { id: "system", labelKey: "appearance.system" },
           ].map((opt) => (
             <button
               key={opt.id}
@@ -76,7 +81,7 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
               }}
               className={`ct-option-card !py-2.5 ${(settings.colorScheme || "system") === opt.id ? "ct-option-card-active" : ""}`}
             >
-              <span className="text-xs font-semibold">{opt.label}</span>
+              <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
             </button>
           ))}
         </div>
@@ -84,19 +89,19 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
 
       {salariedFamily && (
         <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
-          <Caption className="font-semibold block">Family profiles</Caption>
-          <Caption className="block">Separate bills by family member or area of the home.</Caption>
+          <Caption className="font-semibold block">{t("profile.familyProfiles.title")}</Caption>
+          <Caption className="block">{t("profile.familyProfiles.subtitle")}</Caption>
           <ProfileManager />
         </div>
       )}
 
       <div className="ct-stack pt-2 border-t border-[var(--ct-border)]">
         <div>
-          <Heading level={3}>Money setup</Heading>
-          <Caption className="block mt-1">Income and mode drive pressure scores, tools, and reminders.</Caption>
+          <Heading level={3}>{t("profile.moneySetup.title")}</Heading>
+          <Caption className="block mt-1">{t("profile.moneySetup.subtitle")}</Caption>
         </div>
 
-        <ProfileField label={`${incomeLabel} (₹)`} required hint="Used across analytics and tools.">
+        <ProfileField label={`${incomeLabel} (₹)`} required hint={t("profile.incomeUsedHint")}>
           <input
             type="number"
             min="0"
@@ -106,15 +111,12 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
               const raw = e.target.value;
               updateSettings({ monthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
             }}
-            placeholder="e.g. 75000"
+            placeholder={t("profile.incomePlaceholder")}
           />
         </ProfileField>
 
         {userMode === "salaried" && (
-          <ProfileField
-            label="Second income (₹/mo)"
-            hint="Partner salary or steady side income — combined with main income for pressure, forecasts, and reminders. Use 0 if none."
-          >
+          <ProfileField label={t("profile.secondIncome")} hint={t("profile.secondIncomeHint")}>
             <input
               type="number"
               min="0"
@@ -130,19 +132,19 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
         )}
 
         {userMode === "salaried" && (
-          <ProfileField label="Income you enter is" hint={CALC_HELP.incomeEntryBasis}>
+          <ProfileField label={t("profile.incomeBasis")} hint={t(CALC_HELP.incomeEntryBasis)}>
             <select
               className={profileInputClass}
               value={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
               onChange={(e) => updateSettings({ incomeEntryBasis: e.target.value === "gross" ? "gross" : "take_home" })}
             >
-              <option value="take_home">Take-home (after tax / PF) — recommended</option>
-              <option value="gross">Gross / CTC-style (before deductions)</option>
+              <option value="take_home">{t("profile.incomeTakeHome")}</option>
+              <option value="gross">{t("profile.incomeGross")}</option>
             </select>
           </ProfileField>
         )}
 
-        <ProfileField label="Liquid savings (₹)" hint="Cash you can access quickly — emergency & survival math.">
+        <ProfileField label={t("profile.liquidSavings")} hint={t("profile.liquidSavingsHint")}>
           <input
             type="number"
             min="0"
@@ -155,7 +157,7 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
           />
         </ProfileField>
 
-        <ProfileField label="User mode" hint={modeCfg.description}>
+        <ProfileField label={t("profile.userMode")} hint={t("mode.salariedDesc")}>
           <select
             className={profileInputClass}
             value={userMode}
@@ -169,17 +171,14 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
           >
             {SELECTABLE_USER_MODES.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.emoji} {m.label}
+                {m.emoji} {t("mode.salaried")}
               </option>
             ))}
           </select>
         </ProfileField>
 
         {userMode === "salaried" && (
-          <ProfileField
-            label="Household"
-            hint="Family unlocks household categories, payer tags, and family member profiles."
-          >
+          <ProfileField label={t("profile.household")} hint={t("profile.householdHint")}>
             <select
               className={profileInputClass}
               value={settings.householdScope === "family" ? "family" : "single"}
@@ -192,14 +191,14 @@ export default function ProfilePersonalSection({ settings, updateSettings }) {
                 });
               }}
             >
-              <option value="single">Just me</option>
-              <option value="family">Family household</option>
+              <option value="single">{t("profile.householdSingle")}</option>
+              <option value="family">{t("profile.householdFamily")}</option>
             </select>
           </ProfileField>
         )}
 
         {settings.householdScope === "family" && (
-          <ProfileField label="Dependents" hint="People relying on household income.">
+          <ProfileField label={t("profile.dependents")} hint={t("profile.dependentsHint")}>
             <input
               type="number"
               min="0"

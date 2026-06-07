@@ -5,6 +5,7 @@ import { ProGate } from "../../patterns/ProGate.jsx";
 import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { buildAnnualReportData } from "../../../engines/annualReport.js";
 import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";
@@ -24,6 +25,7 @@ export default function ProfileBackupSection({
   monthlySnapshots,
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const ctx = useCommitTrack();
   const { user } = useAuth();
   const { importAppData } = ctx;
@@ -80,7 +82,7 @@ export default function ProfileBackupSection({
       } catch {
         setPreview(null);
         setPending(null);
-        setError("Could not read JSON. Use a CommitTrack export file.");
+        setError(t("backup.readError"));
       }
     };
     reader.readAsText(file);
@@ -94,12 +96,17 @@ export default function ProfileBackupSection({
         importAppData(pending, { mode })
       );
       setResult(
-        `Imported: ${summary.addedCommitments} bills, ${summary.addedLendings} lending, ${summary.addedGoals} goals (${mode}).`,
+        t("backup.imported", {
+          bills: summary.addedCommitments,
+          lending: summary.addedLendings,
+          goals: summary.addedGoals,
+          mode,
+        }),
       );
       setPreview(null);
       setPending(null);
     } catch (err) {
-      setError((err instanceof Error ? err.message : null) || "Import failed");
+      setError((err instanceof Error ? err.message : null) || t("backup.importFailed"));
     }
   };
 
@@ -115,7 +122,7 @@ export default function ProfileBackupSection({
       navigate("/", { replace: true });
       window.location.reload();
     } catch (err) {
-      setDeleteError((err instanceof Error ? err.message : null) || "Could not delete account data.");
+      setDeleteError((err instanceof Error ? err.message : null) || t("backup.deleteFailed"));
       setDeleting(false);
     }
   };
@@ -126,33 +133,35 @@ export default function ProfileBackupSection({
 
       <Card className="ct-stack">
         <div>
-          <Heading level={3}>File backup</Heading>
-          <Caption className="mt-1 block">
-            Export or import a JSON file on this device. Restore from Supabase is in Account backup above.
-          </Caption>
+          <Heading level={3}>{t("backup.fileTitle")}</Heading>
+          <Caption className="mt-1 block">{t("backup.fileSubtitle")}</Caption>
         </div>
 
         <button type="button" className="ct-list-row w-full text-left" onClick={exportJson}>
-          <Body className="font-semibold">Export JSON backup</Body>
-          <Caption className="block mt-0.5">Save bills, lending, goals, and settings to a file</Caption>
+          <Body className="font-semibold">{t("backup.exportJson")}</Body>
+          <Caption className="block mt-0.5">{t("backup.exportJsonHint")}</Caption>
         </button>
 
         <div className="ct-stack">
-          <Body className="font-semibold !text-sm">Import JSON</Body>
+          <Body className="font-semibold !text-sm">{t("backup.importJson")}</Body>
           <select className="ct-field w-full" value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="merge">Merge — keep existing, add new (skip duplicate ids)</option>
-            <option value="replace">Replace — overwrite lists from file</option>
+            <option value="merge">{t("backup.importMerge")}</option>
+            <option value="replace">{t("backup.importReplace")}</option>
           </select>
           <input type="file" accept="application/json,.json" onChange={onFile} className="ct-field w-full !text-xs" />
           {preview && (
             <Caption className="block">
-              Preview: {preview.commitments} bills, {preview.lendings} lending, {preview.goals} goals
-              {preview.hasSettings ? ", includes settings" : ""}.
+              {t("backup.preview", {
+                bills: preview.commitments,
+                lending: preview.lendings,
+                goals: preview.goals,
+                settings: preview.hasSettings ? t("backup.previewSettings") : "",
+              })}
             </Caption>
           )}
           {pending && (
             <Button type="button" variant="primary" onClick={runImport}>
-              Confirm import
+              {t("backup.confirmImport")}
             </Button>
           )}
           {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
@@ -162,26 +171,23 @@ export default function ProfileBackupSection({
 
       <Card className="ct-stack">
         <div>
-          <Heading level={3}>Delete all data</Heading>
+          <Heading level={3}>{t("backup.deleteTitle")}</Heading>
           <Caption className="mt-1 block">
-            Permanently erase all bills, lending, and settings on this device
-            {user?.id ? " and your cloud profile" : ""}. This cannot be undone.
+            {t("backup.deleteSubtitle", { cloud: user?.id ? t("backup.deleteCloud") : "" })}
           </Caption>
         </div>
         <Button type="button" variant="danger" onClick={() => setConfirmDelete(true)}>
-          Delete all data
+          {t("backup.deleteAll")}
         </Button>
       </Card>
 
       {confirmDelete && (
-        <Modal
-          title="Delete all data?"
-          onClose={() => !deleting && setConfirmDelete(false)}
-        >
+        <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && setConfirmDelete(false)}>
           <div className="ct-stack-sm">
             <Body className="!text-sm">
-              This removes all local data and{user?.id ? " deletes your Supabase profile." : " signs you out of cloud sync."}{" "}
-              Export a backup first if you need your records.
+              {t("backup.deleteModalBody", {
+                cloud: user?.id ? t("backup.deleteCloudModal") : t("backup.deleteSignout"),
+              })}
             </Body>
             {deleteError && <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption>}
             <div className="ct-row">
@@ -192,7 +198,7 @@ export default function ProfileBackupSection({
                 disabled={deleting}
                 onClick={() => setConfirmDelete(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="button"
@@ -201,7 +207,7 @@ export default function ProfileBackupSection({
                 disabled={deleting}
                 onClick={handleDeleteAllData}
               >
-                {deleting ? "Deleting…" : "Yes, delete everything"}
+                {deleting ? t("common.deleting") : t("backup.deleteConfirm")}
               </Button>
             </div>
           </div>
@@ -211,11 +217,11 @@ export default function ProfileBackupSection({
       <ProGate featureId="health_report">
         <div className="ct-plan-row">
           <div className="min-w-0 flex-1">
-            <Heading level={4}>Annual report</Heading>
-            <Caption className="block">Year summary — pressure, subs, survival (Pro).</Caption>
+            <Heading level={4}>{t("backup.annualReport")}</Heading>
+            <Caption className="block">{t("backup.annualReportHint")}</Caption>
           </div>
           <Button type="button" variant="primary" size="sm" onClick={handleAnnualReport}>
-            Generate
+            {t("common.generate")}
           </Button>
         </div>
       </ProGate>

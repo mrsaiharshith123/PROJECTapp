@@ -33,6 +33,7 @@ import {
   registerDevSubscriptionTools,
   unregisterDevSubscriptionTools,
 } from "../utils/devSubscriptionTools.js";
+import { normalizeAppLanguage } from "../i18n/languages.js";
 /** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
 const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
 
@@ -336,6 +337,9 @@ export function CommitTrackProvider({ children }) {
           const t = patch.subscriptionTier;
           next.subscriptionTier = ["free", "pro", "power"].includes(t) ? t : prev.subscriptionTier || "free";
           if (next.subscriptionTier === "free") next.cloudSyncEnabled = false;
+        }
+        if (patch.appLanguage != null) {
+          next.appLanguage = normalizeAppLanguage(patch.appLanguage);
         }
         return next;
       });

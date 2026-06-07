@@ -20,6 +20,8 @@ Analytics opens from the Home month hero card (`/analytics`). Lending is the ful
 
 Charts live on **Analytics only** — one chart at a time with `FilterChips` to switch views. Theme: `data-theme="light"|"dark"` on `<html>` (Profile → Appearance); charts follow via `getChartTheme()`.
 
+**Language:** Profile → Language picker (`I18nProvider`). See `docs/10-i18n.md`.
+
 ## Product UI map (current)
 
 | Screen | Path |

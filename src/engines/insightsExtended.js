@@ -61,7 +61,7 @@ export function forecastCrunchInsight(
     text:
       worst.free < 0
         ? `You may face negative free cash around ${worst.month} (dues exceed income that month).`
-        : `Cash may feel tight around ${worst.month}—only ≈₹${Math.round(worst.free).toLocaleString()} free after estimated dues.`,
+        : `Cash may be limited around ${worst.month} — only ≈₹${Math.round(worst.free).toLocaleString()} free after estimated dues.`,
   };
 }
 
@@ -95,7 +95,7 @@ export function emiBurdenPercentInsight(commitments, income, getEffectiveStatus)
   return {
     id: "emi-pct",
     tone: pct >= 60 ? "critical" : "warning",
-    text: `EMIs use about ${pct}% of your stated monthly income—watch new borrowing carefully.`,
+    text: `EMIs use about ${pct}% of your stated monthly income — exercise caution with new borrowing.`,
   };
 }
 

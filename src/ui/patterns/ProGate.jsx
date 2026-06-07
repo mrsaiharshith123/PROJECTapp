@@ -18,12 +18,12 @@ function ProUpgradeNudge() {
   const navigate = useNavigate();
   return (
     <Card className="ct-stack-sm">
-      <Body className="font-semibold">🔒 This is a Pro feature</Body>
+      <Body className="font-semibold">Pro feature</Body>
       <Caption className="block">
-        Upgrade to unlock advanced tools, reports, and deeper insights.
+        A Pro subscription unlocks advanced tools, reports, and extended analysis.
       </Caption>
       <Button type="button" variant="primary" onClick={() => navigate("/profile#upgrade")}>
-        Upgrade to Pro →
+        View plans
       </Button>
     </Card>
   );

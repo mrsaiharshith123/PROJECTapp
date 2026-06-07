@@ -177,13 +177,13 @@ export function adviseLoanExtraPaymentMonths({
   let summary = "Add income in Profile for month-by-month guidance.";
   if (income > 0 && bestForExtra) {
     if (bestForExtra.goodForExtra) {
-      summary = `${bestForExtra.label} is a lighter month (about ${formatInr(bestForExtra.extraCapacity)} headroom for extra payment). Other bills ~${formatInr(bestForExtra.otherBills)}.`;
+      summary = `${bestForExtra.label} is a lighter month (about ${formatInr(bestForExtra.extraCapacity)} available for an additional payment). Other bills ~${formatInr(bestForExtra.otherBills)}.`;
       if (heavyMonths.length) {
         summary += ` Avoid big extras in ${heavyMonths.slice(0, 2).map((m) => m.label).join(", ")} when pressure is high.`;
       }
     } else {
       summary =
-        "No calm month in the next year — consider small extras only when free cash is positive, or reduce other bills first.";
+        "No low-pressure month in the next year — consider small additional payments only when free cash is positive, or reduce other bills first.";
     }
   }
 

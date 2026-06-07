@@ -5,7 +5,8 @@ import { Card, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName, B
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
-import { COPY } from "../../../constants/copy.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useCopy } from "../../../i18n/useCopy.js";
 import { isActiveBill, isHistoryBill } from "../../../utils/billLifecycle.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
@@ -20,6 +21,8 @@ import { priorityRank } from "../../../constants/priority.js";
 
 const Commitments = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const copy = useCopy();
   const [searchParams] = useSearchParams();
   const {
     sortedCommitments,
@@ -176,28 +179,40 @@ const Commitments = () => {
     paymentFor && isCurrentCyclePaid(paymentFor, todayStr, sortedCommitments);
 
   const presetChips = [
-    { id: "", label: "All" },
-    { id: "upcoming", label: "Due Soon" },
-    { id: "overdue_only", label: "Overdue" },
-    { id: "paid", label: "Paid" },
+    { id: "", label: t("bills.filterAll") },
+    { id: "upcoming", label: t("bills.filterDueSoon") },
+    { id: "overdue_only", label: t("bills.overdue") },
+    { id: "paid", label: t("bills.paid") },
+  ];
+
+  const categoryOptions = [
+    ["EMI", "category.emi"],
+    ["Credit Card", "category.creditCard"],
+    ["Subscription", "category.subscription"],
+    ["Insurance", "category.insurance"],
+    ["SIP", "category.sip"],
+    ["Rent", "category.rent"],
+    ["Loan", "category.loan"],
+    ["Utility", "category.utility"],
+    ["Other", "category.other"],
   ];
 
   return (
     <div className="ct-page">
       <PageHeader
-        title={COPY.billsPageTitle}
-        eyebrow="Monthly"
+        title={copy.billsPageTitle}
+        eyebrow={t("bills.eyebrowMonthly")}
         actions={
           <>
             <button
               type="button"
               className="ct-btn ct-btn-ghost ct-btn-sm"
-              aria-label="Detect from SMS"
+              aria-label={t("bills.detectSms")}
               onClick={() => setSmsOpen(true)}
             >
               📱
             </button>
-            <Fab type="button" onClick={() => navigate("/add")} aria-label={COPY.addBill}>
+            <Fab type="button" onClick={() => navigate("/add")} aria-label={copy.addBill}>
               +
             </Fab>
           </>
@@ -226,16 +241,16 @@ const Commitments = () => {
       />
 
       <div className="ct-grid-4">
-        <CountTile value={counts.pending || 0} label="Due" tone="warning" />
-        <CountTile value={counts.upnext || 0} label="Up next" tone="info" />
-        <CountTile value={counts.overdue || 0} label="Overdue" tone="critical" />
-        <CountTile value={historyBills.length} label="History" onClick={() => setShowHistory((v) => !v)} />
+        <CountTile value={counts.pending || 0} label={t("bills.due")} tone="warning" />
+        <CountTile value={counts.upnext || 0} label={t("bills.upNext")} tone="info" />
+        <CountTile value={counts.overdue || 0} label={t("bills.overdue")} tone="critical" />
+        <CountTile value={historyBills.length} label={t("bills.history")} onClick={() => setShowHistory((v) => !v)} />
       </div>
 
       <Card className="ct-stack">
         <input
           type="search"
-          placeholder="Search by name\u2026"
+          placeholder={t("bills.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className={inputClassName()}
@@ -246,62 +261,58 @@ const Commitments = () => {
             onChange={(e) => setFilterCategory(e.target.value)}
             className={inputClassName("text-xs font-medium")}
           >
-            <option value="">All categories</option>
-            <option value="EMI">EMI</option>
-            <option value="Credit Card">Credit Card</option>
-            <option value="Subscription">Subscription</option>
-            <option value="Insurance">Insurance</option>
-            <option value="SIP">SIP</option>
-            <option value="Rent">Rent</option>
-            <option value="Loan">Loan</option>
-            <option value="Utility">Utility</option>
-            <option value="Other">Other</option>
+            <option value="">{t("bills.allCategories")}</option>
+            {categoryOptions.map(([value, key]) => (
+              <option key={value} value={value}>
+                {t(key)}
+              </option>
+            ))}
           </select>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className={inputClassName("text-xs font-medium")}
           >
-            <option value="">All statuses</option>
-            <option value="pending">Due now</option>
-            <option value="upnext">Up next</option>
-            <option value="overdue">Overdue</option>
-            <option value="paid">Paid</option>
+            <option value="">{t("bills.allStatuses")}</option>
+            <option value="pending">{t("bills.statusDueNow")}</option>
+            <option value="upnext">{t("bills.upNext")}</option>
+            <option value="overdue">{t("bills.overdue")}</option>
+            <option value="paid">{t("bills.paid")}</option>
           </select>
           <select
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
             className={inputClassName("text-xs font-medium")}
           >
-            <option value="">All priorities</option>
-            <option value="critical">Critical</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="">{t("bills.allPriorities")}</option>
+            <option value="critical">{t("priority.critical")}</option>
+            <option value="medium">{t("priority.medium")}</option>
+            <option value="low">{t("priority.low")}</option>
           </select>
           <select
             value={filterPreset}
             onChange={(e) => setFilterPreset(e.target.value)}
             className={inputClassName("text-xs font-medium sm:col-span-2")}
           >
-            <option value="">All types</option>
-            <option value="recurring">Recurring only</option>
-            <option value="subscriptions">Subscriptions</option>
-            <option value="loans_emi">EMI / Loan</option>
-            <option value="overdue_only">Overdue</option>
-            <option value="upcoming">Upcoming (14d)</option>
-            <option value="high_remaining">High remaining (&ge;15k)</option>
-            <option value="high_pressure">High monthly burden</option>
+            <option value="">{t("bills.allTypes")}</option>
+            <option value="recurring">{t("bills.recurringOnly")}</option>
+            <option value="subscriptions">{t("bills.subscriptionsFilter")}</option>
+            <option value="loans_emi">{t("bills.emiLoanFilter")}</option>
+            <option value="overdue_only">{t("bills.overdue")}</option>
+            <option value="upcoming">{t("bills.upcoming14d")}</option>
+            <option value="high_remaining">{t("bills.highRemaining")}</option>
+            <option value="high_pressure">{t("bills.highBurden")}</option>
           </select>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className={inputClassName("text-xs font-medium sm:col-span-1")}
           >
-            <option value="priority_due">Sort: priority + due</option>
-            <option value="due_soonest">Due soonest</option>
-            <option value="burden_desc">Highest burden</option>
-            <option value="remaining_desc">Highest remaining</option>
-            <option value="priority">Priority only</option>
+            <option value="priority_due">{t("bills.sortPriorityDue")}</option>
+            <option value="due_soonest">{t("bills.sortDueSoonest")}</option>
+            <option value="burden_desc">{t("bills.sortBurdenDesc")}</option>
+            <option value="remaining_desc">{t("bills.sortRemainingDesc")}</option>
+            <option value="priority">{t("bills.sortPriority")}</option>
           </select>
         </div>
       </Card>
@@ -311,14 +322,14 @@ const Commitments = () => {
           <p className="text-4xl mb-3" aria-hidden>
             {"\uD83D\uDCCB"}
           </p>
-          <p className="ct-body-strong">{COPY.noBills}</p>
-          <Caption>Tap + {COPY.addBill} above to create your first one</Caption>
+          <p className="ct-body-strong">{copy.noBills}</p>
+          <Caption>{t("bills.emptyHint", { action: copy.addBill })}</Caption>
         </Card>
       )}
 
       {sortedCommitments.length > 0 && activeBills.length === 0 && (
         <Card className="ct-stack-center" style={{ padding: "2rem 1.25rem", textAlign: "center" }}>
-          <Caption>No active bills match your filters.</Caption>
+          <Caption>{t("bills.noMatchFilters")}</Caption>
         </Card>
       )}
 
@@ -352,7 +363,7 @@ const Commitments = () => {
       {historyBills.length > 0 && (
         <div>
           <button type="button" onClick={() => setShowHistory((v) => !v)} className="ct-bill-card-head ct-body-strong">
-            <span>History ({historyBills.length})</span>
+            <span>{t("bills.historyCount", { count: historyBills.length })}</span>
             <span aria-hidden>{showHistory ? "\u25b2" : "\u25bc"}</span>
           </button>
           {showHistory && (
@@ -383,7 +394,7 @@ const Commitments = () => {
 
       {paymentFor && (
         <Modal
-          title="Pay this month"
+          title={t("bills.payThisMonth")}
           onClose={() => setPaymentFor(null)}
           footer={
             <button
@@ -392,8 +403,9 @@ const Commitments = () => {
               disabled={installmentAmount <= 0 || cycleAlreadyPaid}
               className="w-full py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-xl hover:bg-violet-700 disabled:opacity-40"
             >
-              Simulate UPI pay ({"\u20b9"}
-              {installmentAmount.toLocaleString("en-IN")})
+              {t("bills.simulateUpiPay", {
+                amount: `\u20b9${installmentAmount.toLocaleString("en-IN")}`,
+              })}
             </button>
           }
         >
@@ -428,11 +440,11 @@ const Commitments = () => {
             </p>
             {cycleAlreadyPaid ? (
               <p className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-3 py-2 mt-3">
-                Already paid for this month. You can pay again when the next due date starts.
+                {t("bills.alreadyPaidMonth")}
               </p>
             ) : (
               <div className="mt-3">
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Installment (fixed)</label>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">{t("bills.installmentFixed")}</label>
                 <p
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-100 text-lg font-bold text-gray-900"
                   style={{ fontFamily: "'Sora', sans-serif" }}
@@ -443,7 +455,7 @@ const Commitments = () => {
               </div>
             )}
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Date</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">{t("bills.date")}</label>
               <input
                 type="date"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm"

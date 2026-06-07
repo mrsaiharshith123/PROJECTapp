@@ -80,7 +80,7 @@ export function comparePayoffStrategies(commitments, getEffectiveStatusFn, extra
       : {
           strategy: "snowball",
           label: "Snowball (smallest balance first)",
-          reason: "Quick wins on small balances can build momentum; interest cost may be slightly higher.",
+          reason: "Clearing smaller balances first may provide earlier completion; total interest cost may be slightly higher.",
           firstPay: snowball[0],
         };
 

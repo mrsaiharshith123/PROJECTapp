@@ -108,35 +108,39 @@ export function simulateNewExpense({
 
   const warnings = [];
   if (aff.tier === "dangerous" || aff.tier === "high_risk") {
-    const incomeWord = "income";
-    warnings.push(`This raises commitments to about ${aff.committedPercent}% of ${incomeWord}.`);
+    warnings.push({ key: "afford.warningCommitted", params: { percent: aff.committedPercent ?? 0 } });
   }
   if (aff.freeMoneyAfter < income * 0.15 && income > 0) {
-    warnings.push("Free monthly cash drops below a healthy level.");
+    warnings.push({ key: "afford.warningLowCash" });
   }
   if (survivalDrop != null && survivalDrop >= 0.5) {
-    warnings.push(`Survival runway may shrink by about ${survivalDrop} month(s) if income stops.`);
+    warnings.push({ key: "afford.warningSurvival", params: { months: survivalDrop } });
   }
   if (p.simulateZeroIncome) {
-    warnings.push("Simulating job loss — income set to zero for this check.");
+    warnings.push({ key: "afford.warningJobLoss" });
   }
   if (aff.committedPercent != null && aff.committedPercent >= 70) {
-    warnings.push(
-      `This may raise commitments to about ${aff.committedPercent}% of income and leave ~${Math.round(aff.freeMoneyAfter).toLocaleString("en-IN")} free cash.`
-    );
+    warnings.push({
+      key: "afford.warningHighCommit",
+      params: {
+        percent: aff.committedPercent,
+        amount: Math.round(aff.freeMoneyAfter).toLocaleString("en-IN"),
+      },
+    });
   }
   const emergencyMonths =
     aff.freeMoneyAfter > 0 && aff.newTotalBurden > 0
       ? Math.round((liquidSavings + aff.freeMoneyAfter) / aff.newTotalBurden)
       : null;
   if (emergencyMonths != null && emergencyMonths < 4 && aff.newTotalBurden > 0) {
-    warnings.push(`Emergency buffer may cover only ~${emergencyMonths} month(s) at this burn.`);
+    warnings.push({ key: "afford.warningEmergency", params: { months: emergencyMonths } });
   }
 
   if (loanMeta?.totalInterest > 0) {
-    warnings.push(
-      `Total interest over the loan is about ₹${Math.round(loanMeta.totalInterest).toLocaleString("en-IN")} on top of principal.`
-    );
+    warnings.push({
+      key: "afford.warningInterest",
+      params: { amount: `₹${Math.round(loanMeta.totalInterest).toLocaleString("en-IN")}` },
+    });
   }
 
   return {

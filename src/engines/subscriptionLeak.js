@@ -46,7 +46,7 @@ export function subscriptionLeakReport(commitments, getEffectiveStatusFn, todayS
   }
   if (luxuryMonthly >= 800) {
     insights.push(
-      `Optional/luxury subs add ~₹${Math.round(luxuryMonthly).toLocaleString("en-IN")}/mo — quick wins if you trim.`
+      `Optional and luxury subscriptions add ~₹${Math.round(luxuryMonthly).toLocaleString("en-IN")}/mo — a practical area to reduce recurring cost.`,
     );
   }
   if (lowPriorityRecurring >= 500) {

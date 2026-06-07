@@ -47,7 +47,7 @@ export function buildQuickScenarioSummaries({
     rows.push({
       id: "lose_secondary",
       label: "Second income stops",
-      headline: without2.freeMoney >= 0 ? "Tight but positive free cash" : "Free cash may go negative",
+      headline: without2.freeMoney >= 0 ? "Limited but positive free cash" : "Free cash may go negative",
       detail: `Free after dues: ~₹${Math.round(without2.freeMoney).toLocaleString("en-IN")}/mo (primary income only)`,
     });
   }

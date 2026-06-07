@@ -171,7 +171,7 @@ export function suggestMaxAcceptableLoss({
 
   if (income <= 0) {
     pct = 0.12;
-    reasons.push("Set income in Profile for a tighter personal cap.");
+    reasons.push("Set income in Profile to calculate a more precise loss cap.");
   } else {
     if (burdenRatio > 0.75) {
       pct -= 0.07;
@@ -181,7 +181,7 @@ export function suggestMaxAcceptableLoss({
       reasons.push("Monthly dues are heavy vs income.");
     } else if (burdenRatio < 0.35 && baseline.freeMoney > income * 0.2) {
       pct += 0.03;
-      reasons.push("You have decent free cash — slightly more loss can be OK.");
+      reasons.push("Available free cash is sufficient — a slightly higher loss may be acceptable.");
     }
 
     if (baseline.freeMoney < income * 0.08) {
@@ -201,7 +201,7 @@ export function suggestMaxAcceptableLoss({
     pct -= Math.min(0.08, overdueCount * 0.025);
     reasons.push(
       overdueCount === 1
-        ? "You have an overdue bill — don't chase a big discount yet."
+        ? "You have an overdue bill — avoid pursuing a large auction discount at this time."
         : `${overdueCount} overdue bills — take chit only if truly urgent.`
     );
   }
@@ -345,7 +345,7 @@ export function adviseChitTakeMonth({
     } else if (!best.lossOk) {
       summary = `Early months often cost more than ₹${maxLoss.toLocaleString("en-IN")} in discount — waiting usually reduces loss.`;
     } else {
-      summary = `Month ${best.month} has the lowest pressure among remaining months, but loss (~₹${best.loss.toLocaleString("en-IN")}) may not be worth it unless you have a clear need.`;
+      summary = `Month ${best.month} has the lowest pressure among remaining months, but loss (~₹${best.loss.toLocaleString("en-IN")}) may not be advisable unless there is a defined requirement.`;
     }
   }
 

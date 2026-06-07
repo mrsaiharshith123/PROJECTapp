@@ -32,18 +32,18 @@ export function computeCanonicalPressureScore({
 
 export function pressureScoreLabel(score) {
   if (score <= 35) {
-    return { level: "healthy", label: "Safe", hint: "Room to breathe — keep building your buffer." };
+    return { level: "healthy", label: "Safe", hint: "Adequate margin remains — continue building reserves." };
   }
   if (score <= 55) {
-    return { level: "moderate", label: "Moderate", hint: "Manageable, but watch new EMIs and subs." };
+    return { level: "moderate", label: "Moderate", hint: "Manageable, but monitor new EMIs and subscriptions." };
   }
   if (score <= 70) {
-    return { level: "stressed", label: "Tight", hint: "Bills take a large share — prioritize dues." };
+    return { level: "stressed", label: "Constrained", hint: "Bills consume a large share of income — prioritize dues." };
   }
   if (score <= 85) {
-    return { level: "risky", label: "Risky", hint: "Small shocks could hurt — avoid new long commitments." };
+    return { level: "risky", label: "Elevated", hint: "Limited buffer for unexpected costs — defer new long commitments." };
   }
-  return { level: "dangerous", label: "Critical", hint: "High stress zone — focus on overdue and essentials." };
+  return { level: "dangerous", label: "Critical", hint: "Pressure is high — address overdue items and essentials first." };
 }
 
 export function pressureScoreBadgeClass(level) {

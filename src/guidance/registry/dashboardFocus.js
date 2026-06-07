@@ -1,7 +1,7 @@
 import { getExperienceMode } from "../../constants/modeExperience.js";
 
 /**
- * Home dashboard attention guidance — what to look at first.
+ * Home dashboard attention guidance — what to review first.
  * @param {object} ctx
  * @param {object} ctx.settings
  * @param {number} ctx.overdueCount
@@ -15,8 +15,8 @@ export function getDashboardFocus(ctx) {
   if (overdue > 0) {
     return {
       tone: "warning",
-      label: "Start here",
-      message: `${overdue} overdue bill${overdue > 1 ? "s" : ""} — clearing these reduces pressure fastest.`,
+      label: "Priority",
+      message: `${overdue} overdue bill${overdue > 1 ? "s" : ""} — clearing these reduces pressure most directly.`,
     };
   }
 
@@ -24,20 +24,20 @@ export function getDashboardFocus(ctx) {
     if (mode === "family") {
       return {
         tone: "warning",
-        label: "Most important",
-        message: "Household commitments are heavy — check shared expenses and school fees.",
+        label: "Priority",
+        message: "Household commitments are elevated — review shared expenses and school fees.",
       };
     }
     return {
       tone: "warning",
-      label: "Most important",
+      label: "Priority",
       message: "Financial pressure is elevated — review dues and free cash in Financial pulse.",
     };
   }
 
   return {
     tone: "positive",
-    label: "You're set up",
-    message: "Glance at Financial pulse for tips; add bills as life changes.",
+    label: "In order",
+    message: "Review Financial pulse for recommendations; update bills when your situation changes.",
   };
 }

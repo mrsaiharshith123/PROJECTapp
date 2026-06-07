@@ -8,9 +8,13 @@ import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { HeroMonthCard } from "../HeroMonthCard.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { formatMonthYear } from "../../../i18n/formatLocale.js";
+import { translateHealthLabel, translatePressureLabel } from "../../../i18n/engineLabels.js";
 
 export default function HomeOverviewCard() {
   const navigate = useNavigate();
+  const { t, locale } = useTranslation();
   const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
   const intel = useCommitIntel();
   const experienceMode = getExperienceMode(settings);
@@ -19,49 +23,64 @@ export default function HomeOverviewCard() {
 
   const monthSummary = useMemo(
     () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income),
-    [commitments, getEffectiveStatus, todayStr, income]
+    [commitments, getEffectiveStatus, todayStr, income],
   );
 
   const overdueCount = useMemo(
     () => commitments.filter((c) => getEffectiveStatus(c) === "overdue").length,
-    [commitments, getEffectiveStatus]
+    [commitments, getEffectiveStatus],
   );
 
   const health = intel.health;
   const pressure = intel.stability;
+  const monthLabel = useMemo(
+    () => formatMonthYear(locale, todayStr),
+    [locale, todayStr],
+  );
+
   const statusLine = health ? (
     <>
-      Health <strong>{health.score}</strong> · {health.label}
+      {t("home.health")} <strong>{health.score}</strong> · {translateHealthLabel(t, health)}
       {pressure?.score != null && (
-        <> · Pressure {pressure.label} <strong>{pressure.score}</strong>/100</>
+        <>
+          {" "}
+          · {t("home.pressure")} {translatePressureLabel(t, pressure.label)}{" "}
+          <strong>{pressure.score}</strong>/100
+        </>
       )}
       {overdueCount === 0 ? (
-        <> · <span className="ct-text-success">All caught up</span></>
+        <>
+          {" "}
+          · <span className="ct-text-success">{t("home.noOverdue")}</span>
+        </>
       ) : (
-        <> · <span className="ct-text-warning">{overdueCount} overdue</span></>
+        <>
+          {" "}
+          · <span className="ct-text-warning">{t("home.overdueCount", { count: overdueCount })}</span>
+        </>
       )}
     </>
   ) : null;
 
   const title =
     experienceMode === "salaried"
-      ? "This month"
+      ? t("home.thisMonth")
       : experienceMode === "family"
-        ? "Household month"
-        : modeCfg.label;
+        ? t("home.householdMonth")
+        : t("mode.salaried");
 
   const footerLeft = (
     <>
-      Still due <strong>{formatInr(monthSummary.dueThisMonth)}</strong>
+      {t("home.stillDue")} <strong>{formatInr(monthSummary.dueThisMonth)}</strong>
       {monthSummary.duePercentOfIncome ? (
-        <span> · {monthSummary.duePercentOfIncome} of income</span>
+        <span> · {t("home.stillDueOfIncome", { percent: monthSummary.duePercentOfIncome })}</span>
       ) : income <= 0 ? (
-        <span> · set income in Profile</span>
+        <span> · {t("home.setIncomeInProfile")}</span>
       ) : null}
     </>
   );
 
-  const freeLabel = experienceMode === "family" ? "Household cash" : "Free cash";
+  const freeLabel = experienceMode === "family" ? t("home.householdCash") : t("home.freeCash");
 
   const footerRight = (
     <>
@@ -75,7 +94,7 @@ export default function HomeOverviewCard() {
   return (
     <HeroMonthCard
       title={title}
-      monthLabel={monthSummary.monthLabel}
+      monthLabel={monthLabel}
       emoji={modeCfg.emoji}
       left={formatInr(monthSummary.leftThisMonth)}
       paid={formatInr(monthSummary.paidThisMonth)}

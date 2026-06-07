@@ -23,7 +23,7 @@ export function buildPressureIntelligence({
     if (delta >= 8) {
       trendMessage = `Pressure has risen about ${delta} points over recent months — obligations may be stacking up.`;
     } else if (delta <= -8) {
-      trendMessage = `Pressure eased about ${Math.abs(delta)} points recently — you are moving toward calmer ground.`;
+      trendMessage = `Pressure eased about ${Math.abs(delta)} points recently — financial pressure is decreasing.`;
     }
   }
 
@@ -32,9 +32,9 @@ export function buildPressureIntelligence({
   if (forecast.total > 0 && forecast.nextMonthKey) {
     try {
       const monthName = format(parseISO(`${forecast.nextMonthKey}-01T12:00:00`), "MMMM");
-      forecastMessage = `${monthName} may feel heavier — about ${forecast.itemNames.length} bill(s) due (~₹${Math.round(forecast.total).toLocaleString()}).`;
+      forecastMessage = `${monthName} may have higher obligations — about ${forecast.itemNames.length} bill(s) due (~₹${Math.round(forecast.total).toLocaleString()}).`;
     } catch {
-      forecastMessage = `Next month looks busier — about ₹${Math.round(forecast.total).toLocaleString()} scheduled.`;
+      forecastMessage = `Next month has higher scheduled obligations — about ₹${Math.round(forecast.total).toLocaleString()} due.`;
     }
   }
 

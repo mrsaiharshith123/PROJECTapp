@@ -164,7 +164,7 @@ export function analyzeInsuranceWorth(params) {
   }
 
   if (premiumShareOfIncome != null && premiumShareOfIncome > 15) {
-    verdictDetail += ` Premiums use about ${premiumShareOfIncome.toFixed(1)}% of annual income — that can feel heavy.`;
+    verdictDetail += ` Premiums use about ${premiumShareOfIncome.toFixed(1)}% of annual income — which may be substantial relative to income.`;
   }
 
   return {

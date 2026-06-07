@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { dismissToolsNudge, isToolsNudgeDismissed } from "../../../utils/toolsDiscoveryStorage.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 
 const SCROLL_IDLE_MS = 220;
 
 export default function ToolsDiscoveryToast({ variant = "home" }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [hidden, setHidden] = useState(() => isToolsNudgeDismissed());
   const [open, setOpen] = useState(false);
   const [scrolling, setScrolling] = useState(false);
@@ -62,16 +64,18 @@ export default function ToolsDiscoveryToast({ variant = "home" }) {
             {"\u{1F9EE}"}
           </span>
           <div className="min-w-0">
-            <Body className="!text-[11px] font-semibold leading-tight text-[var(--ct-text)]">Better money math?</Body>
+            <Body className="!text-[11px] font-semibold leading-tight text-[var(--ct-text)]">
+              {t("tools.calculators")}
+            </Body>
             <Caption className="mt-0.5 block leading-snug">
-              {variant === "analytics" ? "Calculators on Home" : "Planner · tax · loans"}
+              {variant === "analytics" ? t("tools.availableOnHome") : t("tools.plannerSubtitle")}
             </Caption>
             <Caption className="ct-text-accent font-semibold mt-1 block">
-              {variant === "analytics" ? "Go there ↓" : "Show me ↓"}
+              {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("tools.viewCalculatorsLink")} ↓`}
             </Caption>
           </div>
         </button>
-        <button type="button" onClick={dismiss} className="ct-tools-toast-dismiss" aria-label="Dismiss">
+        <button type="button" onClick={dismiss} className="ct-tools-toast-dismiss" aria-label={t("common.dismiss")}>
           ×
         </button>
       </div>

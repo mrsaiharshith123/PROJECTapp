@@ -8,7 +8,7 @@ All commands run from the project root (`PROJECTapp/`).
 |---------|----------------|
 | `npm run dev` | Start Vite dev server with HMR (default `http://localhost:5173`) |
 | `npm run preview` | Serve production build locally (run `build` first) |
-| `npm test` | Run Vitest once (~100+ tests across engines/utils/services) |
+| `npm test` | Run Vitest once (166 tests across engines/utils/services/i18n) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint on the repo |
 | `npm run lint:fix` | ESLint with auto-fix where safe |
@@ -44,9 +44,15 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:ui` / `audit:styles` | Layout rules & CSS tokens |
 | `audit:ui-depth` / `audit:dead-code` | Unmounted screens, dead buttons |
 | `audit:merge` | Advisory file merge suggestions |
+| `npm run audit:copy` / `audit:copy:list` | Formal copy tone scan |
+| `npm run audit:i18n` | Locale key parity (22 langs + en) |
+| `npm run sync:i18n` | Sync missing keys from `en.js` into locale files |
+| `npm run i18n:repair` | Fix corrupted / broken placeholders in locales |
+| `npm run i18n:translate` | MyMemory API fill for locale files |
+| `npm run i18n:translate:all` | Google batch translate all locales (dev; slow) |
 | `audit:code` | ESLint + Knip only |
 
-See [08-governance.md](./08-governance.md).
+See [10-i18n.md](./10-i18n.md). Governance details: [08-governance.md](./08-governance.md).
 
 ### What `npm run audit` runs (order)
 
@@ -54,10 +60,12 @@ See [08-governance.md](./08-governance.md).
 2. Dependencies (`npm install` check + `npm audit`)
 3. CSS compatibility (`scripts/audit-styles.mjs`)
 4. UI layout rules (`scripts/audit-ui.mjs`) — UI only under `src/ui/`, no stray Tailwind
-5. Code health (`scripts/audit-code.mjs`) — ESLint, Knip, imports, **UI depth**
-6. Unit tests (`vitest run`)
-7. TypeScript (`tsc --noEmit`)
-8. Production build (`vite build`) + bundle size advisory
+5. Copy tone (`scripts/audit-copy-tone.mjs`) — formal user-facing language
+6. i18n locales (`scripts/audit-i18n.mjs`) — key parity across 22 languages + en
+7. Code health (`scripts/audit-code.mjs`) — ESLint, Knip, imports, **UI depth**
+8. Unit tests (`vitest run`)
+9. TypeScript (`tsc --noEmit`)
+10. Production build (`vite build`) + bundle size advisory
 
 **Green “ALL CHECKS PASSED”** = safe to merge from a tooling perspective.
 
@@ -83,8 +91,6 @@ Use when the repo looks messy locally. See [07-repo-folders.md](./07-repo-folder
 
 | Command | What it does |
 |---------|----------------|
-| `npm run audit:pdf` | Generate project audit PDF (script in `scripts/`) |
-| `npm run docs:pdf` | Generate complete project PDF |
 | `npm run git:ship` | Helper commit/push script (`scripts/git-commit-push.mjs`) |
 
 ## Direct script access (rare)

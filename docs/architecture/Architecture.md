@@ -9,7 +9,9 @@
 | Hooks | `hooks/` | Compose engines + context for screens |
 | Engines | `engines/` | Pure finance: forecast, pressure, survival, lending, insights |
 | Utils | `utils/` | Dates, storage, migrations, lending helpers |
-| Constants | `constants/` | Modes, categories, copy, nav |
+| Constants | `constants/` | Modes, categories, copy keys, nav |
+| i18n | `i18n/` | Messages, `useTranslation`, locale helpers — [10-i18n.md](../10-i18n.md) |
+| Guidance | `guidance/` | Education registries (copy keys; UI in `ui/guidance/`) |
 | Services | `services/` | Supabase auth, cloud sync, notifications, Razorpay, OTP confirmation |
 | UI | `ui/` | All visual UI — primitives, patterns, features, pages |
 | Governance | `governance/` | Registries for audits (not loaded in production bundle) |

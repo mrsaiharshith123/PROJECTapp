@@ -29,11 +29,11 @@ function AppTourSteps({ settings, onComplete, onDismiss }) {
           <div className="ct-row ct-gap-sm">
             {!last && (
               <Button type="button" variant="ghost" size="sm" onClick={finish}>
-                Skip for now
+                Skip guide
               </Button>
             )}
             <Button type="button" variant="primary" size="sm" onClick={next}>
-              {last ? "Got it" : "Next"}
+              {last ? "Close" : "Next"}
             </Button>
           </div>
         </div>

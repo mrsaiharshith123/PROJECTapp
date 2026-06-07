@@ -390,7 +390,7 @@ const Add = () => {
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-gray-500 mt-1">Other bills — you choose how urgent they are.</p>
+            <p className="text-[11px] text-gray-500 mt-1">For other bills, set priority according to urgency.</p>
           </div>
         )}
 
@@ -495,7 +495,7 @@ const Add = () => {
       )}
 
       <Card className="ct-insight-accent ct-stack-sm">
-        <p className="ct-body-strong">Quick tips</p>
+        <p className="ct-body-strong">Guidance</p>
         <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
           <li>• Data stays on this device only</li>
           <li>• {COPY.recordPaymentOnBills}</li>

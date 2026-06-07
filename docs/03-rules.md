@@ -103,6 +103,13 @@ If you add a tool or export, wire it through to a screen.
 - Do not commit `dist/` or `node_modules/`
 - Deploy: `npm run deploy` (build + gh-pages) — see root README
 
+## 9. User-facing copy & i18n
+
+- **Source of truth:** `src/i18n/messages/en.js`
+- **In UI:** `useTranslation()` → `t("key")` — never hard-code product copy in JSX
+- **Audit:** `npm run audit` checks key parity and formal copy tone
+- Full guide: [10-i18n.md](./10-i18n.md)
+
 ## Quick “allowed vs banned”
 
 | Allowed | Banned |
@@ -111,4 +118,5 @@ If you add a tool or export, wire it through to a screen.
 | `ct-*` class in app shell | `className="bg-indigo-600"` outside `ui/` |
 | Engine + test for new formula | Copy-paste EMI math in a modal |
 | Import from `ui` barrel | Duplicate Button component |
+| `t("key")` via `useTranslation()` | Hard-coded English on new screens |
 | `npm run audit` clean | Skipping audit before merge |

@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { computeGoalProgress, goalTypeLabel } from "../../../engines/goalsProgress.js";
@@ -109,8 +110,9 @@ const Home = () => {
     return best;
   }, [commitments]);
 
+  const { t } = useTranslation();
   const displayName = settings.displayName?.trim() || "there";
-  const greeting = `Hey, ${displayName} 👋`;
+  const greeting = t("home.welcome", { name: displayName });
 
   return (
     <div className="ct-page">
@@ -131,14 +133,14 @@ const Home = () => {
       <InstallAppBanner />
       <HomeOverviewCard />
 
-      <ScreenSection title="Quick actions">
+      <ScreenSection title={t("home.quickActions")}>
         <QuickActionRow>
-          <QuickAction icon="📅" label="Calendar" onClick={() => setCalendarOpen(true)} />
-          <QuickAction icon="+" label="Add Bill" onClick={() => navigate("/add")} />
-          <QuickAction icon="🤝" label="Lending" onClick={() => navigate("/lending")} />
-          <QuickAction icon="💰" label="Add Income" onClick={() => navigate("/profile")} />
-          <QuickAction icon="🧮" label="Calculator" onClick={scrollToTools} />
-          <QuickAction icon="📊" label="Analytics" onClick={() => navigate("/analytics")} />
+          <QuickAction icon="📅" label={t("home.actionCalendar")} onClick={() => setCalendarOpen(true)} />
+          <QuickAction icon="+" label={t("copy.addBill")} onClick={() => navigate("/add")} />
+          <QuickAction icon="🤝" label={t("nav.lending")} onClick={() => navigate("/lending")} />
+          <QuickAction icon="💰" label={t("home.actionAddIncome")} onClick={() => navigate("/profile")} />
+          <QuickAction icon="🧮" label={t("tools.calculators")} onClick={scrollToTools} />
+          <QuickAction icon="📊" label={t("nav.analytics")} onClick={() => navigate("/analytics")} />
         </QuickActionRow>
       </ScreenSection>
 
@@ -151,10 +153,10 @@ const Home = () => {
       />
 
       <ScreenSection
-        title="Upcoming payments"
+        title={t("home.upcomingPayments")}
         action={
           <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/commitments")} className="!w-auto">
-            View all {CHEVRON}
+            {t("home.viewAll")} {CHEVRON}
           </Button>
         }
       >
@@ -167,9 +169,9 @@ const Home = () => {
                 key={item.id}
                 icon={STATUS_ICONS.pending}
                 title={item.name}
-                subtitle={`Due: ${formatDate(item.dueDate)}`}
+                subtitle={t("home.dueDate", { date: formatDate(item.dueDate) })}
                 amount={formatInr(Number(item.amount ?? 0))}
-                status="Due Soon"
+                status={t("bills.dueSoon")}
                 statusTone="warning"
               />
             ))}
@@ -179,35 +181,35 @@ const Home = () => {
 
       <div className="ct-grid-2">
         <InsightStatCard
-          eyebrow="Biggest category"
+          eyebrow={t("home.biggestCategory")}
           icon={biggestCategory ? getCategoryById(biggestCategory.name).icon : undefined}
           title={biggestCategory ? getCategoryById(biggestCategory.name).label : undefined}
-          detail={biggestCategory ? `${formatInr(biggestCategory.value)} open` : undefined}
-          empty="No open bills"
+          detail={biggestCategory ? t("home.openAmount", { amount: formatInr(biggestCategory.value) }) : undefined}
+          empty={t("home.noOpenBills")}
         />
         <InsightStatCard
-          eyebrow="Highest recurring"
+          eyebrow={t("home.highestRecurring")}
           title={highestRecurring?.name}
           detail={
             highestRecurring
               ? `${formatInr(highestRecurring.amount)} ${EM_DASH} ${repeatTypeLabel(highestRecurring.repeatType)}`
               : undefined
           }
-          empty="No recurring items"
+          empty={t("home.noRecurring")}
         />
       </div>
 
       {overdue.length > 0 && (
-        <ScreenSection title="Overdue">
+        <ScreenSection title={t("home.overdue")}>
           <Stack gap="sm">
             {overdue.map((item) => (
               <Card key={item.id} variant="flat" className="ct-card-danger !p-0 overflow-hidden">
                 <ListRow
                   icon={STATUS_ICONS.overdue}
                   title={item.name}
-                  subtitle={`Was due ${formatDate(item.dueDate)}`}
+                  subtitle={t("home.wasDue", { date: formatDate(item.dueDate) })}
                   amount={formatInr(Number(item.amount ?? 0))}
-                  status="Overdue"
+                  status={t("bills.overdue")}
                   statusTone="danger"
                 />
               </Card>
@@ -220,9 +222,9 @@ const Home = () => {
         <Card>
           <Stack gap="sm">
             <Row between>
-              <Heading level={2}>Goals</Heading>
+              <Heading level={2}>{t("home.goals")}</Heading>
               <Button type="button" variant="ghost" size="sm" onClick={scrollToTools} className="!w-auto">
-                Manage {CHEVRON}
+                {t("home.manage")} {CHEVRON}
               </Button>
             </Row>
             {goals.slice(0, 2).map((g) => {
@@ -238,8 +240,11 @@ const Home = () => {
                   <Caption>{goalTypeLabel(g.type)}</Caption>
                   {cap && cap.neededPerMonth > 0 && (
                     <Caption className={cap.feasible ? "text-[var(--ct-success)]" : "text-[var(--ct-warning)]"}>
-                      ~{formatInr(cap.neededPerMonth)}/mo for ~{cap.monthsLeft} mo
-                      {!cap.feasible ? " (tight vs free cash)" : ""}
+                      {t("home.goalPerMonth", {
+                        amount: formatInr(cap.neededPerMonth),
+                        months: cap.monthsLeft,
+                      })}
+                      {!cap.feasible ? ` ${t("home.exceedsFreeCash")}` : ""}
                     </Caption>
                   )}
                   <div className="mt-2">

@@ -23,7 +23,7 @@ export function computeEmergencyFundIntel({
 
   const messages = {
     critical: "Emergency reserve is well below recommended for your obligations.",
-    building: "You are building reserve — keep going toward 3–6 months of expenses.",
+    building: "Reserve is in progress — continue toward 3–6 months of expenses.",
     almost: "You are close to a healthy emergency buffer.",
     on_track: "Emergency reserve looks healthy for current pressure.",
   };

@@ -37,6 +37,7 @@ npm run audit:fix-deps          # fix production npm audit issues
 | `audit:guidance` | Guidance registries, onboarding, dashboard education |
 | `audit:tree` | File tree layout, UI-only placement, orphan screens (`--tree` prints src/) |
 | `audit:ui` / `audit:styles` / `audit:ui-depth` | Existing layout/CSS/screen wiring |
+| `audit:copy` / `audit:i18n` | Formal copy tone; locale key parity |
 
 ### Groups
 

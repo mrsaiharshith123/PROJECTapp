@@ -27,6 +27,17 @@ It runs `scripts/audit-all.mjs`, which orchestrates smaller scripts and prints a
 - No forbidden Tailwind visual classes outside `src/ui/`
 - Allowed outside UI: `ct-*` layout tokens only
 
+### Copy tone (`audit-copy-tone.mjs`)
+
+- Scans user-facing strings for informal greetings, contractions, casual CTAs
+- Run alone: `npm run audit:copy` or `npm run audit:copy:list`
+
+### Translations (`audit-i18n.mjs`)
+
+- Every `src/i18n/messages/{locale}.js` must match `en.js` key set (~503 keys)
+- Detects corruption patterns (`tokens.push`, broken `{0}` artifacts)
+- Fix: `npm run sync:i18n`, `npm run i18n:repair` — see [10-i18n.md](./10-i18n.md)
+
 ### JavaScript / code health (`audit-code.mjs`)
 
 Includes:

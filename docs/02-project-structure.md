@@ -6,12 +6,15 @@ PROJECTapp/
 ├── public/                  PWA assets, notification-handler.js, icons
 ├── scripts/                 Build & audit tooling (Node, not app runtime)
 ├── src/
-│   ├── main.jsx, App.jsx    App entry + routing
+│   ├── main.jsx, App.jsx    App entry + routing + I18nProvider
 │   ├── app/                 App glue (ThemeSync, NotificationSync, ModeRoute, ToolsRedirect)
 │   ├── context/             React providers (CommitTrack, Auth)
 │   ├── hooks/               React hooks (intel, PWA install, …)
+│   ├── i18n/                Translations — 22 langs + en (see docs/10-i18n.md)
 │   ├── engines/             Pure finance logic + __tests__/
-│   ├── constants/           Modes, categories, copy, symbols (no React)
+│   ├── constants/           Modes, categories, copy keys, symbols (no React)
+│   ├── guidance/            Education registries + explain helpers (not UI)
+│   ├── governance/          Audit registries (not in production bundle)
 │   ├── services/            Supabase auth, sync, notifications, Razorpay, OTP confirmation
 │   ├── utils/               Storage, dates, lending, repayment, migration
 │   ├── types/               TypeScript types (context, global augmentations)
@@ -73,7 +76,8 @@ src/ui/
 | Affordability / forecast math | `engines/` + test in `engines/__tests__/` |
 | New bill field / storage | `utils/migrateStorage.js`, `utils/commitmentStatus.js`, Add/Edit UI |
 | Mode-specific tool list | `constants/modeExperience.js` (`MODE_TOOL_IDS`, `MODE_TOOL_DEFS`) |
-| User-facing strings | `constants/copy.js` or feature-local copy |
+| User-facing strings | `src/i18n/messages/en.js` + `useTranslation()` — see [10-i18n.md](./10-i18n.md) |
+| Legacy COPY paths | `constants/copy.js` + `useCopy()` — migrate to `t()` when touching a file |
 
 ### What NOT to create
 
@@ -121,6 +125,12 @@ Wire engines from hooks (`useCommitIntel`, `useStabilityIntel`) or directly from
 | `audit-tree` (`governance/tree.mjs`) | Folder layout, JSX placement, unreachable UI (`--tree`) |
 | `audit-code.mjs` | ESLint, Knip, imports, hygiene |
 | `audit-styles.mjs` | CSS compat (e.g. Safari prefixes) |
+| `audit-copy-tone.mjs` | Formal user-facing language scan |
+| `audit-i18n.mjs` | Locale key parity vs `en.js` |
+| `sync-i18n-keys.mjs` | Add missing keys to locale files |
+| `i18n-repair-corruption.mjs` | Fix corrupted translation artifacts |
+| `i18n-auto-translate.mjs` | MyMemory batch translate |
+| `translate-fallback-locales.mjs` | Google batch translate (all locales) |
 | `generate-pwa-icons.mjs` | Called by `npm run build` |
 | `copy-404.mjs` | SPA 404 for GitHub Pages |
 

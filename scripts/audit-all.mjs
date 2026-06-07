@@ -260,6 +260,44 @@ console.log(paint(C.bold, "Running checks…\n"));
   record("ui", "UI layout (JSX class rules)", errors, 0, r.ok && errors === 0, notes);
 }
 
+// 4b — User-facing copy tone (formal language)
+{
+  const toneArgs = ["scripts/audit-copy-tone.mjs", "--json"];
+  if (STRICT) toneArgs.push("--strict");
+  const r = runQuiet("Copy tone (formal language)", "node", toneArgs);
+  const data = parseJson(r.out) || { errors: 1, warnings: 0, errorItems: [] };
+  const notes = [];
+  if (data.errors) {
+    notes.push(`${data.errors} informal phrase(s) — npm run audit:copy -- --list`);
+    for (const e of (data.errorItems || []).slice(0, 3)) {
+      notes.push(`${e.file}:${e.line} — ${e.rule}: ${e.message}`);
+    }
+  } else notes.push("No informal greetings, contractions, or casual CTAs detected");
+  if (data.warnings) notes.push(`${data.warnings} copy tone advisory warning(s)`);
+  record(
+    "copy-tone",
+    "User-facing copy tone",
+    data.errors,
+    data.warnings,
+    r.ok && data.errors === 0,
+    notes,
+  );
+}
+
+// 4c — i18n locale key parity
+{
+  const r = runQuiet("i18n locales (22 languages + en)", "node", ["scripts/audit-i18n.mjs", "--json"]);
+  const data = parseJson(r.out) || { errors: 1, problems: [] };
+  const notes = [];
+  if (data.errors) {
+    notes.push(`${data.errors} missing/extra key(s) — node scripts/sync-i18n-keys.mjs`);
+    for (const p of (data.problems || []).slice(0, 2)) {
+      if (p.missing?.length) notes.push(`${p.locale}: ${p.missing.length} missing key(s)`);
+    }
+  } else notes.push("All locale files match English key set");
+  record("i18n", "Translations (22 Indian languages)", data.errors || 0, 0, r.ok && (data.errors || 0) === 0, notes);
+}
+
 // 5 — Code (lint, knip, hygiene)
 {
   const codeArgs = ["scripts/audit-code.mjs", "--json", "--quiet"];
@@ -400,7 +438,7 @@ if (STRICT) {
 }
 console.log(paint(C.dim, "  ● RED/FAIL = must fix · YELLOW/WARN = review · GREEN/PASS = clean"));
 console.log(
-  paint(C.dim, "  ● Checks: env, deps, CSS, UI layout, code+UI depth, tests, types, build"),
+  paint(C.dim, "  ● Checks: env, deps, CSS, UI layout, copy tone, i18n, code+UI depth, tests, types, build"),
 );
 console.log(
   paint(C.dim, "  ● Governance scans: npm run audit:governance:quick · docs/08-governance.md"),

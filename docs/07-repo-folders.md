@@ -17,6 +17,7 @@ Some paths look like clutter in the file tree. Most are **not duplicated docs** 
 | **`dist/`** | Output of `npm run build` (production site). CI builds its own copy. | **Yes** — `npm run clean` or delete the folder. Reappears after `npm run build`. |
 | **`dev-dist/`** | PWA dev service-worker cache from `vite-plugin-pwa` while `npm run dev` runs. | **Yes** — deleted by `npm run clean`. Recreated next time you run dev with PWA enabled. |
 | **`node_modules/`** | npm install | Delete only if you plan to run `npm install` again. |
+| **`*.log`** (e.g. `i18n-translate-all.log`) | One-off script output | **Yes** — gitignored; safe to delete after batch jobs. |
 
 These are already in **`.gitignore`** — they should not appear in GitHub, only on your machine after build/dev.
 

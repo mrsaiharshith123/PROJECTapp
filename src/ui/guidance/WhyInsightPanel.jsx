@@ -15,7 +15,7 @@ export function WhyInsightPanel({ insight, context = {} }) {
   return (
     <div className="ct-guidance-why">
       <button type="button" className="ct-guidance-why-toggle" onClick={() => setOpen((v) => !v)}>
-        {open ? "Hide why" : "Why am I seeing this?"}
+        {open ? "Hide explanation" : "Why is this shown?"}
       </button>
       {open && (
         <div className="ct-guidance-why-body">

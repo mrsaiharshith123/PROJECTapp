@@ -1,4 +1,5 @@
 import { formatInr } from "../../../constants/symbols.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 
 const TONE_CLASS = {
@@ -21,25 +22,45 @@ export default function PaycheckBreakdown({
   creditCard,
   sensitivityRows,
 }) {
+  const { t } = useTranslation();
+
   if (!breakdown || breakdown.income <= 0) return null;
 
   const steps = [
     { label: incomeStepLabel, value: breakdown.income, tone: "income" },
-    { label: "Fixed commitments", value: -breakdown.fixedMonthly, tone: "fixed" },
-    { label: "Variable commitments", value: -breakdown.variableMonthly, tone: "variable" },
+    { label: t("analytics.fixedCommitments"), value: -breakdown.fixedMonthly, tone: "fixed" },
+    { label: t("analytics.variableCommitments"), value: -breakdown.variableMonthly, tone: "variable" },
     {
-      label: "Free cash remaining",
+      label: t("analytics.freeCashRemaining"),
       value: breakdown.freeCash,
       tone: breakdown.freeCash >= 0 ? "freePositive" : "freeNegative",
       bold: true,
     },
   ];
 
+  const footerParts = [];
+  if (breakdown.committedPercent != null) {
+    footerParts.push(t("analytics.incomeCommitted", { percent: breakdown.committedPercent }));
+  } else {
+    footerParts.push(t("analytics.setIncomeProfile"));
+  }
+  if (breakdown.safeSpending > 0) {
+    footerParts.push(t("analytics.saferDiscretionary", { amount: formatInr(breakdown.safeSpending) }));
+  }
+  if (breakdown.pressureImpact === "high") {
+    footerParts.push(t("analytics.highPressureTakeHome"));
+  } else if (breakdown.pressureImpact === "moderate") {
+    footerParts.push(t("analytics.moderatePressure"));
+  }
+  if (incomeEntryBasis === "gross") {
+    footerParts.push(t("analytics.grossIncomeNote"));
+  }
+
   return (
     <div id={anchorId} className="ct-paycheck-section">
       <div>
-        <Body className="font-semibold">Paycheck flow</Body>
-        <Caption className="block mt-0.5">How income splits across fixed bills, flexible spend, and what is left.</Caption>
+        <Body className="font-semibold">{t("analytics.paycheckFlow")}</Body>
+        <Caption className="block mt-0.5">{t("analytics.paycheckFlowDesc")}</Caption>
       </div>
       <div className="ct-stack-sm">
         {steps.map((row, i) => (
@@ -55,21 +76,12 @@ export default function PaycheckBreakdown({
           </div>
         ))}
       </div>
-      <Caption className="leading-relaxed">
-        {breakdown.committedPercent != null ? `${breakdown.committedPercent}% of income committed` : "Set income in Profile"}
-        {breakdown.safeSpending > 0 ? ` · Safer discretionary ≈ ${formatInr(breakdown.safeSpending)}` : ""}
-        {breakdown.pressureImpact === "high"
-          ? " · High pressure on take-home pay"
-          : breakdown.pressureImpact === "moderate"
-            ? " · Moderate pressure"
-            : ""}
-        {incomeEntryBasis === "gross" ? " · You entered gross income — net take-home is usually lower after tax." : ""}
-      </Caption>
+      <Caption className="leading-relaxed">{footerParts.join(" · ")}</Caption>
 
       {payerSplit?.rows?.length > 0 && (
         <div className="ct-paycheck-subpanel">
-          <Body className="text-xs font-semibold">Household payer tags (open est.)</Body>
-          <Caption>Approximate open amounts by who pays — does not change totals above.</Caption>
+          <Body className="text-xs font-semibold">{t("analytics.householdPayerTags")}</Body>
+          <Caption>{t("analytics.payerTagsHint")}</Caption>
           <ul className="ct-stack-sm">
             {payerSplit.rows.map((r) => (
               <li key={r.label} className="ct-row-between ct-caption">
@@ -83,15 +95,18 @@ export default function PaycheckBreakdown({
 
       {creditCard && (
         <div className="ct-paycheck-subpanel">
-          <Body className="text-xs font-semibold">Credit cards (revolving)</Body>
+          <Body className="text-xs font-semibold">{t("analytics.creditCardsRevolving")}</Body>
           <Caption>
-            {creditCard.count} card{creditCard.count === 1 ? "" : "s"} · Open ≈ {formatInr(creditCard.openBalance)} · Min due ≈{" "}
-            {formatInr(creditCard.minimumDue)}
+            {t("analytics.cardSummary", {
+              count: creditCard.count,
+              open: formatInr(creditCard.openBalance),
+              minDue: formatInr(creditCard.minimumDue),
+            })}
           </Caption>
           {creditCard.insights?.length > 0 && (
             <ul className="ct-stack-sm ct-caption">
-              {creditCard.insights.map((t, i) => (
-                <li key={i}>{t}</li>
+              {creditCard.insights.map((line, i) => (
+                <li key={i}>{line}</li>
               ))}
             </ul>
           )}
@@ -100,16 +115,19 @@ export default function PaycheckBreakdown({
 
       {sensitivityRows?.length > 0 && (
         <div className="ct-paycheck-subpanel">
-          <Body className="text-xs font-semibold">Income shock (same dues)</Body>
-          <Caption>Estimated free cash after burden if income drops; dues model unchanged.</Caption>
+          <Body className="text-xs font-semibold">{t("analytics.incomeShock")}</Body>
+          <Caption>{t("analytics.incomeShockDesc")}</Caption>
           <ul className="ct-stack-sm">
             {sensitivityRows.map((r) => (
               <li key={r.cutPercent} className="ct-row-between ct-caption">
                 <span>
-                  −{r.cutPercent}% income → {formatInr(r.hypotheticalIncome)}/mo
+                  {t("analytics.incomeCutLine", {
+                    cut: r.cutPercent,
+                    income: formatInr(r.hypotheticalIncome),
+                  })}
                 </span>
                 <span className={`font-semibold shrink-0 ${r.freeMoney < 0 ? "ct-text-danger" : "ct-text-success"}`}>
-                  {formatInr(r.freeMoney)} free
+                  {t("analytics.freeAmount", { amount: formatInr(r.freeMoney) })}
                 </span>
               </li>
             ))}

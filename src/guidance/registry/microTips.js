@@ -1,12 +1,13 @@
-/** Lightweight learning moments — rotate on Home. */
-export const MICRO_TIPS = [
-  "Recurring obligations reduce flexibility when income pauses.",
-  "Strong emergency savings make survivability less stressful.",
-  "Marking bills paid keeps forecasts and pressure honest.",
-  "Household safety improves when big renewals are visible early.",
-  "Optional subscriptions are the easiest place to reclaim cash.",
+/** Brief insights — rotate on Home (i18n keys). */
+export const MICRO_TIP_KEYS = [
+  "microTip.0",
+  "microTip.1",
+  "microTip.2",
+  "microTip.3",
+  "microTip.4",
 ];
 
+/** @param {number} [seed] */
 export function pickMicroTip(seed = 0) {
-  return MICRO_TIPS[Math.abs(seed) % MICRO_TIPS.length];
+  return MICRO_TIP_KEYS[Math.abs(seed) % MICRO_TIP_KEYS.length];
 }

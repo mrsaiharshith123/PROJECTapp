@@ -8,7 +8,7 @@ export function Screen({ children, className = "", narrow = false }) {
 
 export function MainContent({ children, className = "" }) {
   return (
-    <main className={`ct-main max-w-lg mx-auto w-full px-4 ${className}`.trim()}>
+    <main className={`ct-main max-w-lg mx-auto w-full ${className}`.trim()}>
       {children}
     </main>
   );

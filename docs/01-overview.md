@@ -12,6 +12,7 @@ CommitTrack is a **local-first PWA** for tracking **financial commitments** (bil
 - **Lending** — track money lent/borrowed with schedules, trust scoring, WhatsApp share cards, and **promissory-note export** (`engines/lendingAgreement.js`, `utils/agreementExport.js`). Full legal-details UI is deferred — see [09-implementation-status.md](./09-implementation-status.md).
 - **Optional cloud** — Supabase auth/profile when env vars are set; core data still persists in the browser.
 - **Appearance** — light, dark, or system theme (`data-theme` on `<html>`, `utils/theme.js`).
+- **Languages** — English + 22 scheduled languages of India (`src/i18n/`). Profile language picker; RTL for Urdu. See [10-i18n.md](./10-i18n.md).
 
 ## Tech stack
 
@@ -42,7 +43,7 @@ User action (UI in src/ui/)
 | File | Role |
 |------|------|
 | `src/main.jsx` | React root, theme bootstrap |
-| `src/App.jsx` | Router, auth shells, lazy-loaded pages |
+| `src/App.jsx` | Router, auth shells, `I18nProvider`, lazy-loaded pages |
 | `src/ui/features/pages/*.jsx` | Full-page screens (imported from `App.jsx`) |
 | `public/notification-handler.js` | Service worker helper for PWA notifications |
 

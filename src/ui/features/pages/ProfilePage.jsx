@@ -13,7 +13,8 @@ import {
 } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { resolveUserMode, getIncomeLabel } from "../../../constants/modeExperience.js";
+import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { resolveUserMode } from "../../../constants/modeExperience.js";
 import { totalPaymentCountAndSum } from "../../../utils/profileStats.js";
 import ProfileCompactHeader from "../ProfileCompactHeader.jsx";
 import ProfileNotificationsSection from "../profile/ProfileNotificationsSection.jsx";
@@ -21,7 +22,10 @@ import ProfileBackupSection from "../profile/ProfileBackupSection.jsx";
 import ProfileHistorySection from "../profile/ProfileHistorySection.jsx";
 import ProfilePersonalSection from "../profile/ProfilePersonalSection.jsx";
 import ProfileGuidanceSection from "../profile/ProfileGuidanceSection.jsx";
-import { COPY } from "../../../constants/copy.js";
+import ProfileSupportSection from "../profile/ProfileSupportSection.jsx";
+import ProfileBrandFooter from "../profile/ProfileBrandFooter.jsx";
+import { useCopy } from "../../../i18n/useCopy.js";
+import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -42,6 +46,8 @@ const Profile = () => {
     removeCommitmentPayment,
     todayStr,
   } = useCommitTrack();
+  const { t } = useTranslation();
+  const copy = useCopy();
 
   const [openSection, setOpenSection] = useState(() => {
     const fromNav = location.state?.openSection;
@@ -58,7 +64,7 @@ const Profile = () => {
   }, [location.state?.openSection, location.pathname, navigate]);
 
   const { count: paymentCount, sum: paymentSum } = totalPaymentCountAndSum(commitments);
-  const incomeLabel = getIncomeLabel(settings);
+  const incomeLabel = t(getIncomeLabelKey(settings));
   const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
   const secondaryOnly =
     resolveUserMode(settings) === "salaried" &&
@@ -102,6 +108,15 @@ const Profile = () => {
               updateCommitment={updateCommitment}
             />
           );
+        case "support":
+          return (
+            <ProfileSupportSection
+              onOpenGuide={() => {
+                updateSettings({ appGuideComplete: false });
+                navigate("/", { state: { replayGuide: true } });
+              }}
+            />
+          );
         default:
           return null;
       }
@@ -125,43 +140,43 @@ const Profile = () => {
 
   return (
     <div className="ct-page pb-8">
-      <PageHeaderWithNotifications greeting="Profile" headerActions={<PlansButton />} />
+      <PageHeaderWithNotifications greeting={t("profile.title")} headerActions={<PlansButton />} />
 
       <ProfileCompactHeader settings={settings} updateSettings={updateSettings} />
 
       <ProfileSectionPicker openId={openSection} onSelect={setOpenSection} renderPanel={renderPanel} />
 
       {!openSection && (
-        <Caption className="text-center block px-2">
-          Tap a section to expand it here. Tap again to collapse.
-        </Caption>
+        <Caption className="text-center block px-2">{t("profile.sectionHint")}</Caption>
       )}
 
       {secondaryOnly && (
         <ToneSurface tone="info">
-          <Body className="font-semibold">Main income is zero</Body>
+          <Body className="font-semibold">{t("profile.mainIncomeZero")}</Body>
           <Caption className="block mt-1">
-            You entered second income only. Put the larger or primary salary in &quot;{incomeLabel}&quot; and partner
-            / side income in second income so job-loss scenarios and labels stay intuitive.
+            {t("profile.mainIncomeZeroHint", { label: incomeLabel })}
           </Caption>
         </ToneSurface>
       )}
 
       {incomeMissing && (
         <ToneSurface tone="warning">
-          <Body className="font-semibold">Set your income</Body>
+          <Body className="font-semibold">{t("profile.setIncome")}</Body>
           <Caption className="block mt-1">
-            Required for affordability, chit timing, loan planner, and pressure scores.{" "}
+            {t("profile.setIncomeHint")}{" "}
             <button type="button" onClick={() => setOpenSection("personal")} className="ct-link">
-              Open Personal & money
+              {t("profile.openPersonal")}
             </button>
           </Caption>
         </ToneSurface>
       )}
 
       <div className="ct-grid-2 ct-stats-compact">
-        <StatCard value={commitments.length} label={COPY.billsStat} />
-        <StatCard value={`\u20B9${paymentSum.toLocaleString("en-IN")}`} label={`Paid (${paymentCount})`} />
+        <StatCard value={commitments.length} label={copy.billsStat} />
+        <StatCard
+          value={`\u20B9${paymentSum.toLocaleString("en-IN")}`}
+          label={t("profile.paidStat", { count: paymentCount })}
+        />
       </div>
 
       <InstallAppBanner />
@@ -181,11 +196,13 @@ const Profile = () => {
             }
           }}
         >
-          {signingOut ? "Signing out…" : "Log out"}
+          {signingOut ? t("profile.signingOut") : t("profile.signOut")}
         </Button>
       )}
 
-      <Caption className="text-center block pb-2">Saved automatically on this device.</Caption>
+      <Caption className="text-center block pb-2">{t("profile.savedLocally")}</Caption>
+
+      <ProfileBrandFooter />
     </div>
   );
 };

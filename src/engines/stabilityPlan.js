@@ -211,7 +211,7 @@ export function buildStabilityAheadPlan({
     headlines.push({
       id: "heavy-month",
       tone: "warning",
-      text: `${mergedHeavy[0].month} looks busiest (~₹${mergedHeavy[0].due.toLocaleString("en-IN")} due).`,
+      text: `${mergedHeavy[0].month} has the highest obligations (~₹${mergedHeavy[0].due.toLocaleString("en-IN")} due).`,
     });
   }
   if (lightest && lightest.free > 0) {
@@ -225,7 +225,7 @@ export function buildStabilityAheadPlan({
     headlines.push({
       id: "goal-capacity",
       tone: "warning",
-      text: `${infeasibleGoals[0].name} needs ~₹${infeasibleGoals[0].neededPerMonth.toLocaleString("en-IN")}/mo — tight vs current free cash.`,
+      text: `${infeasibleGoals[0].name} needs ~₹${infeasibleGoals[0].neededPerMonth.toLocaleString("en-IN")}/mo — exceeds current free cash.`,
     });
   }
   const eduGoal = goalCapacity.find((g) => g.type === "education" && g.neededPerMonth > 0);
