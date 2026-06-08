@@ -52,20 +52,20 @@ export function HeroMonthCard({
         )}
       </div>
 
-      <div className="ct-grid-3 gap-2 px-1 mt-2 relative">
+      <div className="ct-hero-metrics-row px-1 mt-2 relative">
         {metrics.map((m) => (
           <div key={m.label} className="ct-hero-inset ct-hero-inset-financial">
-            <p className="ct-caption font-semibold uppercase">{m.label}</p>
+            <p className="ct-hero-metric-label">{m.label}</p>
             <p className={cn("ct-hero-metric ct-numeral mt-1", m.valueClass)}>{m.value}</p>
           </div>
         ))}
       </div>
 
-      {statusLine || variableSpent || freeCashValue ? (
-        <div className="ct-hero-status-row mt-3 mx-1 relative">
+      {freeCashValue || variableSpent ? (
+        <div className="ct-hero-cash-row mt-3 mx-1 relative">
           {freeCashValue ? (
-            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-side-tile">
-              <p className="ct-caption font-semibold uppercase">{freeCashLabel}</p>
+            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-cash-tile">
+              <p className="ct-hero-metric-label">{freeCashLabel}</p>
               <p
                 className={cn(
                   "ct-hero-metric ct-numeral mt-1",
@@ -76,17 +76,18 @@ export function HeroMonthCard({
               </p>
             </div>
           ) : null}
-          {statusLine ? (
-            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-status-copy ct-stack-sm !py-2.5 px-2.5 text-left">
-              {statusLine}
-            </div>
-          ) : null}
           {variableSpent ? (
-            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-side-tile">
-              <p className="ct-caption font-semibold uppercase">{t("home.metricVariable")}</p>
+            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-cash-tile">
+              <p className="ct-hero-metric-label">{t("home.metricVariable")}</p>
               <p className="ct-hero-metric ct-numeral mt-1 ct-hero-metric-accent">{variableSpent}</p>
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {statusLine ? (
+        <div className="ct-hero-inset ct-hero-inset-financial ct-hero-status-copy mt-2 mx-1 relative text-left">
+          {statusLine}
         </div>
       ) : null}
 

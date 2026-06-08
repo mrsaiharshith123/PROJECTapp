@@ -35,7 +35,8 @@ Analytics opens from the Home month hero card (`/analytics`). Lending is the ful
 |-------|---------|
 | Header | Mode label + month + icon |
 | Chips | Scheduled · Paid · Unpaid (amounts only, no subtitles) |
-| Status row | **Free cash** tile · financial stress copy · **Variable spend** tile |
+| Cash row | Equal **Free cash** + **Variable spend** tiles (50/50 grid) |
+| Status strip | Full-width stress + bills + daily spend copy below cash row |
 | Salary bar | Overall spend (bills paid + variable) vs profile salary — `SalarySpendBar.jsx` |
 | Sparkline | Cumulative spend through month — `MonthlySpendSparkline.jsx`, `utils/monthSpendSeries.js` |
 

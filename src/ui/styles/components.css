@@ -596,30 +596,42 @@ html[data-ui="ct"] .ct-inset {
   backdrop-filter: blur(12px);
 }
 
-/* ── Hero spend sparkline (replaces decorative wave) ── */
-html[data-ui="ct"] .ct-hero-status-row {
-  display: flex;
+/* ── Hero month card tiles ── */
+html[data-ui="ct"] .ct-hero-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  align-items: stretch;
 }
-html[data-ui="ct"] .ct-hero-status-copy {
-  flex: 1;
-  min-width: 0;
+html[data-ui="ct"] .ct-hero-metric-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ct-text-secondary);
 }
-html[data-ui="ct"] .ct-hero-side-tile {
-  flex-shrink: 0;
-  width: 6.75rem;
+html[data-ui="ct"] .ct-hero-cash-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+html[data-ui="ct"] .ct-hero-cash-tile {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   text-align: center;
-  padding: 0.5rem 0.35rem;
+  padding: 0.75rem 0.5rem;
+  min-height: 4.5rem;
 }
-html[data-ui="ct"] .ct-hero-side-tile .ct-caption {
-  font-size: 0.625rem;
-  line-height: 1.25;
-  letter-spacing: 0.02em;
+html[data-ui="ct"] .ct-hero-cash-tile .ct-hero-metric {
+  font-size: 1.25rem;
 }
+html[data-ui="ct"] .ct-hero-status-copy {
+  padding: 0.625rem 0.75rem;
+}
+
+/* ── Hero spend sparkline (replaces decorative wave) ── */
 
 html[data-ui="ct"] .ct-hero-spend-footer {
   margin-top: 1rem;

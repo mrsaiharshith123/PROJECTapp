@@ -84,20 +84,22 @@ export default function HomeOverviewCard() {
         : null;
 
   const statusLine = pressure?.score != null ? (
-    <div className="ct-stack-sm !gap-1">
-      <p className="ct-body !text-xs">
+    <div className="ct-stack-sm !gap-1.5">
+      <p className="ct-body !text-xs leading-snug">
         {t("home.statusStress", {
           score: pressure.score,
           label: translatePressureLabel(t, pressure.label),
-        })}
-      </p>
-      <p className={`ct-body !text-xs ${overdueCount === 0 ? "ct-text-success" : "ct-text-warning"}`}>
-        {overdueCount === 0
-          ? t("home.statusOverdueNone")
-          : t("home.statusOverdue", { count: overdueCount })}
+        })}{" "}
+        <span className={overdueCount === 0 ? "ct-text-success" : "ct-text-warning"}>
+          {overdueCount === 0
+            ? t("home.statusOverdueNone")
+            : t("home.statusOverdue", { count: overdueCount })}
+        </span>
       </p>
       {spendTip ? (
-        <p className={`ct-body !text-xs ${guidance?.isTight ? "ct-text-warning" : ""}`}>{spendTip}</p>
+        <p className={`ct-body !text-xs leading-snug ${guidance?.isTight ? "ct-text-warning" : "ct-text-secondary"}`}>
+          {spendTip}
+        </p>
       ) : null}
     </div>
   ) : null;
