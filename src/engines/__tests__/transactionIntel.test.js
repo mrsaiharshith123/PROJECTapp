@@ -49,10 +49,10 @@ describe("transactionIntel", () => {
       burdenRatio: 0.5,
     };
     const insights = transactionInsightsForMerge(input);
-    expect(insights.every((i) => i.text && !i.text.includes("₹400"))).toBe(true);
+    expect(insights.every((i) => i.id && !String(i.text || "").includes("₹400"))).toBe(true);
     const feed = buildTransactionLifeFeed(input, 3);
     expect(feed.length).toBeGreaterThan(0);
-    expect(feed[0].text).toBeTruthy();
+    expect(feed[0].id).toBeTruthy();
   });
 
   it("surfaces rhythm note for dense due weeks without duplicating overlap insight id", () => {
@@ -71,7 +71,7 @@ describe("transactionIntel", () => {
       burdenRatio: 0.7,
     };
     const { rhythmNote } = buildTransactionInsights(input);
-    expect(rhythmNote).toMatch(/overlap|higher-risk/i);
+    expect(rhythmNote?.id).toMatch(/txn-rhythm-(overlap|unsafe)/);
     expect(transactionInsightsForMerge(input).some((i) => i.id === "txn-obligation-overlap")).toBe(false);
   });
 });

@@ -17,6 +17,7 @@ import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
 import { I18nProvider, useTranslation } from "./i18n/index.js";
+import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -209,19 +210,21 @@ function App() {
       <AuthProvider>
         <CommitTrackProvider>
           <I18nProvider>
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route
-                  path="/lend/offer"
-                  element={
-                    <RequireAuth>
-                      <LendingOfferReview />
-                    </RequireAuth>
-                  }
-                />
-                <Route path="*" element={<AppShell />} />
-              </Routes>
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route
+                    path="/lend/offer"
+                    element={
+                      <RequireAuth>
+                        <LendingOfferReview />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route path="*" element={<AppShell />} />
+                </Routes>
+              </Suspense>
+            </ErrorBoundary>
           </I18nProvider>
         </CommitTrackProvider>
       </AuthProvider>

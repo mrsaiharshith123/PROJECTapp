@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Button, Caption } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const MAX_IMAGE_BYTES = 400_000;
 

@@ -1,5 +1,5 @@
 import { buildPromissoryNoteText } from "../engines/lendingAgreement.js";
-import { getSupabaseClient } from "../services/supabase/auth.js";
+import { persistAgreementHash } from "../services/lending/agreementHash.js";
 
 /** @param {string} text */
 export async function hashText(text) {
@@ -106,19 +106,12 @@ export async function sealAndDownloadAgreement(lending, settings = {}, userId = 
   );
 
   if (userId) {
-    const supabase = getSupabaseClient();
-    if (supabase) {
-      await supabase
-        .from("agreement_hashes")
-        .insert({
-          user_id: userId,
-          lending_id: String(lending.id),
-          agreement_hash: hash,
-          sealed_at: sealedAt,
-        })
-        .then(() => {})
-        .catch(console.error);
-    }
+    await persistAgreementHash({
+      userId,
+      lendingId: lending.id,
+      hash,
+      sealedAt,
+    });
   }
 
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });

@@ -1,5 +1,5 @@
 import { usePwaInstall } from "../../hooks/usePwaInstall.js";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 import { Button } from "../primitives/Button.jsx";
 import { Row } from "../primitives/Stack.jsx";
 

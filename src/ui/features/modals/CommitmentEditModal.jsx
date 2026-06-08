@@ -29,6 +29,7 @@ import {
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 function formFromCommitment(c, todayStr) {
   const startDate = c.startDate || c.dueDate || "";
@@ -54,6 +55,7 @@ function formFromCommitment(c, todayStr) {
 }
 
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
+  const { t } = useTranslation();
   const { todayStr, settings } = useCommitTrack();
   const salariedFamily = isSalariedFamily(settings);
   const billCategories = getCategoriesForUserMode(settings);
@@ -87,7 +89,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const isSubscription = form.category === "Subscription";
   const isOther = form.category === "Other";
 
-  const inputClass = (field) => fieldInputClass(Boolean(errors[field]));
+  const fieldClass = (field) => fieldInputClass(Boolean(errors[field]));
 
   const validate = () => {
     const errs = {};
@@ -193,7 +195,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Name</label>
           <input
-            className={inputClass("name")}
+            className={fieldClass("name")}
             value={form.name}
             onChange={(e) => patchForm({ name: e.target.value })}
           />
@@ -207,7 +209,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             type="number"
             min="0"
             readOnly={showChit && form.chitInstallmentMode !== "custom"}
-            className={`${inputClass("amount")} ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
+            className={`${fieldClass("amount")} ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
             value={form.amount}
             onChange={(e) => patchForm({ amount: e.target.value })}
           />
@@ -223,7 +225,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Start date</label>
             <input
               type="date"
-              className={inputClass("startDate")}
+              className={fieldClass("startDate")}
               value={form.startDate}
               onChange={(e) => patchForm({ startDate: e.target.value })}
             />
@@ -235,7 +237,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             </label>
             <input
               type="date"
-              className={inputClass("endDate")}
+              className={fieldClass("endDate")}
               value={form.endDate}
               onChange={(e) => patchForm({ endDate: e.target.value })}
               onFocus={fillEndDateIfEmpty}
@@ -247,7 +249,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Next payment due</label>
           <input
             type="date"
-            className={inputClass("dueDate")}
+            className={fieldClass("dueDate")}
             value={form.dueDate}
             onChange={(e) => patchForm({ dueDate: e.target.value })}
           />
@@ -256,7 +258,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Category</label>
           <select
-            className={inputClass("category")}
+            className={fieldClass("category")}
             value={form.category}
             onChange={(e) => {
               const cat = e.target.value;
@@ -277,7 +279,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
             <select
-              className={inputClass("repeat")}
+              className={fieldClass("repeat")}
               value={form.repeatType}
               onChange={(e) => patchForm({ repeatType: e.target.value })}
             >
@@ -293,7 +295,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Priority</label>
             <select
-              className={inputClass("priority")}
+              className={fieldClass("priority")}
               value={form.priority}
               onChange={(e) => patchForm({ priority: e.target.value })}
             >
@@ -310,7 +312,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <ChitFundFields
             values={form}
             errors={errors}
-            inputClass={inputClass}
+            fieldClass={fieldClass}
             todayStr={todayStr}
             onChange={(name, value) => patchForm({ [name]: value })}
           />
@@ -320,7 +322,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           <InsuranceFields
             values={form}
             errors={errors}
-            inputClass={inputClass}
+            fieldClass={fieldClass}
             onChange={(name, value) => patchForm({ [name]: value })}
           />
         )}
@@ -335,10 +337,10 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               min="0"
               max="60"
               step="0.1"
-              className={inputClass("annualInterestRate")}
+              className={fieldClass("annualInterestRate")}
               value={form.annualInterestRate}
               onChange={(e) => patchForm({ annualInterestRate: e.target.value })}
-              placeholder="For payoff ranking"
+              placeholder={t("form.phPayoffRanking")}
             />
           </div>
         )}
@@ -349,7 +351,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             </label>
             <input
               type="date"
-              className={inputClass("trialEnd")}
+              className={fieldClass("trialEnd")}
               value={form.trialEnd}
               onChange={(e) => patchForm({ trialEnd: e.target.value })}
             />
@@ -362,7 +364,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               <InfoTip text={CALC_HELP.householdPayerBillTag} />
             </label>
             <select
-              className={inputClass("householdPayer")}
+              className={fieldClass("householdPayer")}
               value={form.householdPayer || ""}
               onChange={(e) => patchForm({ householdPayer: e.target.value })}
             >
@@ -376,10 +378,10 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         <div>
           <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Notes</label>
           <textarea
-            className={`${inputClass("notes")} min-h-[80px] resize-y`}
+            className={`${fieldClass("notes")} min-h-[80px] resize-y`}
             value={form.notes}
             onChange={(e) => patchForm({ notes: e.target.value })}
-            placeholder="Optional"
+            placeholder={t("form.phOptional")}
           />
         </div>
       </div>

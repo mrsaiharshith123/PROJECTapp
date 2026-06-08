@@ -5,34 +5,37 @@ import ToolSourcePicker from "./ToolSourcePicker.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { adviseLoanExtraPaymentMonths, listDebtSources } from "../../../engines/loanPayoffTiming.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateBillStatus, translateCategory, translateLendingStatus } from "../../../i18n/domainLabels.js";
 
-function debtPickerItemFromCommitment(c, getEffectiveStatus) {
+function debtPickerItemFromCommitment(c, getEffectiveStatus, t) {
   const bal = Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
   const emi = Math.max(0, Number(c.amount) || 0);
-  const rate = c.annualInterestRate != null ? `${c.annualInterestRate}% p.a.` : "rate not set";
+  const rate =
+    c.annualInterestRate != null ? `${c.annualInterestRate}% p.a.` : t("loan.advisor.rateNotSet");
   return {
     id: `c-${c.id}`,
     raw: c,
     kind: "commitment",
     title: c.name,
-    subtitle: `${c.category} · ${formatInr(emi)}/cycle`,
-    meta: `Open ${formatInr(bal)} · ${rate} · ${getEffectiveStatus(c)}`,
+    subtitle: `${translateCategory(t, c.category)} · ${formatInr(emi)}/${t("loan.advisor.perCycle")}`,
+    meta: `${t("loan.advisor.openBalance", { amount: formatInr(bal) })} · ${rate} · ${translateBillStatus(t, getEffectiveStatus(c))}`,
   };
 }
 
-function debtPickerItemFromLending(l, getEffectiveLendingStatus) {
+function debtPickerItemFromLending(l, getEffectiveLendingStatus, t) {
   const bal = Math.max(0, Number(l.remainingAmount) || 0);
   return {
     id: `l-${l.id}`,
     raw: l,
     kind: "lending",
-    title: l.personName || "Borrowed",
-    subtitle: `Lending · ${formatInr(bal)} left`,
-    meta: getEffectiveLendingStatus(l),
+    title: l.personName || t("loan.advisor.borrowedDefault"),
+    subtitle: t("lending.picker.subtitle", { amount: formatInr(bal) }),
+    meta: translateLendingStatus(t, getEffectiveLendingStatus(l)),
   };
 }
 
-const inputClass =
+const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
 
 export default function LoanPayoffAdvisor({
@@ -43,19 +46,20 @@ export default function LoanPayoffAdvisor({
   getEffectiveLendingStatus,
   todayStr,
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { bills, borrowed } = useMemo(
     () => listDebtSources(commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus),
-    [commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus]
+    [commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus],
   );
 
   const pickerItems = useMemo(() => {
-    const rows = bills.map((c) => debtPickerItemFromCommitment(c, getEffectiveStatus));
+    const rows = bills.map((c) => debtPickerItemFromCommitment(c, getEffectiveStatus, t));
     for (const l of borrowed) {
-      rows.push(debtPickerItemFromLending(l, getEffectiveLendingStatus));
+      rows.push(debtPickerItemFromLending(l, getEffectiveLendingStatus, t));
     }
     return rows;
-  }, [bills, borrowed, getEffectiveStatus, getEffectiveLendingStatus]);
+  }, [bills, borrowed, getEffectiveStatus, getEffectiveLendingStatus, t]);
 
   const [step, setStep] = useState("pick");
   const [target, setTarget] = useState(null);
@@ -70,7 +74,7 @@ export default function LoanPayoffAdvisor({
     const manualDebt =
       step === "manual"
         ? {
-            name: manual.name.trim() || "Your loan",
+            name: manual.name.trim() || t("loan.advisor.defaultLoanName"),
             balance: Number(manual.balance) || 0,
             emi: Number(manual.emi) || 0,
             rate: Number(manual.rate) || 0,
@@ -97,6 +101,7 @@ export default function LoanPayoffAdvisor({
     getEffectiveLendingStatus,
     todayStr,
     settings,
+    t,
   ]);
 
   const showResults = step === "calc" || (step === "manual" && Number(manual.balance) > 0);
@@ -105,12 +110,12 @@ export default function LoanPayoffAdvisor({
     return (
       <ToolSourcePicker
         accent="violet"
-        title="Which loan or debt should we plan extra payments for?"
-        hint="Scroll your saved EMIs, loans, cards, or money you borrowed."
+        title={t("loan.advisor.which")}
+        hint={t("loan.advisor.hint")}
         items={pickerItems}
-        emptyMessage="No loans saved yet — check manually or add a bill first."
-        manualLabel="Check without adding a bill"
-        addLabel="Add loan / EMI bill"
+        emptyMessage={t("loan.advisor.empty")}
+        manualLabel={t("loan.advisor.manual")}
+        addLabel={t("loan.advisor.addBill")}
         onPick={(item) => {
           setTarget(item);
           setStep("calc");
@@ -131,43 +136,43 @@ export default function LoanPayoffAdvisor({
         }}
         className="text-xs font-semibold text-indigo-600 dark:text-indigo-300"
       >
-        ← Choose another loan
+        ← {t("loan.advisor.chooseAnother")}
       </button>
 
       {step === "manual" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="sm:col-span-2">
-            <label className="text-xs font-semibold text-gray-600">Loan name</label>
+            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.loanName")}</label>
             <input
-              className={inputClass}
+              className={fieldClass}
               value={manual.name}
               onChange={(e) => setManual((m) => ({ ...m, name: e.target.value }))}
-              placeholder="e.g. Home loan"
+              placeholder={t("loan.advisor.phName")}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Balance left (₹)</label>
+            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.balanceLeft")}</label>
             <input
               type="number"
-              className={inputClass}
+              className={fieldClass}
               value={manual.balance}
               onChange={(e) => setManual((m) => ({ ...m, balance: e.target.value }))}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Regular payment (₹)</label>
+            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.regularPayment")}</label>
             <input
               type="number"
-              className={inputClass}
+              className={fieldClass}
               value={manual.emi}
               onChange={(e) => setManual((m) => ({ ...m, emi: e.target.value }))}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Interest % (optional)</label>
+            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.interestOptional")}</label>
             <input
               type="number"
-              className={inputClass}
+              className={fieldClass}
               value={manual.rate}
               onChange={(e) => setManual((m) => ({ ...m, rate: e.target.value }))}
             />
@@ -185,8 +190,7 @@ export default function LoanPayoffAdvisor({
       {showResults && (
         <>
           <p className="text-xs text-gray-500 dark:text-slate-400">
-            We compare each upcoming month: other bills due, your loan payment, and free cash — to find when extra
-            payments hurt least and close the loan faster.
+            {t("loan.advisor.timingIntro")}
             <InfoTip text={CALC_HELP.loanExtraTiming} />
           </p>
 
@@ -198,13 +202,20 @@ export default function LoanPayoffAdvisor({
 
           {advice.bestForExtra?.goodForExtra && (
             <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 p-3 text-xs space-y-1">
-              <p className="font-semibold text-emerald-900">Best month for extra payment</p>
+              <p className="font-semibold text-emerald-900">{t("loan.advisor.bestMonth")}</p>
               <p>
-                {advice.bestForExtra.label}: up to ~{formatInr(advice.bestForExtra.extraCapacity)} extra · other bills{" "}
-                {formatInr(advice.bestForExtra.otherBills)}
+                {t("loan.advisor.bestMonthLine", {
+                  label: advice.bestForExtra.label,
+                  extra: formatInr(advice.bestForExtra.extraCapacity),
+                  bills: formatInr(advice.bestForExtra.otherBills),
+                })}
               </p>
               {advice.bestForExtra.interestSaved > 0 && (
-                <p>Est. interest saved if applied all year: ~{formatInr(advice.bestForExtra.interestSaved)}</p>
+                <p>
+                  {t("loan.advisor.interestSavedYear", {
+                    amount: formatInr(advice.bestForExtra.interestSaved),
+                  })}
+                </p>
               )}
             </div>
           )}
@@ -214,12 +225,12 @@ export default function LoanPayoffAdvisor({
               <table className="w-full text-[11px] border-collapse">
                 <thead className="sticky top-0 bg-white dark:bg-slate-900">
                   <tr className="text-left text-gray-500 border-b">
-                    <th className="py-1 pr-2">Month</th>
-                    <th className="py-1 pr-2">Other bills</th>
-                    <th className="py-1 pr-2">Loan due</th>
-                    <th className="py-1 pr-2">Free</th>
-                    <th className="py-1 pr-2">Extra room</th>
-                    <th className="py-1">Press.</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colMonth")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colOtherBills")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colLoanDue")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colFree")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colExtraRoom")}</th>
+                    <th className="py-1">{t("loan.advisor.colPress")}</th>
                   </tr>
                 </thead>
                 <tbody>

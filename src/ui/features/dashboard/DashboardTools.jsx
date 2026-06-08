@@ -17,7 +17,7 @@ import LoanToolsPanel from "../tools/LoanToolsPanel.jsx";
 import IncomeTaxPanel from "../tools/IncomeTaxPanel.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useDragReorder } from "../../hooks/useDragReorder.js";
 
 /** Calculator widgets + modals — embedded on Home dashboard. */

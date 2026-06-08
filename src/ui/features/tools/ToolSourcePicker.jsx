@@ -1,18 +1,25 @@
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+
 /**
  * Pick an existing bill/loan or run the tool without adding one.
  */
 export default function ToolSourcePicker({
-  title = "Choose one",
+  title,
   hint,
   items = [],
-  emptyMessage = "Nothing saved yet.",
-  manualLabel = "Check without adding",
+  emptyMessage,
+  manualLabel,
   addLabel,
   onPick,
   onManual,
   onAdd,
   accent = "indigo",
 }) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("tools.picker.chooseOne");
+  const resolvedEmpty = emptyMessage ?? t("tools.picker.nothingSaved");
+  const resolvedManual = manualLabel ?? t("tools.picker.checkWithoutBill");
+
   const borderPick = {
     indigo: "hover:border-indigo-500 dark:hover:border-indigo-400",
     teal: "hover:border-teal-500 dark:hover:border-teal-400",
@@ -22,7 +29,7 @@ export default function ToolSourcePicker({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-gray-800 dark:text-slate-100 leading-relaxed">{title}</p>
+      <p className="text-sm text-gray-800 dark:text-slate-100 leading-relaxed">{resolvedTitle}</p>
       {hint && <p className="text-xs text-gray-500 dark:text-slate-400">{hint}</p>}
 
       {items.length > 0 ? (
@@ -47,7 +54,7 @@ export default function ToolSourcePicker({
         </ul>
       ) : (
         <p className="text-sm text-gray-500 dark:text-slate-400 rounded-xl bg-gray-50 dark:bg-slate-800/80 px-3 py-3">
-          {emptyMessage}
+          {resolvedEmpty}
         </p>
       )}
 
@@ -57,7 +64,7 @@ export default function ToolSourcePicker({
           onClick={onManual}
           className="w-full py-2.5 rounded-xl border-2 border-dashed border-gray-300 dark:border-slate-500 text-sm font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800"
         >
-          {manualLabel}
+          {resolvedManual}
         </button>
         {addLabel && onAdd && (
           <button

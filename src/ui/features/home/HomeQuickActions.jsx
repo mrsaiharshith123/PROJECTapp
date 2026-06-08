@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { orderHomeQuickActions } from "../../../utils/homeQuickActionOrder.js";
 import { useDragReorder } from "../../hooks/useDragReorder.js";
 import { QuickAction, QuickActionRow } from "../QuickAction.jsx";

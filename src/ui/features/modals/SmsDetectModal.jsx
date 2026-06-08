@@ -4,14 +4,16 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { parseSmsForDebit } from "../../../engines/smsParser.js";
 import { matchDebitToCommitment } from "../../../engines/smsCommitmentMatcher.js";
 import { isSmsAutoDetectSupported } from "../../../services/smsAutoDetect.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function SmsDetectModal({ open, onClose }) {
+  const { t } = useTranslation();
   const { commitments, getEffectiveStatus, addCommitmentPayment } = useCommitTrack();
   const [sms, setSms] = useState("");
   const [error, setError] = useState("");
   const [match, setMatch] = useState(null);
   const [debit, setDebit] = useState(null);
-  const inputClass = inputClassName();
+  const fieldClass = inputClassName();
 
   const reset = () => {
     setError("");
@@ -50,16 +52,16 @@ export default function SmsDetectModal({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <Modal onClose={onClose} title="Detect from SMS">
+    <Modal onClose={onClose} title={t("bills.detectSms")}>
       <div className="ct-stack">
         <textarea
-          className={`${inputClass} min-h-[100px] w-full`}
+          className={`${fieldClass} min-h-[100px] w-full`}
           value={sms}
           onChange={(e) => {
             setSms(e.target.value);
             reset();
           }}
-          placeholder="Paste your bank debit SMS here..."
+          placeholder={t("sms.pastePlaceholder")}
         />
         {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
         {match && debit && (

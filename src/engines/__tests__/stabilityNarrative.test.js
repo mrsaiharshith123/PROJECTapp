@@ -16,7 +16,7 @@ describe("buildStabilityHealthNarrative", () => {
     expect(Array.isArray(r.weaknesses)).toBe(true);
   });
 
-  it("returns non-empty headline and label strings", () => {
+  it("returns i18n keys for headline and label", () => {
     const r = buildStabilityHealthNarrative({
       health: { level: "caution" },
       stability: { score: 70, committedPercent: 70 },
@@ -24,10 +24,10 @@ describe("buildStabilityHealthNarrative", () => {
       lifestyle: { growthPercent: 30 },
       overdueCount: 2,
     });
-    expect(r.headline.length).toBeGreaterThan(0);
-    expect(r.stabilityLabel.length).toBeGreaterThan(0);
+    expect(r.headlineKey).toBeTruthy();
+    expect(r.stabilityLabelKey).toBeTruthy();
     for (const s of [...r.strengths, ...r.weaknesses]) {
-      expect(String(s).length).toBeGreaterThan(0);
+      expect(s.key).toBeTruthy();
     }
   });
 
@@ -45,12 +45,12 @@ describe("buildStabilityHealthNarrative", () => {
         lifestyle: null,
         commitments: null,
         lendings: null,
-      })
+      }),
     ).not.toThrow();
   });
 
   it("flags overdue bills in weaknesses", () => {
     const r = buildStabilityHealthNarrative({ overdueCount: 2 });
-    expect(r.weaknesses.some((w) => /overdue/i.test(w))).toBe(true);
+    expect(r.weaknesses.some((w) => w.key === "narrative.weakness.overdueMany")).toBe(true);
   });
 });

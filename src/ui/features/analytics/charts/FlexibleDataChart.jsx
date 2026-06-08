@@ -21,13 +21,6 @@ const rupeeTip = (v) => (v != null ? formatInr(v) : "");
 
 /** @typedef {'line' | 'bar' | 'pie' | 'donut'} ChartTypeId */
 
-export const CHART_TYPE_OPTIONS = [
-  { id: "bar", label: "Bar" },
-  { id: "line", label: "Line" },
-  { id: "pie", label: "Pie" },
-  { id: "donut", label: "Donut" },
-];
-
 /**
  * One dataset — switch bar / line / pie / donut.
  * @param {{

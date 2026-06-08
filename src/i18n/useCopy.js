@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { COPY } from "../constants/copy.js";
-import { useTranslation } from "./I18nProvider.jsx";
+import { useTranslation } from "./I18nProvider.js";
 
 /** @returns {Record<keyof typeof COPY, string>} */
 export function useCopy() {

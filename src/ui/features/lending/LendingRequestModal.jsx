@@ -11,8 +11,10 @@ import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { INR } from "../../../constants/symbols.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function LendingRequestModal({ onClose }) {
+  const { t } = useTranslation();
   const { lendings, settings, addLending } = useCommitTrack();
   const [step, setStep] = useState("details");
   const [borrowerName, setBorrowerName] = useState(settings.displayName || "");
@@ -117,7 +119,7 @@ export default function LendingRequestModal({ onClose }) {
 
   return (
     <Modal
-      title="Request money (share link)"
+      title={t("lending.request.title")}
       onClose={onClose}
       footer={
         step === "details" ? (
@@ -163,7 +165,7 @@ export default function LendingRequestModal({ onClose }) {
               className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
               value={lenderName}
               onChange={(e) => setLenderName(e.target.value)}
-              placeholder="Who will lend you"
+              placeholder={t("lending.form.phLender")}
             />
           </div>
           <div>
@@ -204,7 +206,7 @@ export default function LendingRequestModal({ onClose }) {
               className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              placeholder="e.g. medical, business stock"
+              placeholder={t("lending.form.phPurpose")}
             />
           </div>
           <div>
@@ -213,7 +215,7 @@ export default function LendingRequestModal({ onClose }) {
               className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm min-h-[72px]"
               value={collateral}
               onChange={(e) => setCollateral(e.target.value)}
-              placeholder="e.g. gold chain, property papers, bike RC"
+              placeholder={t("lending.form.phCollateral")}
             />
           </div>
           <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs">
@@ -236,7 +238,7 @@ export default function LendingRequestModal({ onClose }) {
               className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
               value={signName}
               onChange={(e) => setSignName(e.target.value)}
-              placeholder="Same as on ID"
+              placeholder={t("lending.form.phSignName")}
             />
           </div>
           <label className="flex items-start gap-2 text-xs text-gray-700">

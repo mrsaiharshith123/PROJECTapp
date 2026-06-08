@@ -211,21 +211,33 @@ export function buildStabilityAheadPlan({
     headlines.push({
       id: "heavy-month",
       tone: "warning",
-      text: `${mergedHeavy[0].month} has the highest obligations (~₹${mergedHeavy[0].due.toLocaleString("en-IN")} due).`,
+      key: "stability.headline.heavyMonth",
+      params: {
+        month: mergedHeavy[0].month,
+        amount: `₹${mergedHeavy[0].due.toLocaleString("en-IN")}`,
+      },
     });
   }
   if (lightest && lightest.free > 0) {
     headlines.push({
       id: "light-month",
       tone: "positive",
-      text: `${lightest.month} has the most room (~₹${lightest.free.toLocaleString("en-IN")} free after dues).`,
+      key: "stability.headline.lightMonth",
+      params: {
+        month: lightest.month,
+        amount: `₹${lightest.free.toLocaleString("en-IN")}`,
+      },
     });
   }
   if (infeasibleGoals.length > 0) {
     headlines.push({
       id: "goal-capacity",
       tone: "warning",
-      text: `${infeasibleGoals[0].name} needs ~₹${infeasibleGoals[0].neededPerMonth.toLocaleString("en-IN")}/mo — exceeds current free cash.`,
+      key: "stability.headline.goalCapacity",
+      params: {
+        name: infeasibleGoals[0].name,
+        amount: `₹${infeasibleGoals[0].neededPerMonth.toLocaleString("en-IN")}`,
+      },
     });
   }
   const eduGoal = goalCapacity.find((g) => g.type === "education" && g.neededPerMonth > 0);
@@ -233,14 +245,19 @@ export function buildStabilityAheadPlan({
     headlines.push({
       id: "education-timeline",
       tone: "info",
-      text: `${eduGoal.name}: ~₹${eduGoal.neededPerMonth.toLocaleString("en-IN")}/mo for ~${eduGoal.monthsLeft} mo to reach target.`,
+      key: "stability.headline.educationTimeline",
+      params: {
+        name: eduGoal.name,
+        amount: `₹${eduGoal.neededPerMonth.toLocaleString("en-IN")}`,
+        months: eduGoal.monthsLeft,
+      },
     });
   }
   if (Number(settings.secondaryMonthlyIncome) > 0 && Number(settings.monthlyIncome) > 0) {
     headlines.push({
       id: "dual-income",
       tone: "info",
-      text: "Household uses combined income — loss of either source would raise pressure.",
+      key: "stability.headline.dualIncome",
     });
   }
 
@@ -262,7 +279,8 @@ export function buildStabilityAheadPlan({
       income,
       forecastMonths,
       heavyMonths: mergedHeavy,
-      narrativeHeadline: headlines[0]?.text,
+      narrativeHeadlineKey: headlines[0]?.key,
+      narrativeHeadlineParams: headlines[0]?.params,
       incomeEntryBasis: settings.incomeEntryBasis === "gross" ? "gross" : "take_home",
     }),
   };
@@ -274,9 +292,13 @@ export function buildShareableStabilitySummary({
   income,
   forecastMonths,
   heavyMonths,
-  narrativeHeadline,
+  narrativeHeadline = "",
+  narrativeHeadlineKey,
+  narrativeHeadlineParams,
   incomeEntryBasis = "take_home",
 }) {
+  void narrativeHeadlineKey;
+  void narrativeHeadlineParams;
   const lines = [
     `CommitTrack — ${mode === "family" ? "Household" : "Salary"} stability`,
     narrativeHeadline || "",

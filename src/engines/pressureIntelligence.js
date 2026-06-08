@@ -3,6 +3,14 @@ import { snapshotsToPressureTrend } from "./analyticsSeries.js";
 import { forecastNextMonthBurden } from "./forecast.js";
 import { pressureScoreLabel } from "./pressureScore.js";
 
+const HINT_KEYS = {
+  Safe: "pressure.hint.safe",
+  Moderate: "pressure.hint.moderate",
+  Constrained: "pressure.hint.constrained",
+  Elevated: "pressure.hint.elevated",
+  Critical: "pressure.hint.critical",
+};
+
 /**
  * Pressure sources, trend, and forward-looking narrative (reuses snapshot + forecast engines).
  */
@@ -15,26 +23,36 @@ export function buildPressureIntelligence({
 }) {
   const trend = snapshotsToPressureTrend(snapshots, 6);
   const recent = trend.filter((t) => t.pressure > 0);
-  let trendMessage = null;
+  let trendMessageKey = null;
+  let trendMessageParams = null;
   if (recent.length >= 2) {
     const first = recent[0].pressure;
     const last = recent[recent.length - 1].pressure;
     const delta = last - first;
     if (delta >= 8) {
-      trendMessage = `Pressure has risen about ${delta} points over recent months — obligations may be stacking up.`;
+      trendMessageKey = "pressure.trend.rising";
+      trendMessageParams = { delta };
     } else if (delta <= -8) {
-      trendMessage = `Pressure eased about ${Math.abs(delta)} points recently — financial pressure is decreasing.`;
+      trendMessageKey = "pressure.trend.easing";
+      trendMessageParams = { delta: Math.abs(delta) };
     }
   }
 
   const forecast = forecastNextMonthBurden(commitments, todayStr);
-  let forecastMessage = null;
+  let forecastMessageKey = null;
+  let forecastMessageParams = null;
   if (forecast.total > 0 && forecast.nextMonthKey) {
     try {
       const monthName = format(parseISO(`${forecast.nextMonthKey}-01T12:00:00`), "MMMM");
-      forecastMessage = `${monthName} may have higher obligations — about ${forecast.itemNames.length} bill(s) due (~₹${Math.round(forecast.total).toLocaleString()}).`;
+      forecastMessageKey = "pressure.forecast.monthNamed";
+      forecastMessageParams = {
+        month: monthName,
+        count: forecast.itemNames.length,
+        amount: `₹${Math.round(forecast.total).toLocaleString("en-IN")}`,
+      };
     } catch {
-      forecastMessage = `Next month has higher scheduled obligations — about ₹${Math.round(forecast.total).toLocaleString()} due.`;
+      forecastMessageKey = "pressure.forecast.nextMonth";
+      forecastMessageParams = { amount: `₹${Math.round(forecast.total).toLocaleString("en-IN")}` };
     }
   }
 
@@ -48,10 +66,12 @@ export function buildPressureIntelligence({
 
   return {
     trend,
-    trendMessage,
-    forecastMessage,
+    trendMessageKey,
+    trendMessageParams,
+    forecastMessageKey,
+    forecastMessageParams,
     sources,
     emotionalLabel: emotional.label,
-    emotionalHint: emotional.hint,
+    emotionalHintKey: HINT_KEYS[emotional.label] || null,
   };
 }

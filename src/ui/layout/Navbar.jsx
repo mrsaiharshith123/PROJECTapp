@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { navItemsForMode } from "../../constants/userModes.js";
 import { resolveUserMode } from "../../constants/modeExperience.js";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 import LogSpendModal from "../features/modals/LogSpendModal.jsx";

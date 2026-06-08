@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getUserModeConfig } from "../../../../constants/userModes.js";
 import { resolveUserMode, hasPowerFeatures, isSalariedFamily } from "../../../../constants/modeExperience.js";
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import ProfileAvatar from "../ProfileAvatar.jsx";
 import { Caption, Eyebrow, Heading } from "../../../primitives/Text.jsx";

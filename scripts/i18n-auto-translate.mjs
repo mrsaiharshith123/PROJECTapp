@@ -36,7 +36,7 @@ const LANG = {
   ur: "ur-PK",
 };
 
-const SKIP_KEYS = new Set(["brand.appName", "brand.tadsayaNote"]);
+const SKIP_KEYS = new Set(["brand.tadsayaNote"]);
 
 /** @param {string} source @param {string | null} translated */
 function acceptTranslation(source, translated) {
@@ -46,7 +46,6 @@ function acceptTranslation(source, translated) {
   return true;
 }
 const PROPER_WORDS = [
-  "CommitTrack",
   "Daloy Tech",
   "Tadsaya",
   "Pro",

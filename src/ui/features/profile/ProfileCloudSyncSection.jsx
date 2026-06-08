@@ -5,9 +5,11 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useCloudSync } from "../../../hooks/useCloudSync.js";
 import { isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
 import { hasPaidBackupTier } from "../../../constants/subscriptionTiers.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** Supabase account backup — Pro/Power only; optional enable toggle. */
 export default function ProfileCloudSyncSection() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user, profile } = useAuth();
   const { settings, updateSettings } = useCommitTrack();
@@ -20,16 +22,13 @@ export default function ProfileCloudSyncSection() {
     profile?.display_name?.trim() ||
     profile?.username?.trim() ||
     user?.email ||
-    "Your account";
+    t("sync.yourAccount");
 
   if (!configured) {
     return (
       <Card className="ct-stack">
-        <Heading level={3}>Account backup</Heading>
-        <Caption className="block">
-          Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then run migrations
-          in supabase/migrations/.
-        </Caption>
+        <Heading level={3}>{t("sync.title")}</Heading>
+        <Caption className="block">{t("sync.notConfigured")}</Caption>
       </Card>
     );
   }
@@ -37,14 +36,11 @@ export default function ProfileCloudSyncSection() {
   if (!paid) {
     return (
       <Card className="ct-stack">
-        <Heading level={3}>Account backup</Heading>
-        <Body className="!text-sm">
-          Free plan keeps data on this device only. Upgrade to Pro or Power to save a private Supabase backup
-          under your account (enable or disable anytime).
-        </Body>
-        <Caption className="block">You can still export and import JSON files below.</Caption>
+        <Heading level={3}>{t("sync.title")}</Heading>
+        <Body className="!text-sm">{t("sync.freePlanBody")}</Body>
+        <Caption className="block">{t("sync.freePlanHint")}</Caption>
         <Button type="button" variant="primary" size="sm" onClick={() => navigate("/profile#upgrade")}>
-          View plans →
+          {t("common.viewPlans")} →
         </Button>
       </Card>
     );
@@ -53,12 +49,9 @@ export default function ProfileCloudSyncSection() {
   if (!isLoggedIn) {
     return (
       <Card className="ct-stack">
-        <Heading level={3}>Account backup</Heading>
-        <Body className="!text-sm">
-          Your plan includes Supabase backup. Sign in under Account, then turn backup on to save this
-          device&apos;s data under {accountLabel}.
-        </Body>
-        <Caption className="block opacity-90">Local data stays on the device until you choose to restore.</Caption>
+        <Heading level={3}>{t("sync.title")}</Heading>
+        <Body className="!text-sm">{t("sync.signInBody", { account: accountLabel })}</Body>
+        <Caption className="block opacity-90">{t("sync.signInHint")}</Caption>
       </Card>
     );
   }
@@ -66,18 +59,14 @@ export default function ProfileCloudSyncSection() {
   return (
     <Card className="ct-stack">
       <div>
-        <Heading level={3}>Account backup</Heading>
-        <Body className="!text-sm mt-1">
-          Account: {accountLabel} — one private row in Supabase (RLS). Local storage stays primary.
-        </Body>
+        <Heading level={3}>{t("sync.title")}</Heading>
+        <Body className="!text-sm mt-1">{t("sync.accountLine", { account: accountLabel })}</Body>
       </div>
 
       <label className="ct-row-between gap-3 cursor-pointer">
         <span>
-          <Body className="font-semibold !text-sm">Use Supabase backup</Body>
-          <Caption className="block mt-0.5">
-            Off = local only on this device. On = back up & restore via your account.
-          </Caption>
+          <Body className="font-semibold !text-sm">{t("sync.toggleTitle")}</Body>
+          <Caption className="block mt-0.5">{t("sync.toggleHint")}</Caption>
         </span>
         <input
           type="checkbox"
@@ -90,33 +79,31 @@ export default function ProfileCloudSyncSection() {
       {enabled && (
         <>
           <div className="ct-hero-inset ct-stack gap-1 !text-xs">
-            <p>• Back up now saves your current data to Supabase.</p>
-            <p>• Restore replaces this device with your last saved backup.</p>
-            <p>• Auto-backup runs a few seconds after you edit (when enabled).</p>
+            <p>• {t("sync.backupBullet")}</p>
+            <p>• {t("sync.restoreBullet")}</p>
+            <p>• {t("sync.autoBullet")}</p>
           </div>
 
           {sync.meta?.lastPushedAt && (
             <Caption className="block">
-              Last backup: {new Date(sync.meta.lastPushedAt).toLocaleString("en-IN")}
+              {t("sync.lastBackup", {
+                when: new Date(sync.meta.lastPushedAt).toLocaleString("en-IN"),
+              })}
             </Caption>
           )}
 
           <div className="ct-grid-2 gap-2">
             <Button type="button" variant="primary" disabled={sync.busy} onClick={sync.pushNow}>
-              {sync.busy ? "Working…" : "Back up now"}
+              {sync.busy ? t("sync.working") : t("sync.backupNow")}
             </Button>
             <Button type="button" variant="secondary" disabled={sync.busy} onClick={sync.forcePull}>
-              Restore from backup
+              {t("sync.restore")}
             </Button>
           </div>
         </>
       )}
 
-      {!enabled && (
-        <Caption className="block">
-          Backup is off — your data stays local only. Turn on when you want Supabase storage.
-        </Caption>
-      )}
+      {!enabled && <Caption className="block">{t("sync.offHint")}</Caption>}
 
       {sync.message && <Caption className="block text-[var(--ct-success)]">{sync.message}</Caption>}
       {sync.error && <Caption className="block text-[var(--ct-danger)]">{sync.error}</Caption>}

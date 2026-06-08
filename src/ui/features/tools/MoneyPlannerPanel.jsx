@@ -5,7 +5,7 @@ import { comparePayoffStrategies } from "../../../engines/payoffOptimizer.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import ExpenseSimulatorForm from "./ExpenseSimulatorForm.jsx";

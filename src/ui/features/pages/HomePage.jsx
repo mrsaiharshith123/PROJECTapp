@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { computeGoalProgress, goalTypeLabel } from "../../../engines/goalsProgress.js";

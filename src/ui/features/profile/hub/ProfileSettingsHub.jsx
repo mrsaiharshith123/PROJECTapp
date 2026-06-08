@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { Heading, Caption } from "../../../primitives/Text.jsx";
 import { profileGroupForPanel } from "./profileControlGroups.js";
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { dismissToolsNudge, isToolsNudgeDismissed } from "../../../utils/toolsDiscoveryStorage.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 

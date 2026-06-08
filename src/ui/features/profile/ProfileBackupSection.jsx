@@ -5,7 +5,7 @@ import { ProGate } from "../../patterns/ProGate.jsx";
 import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { buildAnnualReportData } from "../../../engines/annualReport.js";
 import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";

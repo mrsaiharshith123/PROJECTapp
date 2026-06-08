@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Card, Caption, Heading, inputClassName } from "../../index.js";
+import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
 import ProfileManager from "./ProfileManager.jsx";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
@@ -6,8 +8,7 @@ import { isSalariedFamily, resolveUserMode } from "../../../constants/modeExperi
 import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { applyColorScheme } from "../../../utils/theme.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
-import ProfileLanguageSection from "./ProfileLanguageSection.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 
 const profileInputClass = inputClassName();
@@ -31,6 +32,48 @@ function ProfileField({ label, hint, required, children }) {
 /**
  * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
  */
+/** @param {{ updateSettings: (p: object) => void }} props */
+function LanguagePickerBlock({ updateSettings }) {
+  const { t, locale } = useTranslation();
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const onSelect = (code) => {
+    if (code === locale) return;
+    updateSettings({ appLanguage: code });
+    setSavedFlash(true);
+    window.setTimeout(() => setSavedFlash(false), 2000);
+  };
+
+  return (
+    <div className="ct-stack">
+      <div>
+        <Heading level={3}>{t("profile.language")}</Heading>
+        <Caption className="block mt-1">{t("profile.languageHint")}</Caption>
+      </div>
+      <div className="ct-grid-2">
+        {ALL_APP_LANGUAGES.map((lang) => {
+          const active = locale === lang.code;
+          return (
+            <button
+              key={lang.code}
+              type="button"
+              onClick={() => onSelect(lang.code)}
+              className={`ct-option-card !py-3 !text-left ${active ? "ct-option-card-active" : ""}`}
+              aria-pressed={active}
+            >
+              <span className="block text-sm font-semibold text-[var(--ct-text)]">{lang.nativeName}</span>
+              <span className="block text-xs text-[var(--ct-text-muted)] mt-0.5">{lang.englishName}</span>
+            </button>
+          );
+        })}
+      </div>
+      {savedFlash && (
+        <Caption className="text-[var(--ct-success)] font-semibold">{t("profile.languageSaved")}</Caption>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePersonalSection({ settings, updateSettings, part = "full" }) {
   const { t } = useTranslation();
   const salariedFamily = isSalariedFamily(settings);
@@ -67,7 +110,7 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
 
   return (
     <Card className="ct-stack">
-      {showAppearance && <ProfileLanguageSection updateSettings={updateSettings} />}
+      {showAppearance && <LanguagePickerBlock updateSettings={updateSettings} />}
       {showAppearance && appearanceField}
 
       {showIdentity && (

@@ -1,5 +1,5 @@
 import { SettingsRow } from "./SettingsRow.jsx";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 
 const SECTIONS = [
   { id: "personal", icon: "user", labelKey: "profile.personal", hintKey: "profile.sectionPersonalHint" },

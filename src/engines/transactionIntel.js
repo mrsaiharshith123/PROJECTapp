@@ -52,40 +52,24 @@ function detectMerchantPressure(commitments, dailySpends, todayStr) {
   const insights = [];
 
   if (flow.deliveryWeek >= 800 && flow.lifestyleShare >= 0.35) {
-    insights.push({
-      id: "txn-delivery-dependency",
-      tone: "caution",
-      text: "Food delivery spending is a large share this week — dependency can grow quietly.",
-    });
+    insights.push({ id: "txn-delivery-dependency", tone: "caution" });
   }
   if (flow.medicalWeek >= 1500) {
-    insights.push({
-      id: "txn-health-spend-week",
-      tone: "caution",
-      text: "Health-related spends rose this week — survival costs can tighten short-term cash.",
-    });
+    insights.push({ id: "txn-health-spend-week", tone: "caution" });
   }
   if (flow.monthGrowthPercent >= 20 && flow.monthTotal >= 2000) {
-    insights.push({
-      id: "txn-discretionary-rise",
-      tone: "caution",
-      text: "Daily discretionary spending increased compared to the previous month.",
-    });
+    insights.push({ id: "txn-discretionary-rise", tone: "caution" });
   }
   const lifestyleBill = fromBills.find((m) => m.profile.lifeCategory === "lifestyle" && m.monthly >= 800);
   if (lifestyleBill && flow.lifestyleWeek >= 1000) {
     insights.push({
       id: "txn-lifestyle-stack",
       tone: "warning",
-      text: `Recurring ${lifestyleBill.profile.label} costs stack with recent lifestyle spends — review overlap.`,
+      params: { merchant: lifestyleBill.profile.label },
     });
   }
   if (flow.entryCount >= 5 && flow.weekTotal >= 500 && flow.weekTotal / flow.entryCount < 400) {
-    insights.push({
-      id: "txn-small-leaks",
-      tone: "info",
-      text: "Several small purchases this week may be slowly reducing monthly flexibility.",
-    });
+    insights.push({ id: "txn-small-leaks", tone: "info" });
   }
 
   return { flow, merchantInsights: insights };
@@ -145,13 +129,13 @@ function detectTransactionPatterns(input) {
 function transactionRhythmNote(patterns) {
   if (!patterns) return null;
   if (patterns.unsafeWeeks?.length > 0) {
-    return "An upcoming week has dense due dates — treat it as a higher-risk cash window.";
+    return { id: "txn-rhythm-unsafe", tone: "caution" };
   }
   if (patterns.overlap) {
-    return "Several obligations overlap in the next week — plan cash before they stack.";
+    return { id: "txn-rhythm-overlap", tone: "caution" };
   }
   if (patterns.merchant?.flow?.lifestyleShare >= 0.5 && patterns.merchant.flow.hasData) {
-    return "Recent daily spends lean lifestyle-heavy — discretionary flow may be reducing flexibility.";
+    return { id: "txn-rhythm-lifestyle", tone: "info" };
   }
   return null;
 }
@@ -171,14 +155,17 @@ function dailySpendBudgetInsight(input) {
     return {
       id: "txn-daily-budget-cap",
       tone: guidance.isTight ? "warning" : "caution",
-      text: `Bills use ~${guidance.billsPressurePercent}% of income — aim for about ₹${guidance.dailyLifestyleCap.toLocaleString("en-IN")}/day on lifestyle spends for the rest of the month.`,
+      params: {
+        percent: guidance.billsPressurePercent,
+        cap: `₹${guidance.dailyLifestyleCap.toLocaleString("en-IN")}`,
+      },
     };
   }
   if (spent > 0 && guidance.dailyTotalCap > 0) {
     return {
       id: "txn-daily-budget-room",
       tone: "info",
-      text: `After dues, about ₹${guidance.dailyTotalCap.toLocaleString("en-IN")}/day remains flexible for the rest of this month.`,
+      params: { amount: `₹${guidance.dailyTotalCap.toLocaleString("en-IN")}` },
     };
   }
   return null;
@@ -193,20 +180,14 @@ export function buildTransactionInsights(input) {
 
   if (patterns.lifestyle.hasTrend && patterns.lifestyle.growthPercent >= 15) {
     insights.push({
-      id: "txn-recurring-growth",
+      id:
+        patterns.lifestyle.growthPercent >= 20 ? "txn-recurring-growth-high" : "txn-recurring-growth",
       tone: patterns.lifestyle.growthPercent >= 30 ? "warning" : "caution",
-      text:
-        patterns.lifestyle.growthPercent >= 20
-          ? "Recurring optional spending is slowly increasing — small repeats may reduce flexibility."
-          : `Recurring obligations grew about ${patterns.lifestyle.growthPercent}% over recent months.`,
+      params: { percent: patterns.lifestyle.growthPercent },
     });
   }
   if (patterns.highPressure && patterns.merchant.flow.lifestyleShare >= 0.2 && patterns.merchant.flow.hasData) {
-    insights.push({
-      id: "txn-under-pressure",
-      tone: "warning",
-      text: "Discretionary daily spending continues while obligation pressure is already elevated.",
-    });
+    insights.push({ id: "txn-under-pressure", tone: "warning" });
   }
 
   for (const mi of patterns.merchant.merchantInsights) {
@@ -225,31 +206,23 @@ export function buildTransactionInsights(input) {
 export function buildTransactionLifeFeed(input, limit = 4) {
   const { insights, patterns } = buildTransactionInsights(input);
   const feed = insights.slice(0, limit).map((ins) => ({
-    id: `feed-${ins.id}`,
-    tone: ins.tone,
-    text: ins.text,
+    ...ins,
+    id: ins.id?.startsWith("feed-") ? ins.id : `feed-${ins.id}`,
   }));
 
   if (patterns.merchant.flow.deliveryWeek >= 500 && feed.length < limit) {
-    feed.push({
-      id: "feed-restaurant-week",
-      tone: "neutral",
-      text: "Restaurant and delivery spending increased this week.",
-    });
+    feed.push({ id: "feed-restaurant-week", tone: "neutral" });
   }
   if (patterns.merchant.flow.medicalWeek >= 1000 && feed.length < limit) {
-    feed.push({
-      id: "feed-medical-month",
-      tone: "caution",
-      text: "Medical expenses rose compared to your recent weekly baseline.",
-    });
+    feed.push({ id: "feed-medical-month", tone: "caution" });
   }
 
   const seen = new Set();
   return feed
     .filter((item) => {
-      if (seen.has(item.text)) return false;
-      seen.add(item.text);
+      const key = item.id || "";
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
       return true;
     })
     .slice(0, limit);

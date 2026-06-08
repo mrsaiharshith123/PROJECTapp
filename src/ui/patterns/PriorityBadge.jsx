@@ -1,12 +1,13 @@
-import { getPriorityById } from "../../constants/priority.js";
+import { useTranslation } from "../../i18n/I18nProvider.js";
+import { translatePriority } from "../../i18n/domainLabels.js";
 import { Badge } from "../primitives/Badge.jsx";
 import { priorityBadgeTone } from "../tokens/priorityBadges.js";
 
 export function PriorityBadge({ priorityId, className = "" }) {
-  const p = getPriorityById(priorityId);
+  const { t } = useTranslation();
   return (
     <Badge tone={priorityBadgeTone(priorityId)} className={className}>
-      {p.label}
+      {translatePriority(t, priorityId)}
     </Badge>
   );
 }

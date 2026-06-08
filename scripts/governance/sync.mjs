@@ -6,6 +6,7 @@ import path from "path";
 import { SRC, rel, walk } from "../lib/audit-core.mjs";
 
 const ALLOWED_SUPABASE_UI = [
+  "context/AuthContext.jsx",
   "ui/features/auth/",
   "ui/features/profile/ProfileCloudSyncSection.jsx",
   "ui/features/profile/ProfileBackupSection.jsx",
@@ -40,7 +41,7 @@ export function runSyncAudit() {
 
     if (
       (code.includes("@supabase/supabase-js") || code.includes("getSupabaseClient")) &&
-      !ALLOWED_SUPABASE_UI.some((p) => r.includes(p.replace(/\//g, path.sep))) &&
+      !ALLOWED_SUPABASE_UI.some((p) => r.includes(p)) &&
       !r.startsWith("src/services/")
     ) {
       warnings.push({

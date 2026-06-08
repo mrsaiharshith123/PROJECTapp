@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 
 export default function ProfileManager() {
+  const { t } = useTranslation();
   const { settings, updateSettings } = useCommitTrack();
-  const profiles = settings.profiles || [{ id: "default", label: "Personal", color: "indigo" }];
+  const defaultProfile = { id: "default", label: t("profile.defaultProfileLabel"), color: "indigo" };
+  const profiles = settings.profiles || [defaultProfile];
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState("indigo");
   const [editingId, setEditingId] = useState(null);
@@ -40,13 +43,13 @@ export default function ProfileManager() {
   const removeProfile = (id) => {
     if (id === "default") return;
     const next = profiles.filter((p) => p.id !== id);
-    saveProfiles(next.length ? next : [{ id: "default", label: "Personal", color: "indigo" }]);
+    saveProfiles(next.length ? next : [defaultProfile]);
     if (settings.activeProfileId === id) updateSettings({ activeProfileId: "default" });
   };
 
   return (
     <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-slate-700">
-      <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">Profiles</p>
+      <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("profile.profilesTitle")}</p>
       <ul className="space-y-2">
         {profiles.map((p) => (
           <li
@@ -72,7 +75,7 @@ export default function ProfileManager() {
             />
             {editingId === p.id ? (
               <input
-                className="flex-1 min-w-[120px] px-2 py-1 rounded-lg border border-gray-200 text-sm"
+                className="flex-1 min-w-0 px-2 py-1 rounded-lg border border-gray-200 text-sm"
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 onBlur={commitRename}
@@ -83,10 +86,10 @@ export default function ProfileManager() {
             {p.id !== "default" && editingId !== p.id && (
               <>
                 <button type="button" onClick={() => startRename(p)} className="text-xs text-indigo-600 font-semibold">
-                  Rename
+                  {t("profile.rename")}
                 </button>
                 <button type="button" onClick={() => removeProfile(p.id)} className="text-xs text-red-500 font-semibold">
-                  Delete
+                  {t("common.delete")}
                 </button>
               </>
             )}
@@ -95,8 +98,8 @@ export default function ProfileManager() {
       </ul>
       <div className="flex flex-wrap gap-2">
         <input
-          className="flex-1 min-w-[140px] px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-          placeholder="New profile name"
+          className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+          placeholder={t("profile.newProfileName")}
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
         />
@@ -112,7 +115,7 @@ export default function ProfileManager() {
           ))}
         </select>
         <button type="button" onClick={addProfile} className="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">
-          Add
+          {t("common.add")}
         </button>
       </div>
       <select
@@ -126,7 +129,7 @@ export default function ProfileManager() {
           </option>
         ))}
       </select>
-      <p className="text-[11px] text-gray-400">New bills and goals use the active profile.</p>
+      <p className="text-[11px] text-gray-400">{t("profile.newBillsHint")}</p>
     </div>
   );
 }

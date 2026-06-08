@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { InstallAppBanner, ToneSurface, Body, Caption, Button } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { resolveUserMode } from "../../../constants/modeExperience.js";
 import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 import { useProfileHubIntel } from "../../../hooks/useProfileHubIntel.js";

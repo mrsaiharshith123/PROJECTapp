@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Modal, Card, Button, Caption, Body, inputClassName } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { getTransactionLifeCategoryMeta } from "../../../constants/transactionCategories.js";
@@ -13,7 +13,7 @@ export default function SpendSmsDetectModal({ open, onClose }) {
   const [sms, setSms] = useState("");
   const [error, setError] = useState("");
   const [draft, setDraft] = useState(null);
-  const inputClass = inputClassName();
+  const fieldClass = inputClassName();
 
   const reset = () => {
     setError("");
@@ -54,7 +54,7 @@ export default function SpendSmsDetectModal({ open, onClose }) {
       <div className="ct-stack">
         <Caption>{t("bills.detectSmsSpendHint")}</Caption>
         <textarea
-          className={`${inputClass} min-h-[100px] w-full`}
+          className={`${fieldClass} min-h-[100px] w-full`}
           value={sms}
           onChange={(e) => {
             setSms(e.target.value);

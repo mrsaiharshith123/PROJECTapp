@@ -10,11 +10,13 @@ import {
   completeSimulatedSubscriptionUpgrade,
   isPaymentSimulationEnabled,
 } from "../../../services/simulateSubscriptionPayment.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /**
  * @param {{ open: boolean, onClose: () => void }} props
  */
 export default function PlansModal({ open, onClose }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { settings, updateSettings } = useCommitTrack();
   const { user } = useAuth();
@@ -69,7 +71,7 @@ export default function PlansModal({ open, onClose }) {
   };
 
   return (
-    <Modal onClose={onClose} title="Plans">
+    <Modal onClose={onClose} title={t("plans.title")}>
       <div className="ct-stack-sm">
         <Caption className="block">
           Free = local only. Pro & Power add account backup and advanced reports.
@@ -98,7 +100,7 @@ export default function PlansModal({ open, onClose }) {
               <div className="min-w-0 flex-1">
                 <div className="ct-row-between gap-2">
                   <Heading level={4}>{plan.title}</Heading>
-                  {isCurrent && <Badge tone="success">Current</Badge>}
+                  {isCurrent && <Badge tone="success">{t("plans.currentBadge")}</Badge>}
                 </div>
                 <Caption className="block">{plan.price}</Caption>
                 <Body className="!text-xs mt-0.5 opacity-90">{plan.subtitle}</Body>
@@ -106,7 +108,7 @@ export default function PlansModal({ open, onClose }) {
               </div>
               <div className="shrink-0 flex flex-col gap-1 items-end">
                 {isCurrent ? (
-                  <Badge tone="success">Current plan</Badge>
+                  <Badge tone="success">{t("plans.current")}</Badge>
                 ) : isPaid ? (
                   <Button
                     type="button"

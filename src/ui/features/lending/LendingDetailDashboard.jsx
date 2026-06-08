@@ -5,7 +5,7 @@ import { buildLendingDashboard } from "../../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
 import { sealAndDownloadAgreement } from "../../../utils/agreementExport.js";
-import { canEditLending, repaymentModeLabel } from "../../../engines/lendingAgreement.js";
+import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { Button } from "../../index.js";
 import {
   generateLendingShareCardHtml,
@@ -17,6 +17,8 @@ import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateRepaymentMode } from "../../../i18n/domainLabels.js";
 
 export default function LendingDetailDashboard({
   lending,
@@ -27,20 +29,21 @@ export default function LendingDetailDashboard({
   fileRef,
   onAddProof,
 }) {
+  const { t } = useTranslation();
   const { settings, updateLending, allLendings } = useCommitTrack();
   const { user } = useAuth();
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
-    [lending, settings]
+    [lending, settings],
   );
   const timeline = useMemo(() => buildLendingTimeline(lending), [lending]);
   const trustRow = lendingTrustByPerson(allLendings).find(
-    (r) => r.personKey === String(lending.personName || "").trim().toLowerCase()
+    (r) => r.personKey === String(lending.personName || "").trim().toLowerCase(),
   );
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
   const termsLocked = !canEditLending(lending);
-  const inputClass = inputClassName();
+  const fieldClass = inputClassName();
   const trustStatusClass =
     dash.trustScore >= 80
       ? "ct-status-success"
@@ -50,11 +53,14 @@ export default function LendingDetailDashboard({
           ? "ct-status-warning"
           : "ct-status-danger";
 
+  const interestTypeLabel =
+    lending.interestType === "simple" ? t("lending.detail.interestSimple") : lending.interestType || "";
+
   return (
     <div className="ct-stack">
       <div className="ct-row-wrap">
         <span className={`ct-status ${trustStatusClass}`}>
-          Trust {dash.trustScore}/100
+          {t("lending.detail.trust", { score: dash.trustScore })}
         </span>
         {lending.relationshipTag && (
           <span className="ct-status ct-status-neutral">{lending.relationshipTag}</span>
@@ -62,32 +68,41 @@ export default function LendingDetailDashboard({
       </div>
 
       <section className="ct-stat-grid">
-        <Stat label="Principal" value={`₹${Number(lending.principalAmount ?? lending.totalAmount).toLocaleString()}`} />
-        <Stat label="Interest rate" value={`${lending.interestRate ?? 0}% · ${lending.interestType || "simple"}`} />
-        <Stat label="Total payable" value={`₹${Number(lending.totalPayable || lending.totalAmount).toLocaleString()}`} />
-        <Stat label="Interest" value={`₹${Number(lending.interestAmount || 0).toLocaleString()}`} />
-        <Stat label="Installment" value={`₹${Number(lending.expectedInstallment || 0).toLocaleString()}`} />
-        <Stat label="Next due" value={`₹${Number(lending.nextDueAmount ?? lending.remainingAmount).toLocaleString()}`} />
-        <Stat label="Remaining" value={`₹${Number(lending.remainingBalance ?? lending.remainingAmount).toLocaleString()}`} />
-        <Stat label="Duration" value={`${lending.startDate || "—"} → ${lending.endDate || "—"}`} />
+        <Stat label={t("lending.detail.principal")} value={`₹${Number(lending.principalAmount ?? lending.totalAmount).toLocaleString()}`} />
+        <Stat
+          label={t("lending.detail.interestRate")}
+          value={`${lending.interestRate ?? 0}% · ${interestTypeLabel}`}
+        />
+        <Stat label={t("lending.detail.totalPayable")} value={`₹${Number(lending.totalPayable || lending.totalAmount).toLocaleString()}`} />
+        <Stat label={t("lending.detail.interest")} value={`₹${Number(lending.interestAmount || 0).toLocaleString()}`} />
+        <Stat label={t("lending.detail.installment")} value={`₹${Number(lending.expectedInstallment || 0).toLocaleString()}`} />
+        <Stat label={t("lending.detail.nextDue")} value={`₹${Number(lending.nextDueAmount ?? lending.remainingAmount).toLocaleString()}`} />
+        <Stat label={t("lending.detail.remaining")} value={`₹${Number(lending.remainingBalance ?? lending.remainingAmount).toLocaleString()}`} />
+        <Stat
+          label={t("lending.detail.duration")}
+          value={`${lending.startDate || "—"} → ${lending.endDate || "—"}`}
+        />
       </section>
 
       <section>
         <div className="ct-row-between ct-caption mb-1">
-          <span>Repayment progress</span>
-          <span>{dash.paidPct}% paid</span>
+          <span>{t("lending.detail.repaymentProgress")}</span>
+          <span>{t("lending.detail.paidPct", { percent: dash.paidPct })}</span>
         </div>
         <ProgressBar value={dash.paidPct} />
         <Caption className="block mt-1">
-          Installments {dash.installmentProgress.paid}/{dash.installmentProgress.total}
+          {t("lending.detail.installments", {
+            paid: dash.installmentProgress.paid,
+            total: dash.installmentProgress.total,
+          })}
         </Caption>
       </section>
 
       {settings.monthlyIncome > 0 && (
         <ToneSurface tone={salaryWarn ? "warning" : "neutral"}>
           <Caption>
-            Salary impact: <strong>{dash.salaryImpactPercent}%</strong> of monthly income per installment
-            {salaryWarn && " — consider easing other dues this month."}
+            {t("lending.detail.salaryImpact", { percent: dash.salaryImpactPercent })}
+            {salaryWarn && t("lending.detail.salaryWarn")}
           </Caption>
         </ToneSurface>
       )}
@@ -97,18 +112,21 @@ export default function LendingDetailDashboard({
       )}
 
       <section>
-        <Body className="text-xs font-semibold mb-2">Payment history</Body>
+        <Body className="text-xs font-semibold mb-2">{t("lending.detail.paymentHistory")}</Body>
         {(lending.payments || []).length === 0 ? (
-          <Caption>No payments recorded yet.</Caption>
+          <Caption>{t("lending.detail.noPayments")}</Caption>
         ) : (
           <ul className="ct-scroll-list">
             {(lending.payments || []).map((p, i) => (
               <li key={i} className="ct-caption border-b border-[var(--ct-border)] pb-1">
                 <span className="font-medium">₹{Number(p.amount).toLocaleString()}</span> · {p.date}
-                {p.onTime === false && <span className="ct-text-warning ml-1">Late</span>}
+                {p.onTime === false && <span className="ct-text-warning ml-1">{t("lending.detail.late")}</span>}
                 {(p.principalPortion > 0 || p.interestPortion > 0) && (
                   <span className="block">
-                    P ₹{p.principalPortion || 0} · I ₹{p.interestPortion || 0}
+                    {t("lending.detail.principalInterest", {
+                      principal: p.principalPortion || 0,
+                      interest: p.interestPortion || 0,
+                    })}
                   </span>
                 )}
               </li>
@@ -118,7 +136,7 @@ export default function LendingDetailDashboard({
       </section>
 
       <section>
-        <Body className="text-xs font-semibold mb-2">Timeline</Body>
+        <Body className="text-xs font-semibold mb-2">{t("lending.detail.timeline")}</Body>
         <ol className="ct-timeline">
           {timeline.map((ev) => (
             <li key={ev.id} className="ct-caption">
@@ -134,60 +152,58 @@ export default function LendingDetailDashboard({
           type="button"
           variant="primary"
           size="sm"
-          className="flex-1 min-w-[120px]"
+          className="flex-1 min-w-0"
           onClick={onSimulatePay}
           disabled={Number(lending.remainingAmount) <= 0}
         >
-          Record payment
+          {t("lending.detail.recordPayment")}
         </Button>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="flex-1 min-w-[120px]"
+          className="flex-1 min-w-0"
           onClick={() =>
             sealAndDownloadAgreement({ ...lending, agreementText: agreementDraft }, settings, user?.id)
           }
         >
-          Print agreement
+          {t("lending.detail.printAgreement")}
         </Button>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="flex-1 min-w-[120px]"
+          className="flex-1 min-w-0"
           onClick={async () => {
             openHtmlInNewTab(generateLendingShareCardHtml(lending, settings));
             await shareOrCopyPlainText(lendingSharePlainText(lending, settings), {
-              title: "CommitTrack lending summary",
+              title: t("lending.detail.shareTitle"),
             });
           }}
         >
-          Share summary
+          {t("lending.detail.shareSummary")}
         </Button>
       </div>
 
-      <Caption>{repaymentModeLabel(lending)}</Caption>
+      <Caption>{translateRepaymentMode(t, lending.repaymentType || lending.repaymentFrequency)}</Caption>
 
       {!lending.agreementAccepted && !termsLocked && (
         <Button type="button" variant="outline" size="sm" className="w-full" onClick={onAcceptAgreement}>
-          Mark agreement accepted (local record)
+          {t("lending.detail.acceptAgreement")}
         </Button>
       )}
 
       {termsLocked && (
         <ToneSurface tone="warning">
-          <Caption>
-            Agreement is locked after both parties accepted. You can still record payments until the loan is settled.
-          </Caption>
+          <Caption>{t("lending.detail.lockedNote")}</Caption>
         </ToneSurface>
       )}
 
       <textarea
-        className={`${inputClass} min-h-[64px] w-full`}
+        className={`${fieldClass} min-h-[64px] w-full`}
         value={agreementDraft}
         onChange={(e) => setAgreementDraft(e.target.value)}
-        placeholder="Custom clauses for printable agreement"
+        placeholder={t("lending.detail.phClauses")}
         disabled={termsLocked}
         readOnly={termsLocked}
       />
@@ -197,11 +213,11 @@ export default function LendingDetailDashboard({
           onClick={() => updateLending(lending.id, { agreementText: agreementDraft })}
           className="ct-btn ct-btn-ghost ct-btn-sm"
         >
-          Save agreement notes
+          {t("lending.detail.saveAgreement")}
         </button>
       )}
 
-      <ProofSection fileRef={fileRef} proofs={lending.proofs} onAddProof={onAddProof} />
+      <ProofSection fileRef={fileRef} proofs={lending.proofs} onAddProof={onAddProof} t={t} />
     </div>
   );
 }
@@ -215,13 +231,13 @@ function Stat({ label, value }) {
   );
 }
 
-function ProofSection({ fileRef, proofs, onAddProof }) {
+function ProofSection({ fileRef, proofs, onAddProof, t }) {
   return (
     <div>
       <div className="ct-row-between">
-        <Body className="text-xs font-semibold">Proof vault</Body>
+        <Body className="text-xs font-semibold">{t("lending.detail.proofVault")}</Body>
         <button type="button" onClick={() => fileRef.current?.click()} className="ct-btn ct-btn-ghost ct-btn-sm">
-          Upload
+          {t("lending.detail.upload")}
         </button>
         <input
           ref={fileRef}
@@ -236,12 +252,12 @@ function ProofSection({ fileRef, proofs, onAddProof }) {
         />
       </div>
       {(proofs || []).length === 0 ? (
-        <Caption className="block mt-1">No proofs yet.</Caption>
+        <Caption className="block mt-1">{t("lending.detail.noProofs")}</Caption>
       ) : (
         <ul className="ct-stack-sm mt-1">
           {(proofs || []).map((p, i) => (
             <li key={i} className="ct-caption">
-              {p.label || "Proof"} · {p.date}
+              {p.label || t("lending.detail.proofLabel")} · {p.date}
             </li>
           ))}
         </ul>

@@ -1,5 +1,5 @@
 import { Caption } from "../../primitives/Text.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function ProfileBrandFooter() {
   const { t } = useTranslation();

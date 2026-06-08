@@ -8,9 +8,11 @@ import {
   deriveChitCurrentMonth,
 } from "../../../engines/chitFund.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** Chit-specific fields on Add / Edit bill (no interest rate). */
-export default function ChitFundFields({ values, errors, inputClass, onChange, todayStr }) {
+export default function ChitFundFields({ values, errors, fieldClass, onChange, todayStr }) {
+  const { t } = useTranslation();
   const V = Number(values.chitValue) || 0;
   const N = Math.floor(Number(values.chitMonths) || 0);
   const m = Math.floor(Number(values.chitCurrentMonth) || 1);
@@ -46,14 +48,14 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
   return (
     <div className="ct-form-panel ct-form-panel-warning">
       <p className="ct-body font-semibold inline-flex items-center">
-        Chit fund details
+        {t("chit.fields.title")}
         <InfoTip text={CALC_HELP.chitInstallments} />
       </p>
 
       <div className="ct-form-grid">
         <div>
           <label className="ct-field-label">
-            Total chit value (₹)
+            {t("chit.fields.totalValue")}
           </label>
           <input
             type="number"
@@ -61,14 +63,14 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
             name="chitValue"
             value={values.chitValue}
             onChange={(e) => set("chitValue", e.target.value)}
-            placeholder="e.g. 500000"
-            className={inputClass("chitValue")}
+            placeholder={t("chit.fields.phValue")}
+            className={fieldClass("chitValue")}
           />
           {errors.chitValue && <p className="ct-field-hint ct-text-danger">{errors.chitValue}</p>}
         </div>
         <div>
           <label className="ct-field-label">
-            Number of months
+            {t("chit.fields.months")}
           </label>
           <input
             type="number"
@@ -77,14 +79,14 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
             name="chitMonths"
             value={values.chitMonths}
             onChange={(e) => set("chitMonths", e.target.value)}
-            placeholder="e.g. 50"
-            className={inputClass("chitMonths")}
+            placeholder={t("chit.fields.phMonths")}
+            className={fieldClass("chitMonths")}
           />
           {errors.chitMonths && <p className="ct-field-hint ct-text-danger">{errors.chitMonths}</p>}
         </div>
         <div>
           <label className="ct-field-label">
-            Months already paid
+            {t("chit.fields.monthsPaid")}
             <InfoTip text={CALC_HELP.chitMonthsPaid} />
           </label>
           <input
@@ -93,8 +95,8 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
             name="chitMonthsPaid"
             value={values.chitMonthsPaid}
             onChange={(e) => set("chitMonthsPaid", e.target.value)}
-            placeholder="e.g. 46"
-            className={inputClass("chitMonthsPaid")}
+            placeholder={t("chit.fields.phPaid")}
+            className={fieldClass("chitMonthsPaid")}
           />
           {N > 0 && values.chitMonthsPaid !== "" && (
             <p className="text-[10px] ct-text-warning mt-1">
@@ -104,7 +106,7 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
         </div>
         <div>
           <label className="ct-field-label">
-            Current month (#)
+            {t("chit.fields.currentMonth")}
           </label>
           <div className="flex gap-2">
             <input
@@ -119,14 +121,14 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
                 const mi = Math.max(0, Math.floor(Number(month) || 1) - 1);
                 set("chitMonthsPaid", String(mi));
               }}
-              className={`${inputClass("chitCurrentMonth")} flex-1`}
+              className={`${fieldClass("chitCurrentMonth")} flex-1`}
             />
             <button
               type="button"
               onClick={bumpMonthFromStart}
               className="shrink-0 px-2 py-2 text-[10px] font-semibold rounded-lg border border-yellow-300 ct-text-warning"
             >
-              From start date
+              {t("chit.fields.fromStartDate")}
             </button>
           </div>
           {errors.chitCurrentMonth && (
@@ -135,17 +137,17 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
         </div>
         <div className="sm:col-span-2">
           <label className="ct-field-label">
-            Installment type
+            {t("chit.fields.installmentType")}
           </label>
           <select
             name="chitInstallmentMode"
             value={mode}
             onChange={(e) => set("chitInstallmentMode", e.target.value)}
-            className={inputClass("chitInstallmentMode")}
+            className={fieldClass("chitInstallmentMode")}
           >
-            <option value="equal">Equal every month (value ÷ months)</option>
-            <option value="decreasing">Decreasing (high early, low later)</option>
-            <option value="custom">My group uses a fixed amount</option>
+            <option value="equal">{t("chit.fields.installEqual")}</option>
+            <option value="decreasing">{t("chit.fields.installDecreasing")}</option>
+            <option value="custom">{t("chit.fields.installCustom")}</option>
           </select>
           {mode === "equal" && equalHint > 0 && (
             <p className="text-[10px] ct-text-warning mt-1">
@@ -164,8 +166,8 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
               name="chitCustomInstallment"
               value={values.chitCustomInstallment}
               onChange={(e) => set("chitCustomInstallment", e.target.value)}
-              placeholder="e.g. 9920"
-              className={inputClass("chitCustomInstallment")}
+              placeholder={t("chit.fields.phCustomInstallment")}
+              className={fieldClass("chitCustomInstallment")}
             />
           </div>
         )}
@@ -182,7 +184,7 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
             name="chitForemanPct"
             value={values.chitForemanPct}
             onChange={(e) => set("chitForemanPct", e.target.value)}
-            className={inputClass("chitForemanPct")}
+            className={fieldClass("chitForemanPct")}
           />
         </div>
       </div>
@@ -190,7 +192,7 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
       {thisMonth > 0 && (
         <p className="text-xs text-yellow-900 dark:text-yellow-100 bg-white/70 dark:bg-slate-900/50 rounded-lg px-3 py-2">
           Month {m} installment: <strong>{formatInr(thisMonth)}</strong>
-          {mode === "equal" && m < N && <> (same each month)</>}
+          {mode === "equal" && m < N && <> {t("chit.fields.sameEachMonth")}</>}
           {mode === "decreasing" && m < N && (
             <> → month {m + 1} about {formatInr(schedule[m]?.installment || 0)}</>
           )}
@@ -234,7 +236,7 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
               max={N || 120}
               value={values.chitTakenAtMonth}
               onChange={(e) => set("chitTakenAtMonth", e.target.value)}
-              className={inputClass("chitTakenAtMonth")}
+              className={fieldClass("chitTakenAtMonth")}
             />
           </div>
           <div>
@@ -247,8 +249,8 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
               min="0"
               value={values.chitTakenPayout}
               onChange={(e) => set("chitTakenPayout", e.target.value)}
-              placeholder="e.g. 443000"
-              className={inputClass("chitTakenPayout")}
+              placeholder={t("chit.fields.phPayout")}
+              className={fieldClass("chitTakenPayout")}
             />
           </div>
           <div className="sm:col-span-2">
@@ -261,7 +263,7 @@ export default function ChitFundFields({ values, errors, inputClass, onChange, t
               min="0"
               value={values.chitTakenDiscount}
               onChange={(e) => set("chitTakenDiscount", e.target.value)}
-              className={inputClass("chitTakenDiscount")}
+              className={fieldClass("chitTakenDiscount")}
             />
             {payoutPreview != null && discountPreview > 0 && (
               <p className="text-[10px] text-gray-600 dark:text-slate-400 mt-1">

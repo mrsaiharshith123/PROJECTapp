@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { computeGoalProgress, goalTypeLabel } from "../../../engines/goalsProgress.js";
+import { computeGoalProgress } from "../../../engines/goalsProgress.js";
 import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -7,16 +7,12 @@ import { INR } from "../../../constants/symbols.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { Button } from "../../primitives/Button.jsx";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const goalTypes = [
-  { value: "reduce_open_debt", label: "Pay down total debt" },
-  { value: "income_ratio_cap", label: "Keep bills below % of income" },
-  { value: "save_amount", label: "Save a set amount" },
-  { value: "education", label: "Child education fund" },
-  { value: "wedding", label: "Wedding / event fund" },
-];
+const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
 
 export default function GoalsToolPanel() {
+  const { t } = useTranslation();
   const {
     allGoals,
     addGoal,
@@ -57,42 +53,38 @@ export default function GoalsToolPanel() {
 
   return (
     <div className="ct-stack">
-      <Caption>Set a target and track progress — separate from day-to-day bills.</Caption>
+      <Caption>{t("goals.intro")}</Caption>
       <div>
-        <label className="ct-metric-label block">Goal type</label>
+        <label className="ct-metric-label block">{t("goals.typeLabel")}</label>
         <select className="ct-input mt-1" value={gType} onChange={(e) => setGType(e.target.value)}>
-          {goalTypes.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
+          {GOAL_TYPE_IDS.map((id) => (
+            <option key={id} value={id}>
+              {t(`goals.type.${id}`)}
             </option>
           ))}
         </select>
       </div>
       <div>
-        <label className="ct-metric-label block">Name</label>
+        <label className="ct-metric-label block">{t("goals.nameLabel")}</label>
         <input
           className="ct-input mt-1"
           value={gTitle}
           onChange={(e) => setGTitle(e.target.value)}
-          placeholder="e.g. Emergency fund"
+          placeholder={t("goals.phName")}
         />
       </div>
       <div>
         <label className="ct-metric-label block">
-          {gType === "reduce_open_debt"
-            ? `Target (${INR})`
-            : gType === "income_ratio_cap"
-              ? "Max % of income (0.45 = 45%)"
-              : `Target (${INR})`}
+          {gType === "income_ratio_cap" ? t("goals.targetRatio") : t("goals.targetAmount", { currency: INR })}
         </label>
         <input className="ct-input mt-1" value={gTarget} onChange={(e) => setGTarget(e.target.value)} inputMode="decimal" />
       </div>
       <Button type="button" onClick={submitGoal}>
-        Add goal
+        {t("goals.addGoal")}
       </Button>
       <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
         {allGoals.length === 0 ? (
-          <Caption>No goals yet.</Caption>
+          <Caption>{t("goals.empty")}</Caption>
         ) : (
           allGoals.map((g) => {
             if (g.archived) return null;
@@ -110,7 +102,7 @@ export default function GoalsToolPanel() {
                 <div className="ct-row-between gap-2">
                   <div className="min-w-0">
                     <Body className="font-semibold truncate">{g.title}</Body>
-                    <Caption>{goalTypeLabel(g.type)}</Caption>
+                    <Caption>{t(`goals.type.${g.type}`)}</Caption>
                     <div className="mt-2">
                       <ProgressBar value={Math.round(p * 100)} />
                     </div>
@@ -121,17 +113,17 @@ export default function GoalsToolPanel() {
                       onClick={() => updateGoal(g.id, { active: !g.active })}
                       className="ct-link !text-xs"
                     >
-                      {g.active === false ? "Resume" : "Pause"}
+                      {g.active === false ? t("goals.resume") : t("goals.pause")}
                     </button>
                     <button
                       type="button"
                       onClick={() => updateGoal(g.id, { archived: true, active: false })}
                       className="ct-link !text-xs"
                     >
-                      Archive
+                      {t("goals.archive")}
                     </button>
                     <button type="button" onClick={() => deleteGoal(g.id)} className="ct-link !text-xs">
-                      Delete
+                      {t("common.delete")}
                     </button>
                   </div>
                 </div>
@@ -140,7 +132,7 @@ export default function GoalsToolPanel() {
                     <input
                       type="number"
                       min="0"
-                      placeholder={`Add ${INR}`}
+                      placeholder={t("goals.addAmount", { currency: INR })}
                       className="ct-input flex-1 !py-1.5 !text-xs"
                       value={goalLogAmounts[g.id] ?? ""}
                       onChange={(e) => setGoalLogAmounts((prev) => ({ ...prev, [g.id]: e.target.value }))}
@@ -153,7 +145,7 @@ export default function GoalsToolPanel() {
                         setGoalLogAmounts((prev) => ({ ...prev, [g.id]: "" }));
                       }}
                     >
-                      Add
+                      {t("common.add")}
                     </Button>
                   </div>
                 )}

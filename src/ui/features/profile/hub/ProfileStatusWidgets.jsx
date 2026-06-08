@@ -1,4 +1,4 @@
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { Caption } from "../../../primitives/Text.jsx";
 import { CtIcon } from "../../../icons/CtIcon.jsx";
 

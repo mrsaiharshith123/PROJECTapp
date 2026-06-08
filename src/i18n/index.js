@@ -8,5 +8,5 @@ export {
   isRtlLanguage,
 } from "./languages.js";
 export { loadMessages, translate, listMessageKeys, validateLocaleMessages, enMessages } from "./translate.js";
-export { I18nProvider, useTranslation } from "./I18nProvider.jsx";
+export { I18nProvider, useTranslation } from "./I18nProvider.js";
 export { useCopy } from "./useCopy.js";

@@ -3,12 +3,12 @@ import { CategoryChip } from "../../patterns/CategoryChip.jsx";
 import { PriorityBadge } from "../../patterns/PriorityBadge.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
-import { COPY } from "../../../constants/copy.js";
-import { BILL_STATUS_UI } from "../../tokens/billStatus.js";
 import { computeBillSpendSummary } from "../../../utils/commitmentSpendSummary.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { isCurrentCyclePaid } from "../../../utils/commitmentPayments.js";
-import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateBillStatus, translateRepeatType } from "../../../i18n/domainLabels.js";
+import { translateBillProgressLabel } from "../../../i18n/billLabels.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -38,23 +38,23 @@ export default function BillDetailModal({
   onAddPayment,
   onDelete,
 }) {
+  const { t } = useTranslation();
   const summary = computeBillSpendSummary(bill, todayStr, allCommitments);
   const progress = computeBillPaymentProgress(bill, todayStr, allCommitments);
   const amount = Number(bill.amount) || 0;
-  const statusUi = BILL_STATUS_UI[displayStatus] || BILL_STATUS_UI.pending;
+  const statusLabel = translateBillStatus(t, displayStatus);
   const canPay =
     (displayStatus === "pending" || displayStatus === "overdue") &&
     !isCurrentCyclePaid(bill, todayStr, allCommitments);
   const isInsurance = bill.category === "Insurance";
 
-  const futureLabel =
-    summary.ended
-      ? "Ended"
-      : summary.ongoing
-        ? "Ongoing"
-        : summary.futureSpend != null
-          ? `₹${summary.futureSpend.toLocaleString()}`
-          : "—";
+  const futureLabel = summary.ended
+    ? t("bill.ended")
+    : summary.ongoing
+      ? t("bill.ongoing")
+      : summary.futureSpend != null
+        ? `₹${summary.futureSpend.toLocaleString()}`
+        : "—";
 
   return (
     <Modal
@@ -63,15 +63,15 @@ export default function BillDetailModal({
       footer={
         <div className="ct-row-wrap">
           {canPay && (
-            <Button type="button" variant="primary" size="md" className="flex-1 min-w-[120px]" onClick={() => onAddPayment(bill)}>
-              Record payment
+            <Button type="button" variant="primary" size="md" className="flex-1 min-w-0" onClick={() => onAddPayment(bill)}>
+              {t("bill.detail.recordPayment")}
             </Button>
           )}
           <Button type="button" variant="secondary" size="md" onClick={() => onEdit(bill)}>
-            Edit
+            {t("common.edit")}
           </Button>
           <Button type="button" variant="danger" size="md" onClick={() => onDelete(bill.id)}>
-            Delete
+            {t("common.delete")}
           </Button>
         </div>
       }
@@ -80,87 +80,92 @@ export default function BillDetailModal({
         <div className="ct-row-wrap">
           <CategoryChip categoryId={bill.category} />
           <PriorityBadge priorityId={bill.priority} />
-          <span className={statusUi.classes}>{statusUi.label}</span>
+          <span className="ct-status ct-status-neutral">{statusLabel}</span>
         </div>
 
         {isInsurance && (bill.insurancePolicyId || bill.insuredPersonName || bill.insuranceCompany) && (
           <ToneSurface tone="info" className="ct-stack-sm text-xs">
             {bill.insurancePolicyId && (
               <p>
-                <span className="ct-caption">Policy ID:</span>{" "}
+                <span className="ct-caption">{t("bill.detail.policyId")}</span>{" "}
                 <span className="font-semibold">{bill.insurancePolicyId}</span>
               </p>
             )}
             {bill.insuredPersonName && (
               <p>
-                <span className="ct-caption">Insured:</span>{" "}
+                <span className="ct-caption">{t("bill.detail.insured")}</span>{" "}
                 <span className="font-semibold">{bill.insuredPersonName}</span>
               </p>
             )}
             {bill.insuranceCompany && (
               <p>
-                <span className="ct-caption">Company:</span>{" "}
+                <span className="ct-caption">{t("bill.detail.company")}</span>{" "}
                 <span className="font-semibold">{bill.insuranceCompany}</span>
               </p>
             )}
             {bill.repeatType && bill.repeatType !== "none" && (
               <p>
-                <span className="ct-caption">Premium:</span> ₹
-                {Number(bill.amount || 0).toLocaleString()} · {repeatTypeLabel(bill.repeatType)}
+                <span className="ct-caption">{t("bill.detail.premium")}</span> ₹
+                {Number(bill.amount || 0).toLocaleString()} · {translateRepeatType(t, bill.repeatType)}
               </p>
             )}
-            <Caption>Use Tools → Insurance calculator for sum assured and maturity return.</Caption>
+            <Caption>{t("bill.detail.insuranceHint")}</Caption>
           </ToneSurface>
         )}
 
         <Caption className="leading-relaxed">
-          Started {formatDate(summary.startDate)}
-          {summary.endDate ? ` · Ends ${formatDate(summary.endDate)}` : " · No end date"}
-          {bill.dueDate ? ` · Next due ${formatDate(bill.dueDate)}` : null}
+          {t("bill.detail.started", { date: formatDate(summary.startDate) })}
+          {summary.endDate
+            ? ` · ${t("bill.detail.ends", { date: formatDate(summary.endDate) })}`
+            : ` · ${t("bill.detail.noEndDate")}`}
+          {bill.dueDate ? ` · ${t("bill.detail.nextDue", { date: formatDate(bill.dueDate) })}` : null}
         </Caption>
 
         {summary.ended && (
           <ToneSurface tone="positive">
-            <Caption>
-              This {COPY.bill} has ended — shown in History. Extend the end date when editing to bring it back to your active bills.
-            </Caption>
+            <Caption>{t("bill.detail.endedNote")}</Caption>
           </ToneSurface>
         )}
 
         <div className="ct-inset ct-stack-sm px-3 py-2.5">
-          <Body className="text-xs font-semibold">Payment progress</Body>
-          <Caption>{progress.label}</Caption>
+          <Body className="text-xs font-semibold">{t("bill.detail.paymentProgress")}</Body>
+          <Caption>{translateBillProgressLabel(t, progress)}</Caption>
           <Caption>
-            From {formatDate(summary.startDate)}
+            {t("bill.detail.started", { date: formatDate(summary.startDate) })}
             {summary.priorSpend > 0
-              ? ` · ~₹${summary.priorSpend.toLocaleString("en-IN")} before you used CommitTrack`
+              ? t("bill.detail.priorSpend", {
+                  amount: `₹${summary.priorSpend.toLocaleString("en-IN")}`,
+                })
               : ""}
             {progress.paymentEntries > 0
-              ? ` · ${progress.paymentEntries} payment record${progress.paymentEntries === 1 ? "" : "s"} (₹${progress.paymentAmount.toLocaleString("en-IN")})`
+              ? t("bill.detail.paymentRecords", {
+                  count: progress.paymentEntries,
+                  amount: `₹${progress.paymentAmount.toLocaleString("en-IN")}`,
+                })
               : ""}
           </Caption>
         </div>
 
         <div className="ct-stat-grid">
           <Stat
-            label="Paid till now"
+            label={t("bill.detail.paidTillNow")}
             value={`₹${(summary.paidTillNow ?? summary.spentSinceStart).toLocaleString("en-IN")}`}
             accentClass="ct-text-success"
           />
           <Stat
-            label="Still to pay"
+            label={t("bill.detail.stillToPay")}
             value={
               summary.ended
-                ? "Ended"
+                ? t("bill.ended")
                 : summary.remainingToPay != null
                   ? `₹${summary.remainingToPay.toLocaleString("en-IN")}`
                   : futureLabel
             }
             accentClass="ct-text-warning"
           />
-          <Stat label="Per cycle" value={`₹${amount.toLocaleString()}`} />
+          <Stat label={t("bill.detail.perCycle")} value={`₹${amount.toLocaleString()}`} />
           <Stat
-            label={summary.totalContractValue != null ? "Total (start → end)" : "Contract total"}
+            label={summary.totalContractValue != null ? t("bill.detail.totalRange") : t("bill.detail.contractTotal")}
             value={
               summary.totalContractValue != null
                 ? `₹${summary.totalContractValue.toLocaleString("en-IN")}`
@@ -172,14 +177,16 @@ export default function BillDetailModal({
         </div>
         {progress.paymentEntries > 0 && summary.priorSpend > 0 && (
           <Caption>
-            ₹{summary.recordedAllTime.toLocaleString("en-IN")} logged in CommitTrack · ~
-            {summary.priorSpend.toLocaleString("en-IN")} from earlier installments (from your start date).
+            {t("bill.detail.loggedSplit", {
+              logged: summary.recordedAllTime.toLocaleString("en-IN"),
+              prior: summary.priorSpend.toLocaleString("en-IN"),
+            })}
           </Caption>
         )}
 
         {bill.category === "Subscription" && summary.endDate && !summary.ended && (
           <ToneSurface tone="info">
-            <Caption>We&apos;ll remind you a few days before the end date so you can turn off auto-pay.</Caption>
+            <Caption>{t("bill.detail.subscriptionReminder")}</Caption>
           </ToneSurface>
         )}
 

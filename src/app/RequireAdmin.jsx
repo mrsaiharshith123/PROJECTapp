@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { isAdminProfile } from "../services/analytics/adminIntel.js";
-import { useTranslation } from "../i18n/I18nProvider.jsx";
+import { useTranslation } from "../i18n/I18nProvider.js";
 
 /**
  * @param {{ children: import('react').ReactNode }} props

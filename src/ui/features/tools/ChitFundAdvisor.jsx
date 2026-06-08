@@ -6,11 +6,13 @@ import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { adviseChitTakeMonth, buildChitInstallmentSchedule } from "../../../engines/chitFund.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { chitFieldsFromCommitment } from "../../../constants/chitFund.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const inputClass =
+const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
 
 function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, todayStr, onBack }) {
+  const { t } = useTranslation();
   const [overrideLossPct, setOverrideLossPct] = useState("");
   const [showOverride, setShowOverride] = useState(false);
 
@@ -42,27 +44,32 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
   return (
     <div className="space-y-4 text-sm">
       <button type="button" onClick={onBack} className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
-        ← Choose another chit
+        ← {t("chit.advisor.chooseAnother")}
       </button>
 
       <p className="text-xs text-gray-500 dark:text-slate-400">
-        We suggest max loss from your income, dues, and debt — then which month to take the pot.
+        {t("chit.advisor.intro")}
         <InfoTip text={CALC_HELP.chitAdvisor} />
       </p>
 
       {advice.lossSuggestion && params.chitValue > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800 p-3 space-y-2 text-xs">
           <p className="font-semibold text-amber-900 dark:text-amber-100 inline-flex items-center">
-            Suggested max loss (for you)
+            {t("chit.advisor.suggestedMaxLoss")}
             <InfoTip text={CALC_HELP.chitMaxLoss} />
           </p>
           <p className="text-amber-800 dark:text-amber-200">
-            Up to <strong>{formatInr(advice.maxLoss)}</strong> (~{suggestedPct}% of chit value).
+            {t("chit.advisor.upToLoss", {
+              amount: formatInr(advice.maxLoss),
+              percent: suggestedPct,
+            })}
           </p>
           {advice.lossSuggestion.freeCash != null && (
             <p className="text-amber-700/90 dark:text-amber-300/90">
-              Free after dues: {formatInr(advice.lossSuggestion.freeCash)} · Open debt:{" "}
-              {formatInr(advice.lossSuggestion.openDebt)}
+              {t("chit.advisor.freeAfterDues", {
+                free: formatInr(advice.lossSuggestion.freeCash),
+                debt: formatInr(advice.lossSuggestion.openDebt),
+              })}
             </p>
           )}
           {advice.lossSuggestion.reasons?.length > 0 && (
@@ -77,17 +84,17 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
             onClick={() => setShowOverride((v) => !v)}
             className="text-[11px] font-semibold text-amber-900 underline"
           >
-            {showOverride ? "Use suggested cap" : "Adjust cap manually"}
+            {showOverride ? t("chit.advisor.useSuggestedCap") : t("chit.advisor.adjustCap")}
           </button>
           {showOverride && (
             <input
               type="number"
               min="5"
               max="35"
-              className={inputClass}
+              className={fieldClass}
               value={overrideLossPct}
               onChange={(e) => setOverrideLossPct(e.target.value)}
-              placeholder={`Suggested ${suggestedPct}%`}
+              placeholder={t("chit.advisor.phSuggestedPct", { percent: suggestedPct })}
             />
           )}
         </div>
@@ -101,8 +108,15 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
 
       {advice.best && (
         <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 p-3 text-xs space-y-1">
-          <p className="font-semibold text-emerald-900">Suggested month: {advice.best.month}</p>
-          <p>Payout ~{formatInr(advice.best.payout)} · Loss ~{formatInr(advice.best.loss)}</p>
+          <p className="font-semibold text-emerald-900">
+            {t("chit.advisor.suggestedMonth", { month: advice.best.month })}
+          </p>
+          <p>
+            {t("chit.advisor.payoutLine", {
+              payout: formatInr(advice.best.payout),
+              loss: formatInr(advice.best.loss),
+            })}
+          </p>
         </div>
       )}
 
@@ -111,12 +125,12 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
           <table className="w-full text-[11px] border-collapse">
             <thead className="sticky top-0 bg-white dark:bg-slate-900">
               <tr className="text-left text-gray-500 border-b">
-                <th className="py-1 pr-2">Mo</th>
-                <th className="py-1 pr-2">Pay</th>
-                <th className="py-1 pr-2">Disc%</th>
-                <th className="py-1 pr-2">Payout</th>
-                <th className="py-1 pr-2">Loss</th>
-                <th className="py-1">OK?</th>
+                <th className="py-1 pr-2">{t("chit.advisor.colMo")}</th>
+                <th className="py-1 pr-2">{t("chit.advisor.colPay")}</th>
+                <th className="py-1 pr-2">{t("chit.advisor.colDisc")}</th>
+                <th className="py-1 pr-2">{t("chit.advisor.colPayout")}</th>
+                <th className="py-1 pr-2">{t("chit.advisor.colLoss")}</th>
+                <th className="py-1">{t("chit.advisor.colOk")}</th>
               </tr>
             </thead>
             <tbody>
@@ -132,7 +146,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
                   <td className="py-1.5 pr-2">{r.discountPct}%</td>
                   <td className="py-1.5 pr-2">{formatInr(r.payout)}</td>
                   <td className="py-1.5 pr-2">{formatInr(r.loss)}</td>
-                  <td className="py-1.5">{r.lossOk ? "Yes" : "—"}</td>
+                  <td className="py-1.5">{r.lossOk ? t("chit.advisor.yes") : "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -142,8 +156,10 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
 
       {schedule.length > 0 && schedule.length <= 30 && (
         <p className="text-xs text-gray-500">
-          Installments: {formatInr(schedule[0].installment)} → {formatInr(schedule[schedule.length - 1].installment)} (auto
-          each month on your bill).
+          {t("chit.advisor.installmentsRange", {
+            start: formatInr(schedule[0].installment),
+            end: formatInr(schedule[schedule.length - 1].installment),
+          })}
         </p>
       )}
     </div>
@@ -151,6 +167,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
 }
 
 export default function ChitFundAdvisor({ commitments, settings, getEffectiveStatus, todayStr }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const chitBills = useMemo(
     () => commitments.filter((c) => c.category === "Chit Fund" && Number(c.chitValue) > 0),
@@ -165,11 +182,15 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
           id: String(c.id),
           raw: c,
           title: c.name,
-          subtitle: `${formatInr(Number(f.chitValue))} · month ${f.chitCurrentMonth}/${f.chitMonths}`,
-          meta: c.chitTaken ? "Prize already taken" : "Active chit",
+          subtitle: t("chit.advisor.monthSubtitle", {
+            value: formatInr(Number(f.chitValue)),
+            current: f.chitCurrentMonth,
+            total: f.chitMonths,
+          }),
+          meta: c.chitTaken ? t("chit.advisor.prizeTaken") : t("chit.advisor.activeChit"),
         };
       }),
-    [chitBills]
+    [chitBills, t]
   );
 
   const [step, setStep] = useState("pick");
@@ -213,12 +234,12 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
     return (
       <ToolSourcePicker
         accent="yellow"
-        title="Which chit fund are you planning?"
-        hint="Pick one you added, or check without saving a bill."
+        title={t("chit.pick.title")}
+        hint={t("chit.pick.hint")}
         items={pickerItems}
-        emptyMessage="No chit bills yet."
-        manualLabel="Check without adding a bill"
-        addLabel="Add chit fund bill"
+        emptyMessage={t("chit.pick.empty")}
+        manualLabel={t("chit.pick.manual")}
+        addLabel={t("chit.pick.addBill")}
         onPick={(item) => {
           setSelectedBill(item.raw);
           setStep("calc");
@@ -233,38 +254,38 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
     return (
       <div className="space-y-3">
         <button type="button" onClick={() => setStep("pick")} className="text-xs font-semibold text-indigo-600">
-          ← Back
+          ← {t("chit.advisor.back")}
         </button>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold">Chit value (₹)</label>
+            <label className="text-xs font-semibold">{t("chit.advisor.chitValue")}</label>
             <input
-              className={inputClass}
+              className={fieldClass}
               value={manual.chitValue}
               onChange={(e) => setManual((m) => ({ ...m, chitValue: e.target.value }))}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">Months</label>
+            <label className="text-xs font-semibold">{t("chit.advisor.months")}</label>
             <input
-              className={inputClass}
+              className={fieldClass}
               value={manual.chitMonths}
               onChange={(e) => setManual((m) => ({ ...m, chitMonths: e.target.value }))}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">Current month #</label>
+            <label className="text-xs font-semibold">{t("chit.advisor.currentMonth")}</label>
             <input
-              className={inputClass}
+              className={fieldClass}
               value={manual.currentMonth}
               onChange={(e) => setManual((m) => ({ ...m, currentMonth: e.target.value }))}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">Start date</label>
+            <label className="text-xs font-semibold">{t("chit.advisor.startDate")}</label>
             <input
               type="date"
-              className={inputClass}
+              className={fieldClass}
               value={manual.startDate}
               onChange={(e) => setManual((m) => ({ ...m, startDate: e.target.value }))}
             />

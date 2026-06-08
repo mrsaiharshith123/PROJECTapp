@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext.jsx";
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { ToolTile } from "../../ToolTile.jsx";
 import { Caption } from "../../../primitives/Text.jsx";
 

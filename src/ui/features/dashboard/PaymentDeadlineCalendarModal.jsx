@@ -8,13 +8,16 @@ import {
   formatDeadlineHeading,
 } from "../../../utils/paymentDeadlineCalendar.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateBillStatus } from "../../../i18n/domainLabels.js";
 
-const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 /**
  * @param {{ open: boolean, onClose: () => void }} props
  */
 export default function PaymentDeadlineCalendarModal({ open, onClose }) {
+  const { t } = useTranslation();
   const { commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus, todayStr } =
     useCommitTrack();
   const [viewMonth, setViewMonth] = useState(() => {
@@ -28,7 +31,7 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
 
   const deadlinesByDate = useMemo(
     () => collectPaymentDeadlines(commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus),
-    [commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus]
+    [commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus],
   );
 
   const grid = useMemo(() => buildMonthCalendarGrid(viewMonth), [viewMonth]);
@@ -46,12 +49,9 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <Modal title="Payment calendar" onClose={onClose}>
+    <Modal title={t("calendar.title")} onClose={onClose}>
       <div className="ct-stack">
-        <Caption className="block">
-          Tap a date to see bills and lending due. {monthDeadlines} deadline
-          {monthDeadlines === 1 ? "" : "s"} this month.
-        </Caption>
+        <Caption className="block">{t("calendar.hint", { count: monthDeadlines })}</Caption>
 
         <div className="ct-row-between">
           <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => subMonths(m, 1))}>
@@ -64,9 +64,9 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
         </div>
 
         <div className="ct-pay-cal-grid">
-          {WEEKDAYS.map((d) => (
+          {WEEKDAY_KEYS.map((d) => (
             <Caption key={d} className="text-center font-semibold !text-[10px]">
-              {d}
+              {t(`calendar.week.${d}`)}
             </Caption>
           ))}
           {Array.from({ length: grid.leadingEmpty }).map((_, i) => (
@@ -97,19 +97,21 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
             <>
               <Body className="font-semibold !text-sm">{formatDeadlineHeading(selectedYmd)}</Body>
               {selectedItems.length === 0 ? (
-                <Caption>No payments due on this date.</Caption>
+                <Caption>{t("calendar.noPayments")}</Caption>
               ) : (
                 <ul className="ct-stack-sm">
                   {selectedItems.map((item) => (
                     <li key={`${item.kind}-${item.id}`} className="ct-row-between gap-2">
                       <div className="min-w-0">
                         <Body className="font-semibold truncate !text-sm">{item.name}</Body>
-                        <Caption>{item.kind === "lending" ? "Lending" : "Bill"}</Caption>
+                        <Caption>
+                          {item.kind === "lending" ? t("calendar.kind.lending") : t("calendar.kind.bill")}
+                        </Caption>
                       </div>
                       <div className="shrink-0 text-right">
                         <Body className="font-semibold !text-sm">{formatInr(item.amount)}</Body>
                         <Badge tone={item.status === "overdue" ? "danger" : item.status === "pending" ? "warning" : "neutral"}>
-                          {item.status}
+                          {translateBillStatus(t, item.status)}
                         </Badge>
                       </div>
                     </li>
@@ -118,7 +120,7 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
               )}
             </>
           ) : (
-            <Caption>Select a date on the calendar.</Caption>
+            <Caption>{t("calendar.selectDate")}</Caption>
           )}
         </div>
       </div>

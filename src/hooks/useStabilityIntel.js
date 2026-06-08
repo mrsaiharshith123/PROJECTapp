@@ -87,11 +87,11 @@ export function useStabilityIntel() {
 
     const extraInsights = [
       ...lifestyle.insights,
-      ...(ahead?.headlines || []),
-      ...survival.warnings.map((text, i) => ({
+      ...(ahead?.headlines || []).map((h) => ({ id: h.id, tone: h.tone, key: h.key, params: h.params })),
+      ...survival.warnings.map((w, i) => ({
         id: `survival-warn-${i}`,
         tone: "warning",
-        text,
+        text: String(w),
       })),
     ].filter(Boolean);
 

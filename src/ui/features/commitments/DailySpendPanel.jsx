@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { format, subDays, parseISO } from "date-fns";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useResolvedTheme } from "../../../hooks/useResolvedTheme.js";
 import {
   dailySpendByLifeCategory,

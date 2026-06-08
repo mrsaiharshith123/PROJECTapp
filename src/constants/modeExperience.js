@@ -52,12 +52,6 @@ export const MODE_TOOL_DEFS = {
     subtitle: "Simple salary estimate",
     accent: "teal",
   },
-  logSpend: {
-    id: "logSpend",
-    title: "Log spend",
-    subtitle: "Quick daily expense note",
-    accent: "indigo",
-  },
 };
 
 const MODE_TOOL_TITLES = {

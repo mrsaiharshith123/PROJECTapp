@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, Caption, Body, Heading, Button } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   getNotificationPermission,
   requestNotificationPermission,

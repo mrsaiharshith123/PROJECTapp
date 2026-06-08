@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { format } from "date-fns";
 import { Card, InfoTip, PageHeader, Body, Caption, Heading } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import { FinancialPulseCard } from "../../";
@@ -24,11 +23,11 @@ import {
   buildPaymentsWithVariableSeries,
   attachVariableSpendToForecast,
 } from "../../../utils/analyticsSpendSeries.js";
-import { formatInr, EM_DASH, ARROW } from "../../../constants/symbols.js";
+import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 
@@ -81,12 +80,12 @@ const Analytics = () => {
     if (!isSalariedFamily(settings)) return null;
     const { by } = summarizeHouseholdPayerBurden(commitments, getEffectiveStatus);
     const rows = [];
-    if (by.primary > 0) rows.push({ label: "Primary payer (open est.)", amount: by.primary });
-    if (by.secondary > 0) rows.push({ label: "Second payer (open est.)", amount: by.secondary });
-    if (by.shared > 0) rows.push({ label: "Shared (open est.)", amount: by.shared });
+    if (by.primary > 0) rows.push({ label: t("analytics.payerPrimary"), amount: by.primary });
+    if (by.secondary > 0) rows.push({ label: t("analytics.payerSecondary"), amount: by.secondary });
+    if (by.shared > 0) rows.push({ label: t("analytics.payerShared"), amount: by.shared });
     if (rows.length === 0) return null;
     return { rows };
-  }, [settings, commitments, getEffectiveStatus]);
+  }, [settings, commitments, getEffectiveStatus, t]);
 
   const cardPressureAnalytics = useMemo(
     () => (analyticsCopy.showPaycheckFlow ? analyzeCreditCardPressure(commitments, getEffectiveStatus, income) : null),
@@ -153,7 +152,9 @@ const Analytics = () => {
         subtitle={t("analytics.homeSnapshotHint")}
       />
       {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
-        <Caption className="ct-text-accent">Profile: {settings.activeProfileId}</Caption>
+        <Caption className="ct-text-accent">
+          {t("analytics.profileLabel", { id: settings.activeProfileId })}
+        </Caption>
       )}
 
       <FinancialPulseCard microTipSeed={microTipSeed} />
@@ -184,8 +185,11 @@ const Analytics = () => {
         <Card className="ct-stack">
           <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
           <Caption>
-            {lendingStats.settled} settled {EM_DASH} {lendingStats.active} active
-            {lendingStats.overdue > 0 ? ` ${EM_DASH} ${lendingStats.overdue} overdue` : ""}
+            {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}
+            {t("analytics.lendingActive", { active: lendingStats.active })}
+            {lendingStats.overdue > 0
+              ? ` ${EM_DASH} ${t("analytics.lendingOverdue", { overdue: lendingStats.overdue })}`
+              : ""}
             {monthBreakdown.lendingDueThisMonth > 0
               ? ` ${EM_DASH} ${t("analytics.lendingDueMonth", { amount: formatInr(monthBreakdown.lendingDueThisMonth) })}`
               : ""}
@@ -213,18 +217,25 @@ const Analytics = () => {
       {debtReduction && (
         <Card>
           <Body className="!text-sm inline-flex items-center gap-1">
-            Balance change
+            {t("analytics.balanceChange")}
             <InfoTip text={CALC_HELP.debtTrend} />
-            {debtReduction.fromMonth} {ARROW} {debtReduction.toMonth}:{" "}
-            {formatInr(Math.round(debtReduction.openDelta))}{" "}
-            {debtReduction.openDelta > 0 ? "(increase)" : debtReduction.openDelta < 0 ? "(reduction)" : ""}
+            {t("analytics.balanceDelta", {
+              from: debtReduction.fromMonth,
+              to: debtReduction.toMonth,
+              amount: formatInr(Math.round(debtReduction.openDelta)),
+            })}{" "}
+            {debtReduction.openDelta > 0
+              ? t("analytics.balanceIncrease")
+              : debtReduction.openDelta < 0
+                ? t("analytics.balanceReduction")
+                : ""}
           </Body>
         </Card>
       )}
 
       <Card variant="flat">
         <Caption>
-          All-time recorded payments:{" "}
+          {t("analytics.allTimePayments")}{" "}
           {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
         </Caption>
       </Card>

@@ -1,6 +1,6 @@
 import { cn } from "../utils/cn.js";
 import { ProgressBar } from "../patterns/ProgressBar.jsx";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 
 export function HeroMonthCard({

@@ -33,7 +33,7 @@ export function overlappingDueDatesInsight(commitments, lendings, todayStr, getE
   return {
     id: "overlap-week",
     tone: "warning",
-    text: `You have ${items.length} dues this week (≈₹${Math.round(total).toLocaleString()} total)—stagger payments if possible.`,
+    params: { count: items.length, total: `₹${Math.round(total).toLocaleString()}` },
   };
 }
 
@@ -55,14 +55,17 @@ export function forecastCrunchInsight(
     if (row.free < worst.free) worst = row;
   }
   if (worst.free >= income * 0.25 && worst.free >= 5000) return null;
-  return {
-    id: "forecast-crunch",
-    tone: worst.free < 0 ? "critical" : "warning",
-    text:
-      worst.free < 0
-        ? `You may face negative free cash around ${worst.month} (dues exceed income that month).`
-        : `Cash may be limited around ${worst.month} — only ≈₹${Math.round(worst.free).toLocaleString()} free after estimated dues.`,
-  };
+  return worst.free < 0
+    ? {
+        id: "forecast-crunch-negative",
+        tone: "critical",
+        params: { month: worst.month },
+      }
+    : {
+        id: "forecast-crunch-tight",
+        tone: "warning",
+        params: { month: worst.month, free: `₹${Math.round(worst.free).toLocaleString()}` },
+      };
 }
 
 export function subscriptionYearlyCostInsight(commitments, getEffectiveStatus) {
@@ -77,7 +80,7 @@ export function subscriptionYearlyCostInsight(commitments, getEffectiveStatus) {
   return {
     id: "subs-yearly",
     tone: "info",
-    text: `Your subscriptions may cost about ₹${yearly.toLocaleString()}/year at current rates.`,
+    params: { amount: `₹${yearly.toLocaleString()}` },
   };
 }
 
@@ -95,7 +98,7 @@ export function emiBurdenPercentInsight(commitments, income, getEffectiveStatus)
   return {
     id: "emi-pct",
     tone: pct >= 60 ? "critical" : "warning",
-    text: `EMIs use about ${pct}% of your stated monthly income — exercise caution with new borrowing.`,
+    params: { percent: pct },
   };
 }
 

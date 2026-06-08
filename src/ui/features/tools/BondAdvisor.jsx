@@ -2,11 +2,14 @@ import { useMemo, useState } from "react";
 import { analyzeBond } from "../../../engines/bondAnalyzer.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { ProGate } from "../../patterns/ProGate.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateBondDetail, translateBondRecommendation } from "../../../i18n/toolLabels.js";
 
-const inputClass =
+const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
 
 export default function BondAdvisor({ monthlyIncome = 0 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     bondType: "government",
     amount: "",
@@ -25,7 +28,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
         ...form,
         monthlyIncome,
       }),
-    [form, monthlyIncome]
+    [form, monthlyIncome],
   );
 
   const verdictClass =
@@ -37,107 +40,115 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
 
   const setField = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
+  const payoutOptions = [
+    { value: "yearly", label: t("bond.payout.yearly") },
+    { value: "half-yearly", label: t("bond.payout.halfYearly") },
+    { value: "quarterly", label: t("bond.payout.quarterly") },
+    { value: "monthly", label: t("bond.payout.monthly") },
+  ];
+
   return (
     <ProGate featureId="bond_advisor">
-    <div className="space-y-3">
-      <p className="text-xs text-gray-500">
-        Check if a bond return is worth it after tax and inflation, and whether it fits your salary.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Bond type</label>
-          <select className={inputClass} value={form.bondType} onChange={(e) => setField("bondType", e.target.value)}>
-            <option value="government">Government</option>
-            <option value="corporate">Corporate</option>
-            <option value="taxfree">Tax-free</option>
-          </select>
+      <div className="space-y-3">
+        <p className="text-xs text-gray-500">{t("bond.intro")}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.bondType")}</label>
+            <select className={fieldClass} value={form.bondType} onChange={(e) => setField("bondType", e.target.value)}>
+              <option value="government">{t("bond.type.government")}</option>
+              <option value="corporate">{t("bond.type.corporate")}</option>
+              <option value="taxfree">{t("bond.type.taxfree")}</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.investmentAmount")}</label>
+            <input className={fieldClass} value={form.amount} onChange={(e) => setField("amount", e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.faceValue")}</label>
+            <input className={fieldClass} value={form.faceValue} onChange={(e) => setField("faceValue", e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.purchasePrice")}</label>
+            <input
+              className={fieldClass}
+              value={form.purchasePrice}
+              onChange={(e) => setField("purchasePrice", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.couponRate")}</label>
+            <input
+              className={fieldClass}
+              value={form.couponRatePct}
+              onChange={(e) => setField("couponRatePct", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.payoutFrequency")}</label>
+            <select
+              className={fieldClass}
+              value={form.payoutFrequency}
+              onChange={(e) => setField("payoutFrequency", e.target.value)}
+            >
+              {payoutOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.yearsToMaturity")}</label>
+            <input
+              className={fieldClass}
+              value={form.yearsToMaturity}
+              onChange={(e) => setField("yearsToMaturity", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.taxSlab")}</label>
+            <input className={fieldClass} value={form.taxRatePct} onChange={(e) => setField("taxRatePct", e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.inflation")}</label>
+            <input
+              className={fieldClass}
+              value={form.inflationPct}
+              onChange={(e) => setField("inflationPct", e.target.value)}
+            />
+          </div>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Investment amount (₹)</label>
-          <input className={inputClass} value={form.amount} onChange={(e) => setField("amount", e.target.value)} />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Face value (₹)</label>
-          <input className={inputClass} value={form.faceValue} onChange={(e) => setField("faceValue", e.target.value)} />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Purchase price (₹)</label>
-          <input
-            className={inputClass}
-            value={form.purchasePrice}
-            onChange={(e) => setField("purchasePrice", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Coupon rate %</label>
-          <input
-            className={inputClass}
-            value={form.couponRatePct}
-            onChange={(e) => setField("couponRatePct", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Payout frequency</label>
-          <select
-            className={inputClass}
-            value={form.payoutFrequency}
-            onChange={(e) => setField("payoutFrequency", e.target.value)}
-          >
-            <option value="yearly">Yearly</option>
-            <option value="half-yearly">Half-yearly</option>
-            <option value="quarterly">Quarterly</option>
-            <option value="monthly">Monthly</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Years to maturity</label>
-          <input
-            className={inputClass}
-            value={form.yearsToMaturity}
-            onChange={(e) => setField("yearsToMaturity", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Tax slab %</label>
-          <input className={inputClass} value={form.taxRatePct} onChange={(e) => setField("taxRatePct", e.target.value)} />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700">Inflation %</label>
-          <input
-            className={inputClass}
-            value={form.inflationPct}
-            onChange={(e) => setField("inflationPct", e.target.value)}
-          />
-        </div>
-      </div>
 
-      <div className={`rounded-xl px-3 py-2 text-sm font-semibold ${verdictClass}`}>{result.recommendation}</div>
-      <p className="text-xs text-gray-600">{result.detail}</p>
+        <div className={`rounded-xl px-3 py-2 text-sm font-semibold ${verdictClass}`}>
+          {translateBondRecommendation(t, result.recommendation)}
+        </div>
+        <p className="text-xs text-gray-600">{translateBondDetail(t, result.recommendation)}</p>
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">Annual yield</p>
-          <p className="font-semibold">{result.annualYieldPct.toFixed(2)}%</p>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-xl bg-gray-50 p-3">
+            <p className="text-[11px] text-gray-500">{t("bond.annualYield")}</p>
+            <p className="font-semibold">{result.annualYieldPct.toFixed(2)}%</p>
+          </div>
+          <div className="rounded-xl bg-gray-50 p-3">
+            <p className="text-[11px] text-gray-500">{t("bond.postTaxYield")}</p>
+            <p className="font-semibold">{result.postTaxYieldPct.toFixed(2)}%</p>
+          </div>
+          <div className="rounded-xl bg-gray-50 p-3">
+            <p className="text-[11px] text-gray-500">{t("bond.realReturn")}</p>
+            <p className="font-semibold">{result.realReturnPct.toFixed(2)}%</p>
+          </div>
+          <div className="rounded-xl bg-gray-50 p-3">
+            <p className="text-[11px] text-gray-500">{t("bond.monthlySetAside")}</p>
+            <p className="font-semibold">{formatInr(Math.round(result.monthlySetAside))}</p>
+          </div>
         </div>
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">Post-tax yield</p>
-          <p className="font-semibold">{result.postTaxYieldPct.toFixed(2)}%</p>
-        </div>
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">Real return</p>
-          <p className="font-semibold">{result.realReturnPct.toFixed(2)}%</p>
-        </div>
-        <div className="rounded-xl bg-gray-50 p-3">
-          <p className="text-[11px] text-gray-500">Monthly set-aside</p>
-          <p className="font-semibold">{formatInr(Math.round(result.monthlySetAside))}</p>
-        </div>
+        {result.affordabilityPct != null && (
+          <p className="text-xs text-gray-600">
+            {t("bond.salaryLoad", { percent: result.affordabilityPct.toFixed(1) })}
+          </p>
+        )}
       </div>
-      {result.affordabilityPct != null && (
-        <p className="text-xs text-gray-600">
-          Approx salary load: <strong>{result.affordabilityPct.toFixed(1)}%</strong> of monthly income.
-        </p>
-      )}
-    </div>
     </ProGate>
   );
 }

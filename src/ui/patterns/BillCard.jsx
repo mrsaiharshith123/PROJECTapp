@@ -1,20 +1,52 @@
+import { differenceInMonths, format, parseISO } from "date-fns";
 import { Card } from "../primitives/Card.jsx";
 import { Button } from "../primitives/Button.jsx";
+import { Caption } from "../primitives/Text.jsx";
 import { CategoryChip } from "./CategoryChip.jsx";
 import { PriorityBadge } from "./PriorityBadge.jsx";
-import { CommitmentProgress } from "./CommitmentProgress.jsx";
 import { BILL_STATUS_UI } from "../tokens/billStatus.js";
-import { repeatTypeLabel } from "../../constants/repeatTypes.js";
 import { getBillDisplayName } from "../../utils/billDisplayName.js";
+import { useTranslation } from "../../i18n/I18nProvider.js";
+import { translateBillStatus, translateRepeatType } from "../../i18n/domainLabels.js";
+import { formatLocaleDate } from "../../i18n/formatLocale.js";
 import { cn } from "../utils/cn.js";
 
-function formatDate(dateStr) {
-  if (!dateStr) return "\u2014";
-  return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+const LOAN_CATEGORIES = new Set(["EMI", "Loan", "Credit Card", "BNPL"]);
+
+function CommitmentProgress({ commitment, effectiveStatus = "pending" }) {
+  if (!commitment?.startDate || !commitment?.endDate) return null;
+  if (commitment.repeatType !== "monthly") return null;
+  if (!LOAN_CATEGORIES.has(commitment.category)) return null;
+
+  let start;
+  let end;
+  try {
+    start = parseISO(commitment.startDate);
+    end = parseISO(commitment.endDate);
+  } catch {
+    return null;
+  }
+
+  const today = new Date();
+  const totalMonths = Math.max(1, differenceInMonths(end, start));
+  const doneMonths = Math.min(totalMonths, Math.max(0, differenceInMonths(today, start)));
+  const pct = Math.min(100, Math.round((doneMonths / totalMonths) * 100));
+
+  let barClass = "ct-progress-bar";
+  if (effectiveStatus === "overdue") barClass += " ct-progress-bar-danger";
+  else if (pct >= 80) barClass += " ct-progress-bar-success";
+  else if (pct >= 50) barClass += " ct-progress-bar-warning";
+
+  return (
+    <div className="ct-stack-sm" style={{ marginTop: "0.75rem" }}>
+      <div className="ct-progress">
+        <div className={`${barClass} ct-bar-animated`} style={{ width: `${pct}%` }} />
+      </div>
+      <Caption className="block">
+        Month {doneMonths} of {totalMonths} · {pct}% complete · ends {format(end, "MMM yyyy")}
+      </Caption>
+    </div>
+  );
 }
 
 function isDueWithinDays(dueDate, days) {
@@ -61,10 +93,13 @@ export function BillCard({
   onDelete,
   variant = "active",
 }) {
-  const { label, classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
+  const { t, locale } = useTranslation();
+  const { classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
+  const statusLabel = translateBillStatus(t, eff);
   const total = Number(item.amount ?? 0);
   const isHistory = variant === "history";
   const cardVariant = isHistory ? "status-paid" : billCardVariant(eff, item, monthPaid);
+  const fmt = (dateStr) => formatLocaleDate(dateStr, locale);
 
   if (isHistory) {
     return (
@@ -72,26 +107,30 @@ export function BillCard({
         <button type="button" onClick={onOpen} className="ct-bill-card-head">
           <div className="min-w-0">
             <p className="ct-body-strong truncate">{getBillDisplayName(item)}</p>
-            <p className="ct-caption">
-              Paid {"\u00b7"} due {formatDate(item.dueDate)}
-            </p>
+            <p className="ct-caption">{t("bill.historyPaid", { date: fmt(item.dueDate) })}</p>
             {progress.totalCycles != null && progress.totalCycles > 0 && (
               <p className="ct-caption ct-text-accent mt-0.5">{progress.label}</p>
             )}
           </div>
-          <span className="ct-status ct-status-success">Paid</span>
+          <span className="ct-status ct-status-success">{t("bill.status.paid")}</span>
         </button>
         <div className="ct-bill-card-actions">
           <Button variant="ghost" size="sm" type="button" onClick={onEdit}>
-            Edit
+            {t("common.edit")}
           </Button>
           <Button variant="danger" size="sm" type="button" onClick={onDelete}>
-            Delete
+            {t("common.delete")}
           </Button>
         </div>
       </Card>
     );
   }
+
+  const dateParts = [];
+  if (item.startDate) dateParts.push(t("bill.started", { date: fmt(item.startDate) }));
+  if (item.endDate) dateParts.push(t("bill.ends", { date: fmt(item.endDate) }));
+  else if (item.startDate) dateParts.push(t("bill.ongoing"));
+  dateParts.push(t("bill.dueOn", { date: fmt(item.dueDate) }));
 
   return (
     <Card variant={cardVariant} className="ct-bill-card ct-stack">
@@ -102,14 +141,11 @@ export function BillCard({
             <CategoryChip categoryId={item.category} />
             <PriorityBadge priorityId={item.priority} />
             {item.repeatType !== "none" && (
-              <span className="ct-chip-repeat">{repeatTypeLabel(item.repeatType)}</span>
+              <span className="ct-chip-repeat">{translateRepeatType(t, item.repeatType)}</span>
             )}
           </div>
           <p className="ct-caption">
-            {item.startDate ? `Started ${formatDate(item.startDate)}` : null}
-            {item.startDate && item.endDate ? " \u2192 " : item.startDate ? " \u00b7 " : ""}
-            {item.endDate ? `Ends ${formatDate(item.endDate)}` : item.startDate ? "Ongoing" : ""}
-            {" \u00b7 "}Due {formatDate(item.dueDate)}
+            {dateParts.join(" · ")}
             {item.notes ? <span className="block mt-1">{item.notes}</span> : null}
           </p>
           {progress.totalCycles != null && progress.totalCycles > 0 && (
@@ -123,31 +159,28 @@ export function BillCard({
           </p>
           {partial && (
             <p className="ct-caption ct-amount-warn ct-numeral">
-              Due now {"\u20b9"}
-              {cycleDue.toLocaleString("en-IN")}
+              {t("bill.dueNow", { amount: `\u20b9${cycleDue.toLocaleString("en-IN")}` })}
             </p>
           )}
-          <span className={classes}>{label}</span>
+          <span className={classes}>{statusLabel}</span>
         </div>
       </button>
 
       <CommitmentProgress commitment={item} effectiveStatus={eff} />
 
-      {monthPaid && (
-        <p className="ct-bill-paid-banner">Paid for this month — unlocks when the next due date starts.</p>
-      )}
+      {monthPaid && <p className="ct-bill-paid-banner">{t("bill.paidBanner")}</p>}
 
       {(eff === "pending" || eff === "overdue") && (
         <div className="ct-bill-card-actions">
           <Button variant="success" size="sm" type="button" className="ct-bill-pay-btn" onClick={onPay}>
-            Pay {"\u20b9"}
+            {t("common.pay")} {"\u20b9"}
             {cycleDue.toLocaleString("en-IN")}
           </Button>
           <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
-            Edit
+            {t("common.edit")}
           </Button>
           <Button variant="danger" size="sm" type="button" onClick={onDelete}>
-            Delete
+            {t("common.delete")}
           </Button>
         </div>
       )}

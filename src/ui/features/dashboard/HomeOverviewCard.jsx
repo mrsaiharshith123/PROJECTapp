@@ -8,7 +8,7 @@ import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { HeroMonthCard } from "../HeroMonthCard.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatMonthYear } from "../../../i18n/formatLocale.js";
 import { translateHealthLabel, translatePressureLabel } from "../../../i18n/engineLabels.js";
 

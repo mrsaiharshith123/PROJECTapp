@@ -36,25 +36,13 @@ export function generateCommitmentInsights(ctx) {
   const ratio = inc > 0 ? burden / inc : null;
 
   if (inc > 0 && open < 10000 && burden / inc > 0.5) {
-    insights.push({
-      id: "free-cash-low",
-      tone: "warning",
-      text: `Free cash after typical monthly obligations may be limited (obligations use a large share of income).`,
-    });
+    insights.push({ id: "free-cash-low", tone: "warning" });
   }
 
   if (ratio != null && ratio > 0.75) {
-    insights.push({
-      id: "burden-danger",
-      tone: "critical",
-      text: "EMI-style burden is in a high range relative to income. Defer new commitments if possible.",
-    });
+    insights.push({ id: "burden-danger", tone: "critical" });
   } else if (ratio != null && ratio > 0.6) {
-    insights.push({
-      id: "burden-risk",
-      tone: "warning",
-      text: "Monthly bill burden is elevated relative to income — review discretionary spending.",
-    });
+    insights.push({ id: "burden-risk", tone: "warning" });
   }
 
   const subs = sumCategoryMonthly(commitments, getEffectiveStatus, "Subscription");
@@ -62,7 +50,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "subs-weight",
       tone: "info",
-      text: `Subscriptions add roughly ₹${Math.round(subs).toLocaleString()}/mo to your baseline — recurring costs accumulate over time.`,
+      params: { amount: `₹${Math.round(subs).toLocaleString()}` },
     });
   }
 
@@ -74,25 +62,17 @@ export function generateCommitmentInsights(ctx) {
       insights.push({
         id: "open-up",
         tone: "warning",
-        text: `Open bill balance increased compared with the prior snapshot (${prev.month} → ${last.month}).`,
+        params: { fromMonth: prev.month, toMonth: last.month },
       });
     }
     if (last.openRemainingSum < prev.openRemainingSum * 0.92) {
-      insights.push({
-        id: "pressure-down",
-        tone: "positive",
-        text: "You reduced open bill pressure compared to the prior month snapshot.",
-      });
+      insights.push({ id: "pressure-down", tone: "positive" });
     }
   }
 
   const overdueCount = commitments.filter((c) => getEffectiveStatus(c) === "overdue").length;
   if (overdueCount >= 2) {
-    insights.push({
-      id: "multi-overdue",
-      tone: "critical",
-      text: `${overdueCount} items are overdue — clearing them first usually reduces pressure most directly.`,
-    });
+    insights.push({ id: "multi-overdue", tone: "critical", params: { count: overdueCount } });
   }
 
   const thisMonth = format(new Date(), "yyyy-MM");
@@ -106,7 +86,7 @@ export function generateCommitmentInsights(ctx) {
     insights.push({
       id: "paying-habit",
       tone: "positive",
-      text: `You recorded ₹${Math.round(paidThisMonth).toLocaleString()} in payments this month — consistent payments improve financial runway.`,
+      params: { amount: `₹${Math.round(paidThisMonth).toLocaleString()}` },
     });
   }
 

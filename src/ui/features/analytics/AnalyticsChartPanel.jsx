@@ -1,14 +1,86 @@
 import { useMemo, useState, useCallback, useRef } from "react";
 import { CHART_VIEWS } from "../../../constants/plainLanguage.js";
+import { translateChartView } from "../../../i18n/domainLabels.js";
 import { useResolvedTheme } from "../../../hooks/useResolvedTheme.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getChartTheme } from "../../tokens/chartTheme.js";
+import { formatInr } from "../../../constants/symbols.js";
 import { variableSpendDrilldown } from "../../../utils/analyticsSpendSeries.js";
+import { translateTxnLifeCategory } from "../../../i18n/toolLabels.js";
 import { Card } from "../../primitives/Card.jsx";
-import { Heading, Caption } from "../../primitives/Text.jsx";
+import { Heading, Caption, Body } from "../../primitives/Text.jsx";
+import { Button } from "../../primitives/Button.jsx";
 import { FlexibleDataChart } from "./charts/FlexibleDataChart.jsx";
 import { ChartTypeSelect } from "./charts/ChartTypeSelect.jsx";
-import VariableSpendDrilldown from "./VariableSpendDrilldown.jsx";
+
+function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
+  const { t } = useTranslation();
+  if (!drilldown || drilldown.total <= 0) return null;
+
+  return (
+    <Card variant="flat" className="ct-stack ct-insight-accent">
+      <div className="ct-row-between gap-2">
+        <div>
+          <Heading level={4}>{t("charts.drilldownTitle", { month: monthLabel })}</Heading>
+          <Caption className="block mt-0.5">
+            {t("charts.drilldownTotal", { amount: formatInr(drilldown.total) })}
+          </Caption>
+        </div>
+        <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={onClose}>
+          {t("common.close")}
+        </Button>
+      </div>
+
+      {drilldown.merchants.length > 0 && (
+        <div>
+          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownMerchants")}</Body>
+          <ul className="ct-stack-sm">
+            {drilldown.merchants.map((m) => (
+              <li key={m.name} className="ct-row-between ct-caption">
+                <span className="truncate pr-2">{m.name}</span>
+                <span className="font-semibold shrink-0">
+                  {formatInr(m.amount)}
+                  {m.count > 1 ? ` · ${m.count}×` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {drilldown.categories.length > 0 && (
+        <div>
+          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownCategories")}</Body>
+          <ul className="ct-stack-sm">
+            {drilldown.categories.map((c) => (
+              <li key={c.lifeCategory} className="ct-row-between ct-caption">
+                <span>{c.name}</span>
+                <span className="font-semibold shrink-0">{formatInr(c.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {drilldown.entries.length > 0 && (
+        <div>
+          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownTopEntries")}</Body>
+          <ul className="ct-stack-sm">
+            {drilldown.entries.map((e) => (
+              <li key={e.id} className="ct-row-between ct-caption gap-2">
+                <span className="truncate">
+                  {e.label}
+                  <span className="opacity-70"> · {translateTxnLifeCategory(t, e.lifeCategory)}</span>
+                </span>
+                <span className="font-semibold shrink-0">{formatInr(e.amount)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 const VIEW_CHART_TYPES = {
   forecast: ["bar", "line"],
@@ -39,11 +111,9 @@ export default function AnalyticsChartPanel({
   const touchStartX = useRef(0);
 
   const views = CHART_VIEWS;
-  const viewMap = useMemo(() => new Map(views.map((v) => [v.id, v])), [views]);
 
   const [viewId, setViewId] = useState("forecast");
   const activeId = views.some((v) => v.id === viewId) ? viewId : "forecast";
-  const current = viewMap.get(activeId);
   const chartType = chartTypes[activeId] || VIEW_DEFAULT_TYPE[activeId] || "bar";
   const plotHeight = 272;
   const activeIndex = views.findIndex((v) => v.id === activeId);
@@ -157,15 +227,15 @@ export default function AnalyticsChartPanel({
       <Heading level={2}>{t("charts.title")}</Heading>
 
       <div className="ct-row-between items-center gap-2">
-        <Caption className="font-semibold">{current?.label}</Caption>
+        <Caption className="font-semibold">{translateChartView(t, activeId)}</Caption>
         <div className="ct-chart-swipe-dots" role="tablist" aria-label={t("charts.swipeHint")}>
-          {views.map((v, i) => (
+          {views.map((v) => (
             <button
               key={v.id}
               type="button"
               role="tab"
               aria-selected={v.id === activeId}
-              aria-label={v.label}
+              aria-label={translateChartView(t, v.id)}
               className={`ct-chart-swipe-dot${v.id === activeId ? " ct-chart-swipe-dot-active" : ""}`}
               onClick={() => onViewChange(v.id)}
             />

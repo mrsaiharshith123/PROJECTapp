@@ -7,10 +7,12 @@ import { isValidIndianPhone, normalizeIndianPhone } from "../../../utils/phone.j
 import { isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
 import { saveUserProfile } from "../../../services/supabase/auth.js";
 import { markSignupPending } from "../../../utils/authSessionCleanup.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const inputClass = inputClassName();
+const fieldClass = inputClassName();
 
 export default function AuthGatePage() {
+  const { t } = useTranslation();
   const { signIn, signUp, authNotice, clearAuthNotice } = useAuth();
   const { updateSettings } = useCommitTrack();
   const [mode, setMode] = useState("signin");
@@ -26,12 +28,12 @@ export default function AuthGatePage() {
   const configured = isCloudSyncConfigured();
 
   const validateSignup = () => {
-    if (!email.trim() || !password) return "Email and password are required.";
-    if (password.length < 6) return "Password must be at least 6 characters.";
-    if (!name.trim()) return "Your name is required.";
-    if (!isValidIndianPhone(phone)) return "Enter a valid 10-digit mobile number.";
+    if (!email.trim() || !password) return t("auth.errEmailPassword");
+    if (password.length < 6) return t("auth.errPasswordLength");
+    if (!name.trim()) return t("auth.errNameRequired");
+    if (!isValidIndianPhone(phone)) return t("auth.errPhoneInvalid");
     const incomeNum = Number(income);
-    if (!income || incomeNum <= 0) return "Monthly salary is required.";
+    if (!income || incomeNum <= 0) return t("auth.errSalaryRequired");
     return null;
   };
 
@@ -68,11 +70,11 @@ export default function AuthGatePage() {
     setNote("");
     clearAuthNotice();
     if (!configured) {
-      setNote("Sign-in is not available — Supabase URL and anon key must be set in .env.");
+      setNote(t("auth.errNotConfigured"));
       return;
     }
     if (!email.trim() || !password) {
-      setNote("Email and password are required.");
+      setNote(t("auth.errEmailPassword"));
       return;
     }
     if (mode === "signup") {
@@ -86,7 +88,7 @@ export default function AuthGatePage() {
     try {
       if (mode === "signin") {
         await signIn(email.trim(), password);
-        setNote("Signed in.");
+        setNote(t("auth.signedIn"));
       } else {
         const incomeNum = Math.max(0, Number(income) || 0);
         const result = /** @type {{ user?: { id?: string }, session?: unknown } | null | undefined} */ (
@@ -104,25 +106,22 @@ export default function AuthGatePage() {
         const uid = result?.user?.id;
         const hasSession = Boolean(result?.session);
         if (uid && hasSession) {
-          let signupNote = "Account created — finish setup on the next screens.";
+          let signupNote = t("auth.accountCreated");
           try {
             await persistSignupProfile(uid, incomeNum);
           } catch (profileErr) {
             const msg = formatAuthError(profileErr);
             if (msg.includes("Confirm your email") || msg.includes("migrations")) {
-              signupNote =
-                "Account created — finish setup on the next screens. (Profile sync: " + msg + ")";
+              signupNote = `${t("auth.accountCreated")} (${msg})`;
             } else {
               throw profileErr;
             }
           }
           setNote(signupNote);
         } else if (uid) {
-          setNote(
-            "Account created. Confirm your email if Supabase asks, then sign in to finish setup.",
-          );
+          setNote(t("auth.accountCreatedConfirm"));
         } else {
-          setNote("Check your email to confirm, then sign in to continue setup.");
+          setNote(t("auth.checkEmail"));
         }
       }
     } catch (e) {
@@ -137,12 +136,9 @@ export default function AuthGatePage() {
       <div>
         <Eyebrow>CommitTrack</Eyebrow>
         <Heading level={2} className="ct-onboard-title">
-          {mode === "signin" ? "Sign in to continue" : "Create your account"}
+          {mode === "signin" ? t("auth.signInTitle") : t("auth.signUpTitle")}
         </Heading>
-        <Body className="!text-sm mt-2">
-          An account is required. Your data stays linked to your sign-in; bills and EMIs can be added
-          later.
-        </Body>
+        <Body className="!text-sm mt-2">{t("auth.intro")}</Body>
       </div>
 
       <Card className="ct-stack">
@@ -152,31 +148,31 @@ export default function AuthGatePage() {
             onClick={() => setMode("signin")}
             className={`ct-chip flex-1 ${mode === "signin" ? "ct-chip-active" : ""}`}
           >
-            Login
+            {t("auth.login")}
           </button>
           <button
             type="button"
             onClick={() => setMode("signup")}
             className={`ct-chip flex-1 ${mode === "signup" ? "ct-chip-active" : ""}`}
           >
-            Create account
+            {t("auth.createAccount")}
           </button>
         </div>
 
-        <FormField label="Email *">
+        <FormField label={t("auth.email")}>
           <input
             type="email"
-            className={inputClass}
+            className={fieldClass}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             required
           />
         </FormField>
-        <FormField label="Password *">
+        <FormField label={t("auth.password")}>
           <input
             type="password"
-            className={inputClass}
+            className={fieldClass}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
@@ -187,50 +183,50 @@ export default function AuthGatePage() {
 
         {mode === "signup" && (
           <>
-            <FormField label="Your name *">
+            <FormField label={t("auth.yourName")}>
               <input
-                className={inputClass}
+                className={fieldClass}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </FormField>
-            <FormField label="Mobile number *">
+            <FormField label={t("auth.mobile")}>
               <input
                 type="tel"
-                className={inputClass}
+                className={fieldClass}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="10-digit Indian mobile"
+                placeholder={t("auth.mobilePlaceholder")}
                 inputMode="numeric"
                 required
               />
             </FormField>
-            <FormField label="Monthly salary (₹) *">
+            <FormField label={t("auth.monthlySalary")}>
               <input
                 type="number"
                 min="1"
-                className={inputClass}
+                className={fieldClass}
                 value={income}
                 onChange={(e) => setIncome(e.target.value)}
                 required
               />
             </FormField>
-            <FormField label="Household *">
+            <FormField label={t("auth.household")}>
               <select
-                className={inputClass}
+                className={fieldClass}
                 value={householdScope}
                 onChange={(e) => setHouseholdScope(e.target.value)}
               >
-                <option value="single">Just me</option>
-                <option value="family">Family household</option>
+                <option value="single">{t("auth.householdSingle")}</option>
+                <option value="family">{t("auth.householdFamily")}</option>
               </select>
             </FormField>
           </>
         )}
 
         <Button type="button" disabled={busy} onClick={handleSubmit} size="lg" variant="primary">
-          {busy ? "Please wait…" : mode === "signin" ? "Login" : "Create account & continue"}
+          {busy ? t("auth.pleaseWait") : mode === "signin" ? t("auth.login") : t("auth.createAndContinue")}
         </Button>
         {authNotice && <Caption className="block text-[var(--ct-warning)]">{authNotice}</Caption>}
         {note && <Caption className="block">{note}</Caption>}

@@ -5,11 +5,13 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { isValidPan, maskPan, normalizePan } from "../../../utils/pan.js";
 import { formatAuthError } from "../../../utils/authErrors.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const inputClass = inputClassName();
+const fieldClass = inputClassName();
 
 /** Account sign-in & KYC — lives under Personal & money, not a top-level block. */
 export default function AccountSettingsBlock() {
+  const { t } = useTranslation();
   const { isReady, isLoggedIn, user, profile, signOut, saveProfile } = useAuth();
   const { settings } = useCommitTrack();
   const [username, setUsername] = useState("");
@@ -25,7 +27,7 @@ export default function AccountSettingsBlock() {
     setBusy(true);
     try {
       await signOut();
-      setNote("Signed out.");
+      setNote(t("account.signedOut"));
     } catch (e) {
       setNote(formatAuthError(e));
     } finally {
@@ -37,7 +39,7 @@ export default function AccountSettingsBlock() {
     setNote("");
     const normalized = normalizePan(pan);
     if (normalized && !isValidPan(normalized)) {
-      setNote("PAN format should be like ABCDE1234F.");
+      setNote(t("account.panInvalid"));
       return;
     }
     setBusy(true);
@@ -53,7 +55,7 @@ export default function AccountSettingsBlock() {
         pan_verified: false,
       });
       setPan("");
-      setNote("Saved.");
+      setNote(t("account.saved"));
     } catch (e) {
       setNote(formatAuthError(e));
     } finally {
@@ -62,55 +64,51 @@ export default function AccountSettingsBlock() {
   };
 
   if (!isReady) {
-    return <Caption>Loading account…</Caption>;
+    return <Caption>{t("account.loading")}</Caption>;
   }
 
   if (!isLoggedIn) {
-    return (
-      <Caption>
-        Sign in from the app login screen to link this device to your account.
-      </Caption>
-    );
+    return <Caption>{t("account.signInPrompt")}</Caption>;
   }
 
   return (
     <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
       <div>
-        <Heading level={4}>Account</Heading>
-        <Caption className="block mt-0.5">Sign-in, username, and optional PAN.</Caption>
+        <Heading level={4}>{t("account.title")}</Heading>
+        <Caption className="block mt-0.5">{t("account.subtitle")}</Caption>
       </div>
 
       <div className="ct-row-between gap-2">
         <Caption className="truncate">{user?.email}</Caption>
         <Button type="button" variant="outline" size="sm" onClick={handleSignOut} disabled={busy} className="!w-auto shrink-0">
-          Logout
+          {t("account.logout")}
         </Button>
       </div>
 
       <div className="ct-stack-sm">
-        <label className="ct-field-label">Username</label>
+        <label className="ct-field-label">{t("account.username")}</label>
         <input
-          className={inputClass}
+          className={fieldClass}
           value={username || profile?.username || ""}
           onChange={(e) => setUsername(e.target.value)}
         />
       </div>
 
       <div className="ct-stack-sm">
-        <label className="ct-field-label">PAN (format check)</label>
+        <label className="ct-field-label">{t("account.pan")}</label>
         <input
-          className={inputClass}
+          className={fieldClass}
           value={showPan ? pan || savedPan : pan || maskPan(savedPan)}
           onChange={(e) => setPan(e.target.value)}
-          placeholder="ABCDE1234F"
+          placeholder={t("account.panPlaceholder")}
         />
         <button type="button" onClick={() => setShowPan((v) => !v)} className="ct-link !text-xs text-left">
-          {showPan ? "Hide PAN" : "Show PAN"}
+          {showPan ? t("account.hidePan") : t("account.showPan")}
         </button>
       </div>
 
       <Button type="button" disabled={busy} onClick={handleSaveKyc} size="sm" variant="secondary">
-        Save account
+        {t("account.saveKyc")}
       </Button>
       {note && <Caption className="block">{note}</Caption>}
     </div>

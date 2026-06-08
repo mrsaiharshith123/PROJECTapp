@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { getEmptyStateGuidance } from "../../guidance/index.js";
 import { EmptyState } from "../patterns/EmptyState.jsx";
 import { Button } from "../primitives/Button.jsx";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 
 /**
  * Empty state with mode-specific education.

@@ -12,25 +12,27 @@ import { Grid, Stack } from "../../primitives/Stack.jsx";
 import { StatCard } from "../../patterns/StatCard.jsx";
 import ModeHeroCard from "./shared/ModeHeroCard.jsx";
 import ModeInsightStrip from "./shared/ModeInsightStrip.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 function HouseholdRunwayCard({ survival }) {
+  const { t } = useTranslation();
   if (!survival) return null;
   return (
     <Card variant="glow" className="ct-stack">
       <div className="ct-row-between items-start flex-wrap gap-2">
         <div>
           <Heading level={2} className="inline-flex items-center">
-            Household runway
+            {t("family.dashboard.householdRunway")}
             <InfoTip text={CALC_HELP.survivalMonths} />
           </Heading>
-          <Caption className="mt-0.5 block">If main household income stops</Caption>
+          <Caption className="mt-0.5 block">{t("family.dashboard.ifIncomeStops")}</Caption>
         </div>
         <Badge className={survival.badgeClass}>{survival.tierLabel}</Badge>
       </div>
       <Body>{survival.headline}</Body>
       <Grid cols={2}>
-        <MetricTile label="Monthly burn" value={formatInr(survival.monthlyBurn)} />
-        <MetricTile label="Household reserve" value={formatInr(survival.liquidSavings)} />
+        <MetricTile label={t("family.dashboard.monthlyBurn")} value={formatInr(survival.monthlyBurn)} />
+        <MetricTile label={t("family.dashboard.householdReserve")} value={formatInr(survival.liquidSavings)} />
       </Grid>
     </Card>
   );
@@ -38,6 +40,7 @@ function HouseholdRunwayCard({ survival }) {
 
 /** Household / family experience — shared expenses, education, renewals. */
 export default function FamilyModeDashboard() {
+  const { t } = useTranslation();
   const { settings } = useCommitTrack();
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
@@ -48,24 +51,27 @@ export default function FamilyModeDashboard() {
   const free = intel.stability?.freeMoney ?? 0;
   const heroMetrics = [
     {
-      label: "Household burden",
+      label: t("family.dashboard.householdBurden"),
       value: formatInr(family.householdBurden),
-      sub: family.committedPercent != null ? `${family.committedPercent}% of income` : "",
+      sub:
+        family.committedPercent != null
+          ? t("family.dashboard.percentIncome", { percent: family.committedPercent })
+          : "",
       tone: family.committedPercent > 65 ? "warn" : "default",
     },
     {
-      label: "School fees open",
+      label: t("family.dashboard.schoolFeesOpen"),
       value: formatInr(family.schoolOpen),
       tone: family.schoolOpen > 0 ? "warn" : "good",
     },
     {
-      label: "Household safety",
+      label: t("family.dashboard.householdSafety"),
       value: `${family.familyPressureScore}%`,
       sub: family.safetyLabel,
       tone: family.familyPressureScore >= 70 ? "good" : "warn",
     },
     {
-      label: "Shared free cash",
+      label: t("family.dashboard.sharedFreeCash"),
       value: formatInr(free),
       tone: free >= 0 ? "good" : "warn",
     },
@@ -79,26 +85,26 @@ export default function FamilyModeDashboard() {
     <Stack gap="md">
       <ModeHeroCard
         icon="users-three"
-        title="Household finances"
+        title={t("family.dashboard.title")}
         subtitle={
           settings.activeProfileId && settings.activeProfileId !== "default"
-            ? `Profile: ${settings.activeProfileId}`
-            : "Shared commitments & future pressure"
+            ? t("family.dashboard.profileActive", { id: settings.activeProfileId })
+            : t("family.dashboard.subtitleShared")
         }
         metrics={heroMetrics}
-        tip="Use Bills for school, insurance, and rent — calendar highlights heavy renewal months."
+        tip={t("family.dashboard.tip")}
       />
 
       <Grid cols={2}>
-        <StatCard label="Education pressure" value={formatInr(family.schoolOpen)} />
-        <StatCard label="Renewals tracked" value={String((family.heavyRenewals || []).length)} />
-        <StatCard label="Emergency readiness" value={stable.emergency?.label || "—"} />
-        <StatCard label="Dependents" value={String(settings.dependents || 0)} />
+        <StatCard label={t("family.dashboard.educationPressure")} value={formatInr(family.schoolOpen)} />
+        <StatCard label={t("family.dashboard.renewalsTracked")} value={String((family.heavyRenewals || []).length)} />
+        <StatCard label={t("family.dashboard.emergencyReadiness")} value={stable.emergency?.label || "—"} />
+        <StatCard label={t("family.dashboard.dependents")} value={String(settings.dependents || 0)} />
       </Grid>
 
       {topGroups.length > 0 && (
         <Card variant="flat" className="ct-stack">
-          <Heading level={3}>Shared expense groups</Heading>
+          <Heading level={3}>{t("family.dashboard.sharedGroups")}</Heading>
           {topGroups.map(([cat, amt]) => (
             <div key={cat} className="ct-row-between">
               <Caption>{cat}</Caption>
@@ -110,7 +116,7 @@ export default function FamilyModeDashboard() {
 
       {family.heavyRenewals?.length > 0 && (
         <Card variant="flat" className="ct-stack">
-          <Heading level={3}>Upcoming renewals</Heading>
+          <Heading level={3}>{t("family.dashboard.upcomingRenewals")}</Heading>
           {family.heavyRenewals.slice(0, 5).map((r) => (
             <div key={`${r.name}-${r.dueDate}`} className="ct-row-between gap-2 flex-wrap">
               <div className="min-w-0">

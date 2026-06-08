@@ -1,4 +1,4 @@
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { ToolTile } from "../../ToolTile.jsx";
 import { Heading } from "../../../primitives/Text.jsx";
 import { PROFILE_CONTROL_GROUPS, profileGroupForPanel } from "./profileControlGroups.js";

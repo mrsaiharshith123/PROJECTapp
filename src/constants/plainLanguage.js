@@ -36,12 +36,6 @@ export const CHART_VIEWS = [
 
 
 
-/** @deprecated Advanced chart views removed — kept for imports that may still reference. */
-
-export const CHART_VIEWS_ADVANCED = [];
-
-
-
 /** Dashboard calculator tiles: see modeExperience.js (MODE_TOOL_DEFS). */
 
 

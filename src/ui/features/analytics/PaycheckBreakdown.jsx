@@ -1,5 +1,5 @@
 import { formatInr } from "../../../constants/symbols.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 
 const TONE_CLASS = {

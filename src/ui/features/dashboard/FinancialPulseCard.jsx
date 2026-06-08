@@ -16,8 +16,9 @@ import { Surface } from "../../primitives/Surface.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
 import { pickMicroTip } from "../../../guidance/index.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
-import { translatePressureLabel } from "../../../i18n/engineLabels.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { joinEngineMessages, translatePressureLabel } from "../../../i18n/engineLabels.js";
+import { translateInsight } from "../../../i18n/insightLabels.js";
 
 function mergeTips(intel, stable) {
   const seenIds = new Set();
@@ -40,22 +41,41 @@ function mergeTips(intel, stable) {
   }
   for (const ins of stable.stabilityInsights || []) {
     if (skip.has(ins.id)) continue;
-    add(ins);
+    if (ins.key) add({ id: ins.id, tone: ins.tone, key: ins.key, params: ins.params });
+    else add(ins);
   }
   for (const f of intel.forecast || []) {
-    add({ id: `forecast-${f.id}`, tone: "info", text: f.text });
+    add({ id: f.id || `forecast-${f.id}`, tone: "info", params: f.params, text: f.text });
   }
-  (intel.subscriptionLeak?.insights || []).forEach((text, i) => {
-    add({ id: `sub-leak-${i}`, tone: "warning", text });
+  (intel.subscriptionLeak?.insights || []).forEach((item, i) => {
+    if (typeof item === "string") {
+      add({ id: `sub-leak-${i}`, tone: "warning", text: item });
+    } else {
+      add(item);
+    }
   });
-  if (stable.lifestyle?.message) {
+  if (stable.lifestyle?.messageKey) {
+    add({ id: "lifestyle-inflation", tone: "info", key: stable.lifestyle.messageKey, params: stable.lifestyle.params });
+  } else if (stable.lifestyle?.message) {
     add({ id: "lifestyle-inflation", tone: "info", text: stable.lifestyle.message });
   }
-  if (stable.goalBalance?.message && !(stable.stabilityInsights || []).some((i) => i.id === "goal-capacity")) {
+  if (stable.goalBalance?.messageKey) {
+    add({
+      id: "goal-balance",
+      tone: "warning",
+      key: stable.goalBalance.messageKey,
+      params: stable.goalBalance.params,
+    });
+  } else if (stable.goalBalance?.message && !(stable.stabilityInsights || []).some((i) => i.id === "goal-capacity")) {
     add({ id: "goal-balance", tone: "warning", text: stable.goalBalance.message });
   }
-  if (stable.pressureIntel?.forecastMessage) {
-    add({ id: "pressure-forecast", tone: "info", text: stable.pressureIntel.forecastMessage });
+  if (stable.pressureIntel?.forecastMessageKey) {
+    add({
+      id: "pressure-forecast",
+      tone: "info",
+      key: stable.pressureIntel.forecastMessageKey,
+      params: stable.pressureIntel.forecastMessageParams,
+    });
   }
   return out;
 }
@@ -122,13 +142,13 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               {narrative.strengths.length > 0 && (
                 <Caption className="block">
                   <span className="ct-text-success font-semibold">{t("pulse.strengths")} </span>
-                  {narrative.strengths.join(" · ")}
+                  {joinEngineMessages(t, narrative.strengths)}
                 </Caption>
               )}
               {narrative.weaknesses.length > 0 && (
                 <Caption className="block">
                   <span className="ct-text-warning font-semibold">{t("pulse.watch")} </span>
-                  {narrative.weaknesses.join(" · ")}
+                  {joinEngineMessages(t, narrative.weaknesses)}
                 </Caption>
               )}
             </div>
@@ -146,11 +166,13 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               </span>
             </span>
           </div>
-          {pressureIntel?.emotionalHint && (
-            <Caption className="block italic">{pressureIntel.emotionalHint}</Caption>
+          {pressureIntel?.emotionalHintKey && (
+            <Caption className="block italic">{t(pressureIntel.emotionalHintKey)}</Caption>
           )}
-          {pressureIntel?.trendMessage && (
-            <Caption className="block">{pressureIntel.trendMessage}</Caption>
+          {pressureIntel?.trendMessageKey && (
+            <Caption className="block">
+              {t(pressureIntel.trendMessageKey, pressureIntel.trendMessageParams || {})}
+            </Caption>
           )}
 
           {emergency && emergency.recommended > 0 && (
@@ -159,7 +181,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
                 {t("pulse.emergencyReserve")}
                 <InfoTip text={CALC_HELP.emergencyReserve} />
               </p>
-              <p className="text-xs text-gray-500">{emergency.message}</p>
+              <p className="text-xs text-gray-500">{t(emergency.messageKey)}</p>
               <div className="h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-emerald-500 rounded-full"
@@ -367,14 +389,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <p className="text-sm text-gray-500">{t("pulse.noActiveBills")}</p>
           )}
 
-          {pressureIntel?.forecastMessage && (
+          {pressureIntel?.forecastMessageKey && (
             <p className="ct-insight-violet">
-              {pressureIntel.forecastMessage}
+              {t(pressureIntel.forecastMessageKey, pressureIntel.forecastMessageParams || {})}
             </p>
           )}
 
           {intel.transactionRhythmNote && (
-            <p className="ct-insight-violet">{intel.transactionRhythmNote}</p>
+            <p className="ct-insight-violet">{translateInsight(t, intel.transactionRhythmNote)}</p>
           )}
 
           {!isFamily && payoffRec && (
@@ -393,7 +415,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <ul className="space-y-2">
               {tips.slice(0, 10).map((ins) => (
                 <li key={ins.id} className={`text-sm rounded-lg px-3 py-2 border ${insightToneClass(ins.tone)}`}>
-                  <p>{ins.text}</p>
+                  <p>{translateInsight(t, ins)}</p>
                   <WhyInsightPanel
                     insight={ins}
                     context={{

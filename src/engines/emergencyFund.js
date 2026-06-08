@@ -21,13 +21,6 @@ export function computeEmergencyFundIntel({
   else if (progress < 0.6) tier = "building";
   else if (progress < 0.9) tier = "almost";
 
-  const messages = {
-    critical: "Emergency reserve is well below recommended for your obligations.",
-    building: "Reserve is in progress — continue toward 3–6 months of expenses.",
-    almost: "You are close to a healthy emergency buffer.",
-    on_track: "Emergency reserve looks healthy for current pressure.",
-  };
-
   return {
     recommended,
     recommendedMonths: Math.round(recommendedMonths * 10) / 10,
@@ -35,6 +28,6 @@ export function computeEmergencyFundIntel({
     gap,
     progressPercent: Math.round(progress * 100),
     tier,
-    message: messages[tier],
+    messageKey: `emergency.tier.${tier}`,
   };
 }

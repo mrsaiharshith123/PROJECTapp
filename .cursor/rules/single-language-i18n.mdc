@@ -1,0 +1,48 @@
+---
+description: Single-language UI — no English when another locale is selected
+alwaysApply: true
+---
+
+# Single-language UI (i18n)
+
+When the user picks a language, **the entire app must appear in that language only**.
+
+## Rules
+
+1. **No hardcoded user-facing strings** in JSX, engines shown in UI, modals, toasts, or empty states. Use `t("key")` from `useTranslation()` or pass `messageKey` + `params` from engines.
+2. **English is only allowed when locale is `en`**. Other 22 locale files must not copy English values except:
+   - Numbers, currency amounts, dates (formatted)
+   - Symbols (`₹`, `%`, `→`)
+   - Universal acronyms users expect (`EMI`, `SMS`, `JSON`, `PAN`)
+   - Brand suffixes explicitly kept (`Pro`, `Power` plan tiers) if product decision says so
+3. **App name** uses `brand.appName` — translate per locale (e.g. Telugu script), not hardcoded `CommitTrack` in non-English files.
+4. **Insights and tips**: engines return `{ id, tone, params? }`; UI resolves via `translateInsight(t, insight)` and keys under `insight.{id}` in `en.js`.
+5. **New copy workflow**: add key to `src/i18n/messages/en.js` → `npm run sync:i18n` → `npm run i18n:translate:all` (or translate manually) → verify with `npm run audit:i18n:fallback`.
+
+## Examples
+
+```jsx
+// BAD
+<Caption>Extra EMI</Caption>
+
+// GOOD
+<Caption>{t("tools.loan.tabExtra")}</Caption>
+```
+
+```js
+// BAD — engine
+return { id: "txn-health", text: "Health spends rose this week." };
+
+// GOOD
+return { id: "txn-health-spend-week", tone: "caution" };
+// en.js: "insight.txn-health-spend-week": "Health-related spends rose..."
+```
+
+## Checks before shipping UI copy
+
+- `npm run audit:i18n` — key parity across locales
+- `npm run audit:i18n:fallback` — locale values still identical to English
+- `npm run audit:i18n:hardcoded` — JSX/components with Latin text not using `t()`
+- `npm run i18n:translate:fast` — parallel fill (30 concurrent, disk cache)
+
+The fallback audit alone is **not enough** — most leaks are hardcoded JSX and domain labels (categories, bill status, repeat types).

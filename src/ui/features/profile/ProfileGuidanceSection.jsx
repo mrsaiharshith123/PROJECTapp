@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Button, Body, Caption } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** Settings: replay app guide or review setup wizard. */
 export default function ProfileGuidanceSection({ onStartGuide }) {

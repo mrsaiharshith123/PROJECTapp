@@ -2,16 +2,13 @@ import { useMemo, useState } from "react";
 import { simulatePrepayment } from "../../../engines/prepayment.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { formatInr, INR, ARROW } from "../../../constants/symbols.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
 
-const TABS = [
-  { id: "extra", label: "Extra EMI" },
-  { id: "timing", label: "Best month" },
-];
-
 export default function LoanToolsPanel() {
+  const { t } = useTranslation();
   const {
     commitments,
     lendings,
@@ -20,6 +17,13 @@ export default function LoanToolsPanel() {
     getEffectiveLendingStatus,
     todayStr,
   } = useCommitTrack();
+  const tabs = useMemo(
+    () => [
+      { id: "extra", label: t("tools.loan.tabExtra") },
+      { id: "timing", label: t("tools.loan.tabTiming") },
+    ],
+    [t],
+  );
   const [tab, setTab] = useState("extra");
   const [principal, setPrincipal] = useState("");
   const [rate, setRate] = useState("10.5");
@@ -42,35 +46,35 @@ export default function LoanToolsPanel() {
 
   return (
     <div className="ct-stack">
-      <SegmentedControl options={TABS} value={tab} onChange={setTab} />
+      <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "extra" && (
         <>
-          <Caption>See how many months you save if you pay a little extra each month.</Caption>
+          <Caption>{t("tools.loan.extraIntro")}</Caption>
           <div className="ct-grid-2">
             <div>
-              <label className="ct-metric-label block">Loan left ({INR})</label>
+              <label className="ct-metric-label block">{t("tools.loan.loanLeft", { currency: INR })}</label>
               <input className="ct-input mt-1" value={principal} onChange={(e) => setPrincipal(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-metric-label block">Interest % / year</label>
+              <label className="ct-metric-label block">{t("tools.loan.interestRate")}</label>
               <input className="ct-input mt-1" value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
             </div>
             <div>
-              <label className="ct-metric-label block">Your EMI ({INR})</label>
+              <label className="ct-metric-label block">{t("tools.loan.yourEmi", { currency: INR })}</label>
               <input className="ct-input mt-1" value={emi} onChange={(e) => setEmi(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-metric-label block">Extra / month ({INR})</label>
+              <label className="ct-metric-label block">{t("tools.loan.extraPerMonth", { currency: INR })}</label>
               <input className="ct-input mt-1" value={extra} onChange={(e) => setExtra(e.target.value)} inputMode="numeric" />
             </div>
           </div>
           {sim && (
             <div className="ct-insight-accent ct-stack-sm">
               <Body className="!text-sm">
-                <span className="font-semibold">Months saved:</span> {sim.monthsSaved} ({sim.baselineMonths} {ARROW}{" "}
-                {sim.acceleratedMonths})
+                <span className="font-semibold">{t("tools.loan.monthsSaved")}</span> {sim.monthsSaved} ({sim.baselineMonths}{" "}
+                {ARROW} {sim.acceleratedMonths})
               </Body>
-              <Caption>Interest saved (about): {formatInr(Math.round(sim.interestSaved))}</Caption>
+              <Caption>{t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}</Caption>
             </div>
           )}
         </>

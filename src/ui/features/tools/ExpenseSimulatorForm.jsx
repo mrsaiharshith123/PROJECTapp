@@ -6,7 +6,7 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { freeMoneyAfterBurden } from "../../../engines/pressureScore.js";
 import { computeLoanEmi, interestFromLoan, totalRepaymentFromEmi } from "../../../utils/loanEmi.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   presetLabelKey,
   translateAffordabilityLabel,

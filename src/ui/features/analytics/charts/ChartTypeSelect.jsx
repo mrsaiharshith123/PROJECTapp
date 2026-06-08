@@ -1,7 +1,14 @@
-import { useTranslation } from "../../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { Select } from "../../../primitives/Input.jsx";
 import { Caption } from "../../../primitives/Text.jsx";
-import { CHART_TYPE_OPTIONS } from "./FlexibleDataChart.jsx";
+
+/** @type {{ id: 'line' | 'bar' | 'pie' | 'donut', label: string }[]} */
+const CHART_TYPE_OPTIONS = [
+  { id: "bar", label: "Bar" },
+  { id: "line", label: "Line" },
+  { id: "pie", label: "Pie" },
+  { id: "donut", label: "Donut" },
+];
 
 /** @param {{ value: string, onChange: (id: import('./FlexibleDataChart.jsx').ChartTypeId) => void, allowed?: string[], className?: string }} props */
 export function ChartTypeSelect({ value, onChange, allowed, className = "" }) {

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Body, Caption, Heading } from "../../index.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
 

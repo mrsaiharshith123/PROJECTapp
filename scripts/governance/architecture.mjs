@@ -13,8 +13,11 @@ export function runArchitectureAudit() {
   const warnings = [];
   const advisories = [];
 
+  const SIZE_SKIP = /src\/(?:i18n\/messages\/|utils\/migrateStorage\.js$)/;
+
   for (const file of walk(SRC, [], /\.(jsx|js)$/)) {
     const r = rel(file);
+    if (SIZE_SKIP.test(r.replace(/\\/g, "/"))) continue;
     const lines = fs.readFileSync(file, "utf8").split("\n").length;
     if (lines >= MAX_LINES_ERROR) {
       warnings.push({

@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 
 /**
  * @param {{ text?: string, textKey?: string, label?: string, labelKey?: string }} props

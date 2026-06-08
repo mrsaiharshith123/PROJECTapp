@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { TRANSACTION_LIFE_CATEGORIES, getTransactionLifeCategoryMeta } from "../../../constants/transactionCategories.js";
 import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
 import { classifyMerchant } from "../../../utils/merchantNormalize.js";

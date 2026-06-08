@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminOverview } from "../../../hooks/useAdminOverview.js";
-import { useTranslation } from "../../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Button, Caption, Eyebrow, Heading, Body } from "../../index.js";
 import AdminMetricCard from "../admin/AdminMetricCard.jsx";
 import AdminGrowthChart from "../admin/AdminGrowthChart.jsx";

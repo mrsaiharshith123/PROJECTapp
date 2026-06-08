@@ -6,8 +6,10 @@ import { formatInr, INR } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body, Heading } from "../../primitives/Text.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function IncomeTaxPanel() {
+  const { t } = useTranslation();
   const { settings } = useCommitTrack();
   const profileIncome = combinedMonthlyIncome(settings);
   const defaultAnnual = profileIncome > 0 ? Math.round(profileIncome * 12) : "";
@@ -38,16 +40,14 @@ export default function IncomeTaxPanel() {
   return (
     <div className="ct-stack">
       <div className="ct-row-between flex-wrap gap-2">
-        <Badge tone="info">Advanced · estimate only</Badge>
-        {profileIncome > 0 && (
-          <Caption>Profile salary used as a starting hint — edit if needed.</Caption>
-        )}
+        <Badge tone="info">{t("tax.badge")}</Badge>
+        {profileIncome > 0 && <Caption>{t("tax.profileSalaryHint")}</Caption>}
       </div>
 
       <SegmentedControl
         options={[
-          { id: "yearly", label: "Per year" },
-          { id: "monthly", label: "Per month" },
+          { id: "yearly", label: t("tax.perYear") },
+          { id: "monthly", label: t("tax.perMonth") },
         ]}
         value={inputMode}
         onChange={setInputMode}
@@ -55,7 +55,7 @@ export default function IncomeTaxPanel() {
 
       <div>
         <label className="ct-metric-label block">
-          {inputMode === "monthly" ? `Salary per month (${INR})` : `Salary per year (${INR})`}
+          {inputMode === "monthly" ? t("tax.salaryPerMonth", { currency: INR }) : t("tax.salaryPerYear", { currency: INR })}
         </label>
         <input
           className="ct-input mt-1"
@@ -67,40 +67,38 @@ export default function IncomeTaxPanel() {
       </div>
 
       <div>
-        <label className="ct-metric-label block">Tax regime</label>
+        <label className="ct-metric-label block">{t("tax.regimeLabel")}</label>
         <SegmentedControl
           options={[
-            { id: "new", label: "New (default)" },
-            { id: "old", label: "Old + deductions" },
+            { id: "new", label: t("tax.regime.new") },
+            { id: "old", label: t("tax.regime.old") },
           ]}
           value={regime}
           onChange={(id) => setRegime(id === "old" ? "old" : "new")}
         />
         <Caption className="mt-1 block">
-          {regime === "new"
-            ? "Usually simpler — standard deduction applied automatically."
-            : "Use if you claim 80C / 80D and stay on the old regime."}
+          {regime === "new" ? t("tax.regimeNewHint") : t("tax.regimeOldHint")}
         </Caption>
       </div>
 
       <button type="button" className="ct-link !text-xs self-start" onClick={() => setShowMore((v) => !v)}>
-        {showMore ? "Hide extra fields" : "More options (80C / 80D)"}
+        {showMore ? t("tax.hideExtra") : t("tax.moreOptions")}
       </button>
 
       {showMore && regime === "old" && (
         <div className="ct-grid-2">
           <div>
-            <label className="ct-metric-label block">80C ({INR})</label>
+            <label className="ct-metric-label block">{t("tax.deduction80c", { currency: INR })}</label>
             <input
               className="ct-input mt-1"
               value={deduction80c}
               onChange={(e) => setDeduction80c(e.target.value)}
-              placeholder="150000 max"
+              placeholder={t("tax.ph80cMax")}
               inputMode="numeric"
             />
           </div>
           <div>
-            <label className="ct-metric-label block">80D ({INR})</label>
+            <label className="ct-metric-label block">{t("tax.deduction80d", { currency: INR })}</label>
             <input
               className="ct-input mt-1"
               value={deduction80d}
@@ -114,15 +112,18 @@ export default function IncomeTaxPanel() {
       {annualGross > 0 && (
         <div className="ct-insight-accent ct-stack-sm">
           <Heading level={3} className="!text-base">
-            About {formatInr(result.totalTax)} tax / year
+            {t("tax.aboutTaxYear", { amount: formatInr(result.totalTax) })}
           </Heading>
           <Body className="!text-sm">
-            Take-home ≈ {formatInr(result.takeHomeMonthly)} / month after tax (rough)
+            {t("tax.takeHomeMonthly", { amount: formatInr(result.takeHomeMonthly) })}
           </Body>
           <Caption>
-            Effective rate ~{result.effectiveRatePercent}% · TDS hint ~{formatInr(result.monthlyTds)} / month
+            {t("tax.effectiveRate", {
+              rate: result.effectiveRatePercent,
+              tds: formatInr(result.monthlyTds),
+            })}
           </Caption>
-          <Caption className="block opacity-90">{result.disclaimer}</Caption>
+          <Caption className="block opacity-90">{t("tax.disclaimer")}</Caption>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { pickMicroTip } from "../../guidance/index.js";
-import { useTranslation } from "../../i18n/I18nProvider.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 import { Card } from "../primitives/Card.jsx";
 import { Caption, Eyebrow } from "../primitives/Text.jsx";
 

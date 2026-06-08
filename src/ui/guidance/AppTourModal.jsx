@@ -3,8 +3,10 @@ import { getAppTourSteps } from "../../guidance/registry/appTour.js";
 import { Modal } from "../primitives/Modal.jsx";
 import { Button } from "../primitives/Button.jsx";
 import { Body, Caption, Eyebrow } from "../primitives/Text.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 
 function AppTourSteps({ settings, onComplete, onDismiss }) {
+  const { t } = useTranslation();
   const steps = getAppTourSteps(settings);
   const [index, setIndex] = useState(0);
   const step = steps[index];
@@ -19,7 +21,7 @@ function AppTourSteps({ settings, onComplete, onDismiss }) {
 
   return (
     <Modal
-      title="App guide"
+      title={t("tour.title")}
       onClose={close}
       footer={
         <div className="ct-row-between ct-gap-sm">
