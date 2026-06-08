@@ -6,6 +6,8 @@ const V = {
   ghost: "ct-btn ct-btn-ghost",
   outline: "ct-btn ct-btn-outline",
   danger: "ct-btn ct-btn-danger",
+  success: "ct-btn ct-btn-success",
+  teal: "ct-btn ct-btn-teal",
 };
 const S = { sm: "ct-btn-sm", md: "ct-btn-md", lg: "ct-btn-lg" };
 

@@ -11,7 +11,7 @@ export function InsightStatCard({ eyebrow, title, detail, empty, icon }) {
       <Caption className="font-semibold uppercase tracking-wide mb-1">{eyebrow}</Caption>
       {title ? (
         <>
-          <p className="ct-display text-lg flex items-center gap-2">
+          <p className="ct-display ct-numeral text-lg flex items-center gap-2">
             {icon ? (
               <span className="inline-flex shrink-0" aria-hidden>
                 <CtIcon name={icon} size={20} />

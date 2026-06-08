@@ -130,7 +130,7 @@ export function useCommitIntel() {
       score,
       level: stabilityMeta.level,
       label: stabilityMeta.label,
-      badgeClass: pressureScoreBadgeClass(stabilityMeta.level),
+      badgeClass: pressureScoreBadgeClass(stabilityMeta.tone || stabilityMeta.level),
       committedPercent: cash.committedPercent,
       monthlyBurden: cash.monthlyBurden,
       freeMoney: cash.freeMoney,

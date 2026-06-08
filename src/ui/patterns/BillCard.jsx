@@ -2,6 +2,7 @@ import { Card } from "../primitives/Card.jsx";
 import { Button } from "../primitives/Button.jsx";
 import { CategoryChip } from "./CategoryChip.jsx";
 import { PriorityBadge } from "./PriorityBadge.jsx";
+import { CommitmentProgress } from "./CommitmentProgress.jsx";
 import { BILL_STATUS_UI } from "../tokens/billStatus.js";
 import { repeatTypeLabel } from "../../constants/repeatTypes.js";
 import { getBillDisplayName } from "../../utils/billDisplayName.js";
@@ -14,6 +15,22 @@ function formatDate(dateStr) {
     month: "short",
     year: "numeric",
   });
+}
+
+function isDueWithinDays(dueDate, days) {
+  if (!dueDate) return false;
+  const due = new Date(`${dueDate}T12:00:00`);
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  const diff = (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+  return diff >= 0 && diff <= days;
+}
+
+function billCardVariant(eff, item, monthPaid) {
+  if (monthPaid || eff === "paid") return "status-paid";
+  if (eff === "overdue") return "status-overdue";
+  if (eff === "upnext" || (eff === "pending" && isDueWithinDays(item.dueDate, 3))) return "status-due-soon";
+  return "status-safe";
 }
 
 /**
@@ -45,13 +62,13 @@ export function BillCard({
   variant = "active",
 }) {
   const { label, classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
-  const isOverdue = eff === "overdue";
   const total = Number(item.amount ?? 0);
   const isHistory = variant === "history";
+  const cardVariant = isHistory ? "status-paid" : billCardVariant(eff, item, monthPaid);
 
   if (isHistory) {
     return (
-      <Card className={cn("ct-bill-card ct-bill-card-history", "ct-stack-sm")}>
+      <Card variant={cardVariant} className={cn("ct-bill-card ct-bill-card-history", "ct-stack-sm")}>
         <button type="button" onClick={onOpen} className="ct-bill-card-head">
           <div className="min-w-0">
             <p className="ct-body-strong truncate">{getBillDisplayName(item)}</p>
@@ -77,7 +94,7 @@ export function BillCard({
   }
 
   return (
-    <Card className={cn("ct-bill-card ct-stack", isOverdue && "ct-bill-card-overdue")}>
+    <Card variant={cardVariant} className="ct-bill-card ct-stack">
       <button type="button" onClick={onOpen} className="ct-bill-card-head">
         <div className="ct-stack-sm min-w-0">
           <p className="ct-body-strong">{getBillDisplayName(item)}</p>
@@ -100,12 +117,12 @@ export function BillCard({
           )}
         </div>
         <div className="ct-bill-card-amount">
-          <p className="ct-display ct-amount">
+          <p className="ct-display ct-amount ct-numeral">
             {"\u20b9"}
             {total.toLocaleString()}
           </p>
           {partial && (
-            <p className="ct-caption ct-amount-warn">
+            <p className="ct-caption ct-amount-warn ct-numeral">
               Due now {"\u20b9"}
               {cycleDue.toLocaleString("en-IN")}
             </p>
@@ -114,13 +131,15 @@ export function BillCard({
         </div>
       </button>
 
+      <CommitmentProgress commitment={item} effectiveStatus={eff} />
+
       {monthPaid && (
         <p className="ct-bill-paid-banner">Paid for this month — unlocks when the next due date starts.</p>
       )}
 
       {(eff === "pending" || eff === "overdue") && (
         <div className="ct-bill-card-actions">
-          <Button variant="primary" size="sm" type="button" className="ct-bill-pay-btn" onClick={onPay}>
+          <Button variant="success" size="sm" type="button" className="ct-bill-pay-btn" onClick={onPay}>
             Pay {"\u20b9"}
             {cycleDue.toLocaleString("en-IN")}
           </Button>

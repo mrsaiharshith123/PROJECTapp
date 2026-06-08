@@ -21,11 +21,11 @@ function Brand() {
   );
 }
 
-function NavIcon({ item }) {
+function NavIcon({ item, active = false }) {
   if (item.icon === "+") {
     return <span className="ct-nav-fab-plus">+</span>;
   }
-  return <CtIcon name={item.icon} size={22} />;
+  return <CtIcon name={item.icon} size={22} context={active ? "nav" : "nav-off"} />;
 }
 
 export function Navbar() {
@@ -75,7 +75,7 @@ export function Navbar() {
                     onClick={() => navigate(item.to)}
                   >
                     <span className="ct-nav-fab-icon">
-                      <NavIcon item={item} />
+                      <NavIcon item={item} active />
                     </span>
                   </button>
                 </div>
@@ -88,10 +88,14 @@ export function Navbar() {
                 end={item.to === "/"}
                 className={({ isActive }) => cn("ct-nav-item", isActive && "ct-nav-item-active")}
               >
-                <span className="ct-nav-icon">
-                  <NavIcon item={item} />
-                </span>
-                <span className="ct-nav-label">{navLabel(item)}</span>
+                {({ isActive }) => (
+                  <>
+                    <span className="ct-nav-icon">
+                      <NavIcon item={item} active={isActive} />
+                    </span>
+                    <span className="ct-nav-label">{navLabel(item)}</span>
+                  </>
+                )}
               </NavLink>
             );
           })}

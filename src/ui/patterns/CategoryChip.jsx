@@ -8,7 +8,7 @@ export function CategoryChip({ categoryId, className = "" }) {
   return (
     <span className={cn(categoryChipClass(categoryId), className)}>
       <span aria-hidden className="inline-flex">
-        <CtIcon name={c.icon} size={14} />
+        <CtIcon name={c.icon} size={14} context="category" />
       </span>
       {c.label}
     </span>

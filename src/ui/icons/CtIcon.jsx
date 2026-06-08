@@ -1,3 +1,19 @@
+/**
+ * CommitTrack icon system — Phosphor Icons
+ *
+ * Weight guide:
+ *   fill     → nav (active), primary action buttons
+ *   bold     → category chips, emphasis
+ *   duotone  → status indicators, feature tiles, module icons
+ *   regular  → inline icons, secondary actions, info tips
+ *   thin     → empty states, illustrations
+ *
+ * Emoji policy:
+ *   ✓ Use in: onboarding text, guidance prose, empty state body,
+ *             AI advisor responses, user-entered content
+ *   ✗ Do not use in: buttons, badges, headings, modal titles,
+ *                     navigation, card headers, page headers
+ */
 import {
   ArrowsClockwise,
   Backpack,
@@ -102,19 +118,32 @@ const ICON_REGISTRY = {
   wrench: Wrench,
 };
 
+/** @type {Record<string, import('@phosphor-icons/react').IconWeight>} */
+const CONTEXT_WEIGHTS = {
+  nav: "fill",
+  "nav-off": "regular",
+  category: "bold",
+  action: "fill",
+  status: "duotone",
+  tile: "duotone",
+  empty: "thin",
+  info: "regular",
+};
+
 /**
- * Phosphor icon (Regular weight by default). Use semantic `name` keys — never emoji.
  * @param {{
  *   name: string,
  *   size?: number | string,
  *   weight?: import('@phosphor-icons/react').IconWeight,
+ *   context?: keyof typeof CONTEXT_WEIGHTS | string,
  *   className?: string,
  * }} props
  */
-export function CtIcon({ name, size = 20, weight = "regular", className = "" }) {
+export function CtIcon({ name, size = 20, weight, context, className = "" }) {
   const Icon = ICON_REGISTRY[name];
   if (!Icon) return null;
-  return <Icon size={size} weight={weight} className={cn("ct-icon", className)} aria-hidden />;
+  const resolvedWeight = weight ?? (context ? CONTEXT_WEIGHTS[context] : undefined) ?? "regular";
+  return <Icon size={size} weight={resolvedWeight} className={cn("ct-icon", className)} aria-hidden />;
 }
 
 export default CtIcon;

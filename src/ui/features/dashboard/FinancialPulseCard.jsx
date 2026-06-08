@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useNumericChange } from "../../hooks/useNumericChange.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
@@ -89,6 +90,8 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const defaultTab = showPressure && (stress?.top?.length || family?.grouped) ? "pressure" : "snapshot";
   const [tab, setTab] = useState(defaultTab);
   const [shareHint, setShareHint] = useState("");
+  const scoreRef = useRef(null);
+  useNumericChange(intel.stability.score, scoreRef);
 
   const visibleTabs = tabDefs.filter((t) => t.id !== "pressure" || showPressure);
 
@@ -134,9 +137,11 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               {t("pulse.pressure")}
               <InfoTip text={CALC_HELP.pressureScore} />
             </Caption>
-            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${intel.stability.badgeClass}`}>
+            <span className={intel.stability.badgeClass}>
               {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)} ·{" "}
-              {intel.stability.score}/100
+              <span ref={scoreRef} className="ct-numeral">
+                {intel.stability.score}/100
+              </span>
             </span>
           </div>
           {pressureIntel?.emotionalHint && (

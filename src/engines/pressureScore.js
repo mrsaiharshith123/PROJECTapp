@@ -30,36 +30,56 @@ export function computeCanonicalPressureScore({
   return Math.min(100, Math.max(0, score));
 }
 
-export function pressureScoreLabel(score) {
-  if (score <= 35) {
-    return { level: "healthy", label: "Safe", hint: "Adequate margin remains — continue building reserves." };
-  }
-  if (score <= 55) {
-    return { level: "moderate", label: "Moderate", hint: "Manageable, but monitor new EMIs and subscriptions." };
-  }
-  if (score <= 70) {
-    return { level: "stressed", label: "Constrained", hint: "Bills consume a large share of income — prioritize dues." };
-  }
-  if (score <= 85) {
-    return { level: "risky", label: "Elevated", hint: "Limited buffer for unexpected costs — defer new long commitments." };
-  }
-  return { level: "dangerous", label: "Critical", hint: "Pressure is high — address overdue items and essentials first." };
+/** Colour tone for badges — 71–80 uses coral (act soon). */
+export function pressureScoreTone(score) {
+  if (score <= 40) return "success";
+  if (score <= 60) return "info";
+  if (score <= 70) return "warning";
+  if (score <= 80) return "coral";
+  return "danger";
 }
 
-export function pressureScoreBadgeClass(level) {
-  switch (level) {
-    case "healthy":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    case "moderate":
-      return "bg-amber-100 text-amber-900 border-amber-200";
-    case "stressed":
-      return "bg-orange-100 text-orange-900 border-orange-200";
-    case "risky":
-      return "bg-orange-100 text-orange-950 border-orange-300 dark:bg-orange-950/50 dark:text-orange-200 dark:border-orange-800";
-    case "dangerous":
-      return "bg-red-100 text-red-900 border-red-200";
+export function pressureScoreLabel(score) {
+  const tone = pressureScoreTone(score);
+  if (score <= 40) {
+    return { level: "healthy", tone, label: "Safe", hint: "Adequate margin remains — continue building reserves." };
+  }
+  if (score <= 60) {
+    return { level: "moderate", tone, label: "Moderate", hint: "Manageable, but monitor new EMIs and subscriptions." };
+  }
+  if (score <= 70) {
+    return { level: "stressed", tone, label: "Constrained", hint: "Bills consume a large share of income — prioritize dues." };
+  }
+  if (score <= 80) {
+    return { level: "risky", tone, label: "Elevated", hint: "Limited buffer for unexpected costs — defer new long commitments." };
+  }
+  return { level: "dangerous", tone, label: "Critical", hint: "Pressure is high — address overdue items and essentials first." };
+}
+
+export function pressureScoreBadgeClass(levelOrTone) {
+  const levelToTone = {
+    healthy: "success",
+    moderate: "info",
+    stressed: "warning",
+    risky: "coral",
+    dangerous: "danger",
+  };
+  const tone = levelToTone[levelOrTone] || levelOrTone;
+  switch (tone) {
+    case "success":
+      return "ct-status ct-status-success";
+    case "info":
+      return "ct-status ct-status-info";
+    case "warning":
+      return "ct-status ct-status-warning";
+    case "coral":
+      return "ct-badge ct-badge-coral";
+    case "teal":
+      return "ct-badge ct-badge-teal";
+    case "danger":
+      return "ct-status ct-status-danger";
     default:
-      return "bg-gray-100 text-gray-700 border-gray-200";
+      return "ct-status ct-status-neutral";
   }
 }
 

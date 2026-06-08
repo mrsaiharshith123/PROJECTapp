@@ -50,7 +50,7 @@ export function HeroMonthCard({
         {metrics.map((m) => (
           <div key={m.label} className="ct-hero-inset">
             <p className="ct-caption font-semibold uppercase">{m.label}</p>
-            <p className={cn("ct-hero-metric mt-1", m.valueClass)}>{m.value}</p>
+            <p className={cn("ct-hero-metric ct-numeral mt-1", m.valueClass)}>{m.value}</p>
           </div>
         ))}
       </div>

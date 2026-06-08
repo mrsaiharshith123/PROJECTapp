@@ -205,11 +205,11 @@ const Analytics = () => {
           <div className="ct-grid-2">
             <div className="ct-metric-pair-success">
               <Caption>Principal paid</Caption>
-              <p className="ct-display">{formatInr(lendingTotals.principal)}</p>
+              <p className="ct-display ct-numeral">{formatInr(lendingTotals.principal)}</p>
             </div>
             <div className="ct-metric-pair-warning">
               <Caption>Interest paid</Caption>
-              <p className="ct-display">{formatInr(lendingTotals.interest)}</p>
+              <p className="ct-display ct-numeral">{formatInr(lendingTotals.interest)}</p>
             </div>
           </div>
         </Card>

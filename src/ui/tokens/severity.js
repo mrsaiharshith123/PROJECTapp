@@ -5,6 +5,8 @@ const TONE_CLASS = {
   critical: "ct-insight ct-insight-warning rounded-xl",
   positive: "ct-insight rounded-xl",
   success: "ct-insight rounded-xl",
+  teal: "ct-tone-teal px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
+  coral: "ct-tone-coral px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
 };
 
 export function insightToneClass(tone = "neutral") {
