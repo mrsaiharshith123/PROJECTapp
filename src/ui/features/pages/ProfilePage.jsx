@@ -14,12 +14,22 @@ import ProfilePersonalSection from "../profile/ProfilePersonalSection.jsx";
 import ProfileGuidanceSection from "../profile/ProfileGuidanceSection.jsx";
 import ProfileSupportSection from "../profile/ProfileSupportSection.jsx";
 import ProfileBrandFooter from "../profile/ProfileBrandFooter.jsx";
-import ProfileIdentityHero from "../profile/hub/ProfileIdentityHero.jsx";
+import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
 import ProfileStatusWidgets from "../profile/hub/ProfileStatusWidgets.jsx";
-import ProfileControlCenterGrid from "../profile/hub/ProfileControlCenterGrid.jsx";
-import ProfileJourneyStrip from "../profile/hub/ProfileJourneyStrip.jsx";
-import ProfileSettingsHub from "../profile/hub/ProfileSettingsHub.jsx";
+import ProfileSettingsSheet from "../profile/hub/ProfileSettingsSheet.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
+import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
+
+/** @param {string | undefined} fromNav @returns {string | null} */
+function resolveSettingsSection(fromNav) {
+  if (!fromNav) return null;
+  if (fromNav === "financial-life" || fromNav === "net-worth") return null;
+  if (fromNav === "money" || fromNav === "personal-money") return "personal-money";
+  if (fromNav === "cloud" || fromNav === "security" || fromNav === "import") return "backup";
+  if (fromNav === "personal") return "personal-identity";
+  if (fromNav === "notifications") return "notifications";
+  return fromNav;
+}
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -43,18 +53,17 @@ const Profile = () => {
   } = useCommitTrack();
   const { t } = useTranslation();
 
-  const [openSection, setOpenSection] = useState(() => {
-    const fromNav = location.state?.openSection;
-    if (fromNav === "money" || fromNav === "cloud" || fromNav === "security" || fromNav === "import") {
-      return fromNav === "money" ? "personal-money" : "backup";
-    }
-    if (fromNav === "personal") return "personal-identity";
-    if (fromNav === "notifications") return "notifications";
-    return fromNav ?? null;
-  });
+  const initialSettingsSection = resolveSettingsSection(location.state?.openSection);
+  const [settingsOpen, setSettingsOpen] = useState(Boolean(initialSettingsSection));
+  const [openSection, setOpenSection] = useState(initialSettingsSection);
 
   useEffect(() => {
     if (location.state?.openSection) {
+      const section = resolveSettingsSection(location.state.openSection);
+      if (section) {
+        setOpenSection(section);
+        setSettingsOpen(true);
+      }
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state?.openSection, location.pathname, navigate]);
@@ -65,6 +74,11 @@ const Profile = () => {
     resolveUserMode(settings) === "salaried" &&
     incomeMissing &&
     Number(settings.secondaryMonthlyIncome) > 0;
+
+  const openSettings = useCallback((section = null) => {
+    setOpenSection(section);
+    setSettingsOpen(true);
+  }, []);
 
   const renderPanel = useCallback(
     (id) => {
@@ -141,11 +155,12 @@ const Profile = () => {
 
   return (
     <div className="ct-page ct-profile-hub pb-8">
-      <ProfileIdentityHero
+      <ProfileFinancialHero
         settings={settings}
         updateSettings={updateSettings}
         hub={hub}
-        onOpenAccount={() => setOpenSection("personal-identity")}
+        onOpenAccount={() => openSettings("personal-identity")}
+        onOpenSettings={() => openSettings(null)}
       />
 
       {(secondaryOnly || incomeMissing) && (
@@ -163,7 +178,7 @@ const Profile = () => {
               <Body className="font-semibold">{t("profile.setIncome")}</Body>
               <Caption className="block mt-1">
                 {t("profile.setIncomeHint")}{" "}
-                <button type="button" onClick={() => setOpenSection("personal-money")} className="ct-link">
+                <button type="button" onClick={() => openSettings("personal-money")} className="ct-link">
                   {t("profile.openPersonal")}
                 </button>
               </Caption>
@@ -173,10 +188,16 @@ const Profile = () => {
       )}
 
       <ProfileStatusWidgets hub={hub} />
-      <ProfileJourneyStrip hub={hub} />
-      <ProfileControlCenterGrid openId={openSection} onSelect={setOpenSection} />
+      <ProfileNetWorthSection />
       <ProfileAdminEntry />
-      <ProfileSettingsHub openId={openSection} onSelect={setOpenSection} renderPanel={renderPanel} />
+
+      <ProfileSettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        openId={openSection}
+        onSelect={setOpenSection}
+        renderPanel={renderPanel}
+      />
 
       <InstallAppBanner />
 

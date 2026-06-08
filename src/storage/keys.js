@@ -8,4 +8,5 @@ export const STORAGE_KEYS = {
   dailySpends: "committrack_daily_spends",
   schemaVersion: "committrack_schema_version",
   syncMeta: "committrack_sync_meta",
+  wealth: "committrack_wealth",
 };

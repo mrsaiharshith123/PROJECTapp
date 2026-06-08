@@ -1,0 +1,214 @@
+/* Net Worth / Financial Life Intelligence module */
+html[data-ui="ct"] .ct-nw-page {
+  padding-bottom: 5rem;
+}
+
+html[data-ui="ct"] .ct-profile-financial-hero {
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+html[data-ui="ct"] .ct-profile-financial-hero .ct-profile-hero-identity {
+  margin-top: 0.15rem;
+}
+
+html[data-ui="ct"] .ct-profile-financial-hero-nw {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--ct-border-subtle);
+}
+
+html[data-ui="ct"] .ct-nw-embedded {
+  margin-top: -0.25rem;
+}
+
+html[data-ui="ct"] .ct-nw-hero {
+  position: relative;
+  padding: 1.25rem 1.1rem 1.35rem;
+  border-radius: var(--ct-radius-xl, 1.25rem);
+  background: linear-gradient(145deg, rgba(91, 77, 255, 0.18), rgba(16, 185, 129, 0.08));
+  border: 1px solid var(--ct-border-subtle);
+  overflow: hidden;
+}
+
+html[data-ui="ct"] .ct-nw-hero-glow {
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 12rem;
+  height: 12rem;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.35), transparent 70%);
+  pointer-events: none;
+}
+
+html[data-ui="ct"] .ct-nw-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+
+html[data-ui="ct"] .ct-nw-hero-value {
+  font-size: clamp(2rem, 8vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-top: 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+html[data-ui="ct"] .ct-nw-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+html[data-ui="ct"] .ct-nw-status-positive {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+html[data-ui="ct"] .ct-nw-status-neutral {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--ct-text-muted);
+}
+html[data-ui="ct"] .ct-nw-status-caution {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+html[data-ui="ct"] .ct-nw-status-recovery {
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
+}
+
+html[data-ui="ct"] .ct-nw-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+html[data-ui="ct"] .ct-nw-delta-up { color: #34d399; }
+html[data-ui="ct"] .ct-nw-delta-down { color: #f87171; }
+
+html[data-ui="ct"] .ct-nw-sparkline {
+  width: 7rem;
+  height: 2.25rem;
+}
+
+html[data-ui="ct"] .ct-nw-metric-pill {
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--ct-radius-md, 0.75rem);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--ct-border-subtle);
+}
+
+html[data-ui="ct"] .ct-nw-panel {
+  backdrop-filter: blur(8px);
+}
+
+html[data-ui="ct"] .ct-nw-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--ct-accent);
+  flex-shrink: 0;
+}
+
+html[data-ui="ct"] .ct-nw-score-ring {
+  --nw-score: 50;
+  width: 7rem;
+  height: 7rem;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(
+    var(--ct-accent) calc(var(--nw-score) * 1%),
+    rgba(148, 163, 184, 0.2) 0
+  );
+  position: relative;
+}
+
+html[data-ui="ct"] .ct-nw-score-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0.45rem;
+  border-radius: 50%;
+  background: var(--ct-surface, #0f1118);
+}
+
+html[data-ui="ct"] .ct-nw-score-value {
+  position: relative;
+  z-index: 1;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+html[data-ui="ct"] .ct-nw-insight {
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  border-left: 3px solid var(--ct-accent-muted);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-ui="ct"] .ct-nw-insight-positive { border-left-color: #34d399; }
+html[data-ui="ct"] .ct-nw-insight-caution { border-left-color: #fbbf24; }
+html[data-ui="ct"] .ct-nw-insight-action { border-left-color: #7c5cff; }
+
+html[data-ui="ct"] .ct-nw-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-left: 2px solid var(--ct-border-subtle);
+}
+
+html[data-ui="ct"] .ct-nw-timeline-item {
+  position: relative;
+  padding: 0 0 1.25rem 1.25rem;
+}
+
+html[data-ui="ct"] .ct-nw-timeline-dot {
+  position: absolute;
+  left: -0.45rem;
+  top: 0.2rem;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--ct-accent);
+}
+
+html[data-ui="ct"] .ct-nw-milestones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+html[data-ui="ct"] .ct-nw-milestone-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(124, 92, 255, 0.12);
+  color: var(--ct-accent);
+  border: 1px solid rgba(124, 92, 255, 0.25);
+}
+
+html[data-ui="ct"] .ct-nw-stat {
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+html[data-ui="ct"] .ct-nw-sim-result {
+  padding: 1rem;
+  border-radius: var(--ct-radius-lg, 1rem);
+  background: rgba(124, 92, 255, 0.06);
+  border: 1px solid var(--ct-border-subtle);
+}

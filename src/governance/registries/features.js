@@ -32,6 +32,27 @@ export const FEATURES = [
     hooks: [],
   },
   {
+    id: "net-worth",
+    name: "Net worth & financial life intelligence",
+    layer: "product",
+    ui: [
+      "ui/features/profile/hub/ProfileFinancialHero.jsx",
+      "ui/features/profile/ProfileNetWorthSection.jsx",
+      "ui/features/netWorth/",
+    ],
+    engines: [
+      "engines/netWorth/core.js",
+      "engines/netWorth/liquidity.js",
+      "engines/netWorth/debtHealth.js",
+      "engines/netWorth/lifeScore.js",
+      "engines/netWorth/pressureWealth.js",
+      "engines/netWorth/insights.js",
+      "engines/netWorth/simulation.js",
+    ],
+    hooks: ["hooks/useNetWorthIntel.js"],
+    notes: "Integrates commitments, lending, and wealth entries for life-position intelligence",
+  },
+  {
     id: "analytics",
     name: "Analytics",
     layer: "product",

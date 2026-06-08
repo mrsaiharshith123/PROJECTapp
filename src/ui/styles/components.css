@@ -3,6 +3,12 @@
  * layout (ct-page, ct-stack), typography (ct-display, ct-numeral, ct-score-num),
  * surfaces (ct-card, ct-card-metric, ct-module-tile), motion (ct-animate-*).
  */
+/* PWA: prevent pinch-zoom; keeps app-like fixed scale (see index.html viewport). */
+html[data-ui="ct"],
+html[data-ui="ct"] body {
+  touch-action: manipulation;
+}
+
 /* ── Layout ── */
 html[data-ui="ct"] .ct-screen { min-height: 100vh; background: transparent; }
 html[data-ui="ct"] .ct-main {
@@ -1009,6 +1015,9 @@ html[data-ui="ct"] .ct-modal-panel {
 }
 @media (min-width: 768px) {
   html[data-ui="ct"] .ct-modal-panel { border-radius: var(--ct-radius-2xl); }
+}
+html[data-ui="ct"] .ct-modal-panel:has(.ct-profile-settings-grid) {
+  max-width: 36rem;
 }
 
 /* ── Progress ── */

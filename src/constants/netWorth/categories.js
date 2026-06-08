@@ -1,0 +1,65 @@
+/** @typedef {'liquid' | 'semi-liquid' | 'locked' | 'high-risk'} LiquidityTier */
+
+/** @typedef {{ id: string, labelKey: string, icon: string, tier: LiquidityTier, indian?: boolean }} WealthCategoryDef */
+
+/** @type {WealthCategoryDef[]} */
+export const ASSET_CATEGORIES = [
+  { id: "bank", labelKey: "netWorth.asset.bank", icon: "bank", tier: "liquid" },
+  { id: "cash", labelKey: "netWorth.asset.cash", icon: "wallet", tier: "liquid" },
+  { id: "savings", labelKey: "netWorth.asset.savings", icon: "piggy-bank", tier: "liquid" },
+  { id: "emergency", labelKey: "netWorth.asset.emergency", icon: "shield-check", tier: "liquid" },
+  { id: "sip", labelKey: "netWorth.asset.sip", icon: "chart-line-up", tier: "semi-liquid", indian: true },
+  { id: "stocks", labelKey: "netWorth.asset.stocks", icon: "chart-line", tier: "semi-liquid" },
+  { id: "mutual_fund", labelKey: "netWorth.asset.mutualFund", icon: "chart-pie-slice", tier: "semi-liquid", indian: true },
+  { id: "gold", labelKey: "netWorth.asset.gold", icon: "coins", tier: "semi-liquid", indian: true },
+  { id: "crypto", labelKey: "netWorth.asset.crypto", icon: "currency-btc", tier: "high-risk" },
+  { id: "property", labelKey: "netWorth.asset.property", icon: "house-line", tier: "locked" },
+  { id: "vehicle", labelKey: "netWorth.asset.vehicle", icon: "car", tier: "locked" },
+  { id: "pf_epf", labelKey: "netWorth.asset.pfEpf", icon: "briefcase", tier: "locked", indian: true },
+  { id: "business", labelKey: "netWorth.asset.business", icon: "buildings", tier: "locked" },
+  { id: "insurance", labelKey: "netWorth.asset.insurance", icon: "umbrella", tier: "locked", indian: true },
+  { id: "other", labelKey: "netWorth.asset.other", icon: "package", tier: "semi-liquid" },
+];
+
+/** @type {WealthCategoryDef[]} */
+export const LIABILITY_CATEGORIES = [
+  { id: "home_loan", labelKey: "netWorth.liability.homeLoan", icon: "house", tier: "locked", indian: true },
+  { id: "personal_loan", labelKey: "netWorth.liability.personalLoan", icon: "user", tier: "liquid" },
+  { id: "credit_card", labelKey: "netWorth.liability.creditCard", icon: "credit-card", tier: "liquid" },
+  { id: "bnpl", labelKey: "netWorth.liability.bnpl", icon: "shopping-cart", tier: "liquid" },
+  { id: "vehicle_loan", labelKey: "netWorth.liability.vehicleLoan", icon: "car", tier: "locked" },
+  { id: "education_loan", labelKey: "netWorth.liability.educationLoan", icon: "graduation-cap", tier: "locked", indian: true },
+  { id: "family_debt", labelKey: "netWorth.liability.familyDebt", icon: "users-three", tier: "liquid", indian: true },
+  { id: "borrowed", labelKey: "netWorth.liability.borrowed", icon: "handshake", tier: "liquid", indian: true },
+  { id: "business_debt", labelKey: "netWorth.liability.businessDebt", icon: "buildings", tier: "locked" },
+  { id: "other", labelKey: "netWorth.liability.other", icon: "minus-circle", tier: "liquid" },
+];
+
+const ASSET_MAP = new Map(ASSET_CATEGORIES.map((c) => [c.id, c]));
+const LIABILITY_MAP = new Map(LIABILITY_CATEGORIES.map((c) => [c.id, c]));
+
+/** @param {string} id */
+export function getAssetCategory(id) {
+  return ASSET_MAP.get(id) || ASSET_CATEGORIES[ASSET_CATEGORIES.length - 1];
+}
+
+/** @param {string} id */
+export function getLiabilityCategory(id) {
+  return LIABILITY_MAP.get(id) || LIABILITY_CATEGORIES[LIABILITY_CATEGORIES.length - 1];
+}
+
+/** @param {LiquidityTier} tier */
+export function liquidityTierWeight(tier) {
+  switch (tier) {
+    case "liquid":
+      return 1;
+    case "semi-liquid":
+      return 0.65;
+    case "locked":
+      return 0.15;
+    case "high-risk":
+      return 0.45;
+    default:
+      return 0.5;
+  }
+}

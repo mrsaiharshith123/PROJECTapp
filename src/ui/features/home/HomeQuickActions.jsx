@@ -9,7 +9,11 @@ import { ScreenSection } from "../../layout/Screen.jsx";
 
 const ACTION_DEFS = {
   lending: { icon: "handshake", labelKey: "nav.lending", run: (nav) => nav("/lending") },
-  income: { icon: "currency-inr", labelKey: "home.actionAddIncome", run: (nav) => nav("/profile") },
+  income: {
+    icon: "currency-inr",
+    labelKey: "home.actionAddIncome",
+    run: (nav) => nav("/profile", { state: { openSection: "personal-money" } }),
+  },
   calculators: { icon: "calculator", labelKey: "tools.calculators", run: (_nav, scrollToTools) => scrollToTools() },
   analytics: { icon: "chart-bar", labelKey: "nav.analytics", run: (nav) => nav("/analytics") },
 };

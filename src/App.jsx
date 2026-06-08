@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
 import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContext.jsx";
+import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { Navbar, InstallAppBanner, Screen, MainContent } from "./ui";
@@ -25,6 +26,7 @@ const Add = lazy(() => import("./ui/features/pages/AddPage.jsx"));
 const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
+const NetWorth = lazy(() => import("./ui/features/pages/NetWorthPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
@@ -96,6 +98,7 @@ function MainShell() {
               }
             />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/net-worth" element={<NetWorth />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
             <Route
@@ -209,6 +212,7 @@ function App() {
     <BrowserRouter basename={routerBasename()}>
       <AuthProvider>
         <CommitTrackProvider>
+          <NetWorthProvider>
           <I18nProvider>
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
@@ -226,6 +230,7 @@ function App() {
               </Suspense>
             </ErrorBoundary>
           </I18nProvider>
+          </NetWorthProvider>
         </CommitTrackProvider>
       </AuthProvider>
     </BrowserRouter>

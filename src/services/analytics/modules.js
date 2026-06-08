@@ -5,6 +5,7 @@ const ROUTE_MODULES = {
   "/add": "add_bill",
   "/lending": "lending",
   "/analytics": "stability_reports",
+  "/net-worth": "net_worth",
   "/tools": "planning",
   "/profile": "profile",
   "/onboarding": "onboarding",
