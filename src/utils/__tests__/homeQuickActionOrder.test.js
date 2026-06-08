@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   HOME_QUICK_ACTION_IDS,
+  hiddenHomeQuickActions,
   normalizeHomeQuickActionOrder,
   orderHomeQuickActions,
 } from "../homeQuickActionOrder.js";
@@ -11,21 +12,12 @@ describe("homeQuickActionOrder", () => {
     expect(orderHomeQuickActions([])).toEqual(HOME_QUICK_ACTION_IDS);
   });
 
-  it("applies saved order and appends missing ids", () => {
-    expect(orderHomeQuickActions(["analytics", "lending"])).toEqual([
-      "analytics",
-      "lending",
-      "income",
-      "calculators",
-    ]);
+  it("respects explicit visible list without re-adding removed actions", () => {
+    expect(orderHomeQuickActions(["analytics", "lending"])).toEqual(["analytics", "lending"]);
+    expect(hiddenHomeQuickActions(["analytics", "lending"])).toEqual(["income", "calculators"]);
   });
 
   it("drops unknown ids", () => {
-    expect(normalizeHomeQuickActionOrder(["bogus", "income", "income"])).toEqual([
-      "income",
-      "lending",
-      "calculators",
-      "analytics",
-    ]);
+    expect(normalizeHomeQuickActionOrder(["bogus", "income", "income"])).toEqual(["income"]);
   });
 });

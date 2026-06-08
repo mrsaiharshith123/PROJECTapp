@@ -8,7 +8,6 @@ import { computeFinancialLifeScore } from "../engines/netWorth/lifeScore.js";
 import { computePressureVsWealth } from "../engines/netWorth/pressureWealth.js";
 import { computeCashFlowIntel } from "../engines/netWorth/cashFlow.js";
 import { buildNetWorthInsights } from "../engines/netWorth/insights.js";
-import { buildNetWorthTimeline } from "../engines/netWorth/timeline.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 
 export function useNetWorthIntel() {
@@ -85,12 +84,6 @@ export function useNetWorthIntel() {
       pressure,
     });
 
-    const timeline = buildNetWorthTimeline({
-      snapshots: wealth.snapshots,
-      milestones: wealth.milestones,
-      savingsStreakMonths: wealth.savingsStreakMonths,
-    });
-
     /** @type {'positive' | 'neutral' | 'caution' | 'recovery'} */
     let emotionalStatus;
     if (wealth.core.netWorth < 0) emotionalStatus = "recovery";
@@ -106,7 +99,6 @@ export function useNetWorthIntel() {
       lifeScore,
       pressure,
       insights,
-      timeline,
       emotionalStatus,
       emotionalStatusKey: `netWorth.status.${emotionalStatus}`,
       investableAssets,

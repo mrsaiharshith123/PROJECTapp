@@ -23,6 +23,17 @@ export function formatLocaleDate(dateStr, locale) {
   }
 }
 
+/** @param {string} locale @param {number} ms */
+export function formatAchievementDate(locale, ms) {
+  if (!ms) return "";
+  const loc = resolveIntlLocale(locale);
+  try {
+    return new Intl.DateTimeFormat(loc, { day: "numeric", month: "short", year: "numeric" }).format(new Date(ms));
+  } catch {
+    return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(ms));
+  }
+}
+
 export function formatMonthYear(locale, todayStr) {
   const d = new Date(`${todayStr}T12:00:00`);
   const loc = resolveIntlLocale(locale);

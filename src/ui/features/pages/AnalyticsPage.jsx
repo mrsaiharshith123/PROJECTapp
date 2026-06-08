@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { Card, InfoTip, PageHeader, Body, Caption, Heading } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
+import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
+import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
 import { FinancialPulseCard } from "../../";
 import ModeIntelligenceSection from "../dashboard/ModeIntelligenceSection.jsx";
 import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
@@ -26,6 +28,7 @@ import {
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
+import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
@@ -159,20 +162,85 @@ const Analytics = () => {
 
       <FinancialPulseCard microTipSeed={microTipSeed} />
 
-      <Card className="ct-stack" id="paycheck-flow">
-        <div>
-          <Heading level={3}>{t("analytics.paycheckBurden")}</Heading>
-          <Caption className="block mt-1">{t("analytics.paycheckSubtitle")}</Caption>
-        </div>
-        <PaycheckBreakdown
-          breakdown={paycheckFlow}
-          incomeStepLabel={incomeLabel}
-          incomeEntryBasis={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
-          payerSplit={payerSplitForPaycheck}
-          creditCard={cardPressureAnalytics}
-          sensitivityRows={paycheckSensitivity}
+      <MonthlySpendAnalyticsSection>
+        <BillInsightsCards />
+
+        <Card className="ct-stack" id="paycheck-flow">
+          <div>
+            <Heading level={3}>{t("analytics.paycheckBurden")}</Heading>
+            <Caption className="block mt-1">{t("analytics.paycheckSubtitle")}</Caption>
+          </div>
+          <PaycheckBreakdown
+            breakdown={paycheckFlow}
+            incomeStepLabel={incomeLabel}
+            incomeEntryBasis={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
+            payerSplit={payerSplitForPaycheck}
+            creditCard={cardPressureAnalytics}
+            sensitivityRows={paycheckSensitivity}
+          />
+        </Card>
+
+        <AnalyticsChartPanel
+          forecastSeries={forecastSeries}
+          paymentsData={paymentsData}
+          pressureTrend={pressureTrend}
+          dailySpends={dailySpends}
         />
-      </Card>
+
+        {lendings.length > 0 && (
+          <Card className="ct-stack">
+            <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
+            <Caption>
+              {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}
+              {t("analytics.lendingActive", { active: lendingStats.active })}
+              {lendingStats.overdue > 0
+                ? ` ${EM_DASH} ${t("analytics.lendingOverdue", { overdue: lendingStats.overdue })}`
+                : ""}
+              {monthBreakdown.lendingDueThisMonth > 0
+                ? ` ${EM_DASH} ${t("analytics.lendingDueMonth", { amount: formatInr(monthBreakdown.lendingDueThisMonth) })}`
+                : ""}
+            </Caption>
+            <div className="ct-grid-2">
+              <div className="ct-metric-pair-success">
+                <Caption>{t("analytics.lendingPrincipalPaid")}</Caption>
+                <p className="ct-display ct-numeral">{formatInr(lendingTotals.principal)}</p>
+              </div>
+              <div className="ct-metric-pair-warning">
+                <Caption>{t("analytics.lendingInterestPaid")}</Caption>
+                <p className="ct-display ct-numeral">{formatInr(lendingTotals.interest)}</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {debtReduction && (
+          <Card>
+            <Body className="!text-sm inline-flex items-center gap-1">
+              {t("analytics.balanceChange")}
+              <InfoTip text={CALC_HELP.debtTrend} />
+              {t("analytics.balanceDelta", {
+                from: debtReduction.fromMonth,
+                to: debtReduction.toMonth,
+                amount: formatInr(Math.round(debtReduction.openDelta)),
+              })}{" "}
+              {debtReduction.openDelta > 0
+                ? t("analytics.balanceIncrease")
+                : debtReduction.openDelta < 0
+                  ? t("analytics.balanceReduction")
+                  : ""}
+            </Body>
+          </Card>
+        )}
+
+        <Card variant="flat">
+          <Caption>
+            {t("analytics.allTimePayments")}{" "}
+            {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
+          </Caption>
+        </Card>
+      </MonthlySpendAnalyticsSection>
+
+      <WealthAnalyticsSection />
 
       {isSalariedFamily(settings) && (
         <>
@@ -180,65 +248,6 @@ const Analytics = () => {
           <FamilyCalendarWidget />
         </>
       )}
-
-      {lendings.length > 0 && (
-        <Card className="ct-stack">
-          <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
-          <Caption>
-            {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}
-            {t("analytics.lendingActive", { active: lendingStats.active })}
-            {lendingStats.overdue > 0
-              ? ` ${EM_DASH} ${t("analytics.lendingOverdue", { overdue: lendingStats.overdue })}`
-              : ""}
-            {monthBreakdown.lendingDueThisMonth > 0
-              ? ` ${EM_DASH} ${t("analytics.lendingDueMonth", { amount: formatInr(monthBreakdown.lendingDueThisMonth) })}`
-              : ""}
-          </Caption>
-          <div className="ct-grid-2">
-            <div className="ct-metric-pair-success">
-              <Caption>{t("analytics.lendingPrincipalPaid")}</Caption>
-              <p className="ct-display ct-numeral">{formatInr(lendingTotals.principal)}</p>
-            </div>
-            <div className="ct-metric-pair-warning">
-              <Caption>{t("analytics.lendingInterestPaid")}</Caption>
-              <p className="ct-display ct-numeral">{formatInr(lendingTotals.interest)}</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      <AnalyticsChartPanel
-        forecastSeries={forecastSeries}
-        paymentsData={paymentsData}
-        pressureTrend={pressureTrend}
-        dailySpends={dailySpends}
-      />
-
-      {debtReduction && (
-        <Card>
-          <Body className="!text-sm inline-flex items-center gap-1">
-            {t("analytics.balanceChange")}
-            <InfoTip text={CALC_HELP.debtTrend} />
-            {t("analytics.balanceDelta", {
-              from: debtReduction.fromMonth,
-              to: debtReduction.toMonth,
-              amount: formatInr(Math.round(debtReduction.openDelta)),
-            })}{" "}
-            {debtReduction.openDelta > 0
-              ? t("analytics.balanceIncrease")
-              : debtReduction.openDelta < 0
-                ? t("analytics.balanceReduction")
-                : ""}
-          </Body>
-        </Card>
-      )}
-
-      <Card variant="flat">
-        <Caption>
-          {t("analytics.allTimePayments")}{" "}
-          {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
-        </Caption>
-      </Card>
 
       <ToolsDiscoveryToast variant="analytics" />
     </div>

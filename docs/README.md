@@ -14,7 +14,7 @@
 | [08-governance.md](./08-governance.md) | Audit system, registries, engineering governance |
 | [09-implementation-status.md](./09-implementation-status.md) | **What’s built vs deferred** — V1 scope, payments, legal lending, i18n coverage, roadmap |
 | [10-i18n.md](./10-i18n.md) | **22 languages + English** — keys, scripts, wiring rules |
-| [architecture/](./architecture/) | Architecture, design system, modes, insights, features |
+| [architecture/](./architecture/) | Architecture, **design system** (Financial Life palette), modes, insights, features |
 | [architecture/PaymentsAndLending.md](./architecture/PaymentsAndLending.md) | Razorpay, promissory notes, confirmation service |
 | [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md) | **Admin intelligence** — `/admin`, tracking, Supabase migrations, granting admin |
 

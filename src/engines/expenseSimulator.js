@@ -3,15 +3,21 @@ import { totalMonthlyBurden, monthlyBurdenForDraft } from "./burden.js";
 import { computeSurvivalAnalysis } from "./survival.js";
 
 const PRESETS = {
-  emi: { label: "New EMI", repeatType: "monthly", category: "EMI" },
-  gadget: { label: "Gadget / purchase", repeatType: "none", category: "Other" },
+  loan: { label: "Loan / EMI", repeatType: "monthly", category: "Loan" },
+  purchase: { label: "One-time purchase", repeatType: "none", category: "Other" },
   insurance: { label: "Insurance premium", repeatType: "yearly", category: "Insurance" },
   subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
-  travel: { label: "Travel fund", repeatType: "none", category: "Other" },
-  personal_loan: { label: "Personal loan EMI", repeatType: "monthly", category: "Loan" },
-  home_loan: { label: "Home loan EMI", repeatType: "monthly", category: "Loan" },
-  car_loan: { label: "Car loan EMI", repeatType: "monthly", category: "EMI" },
   salary_cut: { label: "Salary cut (−income)", repeatType: "none", category: "Other", incomeDelta: -5000 },
+};
+
+/** Legacy preset ids kept for older simulations. */
+const PRESET_ALIASES = {
+  emi: "loan",
+  personal_loan: "loan",
+  home_loan: "loan",
+  car_loan: "loan",
+  gadget: "purchase",
+  travel: "purchase",
 };
 
 const MODE_PRESETS_SALARIED = {
@@ -27,8 +33,7 @@ const MODE_PRESETS = {
     insurance: { label: "Family insurance", repeatType: "yearly", category: "Insurance" },
     school: { label: "School fees", repeatType: "yearly", category: "School" },
     subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
-    emi: { label: "Loan EMI", repeatType: "monthly", category: "EMI" },
-    home_loan: { label: "Home loan EMI", repeatType: "monthly", category: "Loan" },
+    loan: { label: "Loan / EMI", repeatType: "monthly", category: "Loan" },
     child: { label: "Child / education monthly", repeatType: "monthly", category: "School" },
     marriage: { label: "Family event / wedding", repeatType: "none", category: "Other" },
     festival: { label: "Festival / gifts (one-off)", repeatType: "none", category: "Other" },
@@ -73,7 +78,8 @@ export function simulateNewExpense({
   loanMeta = null,
 }) {
   const catalog = getExpensePresetsForMode(mode);
-  const p = catalog[preset] || PRESETS[preset] || PRESETS.emi;
+  const resolvedPreset = PRESET_ALIASES[preset] || preset;
+  const p = catalog[resolvedPreset] || PRESETS[resolvedPreset] || PRESETS.loan;
   const draft = {
     amount: Math.max(0, Number(amount) || 0),
     remainingAmount: Math.max(0, Number(amount) || 0),

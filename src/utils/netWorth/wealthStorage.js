@@ -20,6 +20,7 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [interestRate]
  * @property {number} [emi]
  * @property {string} [profileId]
+ * @property {string} [commitmentId] bill-derived rows link back to commitments
  * @property {number} createdAt
  * @property {number} updatedAt
  */

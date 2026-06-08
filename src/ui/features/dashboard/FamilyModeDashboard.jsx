@@ -66,9 +66,12 @@ export default function FamilyModeDashboard() {
     },
     {
       label: t("family.dashboard.householdSafety"),
-      value: `${family.familyPressureScore}%`,
-      sub: family.safetyLabel,
-      tone: family.familyPressureScore >= 70 ? "good" : "warn",
+      value: family.safetyLabel,
+      sub:
+        family.committedPercent != null
+          ? t("family.dashboard.percentIncome", { percent: family.committedPercent })
+          : "",
+      tone: family.safetyLabel === "Comfortable" || family.safetyLabel === "Moderate" ? "good" : "warn",
     },
     {
       label: t("family.dashboard.sharedFreeCash"),

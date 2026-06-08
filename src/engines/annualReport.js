@@ -1,5 +1,4 @@
 import { computeCanonicalPressureScore, pressureScoreLabel } from "./pressureScore.js";
-import { computeFinancialHealthScore } from "./financialHealth.js";
 import { buildSurvivalContext } from "./survival.js";
 import { rankStressContributors } from "./stressContributors.js";
 import { subscriptionLeakReport } from "./subscriptionLeak.js";
@@ -37,14 +36,6 @@ export function buildAnnualReportData(ctx) {
     monthlySnapshots,
   });
   const pressureMeta = pressureScoreLabel(pressureScore);
-  const healthScore = computeFinancialHealthScore({
-    commitments,
-    lendings,
-    income,
-    getEffectiveStatus,
-    openRemaining: cash.openRemaining,
-    freeMoneyAfterBurden: cash.freeMoney,
-  });
   const survival = buildSurvivalContext(
     commitments,
     lendings,
@@ -67,7 +58,6 @@ export function buildAnnualReportData(ctx) {
     reportYear: reportYearLabel(),
     pressureScore,
     pressureLabel: pressureMeta.label,
-    healthScore,
     survivalMonths: survival.survivalMonths,
     totalCommitments: commitments.length,
     totalMonthlyBurden: cash.monthlyBurden,

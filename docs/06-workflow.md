@@ -65,6 +65,14 @@ See [10-i18n.md](./10-i18n.md).
 3. Style in `ui/styles/components.css` (`ct-*`)
 4. Use from features — do not duplicate in `engines/` or `pages/`
 
+### UI palette changes
+
+1. **Tokens** — `src/ui/styles/tokens.css` (`--ct-life-*`, `--ct-tw-*`)
+2. **Components** — `src/ui/styles/components.css`; light overrides in `theme-light.css`
+3. **Tailwind bridge** — `tailwind.config.js` (legacy `gray`/`indigo`/… utilities in `src/ui/`)
+4. **Docs** — update `docs/architecture/DesignSystem.md` and `src/ui/ARCHITECTURE.md`
+5. `npm run audit:styles`
+
 ## Code review expectations
 
 Reviewers should see:

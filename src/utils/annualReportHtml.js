@@ -70,7 +70,6 @@ export function generateAnnualReportHtml(report) {
   <h2>Score summary</h2>
   <div class="scores">
     <div class="score-box"><div class="muted">Pressure</div><div class="score-big">${report.pressureScore}</div><div>${escapeHtml(report.pressureLabel)}</div></div>
-    <div class="score-box"><div class="muted">Health</div><div class="score-big">${report.healthScore?.score ?? "—"}</div><div>${escapeHtml(report.healthScore?.label || "")}</div></div>
     <div class="score-box"><div class="muted">Survival</div><div class="score-big">${report.survivalMonths ?? "—"}</div><div>months runway</div></div>
   </div>
 

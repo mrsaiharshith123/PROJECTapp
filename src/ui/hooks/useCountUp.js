@@ -6,14 +6,11 @@ import { useEffect, useState } from "react";
  * @param {number} [durationMs]
  */
 export function useCountUp(target, durationMs = 900) {
-  const [value, setValue] = useState(0);
+  const end = Math.max(0, Number(target) || 0);
+  const [value, setValue] = useState(end);
 
   useEffect(() => {
-    const end = Number(target) || 0;
-    if (end === 0) {
-      setValue(0);
-      return;
-    }
+    if (end === 0) return;
     const start = performance.now();
     let frame = 0;
     const tick = (now) => {
@@ -24,7 +21,7 @@ export function useCountUp(target, durationMs = 900) {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [target, durationMs]);
+  }, [end, durationMs]);
 
-  return value;
+  return end === 0 ? 0 : value;
 }

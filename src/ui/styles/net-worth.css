@@ -21,12 +21,42 @@ html[data-ui="ct"] .ct-nw-embedded {
   margin-top: -0.25rem;
 }
 
+html[data-ui="ct"] .ct-profile-hero-chips-status {
+  margin-top: 0.75rem;
+}
+
+html[data-ui="ct"] .ct-profile-chip-status,
+html[data-ui="ct"] .ct-profile-hero-chips-status .ct-profile-chip {
+  background: var(--ct-life-inset-bg);
+  border-color: var(--ct-life-inset-border);
+}
+
+html[data-ui="ct"] .ct-profile-chip-ok .ct-profile-chip-value {
+  color: var(--ct-success-text, #34d399);
+}
+
+html[data-ui="ct"] .ct-profile-chip-mid .ct-profile-chip-value {
+  color: var(--ct-warning-text, #fbbf24);
+}
+
+html[data-ui="ct"] .ct-profile-chip-risk .ct-profile-chip-value,
+html[data-ui="ct"] .ct-profile-chip-watch .ct-profile-chip-value {
+  color: var(--ct-danger-text, #f87171);
+}
+
+html[data-ui="ct"] .ct-profile-chip-sub {
+  font-size: 0.5625rem;
+  margin-top: 0.15rem;
+  opacity: 0.8;
+}
+
 html[data-ui="ct"] .ct-nw-hero {
   position: relative;
   padding: 1.25rem 1.1rem 1.35rem;
   border-radius: var(--ct-radius-xl, 1.25rem);
-  background: linear-gradient(145deg, rgba(91, 77, 255, 0.18), rgba(16, 185, 129, 0.08));
+  background: var(--ct-life-grad);
   border: 1px solid var(--ct-border-subtle);
+  box-shadow: var(--ct-life-shadow);
   overflow: hidden;
 }
 
@@ -35,7 +65,7 @@ html[data-ui="ct"] .ct-nw-hero-glow {
   inset: -40% -20% auto auto;
   width: 12rem;
   height: 12rem;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.35), transparent 70%);
+  background: var(--ct-life-glow);
   pointer-events: none;
 }
 
@@ -103,7 +133,20 @@ html[data-ui="ct"] .ct-nw-metric-pill {
 }
 
 html[data-ui="ct"] .ct-nw-panel {
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+html[data-ui="ct"] .ct-nw-entry-btn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+html[data-ui="ct"] .ct-nw-entry-btn:focus-visible .ct-nw-entry {
+  outline: 2px solid var(--ct-accent);
+  outline-offset: 2px;
 }
 
 html[data-ui="ct"] .ct-nw-entry-icon {
@@ -158,6 +201,7 @@ html[data-ui="ct"] .ct-nw-insight {
 }
 
 html[data-ui="ct"] .ct-nw-insight-positive { border-left-color: #34d399; }
+html[data-ui="ct"] .ct-nw-insight-neutral { border-left-color: #94a3b8; }
 html[data-ui="ct"] .ct-nw-insight-caution { border-left-color: #fbbf24; }
 html[data-ui="ct"] .ct-nw-insight-action { border-left-color: #7c5cff; }
 

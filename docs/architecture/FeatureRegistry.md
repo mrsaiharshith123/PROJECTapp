@@ -5,7 +5,7 @@ Source of truth: `src/governance/registries/features.js`
 | ID | Name | UI | Engines |
 |----|------|-----|---------|
 | `home-dashboard` | Home dashboard | `HomePage`, `dashboard/*` | stability, survival, burden, forecast |
-| `commitments` | Bills | `CommitmentsPage`, bill modals | reminders, forecastSeries |
+| `commitments` | Bills | `CommitmentsPage` (recurring + variable spend tabs), bill modals, `DailySpendPanel` | reminders, forecastSeries, `dailySpends` utils |
 | `lending` | Money / lending | `LendingPage`, `lending/*` | lendingTrust, lendingAgreement, agreementExport, lendingShareCard |
 | `analytics` | Analytics | `AnalyticsPage`, `analytics/*` | analyticsSeries, salaryBreakdown, subscriptionLeak |
 | `calculators` | Dashboard tools | `DashboardTools`, `tools/*` | affordability, loanPayoff, chit, bond, incomeTax, … |

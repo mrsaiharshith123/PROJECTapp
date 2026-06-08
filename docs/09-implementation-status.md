@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: June 2026.
+Last reviewed: 8 June 2026.
 
 ## V1 product scope
 
@@ -18,11 +18,20 @@ Last reviewed: June 2026.
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*` |
+| Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` (reorderable: lending, income, calculators, analytics) |
+| Home month hero card | ✅ | `HeroMonthCard.jsx`, `HomeOverviewCard.jsx` — scheduled/paid/unpaid, free cash + variable spend tiles, salary bar + sparkline |
+| Financial Life palette (app-wide) | ✅ | `tokens.css`, `components.css`, `theme-light.css`, `tailwind.config.js` (`--ct-life-*`, `--ct-tw-*` bridge) |
+| PWA dev / white-screen guard | ✅ | `vite.config.js` `devOptions.enabled: false`; SW registers in prod only (`main.jsx`) |
+| Bills — variable spend logging | ✅ | `CommitmentsPage` spend tab, `DailySpendPanel.jsx`, `LogSpendModal.jsx` (nav long-press **+** or Bills FAB; no charts — charts on Analytics) |
 | Commitments / Add | ✅ | `ui/features/pages/*` |
-| Profile hub (control center, journey, widgets) | ✅ | `ui/features/profile/hub/*`, `ProfilePage.jsx` |
-| Analytics + charts (chip switcher) | ✅ | `AnalyticsPage.jsx`, `analytics/*` |
+| Profile hub (financial identity + net worth) | ✅ | `ProfileFinancialHero`, `ProfileNetWorthSection`, `ProfileMilestonesPanel`, `ProfilePage.jsx` |
+| Analytics — pulse + monthly spend + wealth | ✅ | `AnalyticsPage.jsx`, `MonthlySpendAnalyticsSection.jsx`, `WealthAnalyticsSection.jsx`, `BillInsightsCards.jsx` |
 | Dashboard tools (6 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax` — `modeExperience.js`, `DashboardTools.jsx` |
+| Money planner (3 tabs) | ✅ | Afford · Scenarios · Goals — `MoneyPlannerPanel.jsx`, `UnifiedScenariosPanel.jsx` |
+| Loan helpers + payoff order | ✅ | `LoanToolsPanel.jsx` — Extra EMI · Timing · Payoff order |
+| Unified scenarios (data-gated) | ✅ | `UnifiedScenariosPanel.jsx`, `engines/scenarioCatalog.js` |
+| Profile milestones (wins) | ✅ | `ProfileMilestonesPanel.jsx`, `engines/profileAchievements.js` |
+| Bill-derived assets / liabilities | ✅ | `engines/netWorth/commitmentWealth.js`, net worth tabs |
 | Light / dark / system theme | ✅ | `utils/theme.js`, `app/ThemeSync.jsx`, `ui/styles/theme-light.css` |
 | Supabase auth + profile merge save | ✅ | `services/supabase/auth.js` |
 | Lending trust + share card | ✅ | `engines/lendingTrust.js`, `utils/lendingShareCard.js` |
@@ -31,7 +40,7 @@ Last reviewed: June 2026.
 | Stability narrative in Financial pulse | ✅ | `engines/stabilityNarrative.js`, `FinancialPulseCard.jsx` |
 | Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` |
 | Annual health report (Pro) | ✅ | `ProfileBackupSection.jsx` |
-| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — ~631 keys, audit parity |
+| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — audit parity via `npm run sync:i18n` |
 | i18n — Home, pulse, commitments, profile | ✅ Partial UI | See [10-i18n.md](./10-i18n.md) for wired vs pending screens |
 
 ## Shipped — admin intelligence (internal)
@@ -82,7 +91,7 @@ Collected when legal-details UI is built; engine/export already read them:
 | Paycheck page | `/paycheck` route, salary-day auto-navigate, Profile “salary credit day” field |
 | Planning page | `/planning` — tools moved off Home |
 | Legal details modal | `LegalDetailsModal` + lender/borrower confirmation screens |
-| Lending offer review refresh | Offer page still uses legacy Tailwind shell — migrate to `ct-*` when touched |
+| Lending offer review refresh | Offer page uses Tailwind shell mapped to Financial Life tokens — full `ct-*` migration when touched |
 
 Current Home layout is **intentionally kept** until launcher UX is redesigned.
 
@@ -98,8 +107,9 @@ Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuratio
 
 ## Tests & quality
 
-- **178** unit tests (`npm test`) — engines, utils, services, analytics, i18n
-- Gate: `npm run audit` (includes copy tone + i18n key parity)
+- **205** unit tests (`npm test`) — engines, utils, services, analytics, i18n
+- Gate: `npm run audit` (includes copy tone + i18n key parity — **1478** keys × 22 locales)
+- Governance quick scan: `npm run audit:governance:quick` — 0 errors; 1 advisory (`categories.js` filename in two folders)
 
 ## Related docs
 
@@ -108,3 +118,4 @@ Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuratio
 - [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) — salaried / family tools
 - [10-i18n.md](./10-i18n.md) — languages, scripts, coverage
 - [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md) — admin dashboard, events, migrations
+- [src/ui/ARCHITECTURE.md](../src/ui/ARCHITECTURE.md) — profile hub, analytics sections, tools layout

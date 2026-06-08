@@ -8,6 +8,7 @@
  * @property {number} [lumpSum]
  * @property {number} [debtClosure]
  * @property {number} [emiPrepayment]
+ * @property {(base: object) => boolean} [requires]
  * @property {number} [monthsAhead]
  * @property {number} [inflationPct]
  * @property {number} [investmentGrowthPct]

@@ -1,13 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { computeGoalProgress, goalTypeLabel } from "../../../engines/goalsProgress.js";
-import { getCategoryById } from "../../../constants/categories.js";
-import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
-import { InsightStatCard } from "../analytics/InsightStatCard.jsx";
 import {
   InstallAppBanner,
   PageHeaderWithNotifications,
@@ -85,30 +82,6 @@ const Home = () => {
 
   const overdue = sortedCommitments.filter((c) => getEffectiveStatus(c) === "overdue");
 
-  const biggestCategory = useMemo(() => {
-    const map = {};
-    for (const c of commitments) {
-      if (getEffectiveStatus(c) === "paid") continue;
-      const cat = c.category || "Other";
-      map[cat] = (map[cat] || 0) + Math.max(0, Number(c.remainingAmount ?? 0));
-    }
-    const top = Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .filter((d) => d.value > 0)
-      .sort((a, b) => b.value - a.value)[0];
-    return top || null;
-  }, [commitments, getEffectiveStatus]);
-
-  const highestRecurring = useMemo(() => {
-    let best = null;
-    for (const c of commitments) {
-      if (!c.repeatType || c.repeatType === "none") continue;
-      const amt = Number(c.amount) || 0;
-      if (!best || amt > best.amount) best = { name: c.name, amount: amt, repeatType: c.repeatType };
-    }
-    return best;
-  }, [commitments]);
-
   const { t } = useTranslation();
   const displayName = settings.displayName?.trim() || "there";
   const greeting = t("home.welcome", { name: displayName });
@@ -168,26 +141,6 @@ const Home = () => {
           </Stack>
         )}
       </ScreenSection>
-
-      <div className="ct-grid-2">
-        <InsightStatCard
-          eyebrow={t("home.biggestCategory")}
-          icon={biggestCategory ? getCategoryById(biggestCategory.name).icon : undefined}
-          title={biggestCategory ? getCategoryById(biggestCategory.name).label : undefined}
-          detail={biggestCategory ? t("home.openAmount", { amount: formatInr(biggestCategory.value) }) : undefined}
-          empty={t("home.noOpenBills")}
-        />
-        <InsightStatCard
-          eyebrow={t("home.highestRecurring")}
-          title={highestRecurring?.name}
-          detail={
-            highestRecurring
-              ? `${formatInr(highestRecurring.amount)} ${EM_DASH} ${repeatTypeLabel(highestRecurring.repeatType)}`
-              : undefined
-          }
-          empty={t("home.noRecurring")}
-        />
-      </div>
 
       {overdue.length > 0 && (
         <ScreenSection title={t("home.overdue")}>

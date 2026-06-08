@@ -14,6 +14,7 @@ import { NotificationPanel } from "../../NotificationPanel.jsx";
 import { NetWorthHeroBody } from "../../netWorth/NetWorthHero.jsx";
 
 /**
+ * Unified financial life card — identity, net worth, and key status in one place.
  * @param {{
  *   settings: object,
  *   updateSettings: (p: object) => void,
@@ -44,6 +45,34 @@ export default function ProfileFinancialHero({
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const emergencyPct = hub.emergency?.progressPercent;
+  const emergencyTone =
+    hub.emergency?.tier === "on_track" || hub.emergency?.tier === "almost" ? "ok" : "watch";
+  const pressureTone = hub.pressureScore <= 40 ? "ok" : hub.pressureScore <= 70 ? "mid" : "risk";
+  const billsTone = hub.overdueCount > 0 ? "risk" : hub.pendingCount > 0 ? "mid" : "ok";
+
+  const statusChips = [
+    {
+      id: "emergency",
+      label: t("profileHub.widget.emergency"),
+      value: emergencyPct != null ? `${emergencyPct}%` : "—",
+      tone: emergencyTone,
+    },
+    {
+      id: "pressure",
+      label: t("profileHub.widget.pressure"),
+      value: `${hub.pressureScore ?? 0}`,
+      tone: pressureTone,
+    },
+    {
+      id: "bills",
+      label: t("profileHub.widget.pending"),
+      value: `${hub.pendingCount}`,
+      sub: hub.overdueCount > 0 ? t("profileHub.widget.pressureOverdue") : null,
+      tone: billsTone,
+    },
+  ];
 
   return (
     <section className="ct-nw-hero ct-profile-financial-hero ct-reveal">
@@ -85,16 +114,21 @@ export default function ProfileFinancialHero({
             </span>
             {suffix ? ` · ${suffix}` : ""}
           </Caption>
-          <span
-            className={`ct-profile-state ct-profile-state-${hub.stabilityScore >= 65 ? "ok" : hub.stabilityScore >= 45 ? "mid" : "risk"}`}
-          >
-            {hub.stabilityLabel}
-          </span>
         </div>
       </button>
 
       <div className="ct-profile-financial-hero-nw">
-        <NetWorthHeroBody intel={intel} privacyMode={privacyMode} />
+        <NetWorthHeroBody intel={intel} privacyMode={privacyMode} compact />
+      </div>
+
+      <div className="ct-profile-hero-chips ct-profile-hero-chips-status">
+        {statusChips.map((chip) => (
+          <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
+            <Caption className="block ct-profile-chip-label">{chip.label}</Caption>
+            <span className="ct-profile-chip-value">{chip.value}</span>
+            {chip.sub && <Caption className="block ct-profile-chip-sub">{chip.sub}</Caption>}
+          </div>
+        ))}
       </div>
 
       {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}

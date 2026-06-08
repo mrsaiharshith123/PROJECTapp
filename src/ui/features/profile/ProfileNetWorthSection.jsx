@@ -1,29 +1,25 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { SegmentedControl, Button, EmptyState } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { useProfileHubIntel } from "../../../hooks/useProfileHubIntel.js";
-import ProfileJourneyPanel from "./hub/ProfileJourneyStrip.jsx";
+import FinancialLifeOverviewPanel from "./hub/FinancialLifeOverviewPanel.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
+import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { partitionWealth } from "../../../engines/netWorth/core.js";
+import { deriveWealthFromCommitments } from "../../../engines/netWorth/commitmentWealth.js";
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
-import {
-  LiquidityPanel,
-  HealthScorePanel,
-  PressureWealthPanel,
-  InsightsPanel,
-  AllocationCharts,
-  SimulationPanel,
-  TimelinePanel,
-  MilestonesStrip,
-} from "../netWorth/NetWorthIntelligencePanels.jsx";
+import ProfileMilestonesPanel from "./hub/ProfileMilestonesPanel.jsx";
 
-/** Embedded net worth / financial life intelligence (profile panel). */
+/** Profile wealth ledger — journey patterns, assets, and liabilities. */
 export default function ProfileNetWorthSection() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const intel = useNetWorthIntel();
   const hub = useProfileHubIntel();
+  const { commitments, getEffectiveStatus, todayStr } = useCommitTrack();
   const { addEntry, updateEntry, deleteEntry, privacyMode } = useNetWorth();
   const [tab, setTab] = useState("overview");
   const [modal, setModal] = useState(/** @type {{ kind: 'asset'|'liability', entry?: object } | null} */ (null));
@@ -33,65 +29,69 @@ export default function ProfileNetWorthSection() {
     [intel.entries]
   );
 
-  const isEmpty = intel.entries.length === 0;
+  const fromBills = useMemo(
+    () => deriveWealthFromCommitments(commitments, getEffectiveStatus, todayStr),
+    [commitments, getEffectiveStatus, todayStr]
+  );
+
+  const billSourceLabel = t("netWorth.fromBills");
+  const openBill = (commitmentId) => navigate("/commitments", { state: { openBillId: commitmentId } });
+
   const openAdd = (kind) => setModal({ kind });
   const openEdit = (entry) => setModal({ kind: entry.kind, entry });
 
+  const hasAssets = assets.length > 0 || fromBills.assets.length > 0;
+  const hasLiabilities = liabilities.length > 0 || fromBills.liabilities.length > 0;
+
   return (
     <div className="ct-stack ct-nw-embedded">
-      <MilestonesStrip milestones={intel.milestones} />
-
       <SegmentedControl
         options={[
           { id: "overview", label: t("netWorth.tab.overview") },
+          { id: "milestones", label: t("netWorth.tab.milestones") },
           { id: "assets", label: t("netWorth.tab.assets") },
           { id: "liabilities", label: t("netWorth.tab.liabilities") },
-          { id: "simulate", label: t("netWorth.tab.simulate") },
-          { id: "timeline", label: t("netWorth.tab.timeline") },
         ]}
         value={tab}
         onChange={setTab}
       />
 
-      {isEmpty && tab !== "simulate" && tab !== "overview" && (
-        <EmptyState icon="chart-pie-slice" title={t("netWorth.empty.title")} hint={t("netWorth.empty.body")} />
+      {tab === "overview" && (
+        <FinancialLifeOverviewPanel hub={hub} insights={intel.insights} />
       )}
 
-      {tab === "overview" && (
-        <div className="ct-stack">
-          <ProfileJourneyPanel hub={hub} />
-          {isEmpty ? (
-            <EmptyState icon="chart-pie-slice" title={t("netWorth.empty.title")} hint={t("netWorth.empty.body")} />
-          ) : (
-            <>
-              <InsightsPanel insights={intel.insights} />
-              <LiquidityPanel liquidity={intel.liquidity} privacyMode={privacyMode} />
-              <HealthScorePanel lifeScore={intel.lifeScore} />
-              <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />
-              <AllocationCharts intel={intel} privacyMode={privacyMode} />
-            </>
-          )}
-        </div>
-      )}
+      {tab === "milestones" && <ProfileMilestonesPanel />}
 
       {tab === "assets" && (
         <div className="ct-stack ct-list-animate">
-          {assets.length === 0 ? (
+          {!hasAssets ? (
             <EmptyState icon="bank" title={t("netWorth.empty.assets")} hint="" />
           ) : (
-            assets.map((a) => {
-              const row = intel.core.assetAllocation.find((x) => x.id === a.id);
-              return (
+            <>
+              {fromBills.assets.map((a) => (
                 <WealthEntryCard
                   key={a.id}
                   entry={a}
-                  pct={row?.pct}
                   privacyMode={privacyMode}
-                  onEdit={openEdit}
-                  onDelete={deleteEntry}
+                  readOnly
+                  sourceLabel={billSourceLabel}
+                  onOpen={() => openBill(a.commitmentId)}
                 />
-              );
-            })
+              ))}
+              {assets.map((a) => {
+                const row = intel.core.assetAllocation.find((x) => x.id === a.id);
+                return (
+                  <WealthEntryCard
+                    key={a.id}
+                    entry={a}
+                    pct={row?.pct}
+                    privacyMode={privacyMode}
+                    onEdit={openEdit}
+                    onDelete={deleteEntry}
+                  />
+                );
+              })}
+            </>
           )}
           <Button type="button" variant="primary" onClick={() => openAdd("asset")}>
             {t("netWorth.addAsset")}
@@ -101,31 +101,40 @@ export default function ProfileNetWorthSection() {
 
       {tab === "liabilities" && (
         <div className="ct-stack ct-list-animate">
-          {liabilities.length === 0 ? (
+          {!hasLiabilities ? (
             <EmptyState icon="credit-card" title={t("netWorth.empty.liabilities")} hint="" />
           ) : (
-            liabilities.map((l) => {
-              const row = intel.core.liabilityAllocation.find((x) => x.id === l.id);
-              return (
+            <>
+              {fromBills.liabilities.map((l) => (
                 <WealthEntryCard
                   key={l.id}
                   entry={l}
-                  pct={row?.pct}
                   privacyMode={privacyMode}
-                  onEdit={openEdit}
-                  onDelete={deleteEntry}
+                  readOnly
+                  sourceLabel={billSourceLabel}
+                  onOpen={() => openBill(l.commitmentId)}
                 />
-              );
-            })
+              ))}
+              {liabilities.map((l) => {
+                const row = intel.core.liabilityAllocation.find((x) => x.id === l.id);
+                return (
+                  <WealthEntryCard
+                    key={l.id}
+                    entry={l}
+                    pct={row?.pct}
+                    privacyMode={privacyMode}
+                    onEdit={openEdit}
+                    onDelete={deleteEntry}
+                  />
+                );
+              })}
+            </>
           )}
           <Button type="button" variant="primary" onClick={() => openAdd("liability")}>
             {t("netWorth.addLiability")}
           </Button>
         </div>
       )}
-
-      {tab === "simulate" && <SimulationPanel simulationBase={intel.simulationBase} />}
-      {tab === "timeline" && <TimelinePanel timeline={intel.timeline} />}
 
       <WealthEntryModal
         open={Boolean(modal)}

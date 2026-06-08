@@ -2,19 +2,9 @@ import { useMemo, useState } from "react";
 import { format, subDays, parseISO } from "date-fns";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { useResolvedTheme } from "../../../hooks/useResolvedTheme.js";
-import {
-  dailySpendByLifeCategory,
-  dailySpendByMerchant,
-  dailySpendTrendByDay,
-  sumDailySpendsInRange,
-} from "../../../utils/dailySpends.js";
+import { sumDailySpendsInRange } from "../../../utils/dailySpends.js";
 import { getTransactionLifeCategoryMeta, TRANSACTION_LIFE_CATEGORIES } from "../../../constants/transactionCategories.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { FlexibleDataChart } from "../analytics/charts/FlexibleDataChart.jsx";
-
-/** @typedef {import("../analytics/charts/FlexibleDataChart.jsx").ChartTypeId} ChartTypeId */
-import { ChartTypeSelect } from "../analytics/charts/ChartTypeSelect.jsx";
 import {
   Card,
   Stack,
@@ -23,7 +13,6 @@ import {
   Body,
   EmptyState,
   FilterChips,
-  ChartShell,
   StatCard,
   Badge,
 } from "../../index.js";
@@ -46,15 +35,11 @@ function formatSpendDate(dateStr) {
   }
 }
 
-/** Variable spend logs — history, charts with type switcher, period filters. */
+/** Variable spend logs — totals, period filter, history. Charts live on Analytics. */
 export default function DailySpendPanel() {
   const { dailySpends, deleteDailySpend, todayStr } = useCommitTrack();
   const { t } = useTranslation();
-  const theme = useResolvedTheme();
   const [period, setPeriod] = useState("30d");
-  const [chartMode, setChartMode] = useState("category");
-  /** @type {[ChartTypeId, import('react').Dispatch<import('react').SetStateAction<ChartTypeId>>]} */
-  const [chartType, setChartType] = useState(/** @type {ChartTypeId} */ ("donut"));
   const [lifeFilter, setLifeFilter] = useState("");
 
   const range = useMemo(() => {
@@ -82,26 +67,6 @@ export default function DailySpendPanel() {
     [dailySpends, range],
   );
 
-  const breakdownData = useMemo(() => {
-    if (chartMode === "category") {
-      return dailySpendByLifeCategory(dailySpends, range.start, range.end).map(({ lifeCategory, amount }) => ({
-        name: getTransactionLifeCategoryMeta(lifeCategory).label,
-        value: amount,
-        id: lifeCategory,
-      }));
-    }
-    const merchants = dailySpendByMerchant(dailySpends, range.start, range.end);
-    const top = merchants.slice(0, 7).map((m) => ({ name: m.label, value: m.amount }));
-    const other = merchants.slice(7).reduce((s, m) => s + m.amount, 0);
-    if (other > 0) top.push({ name: t("bills.dailySpend.otherMerchants"), value: other });
-    return top;
-  }, [chartMode, dailySpends, range, t]);
-
-  const trendData = useMemo(
-    () => dailySpendTrendByDay(dailySpends, range.start, range.end),
-    [dailySpends, range],
-  );
-
   const listSpends = useMemo(() => {
     let rows = [...periodSpends];
     if (lifeFilter) rows = rows.filter((s) => s.lifeCategory === lifeFilter);
@@ -118,26 +83,17 @@ export default function DailySpendPanel() {
     { id: "all", label: t("bills.dailySpend.periodAll") },
   ];
 
-  const chartOptions = [
-    { id: "category", label: t("bills.dailySpend.chartCategory") },
-    { id: "merchant", label: t("bills.dailySpend.chartMerchant") },
-  ];
-
   const lifeFilterOptions = [
     { id: "", label: t("bills.dailySpend.allCategories") },
     ...TRANSACTION_LIFE_CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
   ];
-
-  const useTrend = (chartType === "line" || chartType === "bar") && trendData.length > 0;
-  const plotData = useTrend ? trendData : breakdownData;
-  /** @type {ChartTypeId} */
-  const plotType = useTrend ? (chartType === "line" ? "line" : "bar") : chartType;
 
   return (
     <div className="ct-stack">
       <div>
         <Body className="ct-body-strong">{t("bills.variableSpend.title")}</Body>
         <Caption className="block mt-0.5">{t("bills.variableSpend.subtitle")}</Caption>
+        <Caption className="block mt-1 opacity-80">{t("bills.variableSpend.analyticsHint")}</Caption>
       </div>
 
       <div className="ct-grid-2">
@@ -150,30 +106,6 @@ export default function DailySpendPanel() {
       </div>
 
       <FilterChips options={periodOptions} value={period} onChange={setPeriod} />
-      <FilterChips options={chartOptions} value={chartMode} onChange={setChartMode} />
-
-      <div className="ct-row-between" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
-        <Caption>{t("charts.sameDataHint")}</Caption>
-        <ChartTypeSelect value={chartType} onChange={setChartType} />
-      </div>
-
-      <ChartShell
-        title={
-          chartMode === "category"
-            ? t("bills.dailySpend.chartCategoryTitle")
-            : t("bills.dailySpend.chartMerchantTitle")
-        }
-        hint={t("bills.dailySpend.chartHint")}
-        height={220}
-        compact
-      >
-        <FlexibleDataChart
-          data={plotData}
-          chartType={plotType}
-          theme={theme}
-          emptyMessage={t("bills.dailySpend.chartEmpty")}
-        />
-      </ChartShell>
 
       <div>
         <Body className="ct-body-strong mb-2">{t("bills.dailySpend.history")}</Body>

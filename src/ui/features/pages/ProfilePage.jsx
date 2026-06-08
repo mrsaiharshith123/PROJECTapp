@@ -15,7 +15,6 @@ import ProfileGuidanceSection from "../profile/ProfileGuidanceSection.jsx";
 import ProfileSupportSection from "../profile/ProfileSupportSection.jsx";
 import ProfileBrandFooter from "../profile/ProfileBrandFooter.jsx";
 import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
-import ProfileStatusWidgets from "../profile/hub/ProfileStatusWidgets.jsx";
 import ProfileSettingsSheet from "../profile/hub/ProfileSettingsSheet.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
@@ -58,14 +57,14 @@ const Profile = () => {
   const [openSection, setOpenSection] = useState(initialSettingsSection);
 
   useEffect(() => {
-    if (location.state?.openSection) {
-      const section = resolveSettingsSection(location.state.openSection);
-      if (section) {
-        setOpenSection(section);
-        setSettingsOpen(true);
-      }
-      navigate(location.pathname, { replace: true, state: {} });
-    }
+    if (!location.state?.openSection) return;
+    const section = resolveSettingsSection(location.state.openSection);
+    navigate(location.pathname, { replace: true, state: {} });
+    if (!section) return;
+    queueMicrotask(() => {
+      setOpenSection(section);
+      setSettingsOpen(true);
+    });
   }, [location.state?.openSection, location.pathname, navigate]);
 
   const incomeLabel = t(getIncomeLabelKey(settings));
@@ -187,7 +186,6 @@ const Profile = () => {
         </div>
       )}
 
-      <ProfileStatusWidgets hub={hub} />
       <ProfileNetWorthSection />
       <ProfileAdminEntry />
 

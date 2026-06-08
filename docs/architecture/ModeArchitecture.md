@@ -25,7 +25,7 @@ Registry: `src/governance/registries/modes.js`
 
 ## Home composition
 
-1. `HomeOverviewCard` — month hero
+1. `HomeOverviewCard` → `HeroMonthCard` — month hero (Financial Life palette): scheduled / paid / unpaid chips, **free cash** + stress copy + **variable spend** tile, salary progress bar (green→red), cumulative spend sparkline → `/analytics`
 2. KPI row — `getHomeKpiTiles()` in `config/modeDashboardMetrics.js`
 3. `ModeIntelligenceSection` — one mode dashboard
 4. `FinancialPulseCard` — shared pulse
@@ -43,8 +43,8 @@ Registry: `src/governance/registries/modes.js`
 
 | Id | Panel / modal |
 |----|----------------|
-| `planner` | `MoneyPlannerPanel` — afford, what-if, debt, goals |
-| `loan` | `LoanToolsPanel` — extra EMI, best month |
+| `planner` | `MoneyPlannerPanel` — Afford · Scenarios · Goals (`UnifiedScenariosPanel` on Scenarios tab) |
+| `loan` | `LoanToolsPanel` — Extra EMI · Timing · Payoff order |
 | `insurance` | `InsuranceCalculatorModal` |
 | `chit` | `ChitFundAdvisor` |
 | `bond` | `BondAdvisor` (Power tier) |

@@ -7,6 +7,84 @@
 html[data-ui="ct"] {
   color-scheme: dark;
 
+  /* ── Financial Life palette (Home + Profile cards → app-wide) ── */
+  --ct-life-violet: #5b4dff;
+  --ct-life-violet-deep: #4a3de6;
+  --ct-life-violet-glow: rgba(124, 92, 255, 0.32);
+  --ct-life-emerald: #10b981;
+  --ct-life-emerald-text: #34d399;
+  --ct-life-emerald-soft: rgba(16, 185, 129, 0.14);
+  --ct-life-grad: linear-gradient(145deg, rgba(91, 77, 255, 0.22), rgba(16, 185, 129, 0.06));
+  --ct-life-grad-soft: linear-gradient(145deg, rgba(91, 77, 255, 0.14), rgba(16, 185, 129, 0.04));
+  --ct-life-grad-surface: linear-gradient(165deg, rgba(91, 77, 255, 0.14) 0%, rgba(18, 18, 37, 0.9) 50%, var(--ct-surface) 100%);
+  --ct-life-grad-panel: linear-gradient(135deg, rgba(91, 77, 255, 0.1) 0%, var(--ct-surface-inset) 100%);
+  --ct-life-glow: radial-gradient(circle, var(--ct-life-violet-glow), transparent 70%);
+  --ct-life-inset-bg: rgba(255, 255, 255, 0.04);
+  --ct-life-inset-border: rgba(155, 109, 255, 0.06);
+  --ct-life-shadow: var(--ct-shadow-card), 0 0 40px rgba(124, 92, 255, 0.12);
+  --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(124, 77, 255, 0.08));
+  --ct-life-nav-bg: rgba(12, 12, 22, 0.78);
+  --ct-life-grad-hero: linear-gradient(165deg, rgba(91, 77, 255, 0.22) 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
+  --ct-life-glass: rgba(18, 18, 37, 0.58);
+  --ct-life-btn-grad: linear-gradient(135deg, #9b6dff 0%, var(--ct-life-violet) 52%, var(--ct-life-violet-deep) 100%);
+  --ct-life-btn-border: rgba(155, 109, 255, 0.45);
+  --ct-life-btn-shadow: 0 8px 32px -8px rgba(124, 92, 255, 0.45);
+  --ct-life-btn-shadow-hover: 0 12px 36px -8px rgba(124, 92, 255, 0.55);
+  --ct-life-success-grad: linear-gradient(135deg, #34d399 0%, var(--ct-life-emerald) 100%);
+  --ct-life-label: #c8c5dc;
+  --ct-life-heading: #f0eff8;
+
+  /* Tailwind utility bridge (gray / slate / indigo / violet / emerald / amber) */
+  --ct-tw-gray-50: var(--ct-life-inset-bg);
+  --ct-tw-gray-100: rgba(20, 18, 40, 0.65);
+  --ct-tw-gray-200: rgba(255, 255, 255, 0.08);
+  --ct-tw-gray-400: #7a7894;
+  --ct-tw-gray-500: #9a97b0;
+  --ct-tw-gray-600: #c8c5dc;
+  --ct-tw-gray-700: #e0dff0;
+  --ct-tw-gray-800: var(--ct-life-heading);
+  --ct-tw-gray-900: #f2f2f7;
+  --ct-tw-slate-100: var(--ct-life-heading);
+  --ct-tw-slate-200: #e8e6f5;
+  --ct-tw-slate-300: #c8c5dc;
+  --ct-tw-slate-400: #9a97b0;
+  --ct-tw-slate-600: rgba(155, 109, 255, 0.22);
+  --ct-tw-slate-700: rgba(255, 255, 255, 0.08);
+  --ct-tw-slate-800: var(--ct-life-inset-bg);
+  --ct-tw-slate-900: var(--ct-surface);
+  --ct-tw-slate-950: var(--ct-bg);
+  --ct-tw-indigo-50: rgba(91, 77, 255, 0.08);
+  --ct-tw-indigo-100: rgba(91, 77, 255, 0.12);
+  --ct-tw-indigo-300: #b8a8ff;
+  --ct-tw-indigo-600: var(--ct-life-violet);
+  --ct-tw-indigo-700: var(--ct-life-violet-deep);
+  --ct-tw-indigo-900: #e8e4ff;
+  --ct-tw-indigo-950: rgba(18, 16, 40, 0.95);
+  --ct-tw-violet-50: rgba(91, 77, 255, 0.08);
+  --ct-tw-violet-100: rgba(91, 77, 255, 0.14);
+  --ct-tw-violet-800: rgba(91, 77, 255, 0.35);
+  --ct-tw-violet-900: #ddd6ff;
+  --ct-tw-violet-950: rgba(18, 16, 40, 0.92);
+  --ct-tw-emerald-50: var(--ct-life-emerald-soft);
+  --ct-tw-emerald-100: rgba(16, 185, 129, 0.18);
+  --ct-tw-emerald-300: #6ee7b7;
+  --ct-tw-emerald-400: var(--ct-life-emerald-text);
+  --ct-tw-emerald-500: var(--ct-life-emerald);
+  --ct-tw-emerald-700: var(--ct-life-emerald-text);
+  --ct-tw-emerald-800: #059669;
+  --ct-tw-emerald-950: rgba(6, 40, 30, 0.85);
+  --ct-tw-amber-50: rgba(255, 176, 32, 0.08);
+  --ct-tw-amber-100: rgba(255, 176, 32, 0.14);
+  --ct-tw-amber-200: #fcd34d;
+  --ct-tw-amber-300: #fcd34d;
+  --ct-tw-amber-700: #ffc857;
+  --ct-tw-amber-800: #ffb020;
+  --ct-tw-amber-900: #fde68a;
+  --ct-tw-amber-950: rgba(50, 35, 8, 0.85);
+  --ct-tw-red-50: rgba(255, 77, 109, 0.08);
+  --ct-tw-red-950: rgba(40, 10, 18, 0.9);
+  --ct-tw-white: var(--ct-surface-raised);
+
   /* ── Cyber Glass palette ── */
   --ct-bg: #07070a;
   --ct-bg-elevated: #0c0c12;
@@ -14,25 +92,26 @@ html[data-ui="ct"] {
   --ct-surface: #121225;
   --ct-surface-raised: #16162c;
   --ct-surface-hover: #1a1a32;
-  --ct-surface-inset: rgba(18, 18, 37, 0.72);
-  --ct-surface-glass: rgba(18, 18, 37, 0.55);
+  --ct-surface-inset: rgba(20, 18, 40, 0.74);
+  --ct-surface-glass: var(--ct-life-glass);
   --ct-glass-blur: 20px;
   --ct-border: rgba(155, 109, 255, 0.1);
+  --ct-border-subtle: rgba(155, 109, 255, 0.06);
   --ct-border-strong: rgba(155, 109, 255, 0.16);
   --ct-border-accent: rgba(124, 77, 255, 0.42);
   --ct-page-inset-top: 1.25rem;
   --ct-page-inset-x: 1rem;
-  --ct-accent: #7c4dff;
-  --ct-accent-hover: #9166ff;
+  --ct-accent: var(--ct-life-violet);
+  --ct-accent-hover: #7c66ff;
   --ct-accent-muted: #9b6dff;
-  --ct-accent-soft: rgba(124, 77, 255, 0.16);
-  --ct-accent-glow: rgba(155, 109, 255, 0.55);
-  --ct-hero-from: rgba(124, 77, 255, 0.22);
+  --ct-accent-soft: rgba(91, 77, 255, 0.16);
+  --ct-accent-glow: rgba(124, 92, 255, 0.5);
+  --ct-hero-from: rgba(91, 77, 255, 0.22);
   --ct-hero-mid: #121225;
   --ct-hero-to: #07070a;
-  --ct-success: #3be58f;
-  --ct-success-text: #5ef0a4;
-  --ct-success-soft: rgba(59, 229, 143, 0.14);
+  --ct-success: var(--ct-life-emerald);
+  --ct-success-text: var(--ct-life-emerald-text);
+  --ct-success-soft: var(--ct-life-emerald-soft);
   --ct-warning: #ffb020;
   --ct-warning-text: #ffc857;
   --ct-warning-soft: rgba(255, 176, 32, 0.14);
@@ -52,12 +131,13 @@ html[data-ui="ct"] {
   --ct-coral-text: #fb923c;
   --ct-coral-soft: rgba(234, 88, 12, 0.15);
   --ct-coral-glow: rgba(234, 88, 12, 0.35);
-  --ct-text: #f2f2f7;
-  --ct-text-secondary: #9a9aaf;
-  --ct-text-muted: #6e6e82;
+  --ct-text: var(--ct-life-heading);
+  --ct-text-secondary: #a8a5c0;
+  --ct-text-muted: #7a7894;
   --ct-chart-plot-bg: rgba(7, 7, 10, 0.45);
-  --ct-body-gradient-a: rgba(124, 77, 255, 0.2);
+  --ct-body-gradient-a: rgba(91, 77, 255, 0.18);
   --ct-body-gradient-b: rgba(18, 18, 37, 0.35);
+  --ct-body-gradient-c: rgba(16, 185, 129, 0.05);
   --ct-font: "Inter", system-ui, sans-serif;
   --ct-font-display: "Outfit", "DM Sans", system-ui, sans-serif;
   --ct-radius-sm: 0.75rem;
@@ -76,17 +156,17 @@ html[data-ui="ct"] {
   --ct-nav-h: 4.25rem;
   --ct-nav-fab-size: 3.35rem;
   --ct-nav-dock-inset: 0.75rem;
-  --ct-card-grad-from: rgba(124, 77, 255, 0.14);
-  --ct-card-grad-mid: rgba(18, 18, 37, 0.92);
+  --ct-card-grad-from: rgba(91, 77, 255, 0.14);
+  --ct-card-grad-mid: rgba(18, 18, 37, 0.9);
   --ct-list-grad-to: rgba(18, 18, 37, 0.55);
   --ct-insight-surface-end: rgba(18, 18, 37, 0.88);
-  --ct-nav-bar-bg: rgba(12, 12, 22, 0.72);
+  --ct-nav-bar-bg: var(--ct-life-nav-bg);
   --ct-top-nav-bg: rgba(7, 7, 10, 0.82);
-  --ct-hero-inset-bg: rgba(255, 255, 255, 0.04);
-  --ct-hero-inset-border: rgba(155, 109, 255, 0.12);
+  --ct-hero-inset-bg: var(--ct-life-inset-bg);
+  --ct-hero-inset-border: var(--ct-life-inset-border);
   --ct-progress-track-bg: rgba(255, 255, 255, 0.06);
   --ct-modal-backdrop: rgba(3, 3, 5, 0.72);
-  --ct-health-strip-bg: linear-gradient(135deg, var(--ct-surface-inset) 0%, rgba(124, 77, 255, 0.12) 100%);
+  --ct-health-strip-bg: var(--ct-life-grad-panel);
   --ct-insight-violet-bg: rgba(124, 77, 255, 0.12);
   --ct-chart-grid-stroke: rgba(155, 109, 255, 0.08);
   --ct-chart-line-glow: rgba(155, 109, 255, 0.35);
@@ -105,6 +185,77 @@ html[data-ui="ct"] {
 html[data-ui="ct"][data-theme="light"] {
   color-scheme: light;
 
+  --ct-life-grad: linear-gradient(145deg, rgba(109, 74, 255, 0.12), rgba(16, 185, 129, 0.05));
+  --ct-life-grad-soft: linear-gradient(145deg, rgba(109, 74, 255, 0.08), rgba(16, 185, 129, 0.03));
+  --ct-life-grad-surface: linear-gradient(165deg, rgba(109, 74, 255, 0.08) 0%, #f8f9fd 50%, var(--ct-surface) 100%);
+  --ct-life-grad-panel: linear-gradient(135deg, rgba(109, 74, 255, 0.06) 0%, var(--ct-surface-inset) 100%);
+  --ct-life-glow: radial-gradient(circle, rgba(109, 74, 255, 0.18), transparent 70%);
+  --ct-life-inset-bg: rgba(109, 74, 255, 0.05);
+  --ct-life-inset-border: rgba(15, 23, 42, 0.06);
+  --ct-life-shadow: var(--ct-shadow-card);
+  --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(109, 74, 255, 0.06));
+  --ct-life-nav-bg: rgba(255, 255, 255, 0.94);
+  --ct-life-violet-glow: rgba(109, 74, 255, 0.2);
+  --ct-life-grad-hero: linear-gradient(165deg, #ebe6ff 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
+  --ct-life-glass: rgba(255, 255, 255, 0.9);
+  --ct-life-btn-grad: linear-gradient(135deg, #7c4dff 0%, #6d4aff 52%, #5b4dff 100%);
+  --ct-life-btn-border: rgba(109, 74, 255, 0.35);
+  --ct-life-btn-shadow: 0 8px 24px -8px rgba(109, 74, 255, 0.28);
+  --ct-life-btn-shadow-hover: 0 12px 32px -8px rgba(109, 74, 255, 0.35);
+  --ct-life-success-grad: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --ct-life-label: #5c6478;
+  --ct-life-heading: #12121f;
+
+  --ct-tw-gray-50: rgba(109, 74, 255, 0.04);
+  --ct-tw-gray-100: #eef0f8;
+  --ct-tw-gray-200: #e4e8f4;
+  --ct-tw-gray-400: #a8adc0;
+  --ct-tw-gray-500: #8b93a7;
+  --ct-tw-gray-600: #5c6478;
+  --ct-tw-gray-700: #3d4558;
+  --ct-tw-gray-800: #252b3a;
+  --ct-tw-gray-900: #12121f;
+  --ct-tw-slate-100: #f0eff8;
+  --ct-tw-slate-200: #e8e6f5;
+  --ct-tw-slate-300: #c8c5dc;
+  --ct-tw-slate-400: #8b93a7;
+  --ct-tw-slate-600: rgba(109, 74, 255, 0.18);
+  --ct-tw-slate-700: #e4e8f4;
+  --ct-tw-slate-800: #f8f9fd;
+  --ct-tw-slate-900: #ffffff;
+  --ct-tw-slate-950: #eef0f8;
+  --ct-tw-indigo-50: rgba(109, 74, 255, 0.06);
+  --ct-tw-indigo-100: rgba(109, 74, 255, 0.1);
+  --ct-tw-indigo-300: #7c4dff;
+  --ct-tw-indigo-600: #6d4aff;
+  --ct-tw-indigo-700: #5b4dff;
+  --ct-tw-indigo-900: #2e1f6e;
+  --ct-tw-indigo-950: rgba(235, 230, 255, 0.95);
+  --ct-tw-violet-50: rgba(109, 74, 255, 0.06);
+  --ct-tw-violet-100: rgba(109, 74, 255, 0.1);
+  --ct-tw-violet-800: rgba(109, 74, 255, 0.25);
+  --ct-tw-violet-900: #3d2a8a;
+  --ct-tw-violet-950: rgba(245, 243, 255, 0.95);
+  --ct-tw-emerald-50: rgba(16, 185, 129, 0.06);
+  --ct-tw-emerald-100: rgba(16, 185, 129, 0.1);
+  --ct-tw-emerald-300: #34d399;
+  --ct-tw-emerald-400: #10b981;
+  --ct-tw-emerald-500: #059669;
+  --ct-tw-emerald-700: #15803d;
+  --ct-tw-emerald-800: #166534;
+  --ct-tw-emerald-950: rgba(236, 253, 245, 0.95);
+  --ct-tw-amber-50: rgba(217, 119, 6, 0.06);
+  --ct-tw-amber-100: rgba(217, 119, 6, 0.1);
+  --ct-tw-amber-200: #fcd34d;
+  --ct-tw-amber-300: #fbbf24;
+  --ct-tw-amber-700: #b45309;
+  --ct-tw-amber-800: #d97706;
+  --ct-tw-amber-900: #92400e;
+  --ct-tw-amber-950: rgba(255, 251, 235, 0.95);
+  --ct-tw-red-50: rgba(220, 38, 38, 0.06);
+  --ct-tw-red-950: rgba(254, 242, 242, 0.95);
+  --ct-tw-white: #ffffff;
+
   --ct-bg: #eef0f8;
   --ct-bg-elevated: #ffffff;
   --ct-bg-deep: #e4e8f4;
@@ -114,19 +265,25 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-surface-inset: rgba(241, 244, 252, 0.95);
   --ct-surface-glass: rgba(255, 255, 255, 0.88);
   --ct-border: rgba(15, 23, 42, 0.08);
+  --ct-border-subtle: rgba(15, 23, 42, 0.05);
   --ct-border-strong: rgba(15, 23, 42, 0.12);
   --ct-border-accent: rgba(109, 74, 255, 0.32);
   --ct-accent: #6d4aff;
-  --ct-accent-hover: #7c4dff;
+  --ct-accent-hover: #5b4dff;
   --ct-accent-muted: #7c4dff;
   --ct-accent-soft: rgba(109, 74, 255, 0.1);
   --ct-accent-glow: rgba(109, 74, 255, 0.22);
+  --ct-life-violet: #6d4aff;
+  --ct-life-violet-deep: #5b4dff;
+  --ct-life-emerald: #10b981;
+  --ct-life-emerald-text: #15803d;
+  --ct-life-emerald-soft: rgba(16, 185, 129, 0.1);
   --ct-hero-from: #ebe6ff;
   --ct-hero-mid: #f5f3ff;
   --ct-hero-to: #ffffff;
-  --ct-success: #16a34a;
-  --ct-success-text: #15803d;
-  --ct-success-soft: rgba(22, 163, 74, 0.1);
+  --ct-success: var(--ct-life-emerald);
+  --ct-success-text: var(--ct-life-emerald-text);
+  --ct-success-soft: var(--ct-life-emerald-soft);
   --ct-warning: #d97706;
   --ct-warning-text: #b45309;
   --ct-warning-soft: rgba(217, 119, 6, 0.1);
@@ -144,7 +301,7 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-coral-text: #ea580c;
   --ct-coral-soft: rgba(194, 65, 12, 0.1);
   --ct-coral-glow: rgba(194, 65, 12, 0.2);
-  --ct-text: #12121f;
+  --ct-text: var(--ct-life-heading);
   --ct-text-secondary: #5c6478;
   --ct-text-muted: #8b93a7;
   --ct-chart-plot-bg: rgba(241, 245, 252, 0.95);
@@ -158,13 +315,13 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-card-grad-mid: #ffffff;
   --ct-list-grad-to: #f1f5f9;
   --ct-insight-surface-end: #f8fafc;
-  --ct-nav-bar-bg: rgba(255, 255, 255, 0.92);
-  --ct-top-nav-bg: rgba(255, 255, 255, 0.96);
-  --ct-hero-inset-bg: rgba(109, 74, 255, 0.05);
-  --ct-hero-inset-border: var(--ct-border);
+  --ct-nav-bar-bg: var(--ct-life-nav-bg);
+  --ct-top-nav-bg: var(--ct-life-nav-bg);
+  --ct-hero-inset-bg: var(--ct-life-inset-bg);
+  --ct-hero-inset-border: var(--ct-life-inset-border);
   --ct-progress-track-bg: #e2e8f0;
   --ct-modal-backdrop: rgba(15, 23, 42, 0.38);
-  --ct-health-strip-bg: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+  --ct-health-strip-bg: var(--ct-life-grad-panel);
   --ct-insight-violet-bg: rgba(109, 74, 255, 0.07);
   --ct-chart-grid-stroke: rgba(15, 23, 42, 0.08);
   --ct-chart-line-glow: transparent;
@@ -175,6 +332,7 @@ html[data-ui="ct"] body {
   font-family: var(--ct-font);
   background:
     radial-gradient(ellipse 90% 55% at 50% -8%, var(--ct-body-gradient-a) 0%, transparent 52%),
+    radial-gradient(ellipse 70% 50% at 95% 15%, var(--ct-body-gradient-c) 0%, transparent 50%),
     radial-gradient(ellipse 100% 70% at 80% 0%, rgba(155, 109, 255, 0.06) 0%, transparent 45%),
     radial-gradient(ellipse 120% 80% at 50% -20%, var(--ct-body-gradient-b) 0%, var(--ct-bg) 50%, var(--ct-bg-deep) 100%);
   color: var(--ct-text);
@@ -182,7 +340,10 @@ html[data-ui="ct"] body {
 }
 
 html[data-ui="ct"][data-theme="light"] body {
-  background: var(--ct-bg);
+  background:
+    radial-gradient(ellipse 80% 45% at 50% -5%, rgba(109, 74, 255, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    var(--ct-bg);
 }
 
 html[data-ui="ct"] .ct-display {
@@ -209,6 +370,19 @@ html[data-ui="ct"] .ct-score-num {
 
 html[data-ui="ct"] .ct-text-accent {
   color: var(--ct-accent-muted);
+}
+
+/* Global typography — Financial Life hierarchy */
+html[data-ui="ct"] label,
+html[data-ui="ct"] .ct-field-label {
+  color: var(--ct-life-label);
+  font-weight: 600;
+}
+
+html[data-ui="ct"] strong,
+html[data-ui="ct"] .font-semibold,
+html[data-ui="ct"] .font-bold {
+  color: inherit;
 }
 
 html[data-ui="ct"] .ct-amount-positive {

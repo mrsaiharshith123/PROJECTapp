@@ -18,12 +18,27 @@ html[data-ui="ct"][data-theme="light"] .ct-hero-month:hover {
   transform: none;
 }
 
+html[data-ui="ct"][data-theme="light"] .ct-hero-month-financial,
+html[data-ui="ct"][data-theme="light"] .ct-nw-hero {
+  background: var(--ct-life-grad);
+  box-shadow: var(--ct-life-shadow);
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-hero-inset-financial {
+  background: var(--ct-life-inset-bg);
+  border-color: var(--ct-life-inset-border);
+}
+
 html[data-ui="ct"][data-theme="light"] .ct-card-hero-deep {
-  background: linear-gradient(165deg, #f5f3ff 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
+  background: var(--ct-life-grad-hero);
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-hero-wave {
   background: linear-gradient(180deg, transparent, rgba(109, 74, 255, 0.06));
+}
+
+html[data-ui="ct"][data-theme="light"] .ct-hero-spend-footer {
+  background: var(--ct-life-footer-wash);
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-tool-tile:hover,

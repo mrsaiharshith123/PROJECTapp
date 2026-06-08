@@ -1,5 +1,6 @@
 import { cn } from "../utils/cn.js";
-import { ProgressBar } from "../patterns/ProgressBar.jsx";
+import { SalarySpendBar } from "../patterns/SalarySpendBar.jsx";
+import { MonthlySpendSparkline } from "../patterns/MonthlySpendSparkline.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 
@@ -7,14 +8,18 @@ export function HeroMonthCard({
   title,
   monthLabel,
   icon,
-  left,
+  scheduled,
   paid,
-  due,
-  paidPct,
-  footerLeft,
-  footerRight,
-  footerRow2Left = undefined,
-  footerRow2Right = undefined,
+  unpaid,
+  spendPct,
+  salaryLabel,
+  overBudget = false,
+  spendSeries = [],
+  monthlyIncome = 0,
+  variableSpent,
+  freeCashLabel,
+  freeCashValue,
+  freeCashWarn = false,
   statusLine = undefined,
   onClick,
   className = "",
@@ -22,19 +27,20 @@ export function HeroMonthCard({
   const { t } = useTranslation();
 
   const metrics = [
-    { label: t("home.left"), value: left },
-    { label: t("home.paid"), value: paid, valueClass: "ct-hero-metric-success" },
-    { label: t("home.due"), value: due, valueClass: "ct-hero-metric-warn" },
+    { label: t("home.metricScheduled"), value: scheduled },
+    { label: t("home.metricPaid"), value: paid, valueClass: "ct-hero-metric-success" },
+    { label: t("home.metricUnpaid"), value: unpaid, valueClass: "ct-hero-metric-warn" },
   ];
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn("ct-hero-month", className)}
+      className={cn("ct-hero-month ct-hero-month-financial", className)}
       aria-label={t("home.openAnalytics")}
     >
-      <div className="ct-row-between px-1 pt-1 pb-2">
+      <div className="ct-hero-month-glow" aria-hidden />
+      <div className="ct-row-between px-1 pt-1 pb-2 relative">
         <div className="text-left">
           <p className="ct-eyebrow">{title}</p>
           <p className="ct-caption mt-0.5">{monthLabel}</p>
@@ -46,36 +52,64 @@ export function HeroMonthCard({
         )}
       </div>
 
-      <div className="ct-grid-3 gap-2 px-1">
+      <div className="ct-grid-3 gap-2 px-1 mt-2 relative">
         {metrics.map((m) => (
-          <div key={m.label} className="ct-hero-inset">
+          <div key={m.label} className="ct-hero-inset ct-hero-inset-financial">
             <p className="ct-caption font-semibold uppercase">{m.label}</p>
             <p className={cn("ct-hero-metric ct-numeral mt-1", m.valueClass)}>{m.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="px-1 mt-3">
-        <div className="ct-row-between ct-caption mb-1">
-          <span>{t("home.monthProgress")}</span>
-          <span>{paidPct}%</span>
+      {statusLine || variableSpent || freeCashValue ? (
+        <div className="ct-hero-status-row mt-3 mx-1 relative">
+          {freeCashValue ? (
+            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-side-tile">
+              <p className="ct-caption font-semibold uppercase">{freeCashLabel}</p>
+              <p
+                className={cn(
+                  "ct-hero-metric ct-numeral mt-1",
+                  freeCashWarn ? "ct-hero-metric-warn" : "ct-hero-metric-success",
+                )}
+              >
+                {freeCashValue}
+              </p>
+            </div>
+          ) : null}
+          {statusLine ? (
+            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-status-copy ct-stack-sm !py-2.5 px-2.5 text-left">
+              {statusLine}
+            </div>
+          ) : null}
+          {variableSpent ? (
+            <div className="ct-hero-inset ct-hero-inset-financial ct-hero-side-tile">
+              <p className="ct-caption font-semibold uppercase">{t("home.metricVariable")}</p>
+              <p className="ct-hero-metric ct-numeral mt-1 ct-hero-metric-accent">{variableSpent}</p>
+            </div>
+          ) : null}
         </div>
-        <ProgressBar value={paidPct} />
-      </div>
-
-      <div className="ct-hero-inset mt-3 mx-1 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <p className="ct-body !text-xs">{footerLeft}</p>
-        <p className="ct-body !text-xs text-right">{footerRight}</p>
-        {footerRow2Left != null && <p className="ct-body !text-xs">{footerRow2Left}</p>}
-        {footerRow2Right != null && <p className="ct-body !text-xs text-right">{footerRow2Right}</p>}
-      </div>
-
-      {statusLine ? (
-        <p className="ct-hero-inset mt-2 mx-1 ct-body !text-xs text-center">{statusLine}</p>
       ) : null}
 
-      <div className="ct-hero-wave" aria-hidden />
-      <p className="ct-caption text-center pb-3 pt-2">{t("home.tapAnalytics")}</p>
+      <div className="px-1 mt-3 relative">
+        <div className="ct-row-between ct-caption mb-1">
+          <span>{t("home.salarySpendTitle")}</span>
+          <span className={overBudget ? "ct-hero-metric-danger font-semibold" : ""}>
+            {salaryLabel}
+          </span>
+        </div>
+        <SalarySpendBar pct={spendPct} overBudget={overBudget} />
+      </div>
+
+      <div className="ct-hero-spend-footer relative">
+        <MonthlySpendSparkline
+          data={spendSeries}
+          salary={monthlyIncome}
+          spendPct={spendPct}
+          overBudget={overBudget}
+        />
+      </div>
+
+      <p className="ct-caption text-center pb-3 pt-1 relative opacity-80">{t("home.tapAnalytics")}</p>
     </button>
   );
 }

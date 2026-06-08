@@ -22,17 +22,19 @@ Outside `src/ui/` you must **not**:
 
 1. Prefer existing primitives/patterns from `ui/index.js`.
 2. If you need new visuals, add **`ct-*` rules** in `src/ui/styles/components.css` (and tokens in `tokens.css`).
-3. Reference palette:
+3. Reference palette (Financial Life — see `docs/architecture/DesignSystem.md`):
 
 | Token | Hex |
 |-------|-----|
-| Background | `#0B1020` / `#121A2F` |
-| Card | `#1B233D` |
-| Accent | `#7C5CFF` |
-| Success | `#22C55E` |
-| Warning | `#F59E0B` |
-| Danger | `#EF4444` |
-| Text | `#F5F7FA` / `#A8B2C7` / `#6E7B91` |
+| Background | `#07070A` Obsidian |
+| Surface / card | `#121225` Midnight indigo |
+| Life violet / accent | `#5B4DFF` / `#7C4DFF` |
+| Life emerald / success | `#10B981` / `#34D399` |
+| Warning | `#FFB020` |
+| Danger | `#FF4D6D` |
+| Text | `#F0EFF8` / `#A8A5C0` / `#7A7894` |
+
+Use `--ct-life-*` and `--ct-tw-*` tokens in CSS; do not hardcode one-off hex in JSX. Legacy Tailwind color classes in `src/ui/` resolve through `tailwind.config.js`.
 
 ### Import convention
 

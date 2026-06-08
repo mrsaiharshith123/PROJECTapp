@@ -19,7 +19,7 @@ export const MODE_TOOL_DEFS = {
   planner: {
     id: "planner",
     title: "Plan & decide",
-    subtitle: "Afford · shocks · debt · goals",
+    subtitle: "Afford · scenarios · goals",
     accent: "indigo",
   },
   loan: {
@@ -56,7 +56,7 @@ export const MODE_TOOL_DEFS = {
 
 const MODE_TOOL_TITLES = {
   family: {
-    planner: { title: "Household planner", subtitle: "Afford · shocks · debt · goals" },
+    planner: { title: "Household planner", subtitle: "Afford · scenarios · goals" },
   },
 };
 

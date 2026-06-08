@@ -19,7 +19,8 @@ It runs `scripts/audit-all.mjs`, which orchestrates smaller scripts and prints a
 ### CSS & design tokens (`audit-styles.mjs`)
 
 - Safari/WebKit prefix order (e.g. `-webkit-backdrop-filter` before `backdrop-filter`)
-- Basic CSS hygiene tied to the design system
+- Basic CSS hygiene tied to the Financial Life design system (`--ct-life-*` in `tokens.css`)
+- Governance mobile/responsive scan: `npm run audit:mobile` (advisories on overflow / fixed widths)
 
 ### UI layout (`audit-ui.mjs`)
 
@@ -34,7 +35,7 @@ It runs `scripts/audit-all.mjs`, which orchestrates smaller scripts and prints a
 
 ### Translations (`audit-i18n.mjs`)
 
-- Every `src/i18n/messages/{locale}.js` must match `en.js` key set (~503 keys)
+- Every `src/i18n/messages/{locale}.js` must match `en.js` key set (~1478 keys)
 - Detects corruption patterns (`tokens.push`, broken `{0}` artifacts)
 - Fix: `npm run sync:i18n`, `npm run i18n:repair` — see [10-i18n.md](./10-i18n.md)
 

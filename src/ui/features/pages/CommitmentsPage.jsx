@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader, Fab, SegmentedControl } from "../../";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
@@ -23,6 +23,7 @@ import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress
 
 const Commitments = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const copy = useCopy();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,6 +66,18 @@ const Commitments = () => {
     }
   };
 
+  useEffect(() => {
+    const openBillId = location.state?.openBillId;
+    if (!openBillId) return;
+    const bill = commitments.find((c) => c.id === openBillId);
+    navigate(location.pathname + location.search, { replace: true, state: {} });
+    if (!bill) return;
+    queueMicrotask(() => {
+      setPageTab("bills");
+      setDetailFor(bill);
+    });
+  }, [location.state?.openBillId, commitments, location.pathname, location.search, navigate]);
+
   const { activeBills, historyBills, counts } = useCommitmentsBillData({
     sortedCommitments,
     getEffectiveStatus,
@@ -105,35 +118,37 @@ const Commitments = () => {
         title={copy.billsPageTitle}
         eyebrow={t("bills.eyebrowMonthly")}
         actions={
-          pageTab === "spend" ? (
-            <>
-              <button
-                type="button"
-                className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                aria-label={t("bills.detectSmsSpend")}
-                onClick={() => setSpendSmsOpen(true)}
-              >
-                <CtIcon name="device-mobile" size={22} />
-              </button>
-              <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
-                +
-              </Fab>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                aria-label={t("bills.detectSms")}
-                onClick={() => setSmsOpen(true)}
-              >
-                <CtIcon name="device-mobile" size={22} />
-              </button>
-              <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
-                +
-              </Fab>
-            </>
-          )
+          <div className="ct-header-actions">
+            {pageTab === "spend" ? (
+              <>
+                <button
+                  type="button"
+                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+                  aria-label={t("bills.detectSmsSpend")}
+                  onClick={() => setSpendSmsOpen(true)}
+                >
+                  <CtIcon name="device-mobile" size={22} />
+                </button>
+                <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
+                  +
+                </Fab>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+                  aria-label={t("bills.detectSms")}
+                  onClick={() => setSmsOpen(true)}
+                >
+                  <CtIcon name="device-mobile" size={22} />
+                </button>
+                <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
+                  +
+                </Fab>
+              </>
+            )}
+          </div>
         }
       />
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />

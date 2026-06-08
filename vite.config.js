@@ -74,7 +74,8 @@ export default defineConfig({
         importScripts: ["notification-handler.js"],
       },
       devOptions: {
-        enabled: true,
+        // Off in dev — stale SW caches break HMR after refactors (blank page).
+        enabled: false,
         type: "module",
         navigateFallback: "index.html",
       },

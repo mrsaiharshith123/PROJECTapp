@@ -3,7 +3,58 @@ import { Modal } from "../../../primitives/Modal.jsx";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { Caption } from "../../../primitives/Text.jsx";
 import { ToolTile } from "../../ToolTile.jsx";
-import { PROFILE_CONTROL_GROUPS, profileGroupForPanel } from "./profileControlGroups.js";
+
+const PROFILE_CONTROL_GROUPS = [
+  {
+    id: "account",
+    icon: "user",
+    titleKey: "profileHub.group.account",
+    hintKey: "profileHub.group.accountHint",
+    panels: ["personal-identity", "personal-account"],
+  },
+  {
+    id: "financial",
+    icon: "currency-inr",
+    titleKey: "profileHub.group.financial",
+    hintKey: "profileHub.group.financialHint",
+    panels: ["personal-money", "history"],
+  },
+  {
+    id: "notifications",
+    icon: "bell",
+    titleKey: "profileHub.group.notifications",
+    hintKey: "profileHub.group.notificationsHint",
+    panels: ["notifications"],
+  },
+  {
+    id: "privacy",
+    icon: "lock",
+    titleKey: "profileHub.group.privacy",
+    hintKey: "profileHub.group.privacyHint",
+    panels: ["backup"],
+    privacyLink: true,
+  },
+  {
+    id: "appearance",
+    icon: "palette",
+    titleKey: "profileHub.group.appearance",
+    hintKey: "profileHub.group.appearanceHint",
+    panels: ["personal-appearance"],
+  },
+  {
+    id: "help",
+    icon: "chat-circle",
+    titleKey: "profileHub.group.help",
+    hintKey: "profileHub.group.helpHint",
+    panels: ["guide", "support"],
+  },
+];
+
+/** @param {string | null} openId */
+function profileGroupForPanel(openId) {
+  if (!openId) return null;
+  return PROFILE_CONTROL_GROUPS.find((g) => g.panels.includes(openId)) || null;
+}
 
 /**
  * App settings in a sheet — opened from the profile hero gear, not inline on the page.

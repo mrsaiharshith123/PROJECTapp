@@ -21,7 +21,7 @@ CommitTrack is a **local-first PWA** for tracking **financial commitments** (bil
 |-------|--------|
 | UI | React 19 + React Router |
 | Build | Vite 8 + PWA (`vite-plugin-pwa`) |
-| Styling | Design system under `src/ui/styles/` (`ct-*` classes, not ad-hoc Tailwind in app code) |
+| Styling | Financial Life design system — `src/ui/styles/` (`ct-*` + `--ct-life-*` tokens); `tailwind.config.js` bridges legacy Tailwind colors in `src/ui/` |
 | Logic | Plain JS modules in `src/engines/` (no React) |
 | Tests | Vitest |
 | Types | TypeScript checks JS via `checkJs` (`tsconfig.json`) |

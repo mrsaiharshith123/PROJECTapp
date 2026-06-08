@@ -6,11 +6,11 @@ export function getChartTheme(mode) {
   const isLight = mode === "light";
   return {
     colors: isLight
-      ? ["#6d4aff", "#7c4dff", "#16a34a", "#d97706", "#0284c7", "#db2777", "#9333ea", "#94a3b8"]
-      : ["#7c4dff", "#9b6dff", "#3be58f", "#ffb020", "#6ecbff", "#ff4d6d", "#b794ff", "#6e6e82"],
-    tick: { fontSize: 10, fill: isLight ? "#64748b" : "#9a9aaf" },
+      ? ["#6d4aff", "#5b4dff", "#10b981", "#d97706", "#0284c7", "#db2777", "#7c4dff", "#8b93a7"]
+      : ["#5b4dff", "#9b6dff", "#34d399", "#ffb020", "#6ecbff", "#ff4d6d", "#b8a8ff", "#7a7894"],
+    tick: { fontSize: 10, fill: isLight ? "#8b93a7" : "#9a97b0" },
     grid: {
-      stroke: isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(155, 109, 255, 0.08)",
+      stroke: isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(124, 92, 255, 0.08)",
       strokeDasharray: "3 6",
     },
     tooltip: {
@@ -32,9 +32,9 @@ export function getChartTheme(mode) {
       wrapperStyle: { fontSize: 10, color: isLight ? "#64748b" : "#9a9aaf", paddingTop: 8 },
     },
     series: {
-      accent: "#7c4dff",
-      accentSoft: isLight ? "#8b6cff" : "#9b6dff",
-      success: isLight ? "#16a34a" : "#3be58f",
+      accent: isLight ? "#6d4aff" : "#5b4dff",
+      accentSoft: isLight ? "#7c4dff" : "#9b6dff",
+      success: isLight ? "#10b981" : "#34d399",
       warning: isLight ? "#d97706" : "#ffb020",
       info: isLight ? "#0284c7" : "#6ecbff",
     },

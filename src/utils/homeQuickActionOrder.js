@@ -20,10 +20,16 @@ export function orderHomeQuickActions(savedOrder) {
     seen.add(id);
     out.push(id);
   }
-  for (const id of defaultOrder) {
-    if (!seen.has(id)) out.push(id);
-  }
   return out;
+}
+
+/**
+ * @param {string[] | undefined} visibleOrder
+ * @returns {string[]}
+ */
+export function hiddenHomeQuickActions(visibleOrder) {
+  const visible = new Set(orderHomeQuickActions(visibleOrder));
+  return HOME_QUICK_ACTION_IDS.filter((id) => !visible.has(id));
 }
 
 /**

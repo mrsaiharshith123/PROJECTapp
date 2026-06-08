@@ -34,11 +34,19 @@ export function buildQuickScenarioSummaries({
       preset: "job_loss",
       mode,
     });
+    const beforeMo = job.beforeSurvival?.survivalMonths;
+    const afterMo = job.afterSurvival?.survivalMonths;
+    const cap = (m) => (m != null && Number.isFinite(m) ? Math.min(99, Math.round(m * 10) / 10) : null);
+    const afterDisplay = cap(afterMo);
+    const beforeDisplay = cap(beforeMo);
     rows.push({
       id: "job_loss",
       label: "Job loss (income → 0)",
       headline: job.affordability?.label || "—",
-      detail: `Survival ~${job.afterSurvival?.survivalMonths ?? "—"} mo vs ${job.beforeSurvival?.survivalMonths ?? "—"} mo before`,
+      detail:
+        afterDisplay != null && beforeDisplay != null
+          ? `Runway ~${afterDisplay} mo with no income (was ~${beforeDisplay} mo while employed).`
+          : "Models zero income against your current bills and savings.",
     });
   }
 
@@ -53,39 +61,42 @@ export function buildQuickScenarioSummaries({
   }
 
   const incForSim = combined > 0 ? combined : primary;
-  const fee = simulateNewExpense({
-    income: incForSim,
-    commitments,
-    getEffectiveStatus,
-    liquidSavings,
-    freeMoney: cashCombined.freeMoney,
-    amount: 15000,
-    preset: "child",
-    mode,
-  });
-  rows.push({
-    id: "fee_hike",
-    label: "+₹15k/mo (fees / help)",
-    headline: fee.affordability?.label || "—",
-    detail: `Free cash after: ~₹${Math.round(fee.affordability?.freeMoneyAfter ?? 0).toLocaleString("en-IN")}/mo`,
-  });
 
-  const med = simulateNewExpense({
-    income: incForSim,
-    commitments,
-    getEffectiveStatus,
-    liquidSavings,
-    freeMoney: cashCombined.freeMoney,
-    amount: 50000,
-    preset: "gadget",
-    mode,
-  });
-  rows.push({
-    id: "medical_lump",
-    label: "One-off ₹50k (medical / repair)",
-    headline: med.affordability?.label || "—",
-    detail: `Free cash after: ~₹${Math.round(med.affordability?.freeMoneyAfter ?? 0).toLocaleString("en-IN")}/mo`,
-  });
+  if (incForSim > 0) {
+    const fee = simulateNewExpense({
+      income: incForSim,
+      commitments,
+      getEffectiveStatus,
+      liquidSavings,
+      freeMoney: cashCombined.freeMoney,
+      amount: 15000,
+      preset: "child",
+      mode,
+    });
+    rows.push({
+      id: "fee_hike",
+      label: "+₹15k/mo extra cost",
+      headline: fee.affordability?.label || "—",
+      detail: `Free cash after: ~₹${Math.round(fee.affordability?.freeMoneyAfter ?? 0).toLocaleString("en-IN")}/mo`,
+    });
+
+    const med = simulateNewExpense({
+      income: incForSim,
+      commitments,
+      getEffectiveStatus,
+      liquidSavings,
+      freeMoney: cashCombined.freeMoney,
+      amount: 50000,
+      preset: "purchase",
+      mode,
+    });
+    rows.push({
+      id: "lump_shock",
+      label: "One-off ₹50k shock",
+      headline: med.affordability?.label || "—",
+      detail: `Free cash after: ~₹${Math.round(med.affordability?.freeMoneyAfter ?? 0).toLocaleString("en-IN")}/mo`,
+    });
+  }
 
   const before = computeSurvivalAnalysis({
     income: combined > 0 ? combined : primary,

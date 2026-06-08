@@ -4,6 +4,7 @@
 PROJECTapp/
 ├── docs/                    ← You are here (developer handbook)
 ├── public/                  PWA assets, notification-handler.js, icons
+├── tailwind.config.js       Color bridge (`--ct-tw-*`) for legacy Tailwind utilities in ui/
 ├── scripts/                 Build & audit tooling (Node, not app runtime)
 ├── src/
 │   ├── main.jsx, App.jsx    App entry + routing + I18nProvider
@@ -16,7 +17,8 @@ PROJECTapp/
 │   ├── guidance/            Education registries + explain helpers (not UI)
 │   ├── governance/          Audit registries (not in production bundle)
 │   ├── services/            Supabase auth, sync, analytics, notifications, Razorpay, OTP confirmation
-│   ├── utils/               Storage, dates, lending, repayment, migration
+│   ├── storage/             App snapshot export shape (`appSnapshot.js`) for cloud sync
+│   ├── utils/               Storage, dates, lending, repayment, migration, spend series (`monthSpendSeries.js`, `salarySpendBar.js`)
 │   ├── types/               TypeScript types (context, global augmentations)
 │   └── ui/                  ★ ALL visual UI (see below)
 ├── supabase/                Migrations + schema snapshot (see supabase/README.md)
@@ -63,9 +65,9 @@ src/ui/
 │   ├── admin/            Internal product intelligence widgets
 │   ├── analytics/        Charts & breakdowns
 │   └── auth/             Account panel
-├── layout/               Screen shell, Navbar, ErrorBoundary
-├── styles/               tokens.css, components.css (all ct-* rules)
-└── tokens/               severity, category chips, bill status mapping
+├── layout/               Screen shell (`Screen.jsx` — `max-w-lg` column), Navbar, ErrorBoundary
+├── styles/               tokens.css, components.css, theme-light.css, net-worth.css
+└── tokens/               chartTheme.js, severity, category chips, bill status mapping
 ```
 
 ### Where to add what
@@ -100,7 +102,9 @@ No React imports. Examples:
 | `subscriptionLeak.js` | Subscription audit insights |
 | `lendingAgreement.js`, `lendingTrust.js` | Promissory note text, trust scores |
 | `chitFund.js` | Chit installments |
-| `quickScenarios.js` | What-if stress (in `MoneyPlannerPanel`) |
+| `quickScenarios.js`, `scenarioCatalog.js` | What-if stress + unified scenario tiles |
+| `profileAchievements.js` | Profile milestones / wins |
+| `netWorth/commitmentWealth.js` | Bill-derived assets & liabilities |
 | `notifications.js` | In-app feed + contextual reminder copy |
 | `forecastSeries.js` | Cashflow months |
 | `financialHealth.js` | Health score tile |

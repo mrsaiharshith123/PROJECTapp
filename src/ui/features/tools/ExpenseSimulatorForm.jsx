@@ -13,7 +13,7 @@ import {
   translateAffordWarning,
 } from "../../../i18n/affordLabels.js";
 
-const LOAN_PRESETS = new Set(["emi", "home_loan", "car_loan", "personal_loan"]);
+const LOAN_PRESETS = new Set(["loan", "emi", "home_loan", "car_loan", "personal_loan"]);
 
 /** Affordability simulator — EMI presets support product price, rate, and tenure. */
 export default function ExpenseSimulatorForm() {
@@ -21,7 +21,7 @@ export default function ExpenseSimulatorForm() {
   const { commitments, settings, getEffectiveStatus } = useCommitTrack();
   const presets = getExpensePresetsForMode(settings);
   const presetKeys = Object.keys(presets);
-  const [preset, setPreset] = useState(presetKeys[0] || "emi");
+  const [preset, setPreset] = useState(presetKeys[0] || "loan");
   const [amount, setAmount] = useState("");
   const [productPrice, setProductPrice] = useState("");
   const [downPayment, setDownPayment] = useState("");

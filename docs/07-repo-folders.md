@@ -30,7 +30,7 @@ The repo includes **`.vscode/settings.json`** hiding `dist`, `dev-dist`, and `no
 ```bash
 npm run clean    # remove dist/ and dev-dist/
 npm run build    # recreates dist/
-npm run dev      # may recreate dev-dist/ (PWA in dev)
+npm run dev      # PWA dev SW disabled by default (see vite.config.js)
 ```
 
 ## If you want fewer folders total
@@ -38,6 +38,6 @@ npm run dev      # may recreate dev-dist/ (PWA in dev)
 | Goal | Action |
 |------|--------|
 | No GitHub auto-deploy | Remove `.github/workflows/deploy-pages.yml`; deploy manually with `npm run deploy`. |
-| No PWA folder in dev | Set `devOptions.enabled: false` in `vite.config.js` (lose service-worker testing in dev). |
+| No PWA folder in dev | Already set: `devOptions.enabled: false` in `vite.config.js`; service worker registers in production only (`src/main.jsx`). |
 
 **Do not delete `dist` from the build pipeline** — `npm run build` and deploy still need to *create* `dist/`; you just don't store it in git.

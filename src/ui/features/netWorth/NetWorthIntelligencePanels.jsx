@@ -3,8 +3,9 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Card, Caption, Body, Heading, InfoTip } from "../../index.js";
 import { FlexibleDataChart } from "../analytics/charts/FlexibleDataChart.jsx";
 import { useResolvedTheme } from "../../../hooks/useResolvedTheme.js";
-import { PRESET_SCENARIOS, runWealthSimulation } from "../../../engines/netWorth/simulation.js";
-import { useState } from "react";
+import { runWealthSimulation } from "../../../engines/netWorth/simulation.js";
+import { getApplicableWealthScenarios } from "../../../engines/scenarioCatalog.js";
+import { useMemo, useState } from "react";
 
 export function LiquidityPanel({ liquidity, privacyMode }) {
   const { t } = useTranslation();
@@ -14,17 +15,11 @@ export function LiquidityPanel({ liquidity, privacyMode }) {
         <Heading level={3}>{t("netWorth.liquidity.title")}</Heading>
         <InfoTip text={t("netWorth.liquidity.tip")} />
       </div>
-      <div className="ct-grid-2 gap-3 mt-3">
-        <div className="ct-nw-stat">
-          <Caption>{t("netWorth.liquidity.survival")}</Caption>
-          <Body className="ct-numeral font-bold">
-            {t("netWorth.liquidity.months", { count: liquidity.survivalMonths })}
-          </Body>
-        </div>
-        <div className="ct-nw-stat">
-          <Caption>{t("netWorth.liquidity.flexibility")}</Caption>
-          <Body className="ct-numeral font-bold">{liquidity.flexibilityScore}/100</Body>
-        </div>
+      <div className="ct-nw-stat mt-3">
+        <Caption>{t("netWorth.liquidity.survival")}</Caption>
+        <Body className="ct-numeral font-bold">
+          {t("netWorth.liquidity.months", { count: liquidity.survivalMonths })}
+        </Body>
       </div>
       <Caption className="mt-3 block">
         {t(`netWorth.liquidity.strength.${liquidity.emergencyLiquidityStrength}`)}
@@ -51,14 +46,6 @@ export function HealthScorePanel({ lifeScore }) {
         <span className="ct-nw-score-value ct-numeral">{pct}</span>
       </div>
       <Body className="text-center mt-2 font-semibold">{t(lifeScore.labelKey)}</Body>
-      <div className="ct-stack-sm mt-4">
-        {Object.entries(lifeScore.breakdown).map(([k, v]) => (
-          <div key={k} className="ct-row-between">
-            <Caption>{t(`netWorth.lifeScore.factor.${k}`)}</Caption>
-            <Caption className="font-semibold">{v}</Caption>
-          </div>
-        ))}
-      </div>
       {lifeScore.actionKeys?.length > 0 && (
         <ul className="ct-stack-sm mt-4 text-sm">
           {lifeScore.actionKeys.map((key) => (
@@ -76,40 +63,17 @@ export function PressureWealthPanel({ pressure, cashFlow, privacyMode }) {
     <Card className="ct-nw-panel ct-animate-fade-up">
       <Heading level={3}>{t("netWorth.pressure.title")}</Heading>
       <Body className="mt-2">{t(pressure.postureKey)}</Body>
-      <div className="ct-grid-2 gap-3 mt-3">
-        <div className="ct-nw-stat">
-          <Caption>{t("netWorth.pressure.obligation")}</Caption>
-          <Body className="font-bold">{pressure.obligationIntensity}%</Body>
-        </div>
-        <div className="ct-nw-stat">
-          <Caption>{t("netWorth.cashFlow.breathing")}</Caption>
-          <Body className="ct-numeral font-bold">
-            {privacyMode ? "••••" : formatInr(cashFlow.leftoverCash)}
-          </Body>
-        </div>
+      <div className="ct-nw-stat mt-3">
+        <Caption>{t("netWorth.cashFlow.breathing")}</Caption>
+        <Body className="ct-numeral font-bold">
+          {privacyMode ? "••••" : formatInr(cashFlow.leftoverCash)}
+        </Body>
       </div>
       {pressure.narrativeKeys.map((n) => (
         <Caption key={n.key} className="mt-2 block">
           {t(n.key, n.params)}
         </Caption>
       ))}
-    </Card>
-  );
-}
-
-export function InsightsPanel({ insights }) {
-  const { t } = useTranslation();
-  if (!insights.length) return null;
-  return (
-    <Card className="ct-nw-panel ct-list-animate">
-      <Heading level={3}>{t("netWorth.insights.title")}</Heading>
-      <ul className="ct-stack-sm mt-3">
-        {insights.map((ins) => (
-          <li key={ins.id} className={`ct-nw-insight ct-nw-insight-${ins.tone}`}>
-            {t(ins.key, ins.params)}
-          </li>
-        ))}
-      </ul>
     </Card>
   );
 }
@@ -137,7 +101,7 @@ export function AllocationCharts({ intel, privacyMode }) {
             data={assetData}
             chartType="donut"
             theme={theme}
-            emptyMessage={t("netWorth.empty.assets")}
+            emptyMessage=""
           />
         </Card>
       )}
@@ -147,7 +111,7 @@ export function AllocationCharts({ intel, privacyMode }) {
           data={debtData}
           chartType="bar"
           theme={theme}
-          emptyMessage={t("netWorth.empty.chart")}
+          emptyMessage=""
         />
       </Card>
     </div>
@@ -156,16 +120,28 @@ export function AllocationCharts({ intel, privacyMode }) {
 
 export function SimulationPanel({ simulationBase }) {
   const { t } = useTranslation();
-  const [activeId, setActiveId] = useState(PRESET_SCENARIOS[0].id);
-  const scenario = PRESET_SCENARIOS.find((s) => s.id === activeId) || PRESET_SCENARIOS[0];
-  const result = runWealthSimulation(simulationBase, scenario);
+  const scenarios = useMemo(
+    () => getApplicableWealthScenarios(simulationBase || {}),
+    [simulationBase],
+  );
+  const [activeId, setActiveId] = useState(() => scenarios[0]?.id || "");
+  const scenario = scenarios.find((s) => s.id === activeId) || scenarios[0];
+  const result = scenario ? runWealthSimulation(simulationBase, scenario) : null;
+
+  if (!scenarios.length) {
+    return (
+      <Card className="ct-nw-panel">
+        <Caption>{t("tools.planner.scenariosEmpty")}</Caption>
+      </Card>
+    );
+  }
 
   return (
     <Card className="ct-nw-panel">
       <Heading level={3}>{t("netWorth.sim.title")}</Heading>
       <Caption className="mt-1 block">{t("netWorth.sim.subtitle")}</Caption>
       <div className="ct-row flex-wrap gap-2 mt-3">
-        {PRESET_SCENARIOS.map((s) => (
+        {scenarios.map((s) => (
           <button
             key={s.id}
             type="button"
@@ -176,6 +152,7 @@ export function SimulationPanel({ simulationBase }) {
           </button>
         ))}
       </div>
+      {result && (
       <div className="ct-nw-sim-result mt-4">
         <div className="ct-grid-2 gap-3">
           <div>
@@ -201,48 +178,7 @@ export function SimulationPanel({ simulationBase }) {
           </div>
         </div>
       </div>
+      )}
     </Card>
-  );
-}
-
-export function TimelinePanel({ timeline }) {
-  const { t } = useTranslation();
-  if (!timeline.length) {
-    return (
-      <Card className="ct-nw-panel">
-        <Caption>{t("netWorth.timeline.empty")}</Caption>
-      </Card>
-    );
-  }
-  return (
-    <Card className="ct-nw-panel ct-list-animate">
-      <Heading level={3}>{t("netWorth.timeline.title")}</Heading>
-      <ol className="ct-nw-timeline mt-4">
-        {timeline.map((ev) => (
-          <li key={ev.id} className={`ct-nw-timeline-item ct-nw-timeline-${ev.tone}`}>
-            <span className="ct-nw-timeline-dot" />
-            <div>
-              <Caption className="font-semibold">{ev.month}</Caption>
-              <Body className="!text-sm">{t(ev.labelKey, ev.value ? { value: ev.value } : undefined)}</Body>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </Card>
-  );
-}
-
-export function MilestonesStrip({ milestones }) {
-  const { t } = useTranslation();
-  if (!milestones.length) return null;
-  const recent = [...milestones].sort((a, b) => b.achievedAt - a.achievedAt).slice(0, 4);
-  return (
-    <div className="ct-nw-milestones ct-animate-fade-in">
-      {recent.map((m) => (
-        <span key={m.id} className="ct-nw-milestone-badge">
-          {t(m.labelKey)}
-        </span>
-      ))}
-    </div>
   );
 }

@@ -8,7 +8,7 @@ All commands run from the project root (`PROJECTapp/`).
 |---------|----------------|
 | `npm run dev` | Start Vite dev server with HMR (default `http://localhost:5173`) |
 | `npm run preview` | Serve production build locally (run `build` first) |
-| `npm test` | Run Vitest once (166 tests across engines/utils/services/i18n) |
+| `npm test` | Run Vitest once (205 tests across engines/utils/services/i18n) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint on the repo |
 | `npm run lint:fix` | ESLint with auto-fix where safe |

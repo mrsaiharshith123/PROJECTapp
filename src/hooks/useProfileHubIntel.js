@@ -3,7 +3,7 @@ import { useCommitTrack } from "../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { useStabilityIntel } from "./useStabilityIntel.js";
 import { useCloudSync } from "./useCloudSync.js";
-import { computePaymentMonthStreak, computeControlScore } from "../utils/profileStats.js";
+import { computePaymentMonthStreak } from "../utils/profileStats.js";
 import { snapshotsToPressureTrend } from "../engines/analyticsSeries.js";
 import { formatInr } from "../constants/symbols.js";
 import { isActiveBill } from "../utils/billLifecycle.js";
@@ -22,7 +22,6 @@ export function useProfileHubIntel() {
         ? (pressureTrend[pressureTrend.length - 1].pressure || 0) - (pressureTrend[0].pressure || 0)
         : 0;
     const paymentStreak = computePaymentMonthStreak(ctx.commitments, ctx.lendings);
-    const controlScore = computeControlScore(ctx.commitments, ctx.getEffectiveStatus);
     const emergency = stable.emergency;
     const overdueCount = ctx.commitments.filter((c) => ctx.getEffectiveStatus(c) === "overdue").length;
     const pendingCount = ctx.commitments.filter(
@@ -63,16 +62,14 @@ export function useProfileHubIntel() {
     }
 
     return {
-      stabilityScore: intel.stability.score,
-      stabilityLabel: intel.stability.label,
-      healthScore: intel.health.score,
+      pressureScore: intel.stability.score,
+      pressureLabel: intel.stability.label,
       freeMoney: intel.freeMoneyAfterBurden,
       burdenRatio: intel.burdenRatio,
       overdueCount,
       pendingCount,
       emergency,
       paymentStreak,
-      controlScore,
       pressureDelta,
       syncLabel,
       syncBusy: sync.busy,

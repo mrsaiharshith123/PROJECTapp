@@ -1,11 +1,77 @@
 import { useMemo, useState } from "react";
 import { simulatePrepayment } from "../../../engines/prepayment.js";
+import { comparePayoffStrategies } from "../../../engines/payoffOptimizer.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import { formatInr, INR, ARROW } from "../../../constants/symbols.js";
+import { formatInr, INR, ARROW, EM_DASH } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
+
+function DebtOrderPanel() {
+  const { t } = useTranslation();
+  const { commitments, getEffectiveStatus } = useCommitTrack();
+  const [payoffExtra, setPayoffExtra] = useState("");
+  const payoff = useMemo(() => {
+    const x = Number(payoffExtra) || 0;
+    return comparePayoffStrategies(commitments, getEffectiveStatus, x);
+  }, [commitments, getEffectiveStatus, payoffExtra]);
+
+  return (
+    <div className="ct-stack">
+      <Caption>{t("tools.planner.debtIntro")}</Caption>
+      <div>
+        <label className="ct-metric-label block">{t("tools.planner.extraDebt", { currency: INR })}</label>
+        <input
+          className="ct-input mt-1"
+          value={payoffExtra}
+          onChange={(e) => setPayoffExtra(e.target.value)}
+          placeholder="0"
+          inputMode="numeric"
+        />
+      </div>
+      {payoff.debts.length === 0 ? (
+        <Caption>{t("tools.planner.noDebts")}</Caption>
+      ) : (
+        <div className="ct-stack-sm">
+          {payoff.recommendation && (
+            <div className="ct-insight-accent">
+              <Body className="!text-sm font-semibold">{payoff.recommendation.label}</Body>
+              {payoff.recommendation.firstPay && (
+                <Caption className="block">
+                  {t("tools.planner.startWith", {
+                    name: payoff.recommendation.firstPay.name,
+                    reason: payoff.recommendation.reason,
+                  })}
+                </Caption>
+              )}
+            </div>
+          )}
+          <div>
+            <Caption className="font-semibold block">{t("tools.planner.snowball")}</Caption>
+            <ol className="list-decimal list-inside ct-stack-sm">
+              {payoff.snowball.map((d) => (
+                <li key={d.id}>
+                  {d.name} {EM_DASH} {formatInr(d.balance)} {EM_DASH} {d.interestRate}%
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <Caption className="font-semibold block">{t("tools.planner.avalanche")}</Caption>
+            <ol className="list-decimal list-inside ct-stack-sm">
+              {payoff.avalanche.map((d) => (
+                <li key={d.id}>
+                  {d.name} {EM_DASH} {formatInr(d.balance)} {EM_DASH} {d.interestRate}%
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function LoanToolsPanel() {
   const { t } = useTranslation();
@@ -21,6 +87,7 @@ export default function LoanToolsPanel() {
     () => [
       { id: "extra", label: t("tools.loan.tabExtra") },
       { id: "timing", label: t("tools.loan.tabTiming") },
+      { id: "order", label: t("tools.loan.tabOrder") },
     ],
     [t],
   );
@@ -89,6 +156,7 @@ export default function LoanToolsPanel() {
           todayStr={todayStr}
         />
       )}
+      {tab === "order" && <DebtOrderPanel />}
     </div>
   );
 }

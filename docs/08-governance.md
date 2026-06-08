@@ -46,6 +46,12 @@ npm run audit:frontend   # design, mobile, duplicates, ui
 npm run audit:platform   # architecture, features
 ```
 
+### Known advisories (June 2026)
+
+| Scan | Item | Action |
+|------|------|--------|
+| `audit:charts` (duplicates) | `categories.js` in two folders | Intentional split (`constants/` vs feature-local); rename only when touching imports |
+
 ### Flags
 
 ```bash
