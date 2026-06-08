@@ -4,6 +4,9 @@ import {
   grossObligationInMonth,
   paymentsInMonth,
 } from "../constants/repeatTypes.js";
+import { lendingDueInMonth, lendingInflowInMonth } from "./lendingMonthCash.js";
+
+export { lendingDueInMonth, lendingInflowInMonth } from "./lendingMonthCash.js";
 
 /**
  * Gross scheduled obligation in a month (before payments this month).
@@ -23,44 +26,13 @@ export function amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, to
 }
 
 /**
- * 6–12 month cashflow forecast: obligations due per month vs income.
- */
-function lendingDueInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr) {
-  let sum = 0;
-  for (const l of lendings || []) {
-    if (l.type !== "borrowed") continue;
-    if (getEffectiveLendingStatus(l, todayStr) === "complete") continue;
-    for (const row of l.repaymentSchedule || []) {
-      if ((row.dueDate || "").startsWith(monthKey) && row.paymentStatus !== "paid") {
-        sum += Math.max(0, Number(row.totalPayment) || 0);
-      }
-    }
-    if (!l.repaymentSchedule?.length && (l.dueDate || "").startsWith(monthKey)) {
-      sum += Math.max(0, Number(l.remainingAmount) || 0);
-    }
-  }
-  return sum;
-}
-
-function lendingInflowInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr) {
-  let sum = 0;
-  for (const l of lendings || []) {
-    if (l.type !== "lent") continue;
-    if (getEffectiveLendingStatus(l, todayStr) === "complete") continue;
-    for (const row of l.repaymentSchedule || []) {
-      if ((row.dueDate || "").startsWith(monthKey) && row.paymentStatus !== "paid") {
-        sum += Math.max(0, Number(row.totalPayment) || 0);
-      }
-    }
-  }
-  return sum;
-}
-
-/**
  * 6–12 month cashflow forecast: bill obligations + lending outflow vs income + expected receivables.
  */
+/** Money outlook window: 2 months back, current, 3 months ahead. */
+export const MONEY_OUTLOOK_WINDOW = { months: 6, startOffset: -2 };
+
 /**
- * @param {{ lendings?: object[], getEffectiveLendingStatus?: (l: object, todayStr?: string) => string }} [options]
+ * @param {{ lendings?: object[], getEffectiveLendingStatus?: (l: object, todayStr?: string) => string, startOffset?: number }} [options]
  */
 export function buildCashflowForecastSeries(
   commitments,
@@ -70,12 +42,12 @@ export function buildCashflowForecastSeries(
   months = 12,
   options = {}
 ) {
-  const { lendings = [], getEffectiveLendingStatus } = options;
+  const { lendings = [], getEffectiveLendingStatus, startOffset = 0 } = options;
   const income = Math.max(0, monthlyIncome || 0);
   const today = parseISO(`${todayStr}T12:00:00`);
   const rows = [];
 
-  for (let i = 0; i < months; i++) {
+  for (let i = startOffset; i < startOffset + months; i++) {
     const d = addMonths(today, i);
     const monthKey = format(d, "yyyy-MM");
     const monthNum = format(d, "MM");

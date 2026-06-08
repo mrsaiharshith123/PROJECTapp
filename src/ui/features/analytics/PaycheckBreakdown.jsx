@@ -28,8 +28,20 @@ export default function PaycheckBreakdown({
 
   const steps = [
     { label: incomeStepLabel, value: breakdown.income, tone: "income" },
-    { label: t("analytics.fixedCommitments"), value: -breakdown.fixedMonthly, tone: "fixed" },
-    { label: t("analytics.variableCommitments"), value: -breakdown.variableMonthly, tone: "variable" },
+    {
+      label: t("analytics.recurringBills"),
+      value: -(breakdown.recurringMonthly ?? breakdown.fixedMonthly),
+      tone: "fixed",
+    },
+    {
+      label: t("analytics.variableLoggedSpend"),
+      value: -(breakdown.loggedSpendThisMonth ?? breakdown.variableMonthly),
+      tone: "variable",
+      detail:
+        breakdown.loggedSpendThisMonth > 0
+          ? t("analytics.variableLoggedHint")
+          : t("analytics.variableLoggedEmpty"),
+    },
     {
       label: t("analytics.freeCashRemaining"),
       value: breakdown.freeCash,
@@ -67,7 +79,10 @@ export default function PaycheckBreakdown({
           <div key={row.label}>
             {i > 0 && <p className="ct-paycheck-arrow">↓</p>}
             <div className="ct-paycheck-row">
-              <span className="ct-caption">{row.label}</span>
+              <span className="ct-caption">
+                {row.label}
+                {row.detail ? <span className="block text-[11px] opacity-80 mt-0.5">{row.detail}</span> : null}
+              </span>
               <span className={`ct-metric-value ${TONE_CLASS[row.tone]} ${row.bold ? "text-base" : ""}`}>
                 {row.value < 0 ? "−" : ""}
                 {formatInr(Math.abs(row.value))}

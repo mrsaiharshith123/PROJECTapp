@@ -44,6 +44,8 @@ Last reviewed: June 2026.
 | Profile entry (admin-only) | ✅ | `ui/features/profile/hub/ProfileAdminEntry.jsx` |
 | Route guard + `isAdmin` auth flag | ✅ | `app/RequireAdmin.jsx`, `AuthContext.jsx` |
 
+| Supabase `daily_spends` + RLS | ✅ | `supabase/migrations/20260606030000_daily_spends_table_from_snapshot.sql` (materialized from synced payload) |
+
 **Setup:** apply all three admin migrations in order, then `SELECT grant_committrack_admin('<uuid>');` in Supabase SQL Editor. Full detail: [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md).
 
 **Not tracked:** bill amounts, PAN, SMS content, or other sensitive financial/identity fields.

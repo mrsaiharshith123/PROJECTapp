@@ -24,7 +24,11 @@ export function useStabilityIntel() {
 
   return useMemo(() => {
     const income = combinedMonthlyIncome(ctx.settings);
-    const cash = freeMoneyAfterBurden(ctx.commitments, income, ctx.getEffectiveStatus);
+    const cash = freeMoneyAfterBurden(ctx.commitments, income, ctx.getEffectiveStatus, {
+      lendings: ctx.lendings,
+      getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
+      todayStr: ctx.todayStr,
+    });
     const burdenRatio = income > 0 ? cash.monthlyBurden / income : 0;
 
     const survival = buildSurvivalContext(

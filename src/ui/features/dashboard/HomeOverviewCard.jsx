@@ -15,15 +15,38 @@ import { translateHealthLabel, translatePressureLabel } from "../../../i18n/engi
 export default function HomeOverviewCard() {
   const navigate = useNavigate();
   const { t, locale } = useTranslation();
-  const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const {
+    commitments,
+    lendings,
+    dailySpends,
+    settings,
+    getEffectiveStatus,
+    getEffectiveLendingStatus,
+    todayStr,
+  } = useCommitTrack();
   const intel = useCommitIntel();
   const experienceMode = getExperienceMode(settings);
   const modeCfg = getUserModeConfig(settings.userMode || "salaried");
   const income = combinedMonthlyIncome(settings);
 
   const monthSummary = useMemo(
-    () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income),
-    [commitments, getEffectiveStatus, todayStr, income],
+    () =>
+      computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income, {
+        dailySpends,
+        lendings,
+        getEffectiveLendingStatus,
+        profileId: settings.activeProfileId || "default",
+      }),
+    [
+      commitments,
+      lendings,
+      dailySpends,
+      getEffectiveStatus,
+      getEffectiveLendingStatus,
+      todayStr,
+      income,
+      settings.activeProfileId,
+    ],
   );
 
   const overdueCount = useMemo(
@@ -37,6 +60,14 @@ export default function HomeOverviewCard() {
     () => formatMonthYear(locale, todayStr),
     [locale, todayStr],
   );
+
+  const guidance = monthSummary.spendGuidance;
+  const spendTip =
+    guidance?.isTight && guidance.dailyLifestyleCap > 0
+      ? t("home.dailySpendCapTight", { amount: formatInr(guidance.dailyLifestyleCap) })
+      : guidance?.dailyTotalCap > 0 && monthSummary.spentThisMonth > 0
+        ? t("home.dailySpendRoom", { amount: formatInr(guidance.dailyTotalCap) })
+        : null;
 
   const statusLine = health ? (
     <>
@@ -59,6 +90,12 @@ export default function HomeOverviewCard() {
           · <span className="ct-text-warning">{t("home.overdueCount", { count: overdueCount })}</span>
         </>
       )}
+      {spendTip ? (
+        <>
+          {" "}
+          · <span className={guidance?.isTight ? "ct-text-warning" : undefined}>{spendTip}</span>
+        </>
+      ) : null}
     </>
   ) : null;
 
@@ -69,9 +106,14 @@ export default function HomeOverviewCard() {
         ? t("home.householdMonth")
         : t("mode.salaried");
 
+  const stillDueParts = [formatInr(monthSummary.dueThisMonth)];
+  if (monthSummary.lendingDueThisMonth > 0) {
+    stillDueParts.push(t("home.includingLending", { amount: formatInr(monthSummary.lendingDueThisMonth) }));
+  }
+
   const footerLeft = (
     <>
-      {t("home.stillDue")} <strong>{formatInr(monthSummary.dueThisMonth)}</strong>
+      {t("home.stillDue")} <strong>{stillDueParts.join(" ")}</strong>
       {monthSummary.duePercentOfIncome ? (
         <span> · {t("home.stillDueOfIncome", { percent: monthSummary.duePercentOfIncome })}</span>
       ) : income <= 0 ? (
@@ -85,11 +127,31 @@ export default function HomeOverviewCard() {
   const footerRight = (
     <>
       {freeLabel}{" "}
-      <strong className="ct-hero-metric-success">
+      <strong
+        className={
+          monthSummary.freeCash != null && monthSummary.freeCash < 0
+            ? "ct-hero-metric-warn"
+            : "ct-hero-metric-success"
+        }
+      >
         {monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
       </strong>
     </>
   );
+
+  const footerRow2Left = (
+    <>
+      {t("home.loggedSpend")}{" "}
+      <strong>{formatInr(monthSummary.spentThisMonth)}</strong>
+    </>
+  );
+
+  const footerRow2Right =
+    monthSummary.spentThisMonth > 0 ? (
+      <span className="ct-caption">{t("home.loggedSpendHint")}</span>
+    ) : (
+      <span className="ct-caption">{t("home.logSpendCta")}</span>
+    );
 
   return (
     <HeroMonthCard
@@ -102,6 +164,8 @@ export default function HomeOverviewCard() {
       paidPct={monthSummary.paidPct}
       footerLeft={footerLeft}
       footerRight={footerRight}
+      footerRow2Left={footerRow2Left}
+      footerRow2Right={footerRow2Right}
       statusLine={statusLine}
       onClick={() => navigate("/analytics")}
     />

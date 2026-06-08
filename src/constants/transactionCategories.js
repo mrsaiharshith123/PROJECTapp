@@ -41,7 +41,7 @@ export function lifeCategoryForBillCategory(billCategoryId) {
   return BILL_TO_LIFE[billCategoryId] || "risk";
 }
 
-/** @param {TransactionLifeCategory} id */
+/** @param {TransactionLifeCategory | string} id */
 export function getTransactionLifeCategoryMeta(id) {
   return TRANSACTION_LIFE_CATEGORIES.find((c) => c.id === id) || TRANSACTION_LIFE_CATEGORIES[4];
 }

@@ -508,6 +508,7 @@ export function CommitTrackProvider({ children }) {
           commitments,
           lendings,
           goals,
+          dailySpends,
           settings,
           monthlySnapshots,
         },
@@ -517,6 +518,7 @@ export function CommitTrackProvider({ children }) {
       persistCommitments(() => merged.commitments);
       persistLendings(() => merged.lendings);
       persistGoals(() => merged.goals);
+      persistDailySpends(() => merged.dailySpends);
       persistSettings(() => merged.settings);
       if (merged.monthlySnapshots?.length) {
         persistSnapshots(() => merged.monthlySnapshots);
@@ -527,11 +529,13 @@ export function CommitTrackProvider({ children }) {
       commitments,
       lendings,
       goals,
+      dailySpends,
       settings,
       monthlySnapshots,
       persistCommitments,
       persistLendings,
       persistGoals,
+      persistDailySpends,
       persistSettings,
       persistSnapshots,
     ]

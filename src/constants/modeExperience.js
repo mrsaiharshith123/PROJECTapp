@@ -10,9 +10,9 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
-  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
-  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "logSpend"],
+  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
 };
 
 export const MODE_TOOL_DEFS = {

@@ -160,9 +160,36 @@ function transactionRhythmNote(patterns) {
  * Behavioral transaction insights — integrates with existing insight shape { id, tone, text }.
  * @param {object} input
  */
+function dailySpendBudgetInsight(input) {
+  const { todayStr, burdenRatio = 0, monthSummary } = input;
+  const guidance = monthSummary?.spendGuidance;
+  if (!guidance || !todayStr) return null;
+
+  const spent = monthSummary?.spentThisMonth || 0;
+
+  if ((guidance.isTight || burdenRatio >= 0.5) && guidance.dailyLifestyleCap > 0) {
+    return {
+      id: "txn-daily-budget-cap",
+      tone: guidance.isTight ? "warning" : "caution",
+      text: `Bills use ~${guidance.billsPressurePercent}% of income — aim for about ₹${guidance.dailyLifestyleCap.toLocaleString("en-IN")}/day on lifestyle spends for the rest of the month.`,
+    };
+  }
+  if (spent > 0 && guidance.dailyTotalCap > 0) {
+    return {
+      id: "txn-daily-budget-room",
+      tone: "info",
+      text: `After dues, about ₹${guidance.dailyTotalCap.toLocaleString("en-IN")}/day remains flexible for the rest of this month.`,
+    };
+  }
+  return null;
+}
+
 export function buildTransactionInsights(input) {
   const patterns = detectTransactionPatterns(input);
   const insights = [];
+
+  const budgetInsight = dailySpendBudgetInsight(input);
+  if (budgetInsight) insights.push(budgetInsight);
 
   if (patterns.lifestyle.hasTrend && patterns.lifestyle.growthPercent >= 15) {
     insights.push({

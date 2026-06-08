@@ -20,11 +20,16 @@ import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 
 function mergeTips(intel, stable) {
-  const seen = new Set();
+  const seenIds = new Set();
+  const seenText = new Set();
   const out = [];
   const add = (item) => {
-    if (!item?.text || seen.has(item.id)) return;
-    seen.add(item.id);
+    const text = String(item?.text || "").trim();
+    if (!text) return;
+    const textKey = text.toLowerCase();
+    if (seenIds.has(item.id) || seenText.has(textKey)) return;
+    seenIds.add(item.id);
+    seenText.add(textKey);
     out.push(item);
   };
 
@@ -51,9 +56,6 @@ function mergeTips(intel, stable) {
   }
   if (stable.pressureIntel?.forecastMessage) {
     add({ id: "pressure-forecast", tone: "info", text: stable.pressureIntel.forecastMessage });
-  }
-  for (const item of (intel.transactionFeed || []).slice(0, 2)) {
-    add({ id: item.id, tone: item.tone || "neutral", text: item.text });
   }
   return out;
 }

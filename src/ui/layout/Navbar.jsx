@@ -1,10 +1,12 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { navItemsForMode } from "../../constants/userModes.js";
 import { resolveUserMode } from "../../constants/modeExperience.js";
 import { useTranslation } from "../../i18n/I18nProvider.jsx";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
+import LogSpendModal from "../features/modals/LogSpendModal.jsx";
 
 function Brand() {
   const { t } = useTranslation();
@@ -36,6 +38,19 @@ export function Navbar() {
   const tabItems = navItems.filter((item) => !item.fab);
   const fabItem = navItems.find((item) => item.fab);
   const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
+  const [logSpendOpen, setLogSpendOpen] = useState(false);
+  const longPressTimerRef = useRef(/** @type {number | null} */ (null));
+  const didLongPressRef = useRef(false);
+
+  const clearLongPressTimer = () => {
+    if (longPressTimerRef.current != null) window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = null;
+  };
+
+  const openLogSpend = () => {
+    didLongPressRef.current = true;
+    setLogSpendOpen(true);
+  };
 
   return (
     <>
@@ -72,7 +87,28 @@ export function Navbar() {
                     type="button"
                     className="ct-nav-fab"
                     aria-label={t("nav.fabAria")}
-                    onClick={() => navigate(item.to)}
+                    onPointerDown={() => {
+                      didLongPressRef.current = false;
+                      clearLongPressTimer();
+                      longPressTimerRef.current = window.setTimeout(() => {
+                        openLogSpend();
+                      }, 550);
+                    }}
+                    onPointerUp={() => clearLongPressTimer()}
+                    onPointerCancel={() => clearLongPressTimer()}
+                    onPointerLeave={() => clearLongPressTimer()}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      clearLongPressTimer();
+                      openLogSpend();
+                    }}
+                    onClick={() => {
+                      if (didLongPressRef.current) {
+                        didLongPressRef.current = false;
+                        return;
+                      }
+                      navigate(item.to);
+                    }}
                   >
                     <span className="ct-nav-fab-icon">
                       <NavIcon item={item} active />
@@ -101,6 +137,16 @@ export function Navbar() {
           })}
         </div>
       </nav>
+
+      {logSpendOpen && (
+        <LogSpendModal
+          onClose={() => {
+            setLogSpendOpen(false);
+            didLongPressRef.current = false;
+            clearLongPressTimer();
+          }}
+        />
+      )}
     </>
   );
 }

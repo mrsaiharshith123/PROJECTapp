@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { buildCashflowForecastSeries, amountDueInMonth } from "../forecastSeries.js";
+import {
+  buildCashflowForecastSeries,
+  amountDueInMonth,
+  MONEY_OUTLOOK_WINDOW,
+} from "../forecastSeries.js";
 import { getEffectiveStatus } from "../../utils/commitmentStatus.js";
 
 describe("buildCashflowForecastSeries", () => {
@@ -20,6 +24,21 @@ describe("buildCashflowForecastSeries", () => {
     const june = rows.find((r) => r.monthKey === "2026-06");
     expect(june).toBeDefined();
     expect(june.due).toBe(50000);
+  });
+
+  it("returns six months with two months of history when using outlook window", () => {
+    const rows = buildCashflowForecastSeries([], 50000, getEffectiveStatus, "2026-06-15", MONEY_OUTLOOK_WINDOW.months, {
+      startOffset: MONEY_OUTLOOK_WINDOW.startOffset,
+    });
+    expect(rows).toHaveLength(6);
+    expect(rows.map((r) => r.monthKey)).toEqual([
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09",
+    ]);
   });
 
   it("clears current month after payment recorded in that month", () => {

@@ -1,6 +1,6 @@
 /** @typedef {import('../types/context.js').AuthProfile} AppSettings */
 
-export const APP_SNAPSHOT_VERSION = 1;
+export const APP_SNAPSHOT_VERSION = 2;
 
 /**
  * Canonical export/sync payload — local-first source of truth shape.
@@ -10,6 +10,7 @@ export const APP_SNAPSHOT_VERSION = 1;
  *   settings: AppSettings,
  *   goals: unknown[],
  *   monthlySnapshots: unknown[],
+ *   dailySpends?: unknown[],
  * }} state
  */
 export function buildAppSnapshot(state) {
@@ -21,6 +22,7 @@ export function buildAppSnapshot(state) {
     settings: state.settings ?? {},
     goals: state.goals ?? [],
     monthlySnapshots: state.monthlySnapshots ?? [],
+    dailySpends: state.dailySpends ?? [],
   };
 }
 
@@ -32,6 +34,7 @@ export function isAppSnapshot(payload) {
   return (
     Array.isArray(p.commitments) ||
     Array.isArray(p.lendings) ||
+    Array.isArray(p.dailySpends) ||
     (p.settings != null && typeof p.settings === "object")
   );
 }

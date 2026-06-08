@@ -15,7 +15,6 @@ import BondAdvisor from "../tools/BondAdvisor.jsx";
 import MoneyPlannerPanel from "../tools/MoneyPlannerPanel.jsx";
 import LoanToolsPanel from "../tools/LoanToolsPanel.jsx";
 import IncomeTaxPanel from "../tools/IncomeTaxPanel.jsx";
-import LogSpendModal from "../modals/LogSpendModal.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.jsx";
@@ -166,7 +165,6 @@ export default function DashboardTools() {
         </Modal>
       )}
 
-      {activeTool === "logSpend" && <LogSpendModal onClose={closeTool} />}
     </section>
   );
 }

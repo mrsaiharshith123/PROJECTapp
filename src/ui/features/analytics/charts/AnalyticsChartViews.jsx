@@ -63,10 +63,10 @@ export function PaymentsBarChart({ data, theme }) {
   );
 }
 
-/** @param {{ data: { name: string, value: number }[], theme: import('../../../tokens/chartTheme.js').ChartThemeMode }} props */
-export function CategoryPieChart({ data, theme }) {
+/** @param {{ data: { name: string, value: number }[], theme: import('../../../tokens/chartTheme.js').ChartThemeMode, emptyMessage?: string }} props */
+export function CategoryPieChart({ data, theme, emptyMessage = "No open balances by category." }) {
   const t = getChartTheme(theme);
-  if (!data?.length) return <ChartEmpty message="No open balances by category." />;
+  if (!data?.length) return <ChartEmpty message={emptyMessage} />;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>

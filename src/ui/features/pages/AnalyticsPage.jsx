@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { format, subMonths } from "date-fns";
+import { format } from "date-fns";
 import { Card, InfoTip, PageHeader, Body, Caption, Heading } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import { FinancialPulseCard } from "../../";
@@ -10,18 +10,20 @@ import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import {
   snapshotsToPressureTrend,
   debtReductionFromSnapshots,
-  recurringGrowthSeries,
   lendingPrincipalInterestTotals,
   lendingCompletionStats,
-  freeCashflowTrend,
 } from "../../../engines/analyticsSeries.js";
-import { buildCashflowForecastSeries } from "../../../engines/forecastSeries.js";
-import { freeMoneyAfterBurden, buildIncomeSensitivityRows } from "../../../engines/pressureScore.js";
+import { buildCashflowForecastSeries, MONEY_OUTLOOK_WINDOW } from "../../../engines/forecastSeries.js";
+import { buildIncomeSensitivityRows } from "../../../engines/pressureScore.js";
 import { summarizeHouseholdPayerBurden } from "../../../engines/householdPayer.js";
 import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
+import {
+  buildPaymentsWithVariableSeries,
+  attachVariableSpendToForecast,
+} from "../../../utils/analyticsSpendSeries.js";
 import { formatInr, EM_DASH, ARROW } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
@@ -35,6 +37,7 @@ const Analytics = () => {
   const {
     commitments,
     lendings,
+    dailySpends,
     settings,
     getEffectiveStatus,
     getEffectiveLendingStatus,
@@ -42,55 +45,36 @@ const Analytics = () => {
     todayStr,
   } = useCommitTrack();
 
-  const pieData = useMemo(() => {
-    const map = {};
-    for (const c of commitments) {
-      if (getEffectiveStatus(c) === "paid") continue;
-      const cat = c.category || "Other";
-      map[cat] = (map[cat] || 0) + Math.max(0, Number(c.remainingAmount ?? 0));
-    }
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .filter((d) => d.value > 0)
-      .sort((a, b) => b.value - a.value);
-  }, [commitments, getEffectiveStatus]);
+  const pressureTrend = useMemo(() => snapshotsToPressureTrend(monthlySnapshots, 8), [monthlySnapshots]);
 
-  const barData = useMemo(() => {
-    const rows = [];
-    for (let i = 11; i >= 0; i--) {
-      const d = subMonths(new Date(), i);
-      const key = format(d, "yyyy-MM");
-      const label = format(d, "MMM");
-      let amount = 0;
-      for (const c of commitments) {
-        for (const p of c.payments || []) {
-          if ((p.date || "").startsWith(key)) {
-            amount += Math.max(0, Number(p.amount) || 0);
-          }
-        }
-      }
-      rows.push({ month: label, key, amount });
-    }
-    return rows;
-  }, [commitments]);
-
-  const openPressure = useMemo(() => {
-    return commitments.reduce((s, c) => {
-      if (getEffectiveStatus(c) === "paid") return s;
-      return s + Math.max(0, Number(c.remainingAmount ?? 0));
-    }, 0);
-  }, [commitments, getEffectiveStatus]);
+  const paymentsData = useMemo(
+    () => buildPaymentsWithVariableSeries(commitments, dailySpends, 12),
+    [commitments, dailySpends],
+  );
 
   const analyticsCopy = getAnalyticsCopy(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
+  const today = todayStr || todayYmd();
 
   const paycheckFlow = useMemo(
     () =>
       analyticsCopy.showPaycheckFlow
-        ? computeSalaryBreakdown(commitments, income, getEffectiveStatus)
+        ? computeSalaryBreakdown(commitments, income, getEffectiveStatus, {
+            dailySpends,
+            todayStr: today,
+            profileId: settings.activeProfileId || "default",
+          })
         : null,
-    [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus]
+    [
+      analyticsCopy.showPaycheckFlow,
+      commitments,
+      dailySpends,
+      income,
+      getEffectiveStatus,
+      today,
+      settings.activeProfileId,
+    ],
   );
 
   const payerSplitForPaycheck = useMemo(() => {
@@ -118,45 +102,47 @@ const Analytics = () => {
   );
 
   const monthBreakdown = useMemo(
-    () => computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr || todayYmd(), income),
-    [commitments, getEffectiveStatus, todayStr, income]
-  );
-
-  const cashMetrics = useMemo(
-    () => freeMoneyAfterBurden(commitments, income, getEffectiveStatus),
-    [commitments, income, getEffectiveStatus]
-  );
-  const freeMoney = Math.max(0, cashMetrics.freeMoney);
-  const monthlyBurden = cashMetrics.monthlyBurden;
-
-  const pressureTrend = useMemo(() => snapshotsToPressureTrend(monthlySnapshots, 8), [monthlySnapshots]);
-  const debtReduction = useMemo(() => debtReductionFromSnapshots(monthlySnapshots), [monthlySnapshots]);
-  const recurringPaidTrend = useMemo(
-    () => recurringGrowthSeries(commitments, getEffectiveStatus, 8),
-    [commitments, getEffectiveStatus]
-  );
-
-  const forecastSeries = useMemo(
     () =>
-      buildCashflowForecastSeries(commitments, income, getEffectiveStatus, todayStr || todayYmd(), 12, {
+      computeCurrentMonthSummary(commitments, getEffectiveStatus, today, income, {
+        dailySpends,
         lendings,
         getEffectiveLendingStatus,
+        profileId: settings.activeProfileId || "default",
       }),
-    [commitments, income, getEffectiveStatus, todayStr, lendings, getEffectiveLendingStatus]
+    [
+      commitments,
+      lendings,
+      dailySpends,
+      getEffectiveStatus,
+      getEffectiveLendingStatus,
+      today,
+      income,
+      settings.activeProfileId,
+    ],
   );
+
+  const debtReduction = useMemo(() => debtReductionFromSnapshots(monthlySnapshots), [monthlySnapshots]);
+  const forecastSeries = useMemo(() => {
+    const rows = buildCashflowForecastSeries(
+      commitments,
+      income,
+      getEffectiveStatus,
+      today,
+      MONEY_OUTLOOK_WINDOW.months,
+      {
+        startOffset: MONEY_OUTLOOK_WINDOW.startOffset,
+        lendings,
+        getEffectiveLendingStatus,
+      },
+    );
+    return attachVariableSpendToForecast(rows, dailySpends);
+  }, [commitments, income, getEffectiveStatus, today, lendings, getEffectiveLendingStatus, dailySpends]);
 
   const lendingTotals = useMemo(() => lendingPrincipalInterestTotals(lendings), [lendings]);
   const lendingStats = useMemo(
     () => lendingCompletionStats(lendings, getEffectiveLendingStatus),
     [lendings, getEffectiveLendingStatus]
   );
-  const freeCashTrend = useMemo(() => freeCashflowTrend(monthlySnapshots, 8), [monthlySnapshots]);
-  const monthFooter =
-    (monthBreakdown.duePercentOfIncome
-      ? `${monthBreakdown.duePercentOfIncome} of income committed this month. `
-      : "") +
-    `Recurring burden ≈ ${formatInr(monthlyBurden)}/mo · Still owed overall: ${formatInr(openPressure)} · Free after recurring dues: ${formatInr(freeMoney)}.`;
-
   const microTipSeed = commitments.length;
 
   return (
@@ -185,7 +171,6 @@ const Analytics = () => {
           creditCard={cardPressureAnalytics}
           sensitivityRows={paycheckSensitivity}
         />
-        <Caption>{monthFooter}</Caption>
       </Card>
 
       {isSalariedFamily(settings) && (
@@ -197,18 +182,21 @@ const Analytics = () => {
 
       {lendings.length > 0 && (
         <Card className="ct-stack">
-          <Body className="ct-body-strong">Lending repayment</Body>
+          <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
           <Caption>
             {lendingStats.settled} settled {EM_DASH} {lendingStats.active} active
             {lendingStats.overdue > 0 ? ` ${EM_DASH} ${lendingStats.overdue} overdue` : ""}
+            {monthBreakdown.lendingDueThisMonth > 0
+              ? ` ${EM_DASH} ${t("analytics.lendingDueMonth", { amount: formatInr(monthBreakdown.lendingDueThisMonth) })}`
+              : ""}
           </Caption>
           <div className="ct-grid-2">
             <div className="ct-metric-pair-success">
-              <Caption>Principal paid</Caption>
+              <Caption>{t("analytics.lendingPrincipalPaid")}</Caption>
               <p className="ct-display ct-numeral">{formatInr(lendingTotals.principal)}</p>
             </div>
             <div className="ct-metric-pair-warning">
-              <Caption>Interest paid</Caption>
+              <Caption>{t("analytics.lendingInterestPaid")}</Caption>
               <p className="ct-display ct-numeral">{formatInr(lendingTotals.interest)}</p>
             </div>
           </div>
@@ -217,11 +205,9 @@ const Analytics = () => {
 
       <AnalyticsChartPanel
         forecastSeries={forecastSeries}
-        barData={barData}
-        pieData={pieData}
+        paymentsData={paymentsData}
         pressureTrend={pressureTrend}
-        recurringPaidTrend={recurringPaidTrend}
-        freeCashTrend={freeCashTrend}
+        dailySpends={dailySpends}
       />
 
       {debtReduction && (

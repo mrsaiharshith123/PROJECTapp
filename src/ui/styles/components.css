@@ -773,6 +773,13 @@ html[data-ui="ct"] button.ct-list-row:hover {
   box-shadow: 0 0 28px -14px var(--ct-accent-glow);
   transform: translateY(-1px);
 }
+html[data-ui="ct"] .ct-daily-spend-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
 html[data-ui="ct"] .ct-settings-group {
   display: flex;
   flex-direction: column;
@@ -1271,6 +1278,29 @@ html[data-ui="ct"] .ct-chart-card-head {
 }
 html[data-ui="ct"] .ct-chart-single .ct-chart-plot {
   margin-top: 0.25rem;
+}
+html[data-ui="ct"] .ct-chart-swipe-area {
+  touch-action: pan-y;
+}
+html[data-ui="ct"] .ct-chart-swipe-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+html[data-ui="ct"] .ct-chart-swipe-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--ct-border);
+  cursor: pointer;
+  transition: background var(--ct-motion), transform var(--ct-motion);
+}
+html[data-ui="ct"] .ct-chart-swipe-dot-active {
+  background: var(--ct-accent);
+  transform: scale(1.15);
 }
 html[data-ui="ct"] .ct-chart-plot {
   width: 100%;

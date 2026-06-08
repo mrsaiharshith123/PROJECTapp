@@ -18,6 +18,12 @@ Apply in order:
 | `20260606010000_fix_admin_rls_recursion.sql` | Fix profile login recursion |
 | `20260606020000_fix_admin_grant_trigger.sql` | SQL Editor admin grant + `grant_committrack_admin()` |
 
+## Daily spend persistence (required for transaction-intel daily spend analytics)
+
+| File | Purpose |
+|------|---------|
+| `20260606030000_daily_spends_table_from_snapshot.sql` | Creates `public.daily_spends` + RLS and keeps it materialized from `user_finance_snapshots.payload.dailySpends` |
+
 Then grant admin:
 
 ```sql

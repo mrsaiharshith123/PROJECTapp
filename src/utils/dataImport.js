@@ -4,9 +4,10 @@ import {
   normalizeLending,
   normalizeProfiles,
 } from "./migrateStorage.js";
+import { normalizeDailySpend } from "./dailySpends.js";
 import { isAppSnapshot } from "../storage/appSnapshot.js";
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 function dedupeById(items) {
   const map = new Map();
@@ -18,7 +19,7 @@ function dedupeById(items) {
 
 /**
  * Validate export JSON and merge into current app state.
- * @returns {{ commitments, lendings, goals, settings, monthlySnapshots, summary }}
+ * @returns {{ commitments, lendings, goals, settings, monthlySnapshots, dailySpends, summary }}
  */
 export function mergeImportedAppState(current, payload, { mode = "merge" } = {}) {
   if (!isAppSnapshot(payload)) {
@@ -29,24 +30,29 @@ export function mergeImportedAppState(current, payload, { mode = "merge" } = {})
   const incomingLendings = Array.isArray(payload.lendings) ? payload.lendings : [];
   const incomingGoals = Array.isArray(payload.goals) ? payload.goals : [];
   const incomingSnapshots = Array.isArray(payload.monthlySnapshots) ? payload.monthlySnapshots : [];
+  const incomingDailySpends = Array.isArray(payload.dailySpends) ? payload.dailySpends : [];
   const incomingSettings =
     payload.settings && typeof payload.settings === "object" ? payload.settings : {};
 
   const normCommitments = incomingCommitments.map((c) => normalizeCommitment(c));
   const normLendings = incomingLendings.map((l) => normalizeLending(l));
   const normGoals = incomingGoals.map((g) => normalizeGoal(g));
+  const normDailySpends = incomingDailySpends.map((s) => normalizeDailySpend(s));
 
   let commitments;
   let lendings;
   let goals;
+  let dailySpends;
   if (mode === "replace") {
     commitments = normCommitments;
     lendings = normLendings;
     goals = normGoals;
+    dailySpends = normDailySpends;
   } else {
     commitments = dedupeById([...current.commitments, ...normCommitments]);
     lendings = dedupeById([...current.lendings, ...normLendings]);
     goals = dedupeById([...current.goals, ...normGoals]);
+    dailySpends = dedupeById([...(current.dailySpends || []), ...normDailySpends]);
   }
 
   const settings = {
@@ -68,11 +74,13 @@ export function mergeImportedAppState(current, payload, { mode = "merge" } = {})
     goals,
     settings,
     monthlySnapshots,
+    dailySpends,
     summary: {
       schemaVersion: SCHEMA_VERSION,
       addedCommitments: normCommitments.length,
       addedLendings: normLendings.length,
       addedGoals: normGoals.length,
+      addedDailySpends: normDailySpends.length,
       mode,
     },
   };
@@ -84,6 +92,7 @@ export function previewImportCounts(payload) {
     commitments: Array.isArray(payload.commitments) ? payload.commitments.length : 0,
     lendings: Array.isArray(payload.lendings) ? payload.lendings.length : 0,
     goals: Array.isArray(payload.goals) ? payload.goals.length : 0,
+    dailySpends: Array.isArray(payload.dailySpends) ? payload.dailySpends.length : 0,
     hasSettings: Boolean(payload.settings),
   };
 }

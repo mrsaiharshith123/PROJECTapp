@@ -1,7 +1,14 @@
 import { format } from "date-fns";
 import { amountDueInMonth, scheduledGrossInMonth } from "../engines/forecastSeries.js";
+import {
+  lendingDueInMonth,
+  lendingPaidInMonth,
+  lendingScheduledInMonth,
+} from "../engines/lendingMonthCash.js";
 import { isHistoryBill } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
+import { sumDailySpendsInRange, filterDailySpendsByProfile } from "./dailySpends.js";
+import { computeDailySpendGuidance } from "./dailySpendGuidance.js";
 
 /** Human-readable share of income used by bills (handles tiny values). */
 function formatBurdenPercent(amount, monthlyIncome) {
@@ -18,21 +25,36 @@ function formatBurdenPercent(amount, monthlyIncome) {
 
 /**
  * Current calendar month summary for the dashboard.
- * Due / Left = still owed this month; Paid = cash recorded this month.
+ * Due / Left = still owed this month (bills + lending); Paid = cash recorded this month.
+ * Free cash subtracts bill payments, lending payments, and logged daily spends.
+ *
+ * @param {object} [options]
+ * @param {object[]} [options.dailySpends]
+ * @param {object[]} [options.lendings]
+ * @param {(l: object, todayStr?: string) => string} [options.getEffectiveLendingStatus]
+ * @param {string} [options.profileId]
  */
-export function computeCurrentMonthSummary(commitments, getEffectiveStatusFn, todayStr = todayYmd(), monthlyIncome = 0) {
+export function computeCurrentMonthSummary(
+  commitments,
+  getEffectiveStatusFn,
+  todayStr = todayYmd(),
+  monthlyIncome = 0,
+  options = {},
+) {
+  const { dailySpends = [], lendings = [], getEffectiveLendingStatus, profileId = "default" } = options;
   const monthKey = format(new Date(`${todayStr}T12:00:00`), "yyyy-MM");
   const monthNum = format(new Date(`${todayStr}T12:00:00`), "MM");
   const monthLabel = format(new Date(`${todayStr}T12:00:00`), "MMMM yyyy");
+  const monthStart = `${monthKey}-01`;
 
-  let paidThisMonth = 0;
-  let scheduledThisMonth = 0;
-  let dueThisMonth = 0;
+  let billsPaidThisMonth = 0;
+  let billsScheduledThisMonth = 0;
+  let billsDueThisMonth = 0;
 
   for (const c of commitments) {
     for (const p of c.payments || []) {
       if ((p.date || "").startsWith(monthKey)) {
-        paidThisMonth += Math.max(0, Number(p.amount) || 0);
+        billsPaidThisMonth += Math.max(0, Number(p.amount) || 0);
       }
     }
 
@@ -42,14 +64,40 @@ export function computeCurrentMonthSummary(commitments, getEffectiveStatusFn, to
 
     const gross = scheduledGrossInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
     const owed = amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, todayStr);
-    scheduledThisMonth += gross;
-    dueThisMonth += owed;
+    billsScheduledThisMonth += gross;
+    billsDueThisMonth += owed;
   }
 
+  const lendingDueThisMonth =
+    getEffectiveLendingStatus && lendings.length > 0
+      ? lendingDueInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
+      : 0;
+  const lendingPaidThisMonth = lendings.length > 0 ? lendingPaidInMonth(lendings, monthKey) : 0;
+  const lendingScheduledThisMonth =
+    getEffectiveLendingStatus && lendings.length > 0
+      ? lendingScheduledInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
+      : 0;
+
+  const profileSpends = filterDailySpendsByProfile(dailySpends, profileId);
+  const spentThisMonth = sumDailySpendsInRange(profileSpends, monthStart, todayStr);
+
+  const paidThisMonth = billsPaidThisMonth + lendingPaidThisMonth;
+  const scheduledThisMonth = billsScheduledThisMonth + lendingScheduledThisMonth;
+  const dueThisMonth = billsDueThisMonth + lendingDueThisMonth;
   const leftThisMonth = dueThisMonth;
   const income = Math.max(0, Number(monthlyIncome) || 0);
-  const freeCash = income > 0 ? income - paidThisMonth : null;
+  const freeCash =
+    income > 0 ? income - paidThisMonth - spentThisMonth : null;
   const duePercentOfIncome = formatBurdenPercent(scheduledThisMonth, income);
+
+  const spendGuidance = computeDailySpendGuidance({
+    income,
+    dueThisMonth,
+    spentThisMonth,
+    paidThisMonth,
+    todayStr,
+    scheduledThisMonth,
+  });
 
   const paidPct =
     scheduledThisMonth > 0
@@ -70,5 +118,11 @@ export function computeCurrentMonthSummary(commitments, getEffectiveStatusFn, to
     paidPct,
     remainingThisMonth: Math.round(leftThisMonth),
     totalDueThisMonth: Math.round(dueThisMonth),
+    billsDueThisMonth: Math.round(billsDueThisMonth),
+    billsPaidThisMonth: Math.round(billsPaidThisMonth),
+    lendingDueThisMonth: Math.round(lendingDueThisMonth),
+    lendingPaidThisMonth: Math.round(lendingPaidThisMonth),
+    spentThisMonth: Math.round(spentThisMonth),
+    spendGuidance,
   };
 }

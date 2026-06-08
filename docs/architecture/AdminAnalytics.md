@@ -74,6 +74,7 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 | `20260606000000_admin_analytics.sql` | `is_admin`, `last_active_at`, `created_at` on `profiles`; `app_events` table; RLS; `is_committrack_admin()`; `admin_product_overview()` RPC; activity triggers |
 | `20260606010000_fix_admin_rls_recursion.sql` | Fix login break — security-definer admin check; policies no longer recurse on `profiles` |
 | `20260606020000_fix_admin_grant_trigger.sql` | Allow SQL Editor to grant admin; `grant_committrack_admin(uuid)` helper |
+| `20260606030000_daily_spends_table_from_snapshot.sql` | Creates `public.daily_spends` + RLS and materializes `payload.dailySpends` from `user_finance_snapshots` |
 
 `supabase/schema-final.sql` is a convenience snapshot — **migrations are the source of truth** for admin schema until schema-final is refreshed.
 

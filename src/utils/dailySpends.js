@@ -1,3 +1,4 @@
+import { format, parseISO } from "date-fns";
 import { classifyMerchant } from "./merchantNormalize.js";
 
 /**
@@ -60,6 +61,21 @@ export function dailySpendByLifeCategory(spends, startYmd, endYmd) {
   return Object.entries(map)
     .map(([lifeCategory, amount]) => ({ lifeCategory, amount }))
     .sort((a, b) => b.amount - a.amount);
+}
+
+/** Daily totals for line/bar trend charts. */
+export function dailySpendTrendByDay(spends, startYmd, endYmd) {
+  const map = {};
+  for (const s of spends || []) {
+    if (!s.date || s.date < startYmd || s.date > endYmd) continue;
+    map[s.date] = (map[s.date] || 0) + Math.max(0, Number(s.amount) || 0);
+  }
+  return Object.entries(map)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, amount]) => ({
+      name: format(parseISO(`${date}T12:00:00`), "d MMM"),
+      value: amount,
+    }));
 }
 
 export function dailySpendByMerchant(spends, startYmd, endYmd) {

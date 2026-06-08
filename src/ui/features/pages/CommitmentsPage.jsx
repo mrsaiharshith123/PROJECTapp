@@ -1,11 +1,27 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { Card, Modal, PageHeader, Fab, FilterChips, CountTile, inputClassName, BillCard, Caption, EmptyState } from "../../";
+import {
+  Card,
+  Modal,
+  PageHeader,
+  Fab,
+  FilterChips,
+  CountTile,
+  inputClassName,
+  BillCard,
+  Caption,
+  EmptyState,
+  SegmentedControl,
+  Button,
+} from "../../";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
+import SpendSmsDetectModal from "../../features/modals/SpendSmsDetectModal.jsx";
+import LogSpendModal from "../../features/modals/LogSpendModal.jsx";
+import DailySpendPanel from "../../features/commitments/DailySpendPanel.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.jsx";
 import { useCopy } from "../../../i18n/useCopy.js";
 import { isActiveBill, isHistoryBill } from "../../../utils/billLifecycle.js";
@@ -24,7 +40,7 @@ const Commitments = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const copy = useCopy();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     sortedCommitments,
     commitments,
@@ -49,6 +65,20 @@ const Commitments = () => {
   const [paymentFor, setPaymentFor] = useState(null);
   const [payDate, setPayDate] = useState(() => todayYmd());
   const [smsOpen, setSmsOpen] = useState(false);
+  const [spendSmsOpen, setSpendSmsOpen] = useState(false);
+  const [logSpendOpen, setLogSpendOpen] = useState(false);
+  const [pageTab, setPageTab] = useState(() =>
+    searchParams.get("tab") === "spend" ? "spend" : "bills",
+  );
+
+  const switchTab = (tab) => {
+    setPageTab(tab);
+    if (tab === "spend") {
+      setSearchParams({ tab: "spend" }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
   /** @type {Array<import('../../../types/context.js').AuthProfile & { effectiveStatus: string }>} */
   const withEffective = useMemo(
@@ -204,23 +234,54 @@ const Commitments = () => {
         title={copy.billsPageTitle}
         eyebrow={t("bills.eyebrowMonthly")}
         actions={
-          <>
-            <button
-              type="button"
-              className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-              aria-label={t("bills.detectSms")}
-              onClick={() => setSmsOpen(true)}
-            >
-              <CtIcon name="device-mobile" size={22} />
-            </button>
-            <Fab type="button" onClick={() => navigate("/add")} aria-label={copy.addBill}>
-              +
-            </Fab>
-          </>
+          pageTab === "spend" ? (
+            <>
+              <button
+                type="button"
+                className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+                aria-label={t("bills.detectSmsSpend")}
+                onClick={() => setSpendSmsOpen(true)}
+              >
+                <CtIcon name="device-mobile" size={22} />
+              </button>
+              <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
+                +
+              </Fab>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+                aria-label={t("bills.detectSms")}
+                onClick={() => setSmsOpen(true)}
+              >
+                <CtIcon name="device-mobile" size={22} />
+              </button>
+              <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
+                +
+              </Fab>
+            </>
+          )
         }
       />
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
+      <SpendSmsDetectModal open={spendSmsOpen} onClose={() => setSpendSmsOpen(false)} />
+      {logSpendOpen && <LogSpendModal onClose={() => setLogSpendOpen(false)} />}
 
+      <SegmentedControl
+        options={[
+          { id: "bills", label: t("bills.tabRecurring") },
+          { id: "spend", label: t("bills.tabVariable") },
+        ]}
+        value={pageTab}
+        onChange={switchTab}
+      />
+
+      {pageTab === "spend" ? (
+        <DailySpendPanel />
+      ) : (
+        <>
       <FilterChips
         options={presetChips}
         value={filterPreset === "overdue_only" ? "overdue_only" : filterPreset === "upcoming" ? "upcoming" : filterStatus === "paid" ? "paid" : ""}
@@ -389,6 +450,8 @@ const Commitments = () => {
             </div>
           )}
         </div>
+      )}
+        </>
       )}
 
       {paymentFor && (

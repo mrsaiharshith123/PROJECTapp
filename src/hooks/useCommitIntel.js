@@ -27,6 +27,7 @@ import {
   buildTransactionLifeFeed,
   buildTransactionInsights,
 } from "../services/transactions/index.js";
+import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
 
 export function useCommitIntel() {
   const {
@@ -43,7 +44,11 @@ export function useCommitIntel() {
   return useMemo(() => {
     const income = combinedMonthlyIncome(settings);
     const burdenRatio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
-    const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus);
+    const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus, {
+      lendings,
+      getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      todayStr,
+    });
     const openRemaining = cash.openRemaining;
 
     const baseInsights = generateCommitmentInsights({
@@ -68,6 +73,12 @@ export function useCommitIntel() {
       emiBurdenPercentInsight(commitments, income, getEffectiveStatus),
     ].filter(Boolean);
 
+    const monthSummary = computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income, {
+      dailySpends: dailySpends || [],
+      lendings,
+      getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      profileId: settings.activeProfileId || "default",
+    });
     const txnInput = {
       commitments,
       lendings,
@@ -78,6 +89,7 @@ export function useCommitIntel() {
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
       burdenRatio,
       freeCash: cash.freeMoney,
+      monthSummary,
     };
     const transactionInsights = transactionInsightsForMerge(txnInput);
     const transactionFeed = buildTransactionLifeFeed(txnInput, 4);
@@ -90,6 +102,10 @@ export function useCommitIntel() {
       income,
       getEffectiveStatus,
       monthlySnapshots,
+      lendings,
+      getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      todayStr,
+      dailySpends: dailySpends || [],
     });
     const stabilityMeta = pressureScoreLabel(score);
 

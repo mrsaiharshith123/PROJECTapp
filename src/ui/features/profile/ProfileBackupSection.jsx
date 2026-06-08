@@ -58,6 +58,7 @@ export default function ProfileBackupSection({
       settings,
       monthlySnapshots,
       goals: allGoals,
+      dailySpends: ctx.allDailySpends,
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
