@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card } from "../../../ui";
 import CommitmentEditModal from "../modals/CommitmentEditModal.jsx";
-import { COPY } from "../../../constants/copy.js";
+import { useCopy } from "../../../i18n/useCopy.js";
 import { isHistoryBill } from "../../../utils/billLifecycle.js";
 import { recentCommitmentPaymentEvents } from "../../../utils/profileStats.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
@@ -23,6 +23,7 @@ export default function ProfileHistorySection({
   removeCommitmentPayment,
   updateCommitment,
 }) {
+  const copy = useCopy();
   const [editing, setEditing] = useState(null);
   const [showPayments, setShowPayments] = useState(true);
   const [showBills, setShowBills] = useState(true);
@@ -79,7 +80,7 @@ export default function ProfileHistorySection({
           onClick={() => setShowBills((v) => !v)}
           className="w-full flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-slate-400"
         >
-          <span>Ended / paid {COPY.bills.toLowerCase()} ({endedBills.length})</span>
+          <span>Ended / paid {copy.bills.toLowerCase()} ({endedBills.length})</span>
           <span aria-hidden>{showBills ? "▲" : "▼"}</span>
         </button>
         {showBills && (

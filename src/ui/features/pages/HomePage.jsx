@@ -201,7 +201,7 @@ const Home = () => {
       )}
 
       <DashboardTools />
-      <ToolsDiscoveryToast variant="home" />
+      <ToolsDiscoveryToast variant="home" blocked={tourOpen} />
     </div>
   );
 };

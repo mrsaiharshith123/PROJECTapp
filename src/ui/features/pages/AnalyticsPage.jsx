@@ -29,6 +29,7 @@ import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
+import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
@@ -161,6 +162,8 @@ const Analytics = () => {
       )}
 
       <FinancialPulseCard microTipSeed={microTipSeed} />
+
+      <CashflowCalendarStrip />
 
       <MonthlySpendAnalyticsSection>
         <BillInsightsCards />

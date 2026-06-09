@@ -1,7 +1,8 @@
 import { Card } from "../../index.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { getEffectiveLendingStatus } from "../../../utils/lendingStatus.js";
-import { trustScoreForLendingEntry, trustBadgeClass } from "../../../engines/lendingTrust.js";
+import { trustScoreForLendingEntry, trustScoreToTone } from "../../../engines/lendingTrust.js";
+import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { canDeleteLending, canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateLendingStatus, translateRepaymentMode } from "../../../i18n/domainLabels.js";
@@ -49,7 +50,7 @@ export default function LendingEntryCard({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-gray-800">{item.personName}</p>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${trustBadgeClass(trust)}`}>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${semanticToneToClass(trustScoreToTone(trust))}`}>
                 {trust}/100
               </span>
             </div>

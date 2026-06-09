@@ -18,8 +18,8 @@ import InsuranceFields from "../forms/InsuranceFields.jsx";
 import { buildInsuranceBillName, insuranceBillHasIdentity } from "../../../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
 import { repeatTypeToPremiumFrequency } from "../../../constants/insurance.js";
-import { COPY } from "../../../constants/copy.js";
 import { REPEAT_OPTIONS } from "../../../constants/repeatTypes.js";
+import { useCopy } from "../../../i18n/useCopy.js";
 import {
   applyBillRepeatChange,
   applyBillStartDateChange,
@@ -56,6 +56,7 @@ function formFromCommitment(c, todayStr) {
 
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const { t } = useTranslation();
+  const copy = useCopy();
   const { todayStr, settings } = useCommitTrack();
   const salariedFamily = isSalariedFamily(settings);
   const billCategories = getCategoriesForUserMode(settings);
@@ -169,7 +170,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
 
   return (
     <Modal
-      title={COPY.editBill}
+      title={copy.editBill}
       onClose={onClose}
       footer={
         <div className="flex gap-2">

@@ -24,5 +24,3 @@ export function GuidedEmptyState({ guidanceKey, settings }) {
     </div>
   );
 }
-
-export default GuidedEmptyState;

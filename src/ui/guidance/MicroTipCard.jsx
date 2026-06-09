@@ -14,5 +14,3 @@ export function MicroTipCard({ seed = 0 }) {
     </Card>
   );
 }
-
-export default MicroTipCard;

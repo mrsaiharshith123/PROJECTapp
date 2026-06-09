@@ -19,6 +19,8 @@ export const TOOL_ICONS = {
   chit: "coin",
   bond: "receipt",
   incomeTax: "currency-inr",
+  retirement: "bank",
+  safety: "shield",
   logSpend: "note-pencil",
 };
 

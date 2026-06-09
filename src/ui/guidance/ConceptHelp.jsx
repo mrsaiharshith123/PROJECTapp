@@ -9,5 +9,3 @@ export function ConceptHelp({ conceptId, label = "What this means" }) {
   const full = c?.calc ? `${text} ${c.calc}` : text;
   return <InfoTip text={full} label={label} />;
 }
-
-export default ConceptHelp;

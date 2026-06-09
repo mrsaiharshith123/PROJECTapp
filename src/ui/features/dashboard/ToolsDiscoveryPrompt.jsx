@@ -6,35 +6,87 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
+const SHOW_DELAY_MS = 700;
 const SCROLL_IDLE_MS = 220;
 
-export default function ToolsDiscoveryToast({ variant = "home" }) {
+function isToolsSectionReached() {
+  const el = document.getElementById("dashboard-tools");
+  if (!el) return false;
+  const rect = el.getBoundingClientRect();
+  return rect.top < window.innerHeight * 0.55;
+}
+
+export default function ToolsDiscoveryToast({ variant = "home", blocked = false }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [hidden, setHidden] = useState(() => isToolsNudgeDismissed());
-  const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(() => isToolsNudgeDismissed());
+  const [ready, setReady] = useState(false);
   const [scrolling, setScrolling] = useState(false);
+  const [toolsReached, setToolsReached] = useState(false);
 
   useEffect(() => {
-    if (hidden) return;
-    const timer = window.setTimeout(() => setOpen(true), 700);
+    if (dismissed || blocked) return;
+    const timer = window.setTimeout(() => setReady(true), SHOW_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [hidden]);
+  }, [dismissed, blocked]);
 
   useEffect(() => {
-    if (hidden) return;
-    let idleTimer;
+    if (dismissed || blocked || variant !== "home") return;
+
+    let scrollIdleTimer;
+    let pollTimer;
+
+    const updateToolsReached = () => {
+      setToolsReached(isToolsSectionReached());
+    };
+
     const onScroll = () => {
       setScrolling(true);
-      window.clearTimeout(idleTimer);
-      idleTimer = window.setTimeout(() => setScrolling(false), SCROLL_IDLE_MS);
+      updateToolsReached();
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => setScrolling(false), SCROLL_IDLE_MS);
     };
-    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+
+    updateToolsReached();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateToolsReached, { passive: true });
+
+    let tries = 0;
+    pollTimer = window.setInterval(() => {
+      tries += 1;
+      if (document.getElementById("dashboard-tools")) {
+        updateToolsReached();
+        window.clearInterval(pollTimer);
+      } else if (tries >= 50) {
+        window.clearInterval(pollTimer);
+      }
+    }, 100);
+
     return () => {
-      window.removeEventListener("scroll", onScroll, true);
-      window.clearTimeout(idleTimer);
+      window.clearTimeout(scrollIdleTimer);
+      window.clearInterval(pollTimer);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", updateToolsReached);
     };
-  }, [hidden]);
+  }, [dismissed, blocked, variant]);
+
+  useEffect(() => {
+    if (dismissed || blocked || variant !== "analytics") return;
+
+    let scrollIdleTimer;
+
+    const onScroll = () => {
+      setScrolling(true);
+      window.clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = window.setTimeout(() => setScrolling(false), SCROLL_IDLE_MS);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(scrollIdleTimer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [dismissed, blocked, variant]);
 
   const goToTools = () => {
     if (variant === "analytics") {
@@ -46,18 +98,19 @@ export default function ToolsDiscoveryToast({ variant = "home" }) {
 
   const dismiss = () => {
     dismissToolsNudge();
-    setHidden(true);
-    setOpen(false);
+    setDismissed(true);
   };
 
-  if (hidden) return null;
+  if (dismissed) return null;
 
-  const visible = open && !scrolling;
+  const visible =
+    ready && !blocked && !scrolling && (variant === "analytics" || !toolsReached);
 
   return createPortal(
     <div
       className={`ct-tools-toast ${visible ? "ct-tools-toast-visible" : "ct-tools-toast-hidden"}`}
       aria-live="polite"
+      role="complementary"
     >
       <div className="relative">
         <button type="button" onClick={goToTools} className="ct-tools-toast-btn">
@@ -81,7 +134,7 @@ export default function ToolsDiscoveryToast({ variant = "home" }) {
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
 

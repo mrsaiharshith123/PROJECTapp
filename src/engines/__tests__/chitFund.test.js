@@ -9,6 +9,8 @@ import {
   chitCurrentMonthFromMonthsPaid,
   scheduleTotal,
   estimatedDiscountPercent,
+  computeChitIrr,
+  buildChitCashFlows,
 } from "../chitFund.js";
 
 describe("chitInstallment", () => {
@@ -55,5 +57,19 @@ describe("equal chit", () => {
     const d = chitDiscountFromPayout(500000, 443000, 5);
     expect(d).toBe(32000);
     expect(chitPayout(500000, d, 5)).toBe(443000);
+  });
+});
+
+describe("chit IRR", () => {
+  it("computes IRR from installment and payout cash flows", () => {
+    const flows = buildChitCashFlows({
+      chitValue: 100000,
+      totalMonths: 10,
+      payoutMonth: 6,
+      mode: "equal",
+    });
+    const irr = computeChitIrr(flows);
+    expect(irr).not.toBeNull();
+    expect(irr.annualIrrPercent).toBeDefined();
   });
 });

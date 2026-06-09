@@ -147,5 +147,3 @@ export function CtIcon({ name, size = 20, weight, context, className = "" }) {
   const resolvedWeight = weight ?? (context ? CONTEXT_WEIGHTS[context] : undefined) ?? "regular";
   return <Icon size={size} weight={resolvedWeight} className={cn("ct-icon", className)} aria-hidden />;
 }
-
-export default CtIcon;

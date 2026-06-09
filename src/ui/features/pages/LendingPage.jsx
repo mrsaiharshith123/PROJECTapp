@@ -10,6 +10,7 @@ import LendingPageDialogs from "../lending/LendingPageDialogs.jsx";
 import { useLendingLists } from "../lending/useLendingLists.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import BillSplitModal from "../modals/BillSplitModal.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -38,6 +39,7 @@ const Lending = () => {
   const [formErrors, setFormErrors] = useState({});
   const [detailFor, setDetailFor] = useState(null);
   const [showRequest, setShowRequest] = useState(false);
+  const [billSplitOpen, setBillSplitOpen] = useState(false);
 
   const { borrowedList, lentList, trustRows, totals } = useLendingLists(lendings);
 
@@ -169,6 +171,9 @@ const Lending = () => {
             <Button type="button" size="sm" onClick={() => setShowRequest(true)}>
               {t("lending.requestMoney")}
             </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setBillSplitOpen(true)}>
+              Split bill
+            </Button>
             <Button
               type="button"
               size="sm"
@@ -241,6 +246,8 @@ const Lending = () => {
           ))}
         </Card>
       )}
+
+      {billSplitOpen && <BillSplitModal onClose={() => setBillSplitOpen(false)} />}
 
       <LendingPageDialogs
         showAdd={showAdd}

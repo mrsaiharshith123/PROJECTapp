@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 8 June 2026.
+Last reviewed: 9 June 2026 (audit + docs refresh).
 
 ## V1 product scope
 
@@ -26,7 +26,7 @@ Last reviewed: 8 June 2026.
 | Commitments / Add | ✅ | `ui/features/pages/*` |
 | Profile hub (financial identity + net worth) | ✅ | `ProfileFinancialHero`, `ProfileNetWorthSection`, `ProfileMilestonesPanel`, `ProfilePage.jsx` |
 | Analytics — pulse + monthly spend + wealth | ✅ | `AnalyticsPage.jsx`, `MonthlySpendAnalyticsSection.jsx`, `WealthAnalyticsSection.jsx`, `BillInsightsCards.jsx` |
-| Dashboard tools (6 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax` — `modeExperience.js`, `DashboardTools.jsx` |
+| Dashboard tools (8 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax`, `retirement`, `safety` — `modeExperience.js`, `DashboardTools.jsx` |
 | Money planner (3 tabs) | ✅ | Afford · Scenarios · Goals — `MoneyPlannerPanel.jsx`, `UnifiedScenariosPanel.jsx` |
 | Loan helpers + payoff order | ✅ | `LoanToolsPanel.jsx` — Extra EMI · Timing · Payoff order |
 | Unified scenarios (data-gated) | ✅ | `UnifiedScenariosPanel.jsx`, `engines/scenarioCatalog.js` |
@@ -34,11 +34,25 @@ Last reviewed: 8 June 2026.
 | Bill-derived assets / liabilities | ✅ | `engines/netWorth/commitmentWealth.js`, net worth tabs |
 | Light / dark / system theme | ✅ | `utils/theme.js`, `app/ThemeSync.jsx`, `ui/styles/theme-light.css` |
 | Supabase auth + profile merge save | ✅ | `services/supabase/auth.js` |
+| Auth gate (sign-in / sign-up / forgot / reset) | ✅ | `ui/features/auth/AuthGatePage.jsx` — animated brand hero, password reset via Supabase |
+| Dynamic loading UX (boot + route skeletons) | ✅ | `ui/patterns/Loading.jsx`, `loadingSkeletons.jsx` — `PageLoader`, `RouteFallback`, shimmer skeletons per route |
 | Lending trust + share card | ✅ | `engines/lendingTrust.js`, `utils/lendingShareCard.js` |
 | SMS auto-detect modal | ✅ | `ui/features/modals/SmsDetectModal.jsx` |
 | Subscription leak + paycheck on Analytics | ✅ | `SubscriptionLeakCard.jsx`, `PaycheckBreakdown.jsx` |
 | Stability narrative in Financial pulse | ✅ | `engines/stabilityNarrative.js`, `FinancialPulseCard.jsx` |
-| Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` |
+| Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` — HRA, 80CCD(1B), prof tax, advance tax schedule + one-click bills |
+| Retirement planner (EPF·PPF·NPS·gratuity) | ✅ | `RetirementPlannerPanel.jsx`, engines `epfTracker`, `ppfTracker`, `npsPlanner`, `gratuityEstimate` |
+| Safety & SIP planner | ✅ | `SafetyPlannerPanel.jsx` — emergency fund + SIP advisor |
+| Tax & HRA tool | ✅ | `IncomeTaxPanel.jsx` — tax + HRA tabs (inlined) |
+| Bank statement PDF/CSV import | ✅ | Position-aware PDF extract, Dr/Cr parsing, CSV columns, recurring → bills — `BankStatementImportModal.jsx` |
+| Bill split + share card | ✅ | `engines/billSplit.js`, `BillSplitModal.jsx` — Lending page |
+| Household entity metrics | ✅ | `engines/householdEntity.js` — Family dashboard + Profile member editor |
+| Life score share cards | ✅ | `utils/lifeShareCards.js` — Financial pulse snapshot tab |
+| Engine depth (pressure, health, survival, lending trust, chit IRR) | ✅ | Phase A–F engines — see `engines/*` |
+| 90-day cashflow calendar | ✅ | `engines/cashflowCalendar.js`, `CashflowCalendarStrip.jsx` on Analytics |
+| Smart pressure notifications | ✅ | `buildSmartPressureNotifications()` in `notifications.js` |
+| Semantic badge tokens (Phase B) | ✅ | `ui/tokens/semanticBadge.js` — engines return `tone` only |
+| Intel memoization | ✅ | `utils/intelMemo.js` in `useCommitIntel.js` |
 | Annual health report (Pro) | ✅ | `ProfileBackupSection.jsx` |
 | i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — audit parity via `npm run sync:i18n` |
 | i18n — Home, pulse, commitments, profile | ✅ Partial UI | See [10-i18n.md](./10-i18n.md) for wired vs pending screens |
@@ -63,8 +77,11 @@ Last reviewed: 8 June 2026.
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Razorpay checkout (client) | ✅ Wired | `services/razorpay.js`, `ui/features/profile/PlansModal.jsx` |
-| Server payment verify | ⏳ TODO | Comment in `razorpay.js` — Supabase Edge Function before production |
+| Razorpay checkout (client) | ✅ Wired | `services/razorpaySubscription.js` (script load + checkout), `PlansModal.jsx` |
+| Razorpay test keys in dev | ✅ Wired | Set `VITE_RAZORPAY_KEY_ID=rzp_test_…` — disables simulation; UPI `success@razorpay` for test pay |
+| Server payment verify | ✅ Edge Function | `supabase/functions/razorpay-checkout` — deploy + `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` secrets |
+| Tools discovery toast | ✅ | `ToolsDiscoveryPrompt.jsx` — Home/Analytics nudge to calculators |
+| Supabase URL normalization | ✅ | `normalizeSupabaseUrl()` in `auth.js` — accepts project ref or full URL |
 | Promissory note engine (India) | ✅ | `engines/lendingAgreement.js` — `buildPromissoryNoteText()`, `numberToWords()` |
 | Legal HTML export | ✅ | `utils/agreementExport.js` — `generateLegalAgreementHtml()` |
 | Print agreement button | ✅ Uses new export | `LendingDetailDashboard.jsx` → `downloadLendingAgreementHtml()` |
@@ -86,7 +103,7 @@ Collected when legal-details UI is built; engine/export already read them:
 
 | Phase | Description |
 |-------|-------------|
-| Full i18n on all screens | Add/Edit bills, lending, onboarding, auth, analytics charts, tool panels, engine insight text |
+| Full i18n on all screens | Add/Edit bills, lending, analytics charts, tool panels, engine insight text (auth gate wired; other locales use English fallback for new auth/loading keys until translated) |
 | OS launcher home | Status bar (pressure / health / runway) + module tile grid instead of scroll dashboard |
 | Paycheck page | `/paycheck` route, salary-day auto-navigate, Profile “salary credit day” field |
 | Planning page | `/planning` — tools moved off Home |
@@ -99,17 +116,20 @@ Current Home layout is **intentionally kept** until launcher UX is redesigned.
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `VITE_SUPABASE_URL` | For cloud auth | Supabase project URL |
+| `VITE_SUPABASE_URL` | For cloud auth | Full URL `https://<ref>.supabase.co` (bare project ref also works) |
 | `VITE_SUPABASE_ANON_KEY` | For cloud auth | Supabase anon key |
 | `VITE_RAZORPAY_KEY_ID` | For paid upgrades | Razorpay checkout (`rzp_test_*` in dev) |
 
-Copy from `.env.example`. Without Razorpay key, Plans modal shows a configuration error on upgrade.
+Copy from `.env.example`. Restart `npm run dev` after editing `.env`. GitHub Pages: set the same three as repository secrets; deploy workflow passes them at build time.
+
+Edge Function secrets (Supabase Dashboard, not `.env`): `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
 
 ## Tests & quality
 
-- **205** unit tests (`npm test`) — engines, utils, services, analytics, i18n
-- Gate: `npm run audit` (includes copy tone + i18n key parity — **1478** keys × 22 locales)
-- Governance quick scan: `npm run audit:governance:quick` — 0 errors; 1 advisory (`categories.js` filename in two folders)
+- **245** unit tests (`npm test`) — engines, utils, services, analytics, i18n, Razorpay config
+- Gate: `npm run audit` — **ALL CHECKS PASSED** (lint, Knip, UI depth, copy tone, i18n parity, types, build)
+- Strict: `npm run audit -- --strict` — all gates green (`npm run audit:merge` — 0 suggestions)
+- Governance quick: `npm run audit:governance:quick` — 0 errors; 3 warnings (large page files, duplicate `categories.js` name)
 
 ## Related docs
 

@@ -34,14 +34,14 @@
 - **Forecast** — `forecast.js`, `forecastSeries.js`, `stabilityPlan.js`
 - **Survival** — `survival.js`, `emergencyFund.js`
 - **Lending** — `lendingTrust.js`, `lendingAgreement.js` (promissory note), utils `lendingStatus.js`, `agreementExport.js`
-- **Subscriptions** — `subscriptionTiers.js`, `ProGate`, `services/razorpay.js`
+- **Subscriptions** — `subscriptionTiers.js`, `ProGate`, `services/razorpaySubscription.js`
 - **Insights** — `intelligence.js`, `insightsExtended.js` (see [InsightEngine.md](./InsightEngine.md))
 
 ## Payments (client-side today)
 
-1. User taps upgrade in `PlansModal` → `openRazorpayCheckout()` in `services/razorpay.js`.
+1. User taps upgrade in `PlansModal` → `startSubscriptionCheckout()` in `services/razorpaySubscription.js`.
 2. On success handler, `updateSettings({ subscriptionTier })` runs locally.
-3. **Production TODO:** verify `razorpay_payment_id` on server before granting tier (see comment in `razorpay.js`).
+3. Server verify via Edge Function `razorpay-checkout` when order + signature are present; client falls back to `saveSubscriptionTier` when verify is unavailable.
 
 ## Lending legal documents
 

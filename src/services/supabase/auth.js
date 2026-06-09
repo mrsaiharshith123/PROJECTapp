@@ -90,9 +90,19 @@ function throwAuth(err, context) {
   throw new Error(formatAuthError(err));
 }
 
+/** Accepts full URL or bare project ref (e.g. zorusrquumnboekqcici). */
+export function normalizeSupabaseUrl(raw = "") {
+  const value = String(raw).trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value.replace(/\/+$/, "");
+  const ref = value.replace(/\.supabase\.co$/i, "");
+  if (/^[a-z0-9-]+$/i.test(ref)) return `https://${ref}.supabase.co`;
+  return value;
+}
+
 export function getSupabaseClient() {
   if (supabaseSingleton) return supabaseSingleton;
-  const url = import.meta.env.VITE_SUPABASE_URL;
+  const url = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL);
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
     log.auth.warn("Supabase client not configured");
@@ -155,6 +165,32 @@ export async function signInWithEmail(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throwAuth(error, "Sign in failed");
   return data;
+}
+
+/** @returns {string|undefined} */
+export function getPasswordResetRedirectUrl() {
+  if (typeof window === "undefined") return undefined;
+  const base = import.meta.env.BASE_URL || "/";
+  const authPath = base.endsWith("/") ? `${base}auth` : `${base}/auth`;
+  return `${window.location.origin}${authPath}`;
+}
+
+export async function requestPasswordReset(email) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Password reset");
+  log.auth.info("Password reset requested");
+  const { error } = await supabase.auth.resetPasswordForEmail(String(email).trim(), {
+    redirectTo: getPasswordResetRedirectUrl(),
+  });
+  if (error) throwAuth(error, "Password reset failed");
+}
+
+export async function updateUserPassword(newPassword) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Update password");
+  log.auth.info("Updating password");
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throwAuth(error, "Update password failed");
 }
 
 export async function signOutAuth() {

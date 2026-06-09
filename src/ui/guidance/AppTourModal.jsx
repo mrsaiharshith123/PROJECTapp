@@ -63,5 +63,3 @@ export function AppTourModal({ settings, open, onComplete, onDismiss }) {
   const tourKey = `${settings.userMode}-${settings.householdScope}-${settings.appGuideComplete}`;
   return <AppTourSteps key={tourKey} settings={settings} onComplete={onComplete} onDismiss={onDismiss} />;
 }
-
-export default AppTourModal;

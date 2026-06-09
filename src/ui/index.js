@@ -20,6 +20,8 @@ export { FilterChips } from "./patterns/FilterChips.jsx";
 export { ListRow } from "./patterns/ListRow.jsx";
 export { InsightBanner } from "./patterns/InsightBanner.jsx";
 export { EmptyState } from "./patterns/EmptyState.jsx";
+export { PageLoader, RouteFallback, SectionLoader, InlineLoader, LoadingSpinner, Skeleton } from "./patterns/Loading.jsx";
+export { AdminSkeleton } from "./patterns/loadingSkeletons.jsx";
 export { ProgressBar } from "./patterns/ProgressBar.jsx";
 export { ChartShell } from "./patterns/ChartShell.jsx";
 export { StatCard } from "./patterns/StatCard.jsx";

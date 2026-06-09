@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, inputClassName, Caption, Heading } from "../../index.js";
+import { Button, inputClassName, Caption, Heading, SectionLoader } from "../../index.js";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { isValidPan, maskPan, normalizePan } from "../../../utils/pan.js";
@@ -64,7 +64,7 @@ export default function AccountSettingsBlock() {
   };
 
   if (!isReady) {
-    return <Caption>{t("account.loading")}</Caption>;
+    return <SectionLoader message={t("account.loading")} />;
   }
 
   if (!isLoggedIn) {

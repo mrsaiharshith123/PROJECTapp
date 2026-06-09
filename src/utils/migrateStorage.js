@@ -18,11 +18,12 @@ import { CONSENT_KEY } from "./dpdpConsent.js";
 import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "./dailySpends.js";
+import { normalizeHouseholdMembers } from "../engines/householdEntity.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 export const SCHEMA_VERSION_KEY = "committrack_schema_version";
-export const CURRENT_SCHEMA_VERSION = 10;
+export const CURRENT_SCHEMA_VERSION = 11;
 
 function normalizeCategory(raw) {
   const s = String(raw || "").trim();
@@ -509,6 +510,11 @@ const DEFAULT_SETTINGS = {
   salaryCreditDay: null,
   /** BCP-47-ish app locale: en + 22 scheduled Indian languages */
   appLanguage: "en",
+  /** Household entity model — members with roles and permissions */
+  householdMembers: [{ id: "owner", label: "You", role: "owner", incomeShare: 1, permission: "shared_edit" }],
+  epfBasicSalary: 0,
+  epfCorpus: 0,
+  epfAge: 30,
 };
 
 export function loadSettingsFromStorage() {
@@ -575,6 +581,10 @@ export function loadSettingsFromStorage() {
             ? Math.min(31, Math.max(1, Math.floor(Number(o.salaryCreditDay) || 0)))
             : null,
         appLanguage: normalizeAppLanguage(o.appLanguage),
+        householdMembers: normalizeHouseholdMembers(o.householdMembers),
+        epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),
+        epfCorpus: Math.max(0, Number(o.epfCorpus) || 0),
+        epfAge: Math.min(70, Math.max(18, Math.floor(Number(o.epfAge) || 30))),
       };
     }
   } catch {

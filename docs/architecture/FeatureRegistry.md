@@ -9,7 +9,7 @@ Source of truth: `src/governance/registries/features.js`
 | `lending` | Money / lending | `LendingPage`, `lending/*` | lendingTrust, lendingAgreement, agreementExport, lendingShareCard |
 | `analytics` | Analytics | `AnalyticsPage`, `analytics/*` | analyticsSeries, salaryBreakdown, subscriptionLeak |
 | `calculators` | Dashboard tools | `DashboardTools`, `tools/*` | affordability, loanPayoff, chit, bond, incomeTax, … |
-| `profile` | Profile | `ProfilePage`, `profile/*` | auth, backup; `PlansModal` + `razorpay.js` for upgrades |
+| `profile` | Profile | `ProfilePage`, `profile/*` | auth, backup; `PlansModal` + `razorpaySubscription.js` for upgrades |
 | `subscriptions` | Pro / Power gates | `ProGate`, `PlansButton`, `PlansModal` | `subscriptionTiers.js` |
 | `notifications` | Bell / reminders | `NotificationPanel` | notifications, reminders |
 | `onboarding` | First-run | `OnboardingPage` | — |

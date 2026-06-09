@@ -4,8 +4,74 @@ import {
   buildLendingReminders,
   buildLumpyBillHorizonReminders,
 } from "./reminders.js";
-import { freeMoneyAfterBurden } from "./pressureScore.js";
+import { freeMoneyAfterBurden, computePressureAnalysis } from "./pressureScore.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
+import { buildAdvanceTaxReminders } from "./advanceTax.js";
+import { deriveTaxDeductionsFromCommitments } from "./incomeTaxEstimate.js";
+
+/**
+ * Context-aware intelligence notifications from pressure drivers.
+ */
+export function buildSmartPressureNotifications({
+  commitments,
+  income,
+  getEffectiveStatus,
+  monthlySnapshots = [],
+  previousScore = null,
+  todayStr = "",
+}) {
+  const analysis = computePressureAnalysis({
+    commitments,
+    income,
+    getEffectiveStatus,
+    monthlySnapshots,
+    todayStr,
+  });
+
+  const items = [];
+  const now = Date.now();
+
+  if (previousScore != null && analysis.score - previousScore >= 8) {
+    const delta = analysis.score - previousScore;
+    const top = analysis.pressureDrivers?.[0];
+    const driverPts = top ? Math.min(delta, Math.round(top.points * 0.4)) : delta;
+    items.push({
+      id: `pressure-jump-${todayStr}`,
+      title: "CommitTrack — pressure change",
+      message: `Pressure jumped ${delta} points${top ? ` — ${top.category} commitments contributed ~${driverPts}.` : "."}`,
+      urgency: "high",
+      createdAt: now,
+      read: false,
+    });
+  }
+
+  if (analysis.clusterWeeks?.length > 0) {
+    items.push({
+      id: `due-cluster-${todayStr}`,
+      title: "CommitTrack — due cluster",
+      message: "Three or more commitments are clustering in the same calendar week.",
+      urgency: "normal",
+      createdAt: now,
+      read: false,
+    });
+  }
+
+  for (const line of analysis.narrativeLines || []) {
+    if (line.includes("improving")) {
+      items.push({
+        id: `pressure-easing-${todayStr}`,
+        title: "CommitTrack",
+        message: line,
+        urgency: "low",
+        createdAt: now,
+        read: false,
+      });
+      break;
+    }
+  }
+
+  return items;
+}
 
 /**
  * Enrich reminder messages with amount + free-cash context (feeds in-app + OS notifications).
@@ -21,10 +87,24 @@ export function buildContextualReminderFeed({
   const income = combinedMonthlyIncome(settings);
   const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus);
 
+  const autoDed = deriveTaxDeductionsFromCommitments(commitments, getEffectiveStatus);
+  const annualGross = income * 12;
+  const advanceTax = buildAdvanceTaxReminders(
+    {
+      annualGrossIncome: annualGross,
+      regime: "old",
+      deduction80c: autoDed.deduction80c,
+      deduction80d: autoDed.deduction80d,
+      annualRentPaid: autoDed.annualRentPaid,
+    },
+    todayStr,
+  );
+
   const base = [
     ...buildCommitmentReminders(commitments, getEffectiveStatus, todayStr),
     ...buildLendingReminders(lendings, todayStr, getEffectiveLendingStatus),
     ...buildLumpyBillHorizonReminders(commitments, getEffectiveStatus, todayStr),
+    ...advanceTax,
   ];
 
   return base.map((r) => {
@@ -79,6 +159,8 @@ export function buildNotificationFeed({
   todayStr,
   insights = [],
   readIds = [],
+  monthlySnapshots = [],
+  previousPressureScore = null,
 }) {
   const readSet = new Set(readIds || []);
   const now = Date.now();
@@ -105,6 +187,22 @@ export function buildNotificationFeed({
       amount: r.amount,
       createdAt: now,
       read: readSet.has(nid) || readSet.has(String(r.id)),
+    });
+  }
+
+  const income = combinedMonthlyIncome(settings || {});
+  const smart = buildSmartPressureNotifications({
+    commitments,
+    income,
+    getEffectiveStatus,
+    monthlySnapshots,
+    previousScore: previousPressureScore,
+    todayStr,
+  });
+  for (const n of smart) {
+    items.push({
+      ...n,
+      read: readSet.has(n.id),
     });
   }
 

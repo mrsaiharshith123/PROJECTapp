@@ -10,9 +10,9 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
-  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
-  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax"],
+  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
+  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
+  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -48,9 +48,21 @@ export const MODE_TOOL_DEFS = {
   },
   incomeTax: {
     id: "incomeTax",
-    title: "Income tax",
-    subtitle: "Simple salary estimate",
+    title: "Tax & HRA",
+    subtitle: "Salary tax · rent exemption",
     accent: "teal",
+  },
+  retirement: {
+    id: "retirement",
+    title: "Retirement",
+    subtitle: "EPF · PPF · NPS · gratuity",
+    accent: "indigo",
+  },
+  safety: {
+    id: "safety",
+    title: "Safety & SIP",
+    subtitle: "Emergency fund · goal SIP",
+    accent: "violet",
   },
 };
 

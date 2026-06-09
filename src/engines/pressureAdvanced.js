@@ -40,18 +40,19 @@ function severityLabel(level) {
   }
 }
 
-export function severityBadgeClass(level) {
+/** Semantic tone for UI mapping — no CSS classes. */
+export function severityTone(level) {
   switch (level) {
     case "healthy":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      return "success";
     case "moderate":
-      return "bg-amber-100 text-amber-900 border-amber-200";
+      return "warning";
     case "stressed":
-      return "bg-orange-100 text-orange-900 border-orange-200";
+      return "coral";
     case "dangerous":
-      return "bg-red-100 text-red-900 border-red-200";
+      return "danger";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "neutral";
   }
 }
 

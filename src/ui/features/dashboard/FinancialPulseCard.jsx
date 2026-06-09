@@ -7,7 +7,9 @@ import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
+import { lifeScoreSharePlainText, openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
 import { Card } from "../../primitives/Card.jsx";
+import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
@@ -159,12 +161,33 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               {t("pulse.pressure")}
               <InfoTip text={CALC_HELP.pressureScore} />
             </Caption>
-            <span className={intel.stability.badgeClass}>
-              {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)} ·{" "}
-              <span ref={scoreRef} className="ct-numeral">
-                {intel.stability.score}/100
-              </span>
-            </span>
+            <div className="ct-row gap-2 shrink-0">
+              <button
+                type="button"
+                className="ct-link !text-xs"
+                onClick={async () => {
+                  const data = {
+                    healthScore: intel.health?.score,
+                    healthLabel: intel.health?.label,
+                    pressureScore: intel.stability.score,
+                    pressureLabel: intel.stability.label,
+                    survivalMonths: stable.survival?.survivalMonths,
+                    survivalLabel: stable.survival?.tierLabel,
+                    displayName: settings.displayName || "CommitTrack user",
+                  };
+                  await shareOrCopyPlainText(lifeScoreSharePlainText(data), { title: "Financial Life" });
+                  openLifeScoreShareCard(data);
+                }}
+              >
+                Share card
+              </button>
+              <Badge tone={intel.stability.tone}>
+                {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)} ·{" "}
+                <span ref={scoreRef} className="ct-numeral">
+                  {intel.stability.score}/100
+                </span>
+              </Badge>
+            </div>
           </div>
           {pressureIntel?.emotionalHintKey && (
             <Caption className="block italic">{t(pressureIntel.emotionalHintKey)}</Caption>

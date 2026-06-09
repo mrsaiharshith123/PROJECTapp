@@ -13,6 +13,7 @@ export const LEGACY_TOOL_ID_MAP = {
   goals: "planner",
   emi: "loan",
   loanTiming: "loan",
+  epf: "retirement",
 };
 
 /**

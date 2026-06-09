@@ -4,7 +4,7 @@
 
 | File | Role |
 |------|------|
-| `src/services/razorpay.js` | Load checkout script, open modal |
+| `src/services/razorpaySubscription.js` | Load checkout script, open modal, server order/verify |
 | `src/ui/features/profile/PlansModal.jsx` | Upgrade buttons, success/error state |
 | `src/constants/subscriptionTiers.js` | Tier ids, prices, `PRO_FEATURES` / `POWER_FEATURES` |
 | `src/ui/patterns/ProGate.jsx` | Feature gating by tier |
@@ -17,11 +17,26 @@
 | Pro | `79900` | ₹799/yr |
 | Power | `149900` | ₹1,499/yr |
 
+### Dev with test keys
+
+1. Add `VITE_RAZORPAY_KEY_ID=rzp_test_…` to `.env` and restart `npm run dev`.
+2. When a Razorpay key is set, simulation mode is **off** — checkout uses the real Razorpay test modal.
+3. Sign in before upgrading (payment is tied to your Supabase profile).
+
+### Server verify
+
+| File | Role |
+|------|------|
+| `supabase/functions/razorpay-checkout/index.ts` | Create order + verify HMAC signature |
+| `src/services/razorpaySubscription.js` | Client orchestration (order → checkout → verify) |
+
+Deploy: `supabase functions deploy razorpay-checkout` with secrets `RAZORPAY_KEY_ID` + `RAZORPAY_KEY_SECRET`.
+
 ### Production checklist
 
-1. Set `VITE_RAZORPAY_KEY_ID` in CI secrets (live key in production).
-2. Implement Supabase Edge Function to verify payment signature + order id.
-3. Only set `subscriptionTier` after server confirms payment — replace client-only handler in `PlansModal`.
+1. Set `VITE_RAZORPAY_KEY_ID` in CI secrets (live `rzp_live_…` key).
+2. Deploy `razorpay-checkout` with live secrets.
+3. Prefer verified flow — client-only fallback in `razorpaySubscription.js` is for dev without the function.
 
 ## Promissory note export
 

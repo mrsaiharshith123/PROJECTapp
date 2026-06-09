@@ -34,5 +34,3 @@ export function WhyInsightPanel({ insight, context = {} }) {
     </div>
   );
 }
-
-export default WhyInsightPanel;

@@ -10,9 +10,9 @@ import {
 } from "../engines/insightsExtended.js";
 import { yearlyBurdenEstimate, commitmentToIncomeRatio } from "../engines/pressureAdvanced.js";
 import {
-  computeCanonicalPressureScore,
+  computePressureAnalysis,
   pressureScoreLabel,
-  pressureScoreBadgeClass,
+  pressureScoreTone,
   freeMoneyAfterBurden,
 } from "../engines/pressureScore.js";
 import { computeFinancialHealthScore } from "../engines/financialHealth.js";
@@ -28,6 +28,7 @@ import {
   buildTransactionInsights,
 } from "../services/transactions/index.js";
 import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
+import { memoIntel, buildIntelCacheKey } from "../utils/intelMemo.js";
 
 export function useCommitIntel() {
   const {
@@ -42,6 +43,20 @@ export function useCommitIntel() {
   } = useCommitTrack();
 
   return useMemo(() => {
+    const openSum = commitments.reduce((s, c) => s + (Number(c.remainingAmount) || 0), 0);
+    const cacheKey = buildIntelCacheKey([
+      commitments.length,
+      openSum,
+      lendings.length,
+      dailySpends?.length,
+      todayStr,
+      settings.monthlyIncome,
+      settings.liquidSavings,
+      monthlySnapshots?.length,
+      settings.readNotificationIds?.length,
+    ]);
+
+    return memoIntel(cacheKey, () => {
     const income = combinedMonthlyIncome(settings);
     const burdenRatio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
     const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus, {
@@ -97,7 +112,7 @@ export function useCommitIntel() {
 
     const insights = mergeExtendedInsights(baseInsights, [...extended, ...transactionInsights]);
 
-    const score = computeCanonicalPressureScore({
+    const pressureAnalysis = computePressureAnalysis({
       commitments,
       income,
       getEffectiveStatus,
@@ -107,7 +122,12 @@ export function useCommitIntel() {
       todayStr,
       dailySpends: dailySpends || [],
     });
+    const score = pressureAnalysis.score;
     const stabilityMeta = pressureScoreLabel(score);
+
+    const sortedSnaps = [...(monthlySnapshots || [])].sort((a, b) => a.month.localeCompare(b.month));
+    const previousPressureScore =
+      sortedSnaps.length >= 2 ? sortedSnaps[sortedSnaps.length - 2].pressureScore : null;
 
     const health = computeFinancialHealthScore({
       commitments,
@@ -116,6 +136,8 @@ export function useCommitIntel() {
       getEffectiveStatus,
       openRemaining,
       freeMoneyAfterBurden: cash.freeMoney,
+      liquidSavings: settings.liquidSavings,
+      monthlySnapshots,
     });
 
     const ranked = rankPayoffOrder(commitments, getEffectiveStatus, todayStr);
@@ -130,6 +152,8 @@ export function useCommitIntel() {
       todayStr,
       insights,
       readIds: settings.readNotificationIds,
+      monthlySnapshots,
+      previousPressureScore,
     });
     const notifications = [...(supplementalNotifications || []), ...feed].sort((a, b) => {
       const order = { critical: 0, high: 1, normal: 2, low: 3 };
@@ -146,10 +170,11 @@ export function useCommitIntel() {
       score,
       level: stabilityMeta.level,
       label: stabilityMeta.label,
-      badgeClass: pressureScoreBadgeClass(stabilityMeta.tone || stabilityMeta.level),
+      tone: stabilityMeta.tone || pressureScoreTone(score),
       committedPercent: cash.committedPercent,
       monthlyBurden: cash.monthlyBurden,
       freeMoney: cash.freeMoney,
+      pressureAnalysis,
     };
 
     return {
@@ -159,6 +184,7 @@ export function useCommitIntel() {
       burdenRatio,
       insights,
       stability,
+      pressureAnalysis,
       health,
       rankedPayoffs: ranked,
       payoffRec,
@@ -170,6 +196,7 @@ export function useCommitIntel() {
       transactionFeed,
       transactionRhythmNote,
     };
+    });
   }, [
     commitments,
     lendings,

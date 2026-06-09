@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { isAdminProfile } from "../services/analytics/adminIntel.js";
+import { SectionLoader } from "../ui/index.js";
 import { useTranslation } from "../i18n/I18nProvider.js";
 
 /**
@@ -11,11 +12,7 @@ export default function RequireAdmin({ children }) {
   const { isReady, isLoggedIn, profile, profileResolved } = useAuth();
 
   if (!isReady || (isLoggedIn && !profileResolved)) {
-    return (
-      <div className="ct-loader ct-caption" role="status">
-        {t("common.loading")}
-      </div>
-    );
+    return <SectionLoader message={t("common.loading")} />;
   }
 
   if (!isLoggedIn || !isAdminProfile(profile)) {

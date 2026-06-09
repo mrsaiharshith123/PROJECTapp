@@ -8,7 +8,8 @@ All commands run from the project root (`PROJECTapp/`).
 |---------|----------------|
 | `npm run dev` | Start Vite dev server with HMR (default `http://localhost:5173`) |
 | `npm run preview` | Serve production build locally (run `build` first) |
-| `npm test` | Run Vitest once (205 tests across engines/utils/services/i18n) |
+| `npm test` | Run Vitest once (245 tests across engines/utils/services/i18n) |
+| `npm run audit -- --strict` | Full gate; warnings in code-health merge-suggest also fail |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint on the repo |
 | `npm run lint:fix` | ESLint with auto-fix where safe |
@@ -129,10 +130,10 @@ OneDrive can sometimes interrupt `node_modules`; re-run `npm install` in the pro
 
 | Variable | Used for |
 |----------|----------|
-| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_URL` | `https://<ref>.supabase.co` (bare project ref auto-normalized) |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
 | `VITE_RAZORPAY_KEY_ID` | Razorpay checkout key (`rzp_test_*` in dev) — Plans modal upgrades |
 
-Without Supabase vars, auth/cloud features are limited; local storage still works. Without Razorpay key, paid tier buttons show a configuration error.
+Without Supabase vars, auth/cloud features are limited; local storage still works. Without Razorpay key, dev uses simulated payments. Restart `npm run dev` after `.env` changes. GitHub Pages: set all three as repository secrets.
 
 See [09-implementation-status.md](./09-implementation-status.md) for feature ↔ env mapping.

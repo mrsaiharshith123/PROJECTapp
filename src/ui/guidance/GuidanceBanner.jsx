@@ -19,5 +19,3 @@ export function GuidanceBanner({ focus }) {
     </ToneSurface>
   );
 }
-
-export default GuidanceBanner;

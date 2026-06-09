@@ -3,9 +3,9 @@ import { Caption } from "../../primitives/Text.jsx";
 import ChitFundFields from "./ChitFundFields.jsx";
 import InsuranceFields from "./InsuranceFields.jsx";
 import { OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
-import { COPY } from "../../../constants/copy.js";
 import { PROFILE_SETTINGS_HINT } from "../../../constants/plainLanguage.js";
-import { affordabilityBadgeClass } from "../../../engines/affordability.js";
+import { affordabilityTierTone } from "../../../engines/affordability.js";
+import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { REPEAT_OPTIONS } from "../../../constants/repeatTypes.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -37,7 +37,7 @@ export default function AddCommitmentForm({
 
   return (
     <div className="ct-page ct-form-narrow">
-      <PageHeader title={COPY.addBill} eyebrow="New entry" />
+      <PageHeader title={copy.addBill} eyebrow={t("add.newEntry")} />
 
       <Card className="ct-stack-lg">
         <div>
@@ -181,7 +181,7 @@ export default function AddCommitmentForm({
 
         <div>
           <label className="ct-field-label">
-            {COPY.billName}{" "}
+            {copy.billName}{" "}
             {showInsurance ? (
               <span className="text-gray-400 font-normal">(optional — auto from policy)</span>
             ) : null}
@@ -250,7 +250,7 @@ export default function AddCommitmentForm({
         </div>
 
         <Button type="button" onClick={onSubmit} size="lg">
-          {COPY.addBill}
+          {copy.addBill}
         </Button>
       </Card>
 
@@ -259,7 +259,7 @@ export default function AddCommitmentForm({
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
             <Caption className="font-semibold uppercase">Affordability</Caption>
             <span
-              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${affordabilityBadgeClass(affordability.tier)}`}
+              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${semanticToneToClass(affordabilityTierTone(affordability.tier))}`}
             >
               {affordability.label}
             </span>

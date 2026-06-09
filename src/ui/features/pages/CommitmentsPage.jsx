@@ -7,6 +7,7 @@ import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
 import SpendSmsDetectModal from "../../features/modals/SpendSmsDetectModal.jsx";
 import LogSpendModal from "../../features/modals/LogSpendModal.jsx";
+import BankStatementImportModal from "../../features/modals/BankStatementImportModal.jsx";
 import DailySpendPanel from "../../features/commitments/DailySpendPanel.jsx";
 import CommitmentsBillsTab from "../../features/commitments/CommitmentsBillsTab.jsx";
 import CommitmentsPaymentModal from "../../features/commitments/CommitmentsPaymentModal.jsx";
@@ -53,6 +54,7 @@ const Commitments = () => {
   const [smsOpen, setSmsOpen] = useState(false);
   const [spendSmsOpen, setSpendSmsOpen] = useState(false);
   const [logSpendOpen, setLogSpendOpen] = useState(false);
+  const [bankImportOpen, setBankImportOpen] = useState(false);
   const [pageTab, setPageTab] = useState(() =>
     searchParams.get("tab") === "spend" ? "spend" : "bills",
   );
@@ -124,6 +126,14 @@ const Commitments = () => {
                 <button
                   type="button"
                   className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+                  aria-label="Import bank statement"
+                  onClick={() => setBankImportOpen(true)}
+                >
+                  <CtIcon name="file-text" size={22} />
+                </button>
+                <button
+                  type="button"
+                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
                   aria-label={t("bills.detectSmsSpend")}
                   onClick={() => setSpendSmsOpen(true)}
                 >
@@ -154,6 +164,7 @@ const Commitments = () => {
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
       <SpendSmsDetectModal open={spendSmsOpen} onClose={() => setSpendSmsOpen(false)} />
       {logSpendOpen && <LogSpendModal onClose={() => setLogSpendOpen(false)} />}
+      {bankImportOpen && <BankStatementImportModal onClose={() => setBankImportOpen(false)} />}
 
       <SegmentedControl
         options={[

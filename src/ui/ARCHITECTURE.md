@@ -9,7 +9,7 @@ All visual UI lives under `src/ui/`. Pages and features import from `src/ui` or 
 - **Light theme:** `theme-light.css` — softer washes; same token names
 - **Tailwind bridge:** `tailwind.config.js` maps `gray` / `slate` / `indigo` / `violet` / `emerald` → `--ct-tw-*` vars (legacy tool/form screens inherit palette automatically)
 - **Primitives:** `Card`, `Button`, `Input`, `Text` in `src/ui/primitives/`
-- **Patterns:** `ListRow`, `StatCard`, `PageHeader`, `FilterChips`, `SalarySpendBar`, `MonthlySpendSparkline`, etc.
+- **Patterns:** `ListRow`, `StatCard`, `PageHeader`, `FilterChips`, `Loading` (`PageLoader`, `RouteFallback`, `SectionLoader`), etc.
 - **Icons:** Phosphor via `CtIcon` — no emojis as UI icons
 - **Charts:** `getChartTheme()` in `src/ui/tokens/chartTheme.js` — life violet + emerald Recharts styling
 
@@ -20,6 +20,19 @@ Full token reference: `docs/architecture/DesignSystem.md`.
 ## Layout shell
 
 `layout/Screen.jsx` → `MainContent` uses `max-w-lg` (~512px) centered column — mobile-first PWA width. Auth/onboarding use `ct-screen-narrow` (28rem).
+
+## Loading states
+
+`patterns/Loading.jsx` + `loadingSkeletons.jsx` — used from `App.jsx` Suspense and auth boot:
+
+| Export | When |
+|--------|------|
+| `PageLoader` | App shell boot (`!isReady`, profile resolving) — full-screen brand + spinner + rotating hints |
+| `RouteFallback` | Lazy route Suspense — top progress bar + route-matched shimmer skeleton |
+| `SectionLoader` | In-page blocks (profile account, admin guard) |
+| `InlineLoader` | Compact row spinner |
+
+Styles: `ct-load-*`, `ct-skeleton`, `ct-spin-*` in `components.css`. Respects `prefers-reduced-motion`.
 
 ## Navigation
 
@@ -101,6 +114,7 @@ Scenarios only appear when the user has the underlying data (e.g. no loan payoff
 | Tools | embedded on Home via `dashboard/DashboardTools.jsx` |
 | Plans / upgrades | `profile/PlansModal.jsx` |
 | Admin intelligence (internal) | `features/pages/AdminPage.jsx` — `/admin`; entry via Profile for admins only |
+| Auth gate | `features/auth/AuthGatePage.jsx` — `/auth`; forgot password + recovery reset |
 
 Deferred UX (see `docs/09-implementation-status.md`): OS launcher home, `/paycheck` page, legal-details modal.
 

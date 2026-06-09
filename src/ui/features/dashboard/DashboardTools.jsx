@@ -15,6 +15,8 @@ import BondAdvisor from "../tools/BondAdvisor.jsx";
 import MoneyPlannerPanel from "../tools/MoneyPlannerPanel.jsx";
 import LoanToolsPanel from "../tools/LoanToolsPanel.jsx";
 import IncomeTaxPanel from "../tools/IncomeTaxPanel.jsx";
+import RetirementPlannerPanel from "../tools/RetirementPlannerPanel.jsx";
+import SafetyPlannerPanel from "../tools/SafetyPlannerPanel.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -162,6 +164,18 @@ export default function DashboardTools() {
       {activeTool === "incomeTax" && (
         <Modal title={modalTitle} onClose={closeTool}>
           <IncomeTaxPanel />
+        </Modal>
+      )}
+
+      {activeTool === "retirement" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <RetirementPlannerPanel />
+        </Modal>
+      )}
+
+      {activeTool === "safety" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <SafetyPlannerPanel />
         </Modal>
       )}
 

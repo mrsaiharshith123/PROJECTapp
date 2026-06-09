@@ -55,17 +55,18 @@ export function evaluateNewCommitmentAffordability(
   return evaluateAffordability(income, current, proposed);
 }
 
-export function affordabilityBadgeClass(tier) {
+/** Semantic tone for UI mapping — no CSS classes. */
+export function affordabilityTierTone(tier) {
   switch (tier) {
     case "safe":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      return "success";
     case "moderate_pressure":
-      return "bg-amber-100 text-amber-900 border-amber-200";
+      return "warning";
     case "high_risk":
-      return "bg-orange-100 text-orange-900 border-orange-200";
+      return "coral";
     case "dangerous":
-      return "bg-red-100 text-red-800 border-red-200";
+      return "danger";
     default:
-      return "bg-gray-100 text-gray-700 border-gray-200";
+      return "neutral";
   }
 }

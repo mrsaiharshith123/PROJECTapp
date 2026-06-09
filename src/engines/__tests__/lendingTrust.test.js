@@ -1,74 +1,34 @@
-import { describe, expect, it } from "vitest";
-import {
-  lendingTrustByPerson,
-  trustScoreForPerson,
-  trustSummaryLine,
-} from "../lendingTrust.js";
+import { describe, it, expect } from "vitest";
+import { analyzeLendingTrust, trustScoreToTone } from "../lendingTrust.js";
 
-describe("lendingTrust", () => {
-  it("returns neutral score near 50 for new borrower with no history", () => {
+describe("lendingTrust behavioral", () => {
+  it("detects consistently late pattern", () => {
     const row = {
-      personKey: "alice",
-      displayName: "Alice",
-      successfulRepayments: 0,
-      delayedRepayments: 0,
-      completedCycles: 0,
-    };
-    expect(trustScoreForPerson(row)).toBe(50);
-  });
-
-  it("increases score with successful repayments", () => {
-    const row = {
-      personKey: "bob",
-      displayName: "Bob",
-      successfulRepayments: 8,
-      delayedRepayments: 0,
-      completedCycles: 1,
-    };
-    expect(trustScoreForPerson(row)).toBeGreaterThan(50);
-  });
-
-  it("decreases score with delayed repayments", () => {
-    const good = trustScoreForPerson({
-      personKey: "c",
-      displayName: "C",
-      successfulRepayments: 6,
-      delayedRepayments: 0,
-      completedCycles: 0,
-    });
-    const late = trustScoreForPerson({
-      personKey: "c",
-      displayName: "C",
-      successfulRepayments: 3,
+      displayName: "Ravi",
+      successfulRepayments: 2,
       delayedRepayments: 3,
-      completedCycles: 0,
-    });
-    expect(late).toBeLessThan(good);
-  });
-
-  it("trustSummaryLine always returns non-empty string", () => {
-    const rows = lendingTrustByPerson([]);
-    const fresh = {
-      personKey: "x",
-      displayName: "X",
-      successfulRepayments: 0,
-      delayedRepayments: 0,
-      completedCycles: 0,
+      completedCycles: 1,
+      totalDeals: 2,
     };
-    expect(trustSummaryLine(fresh).length).toBeGreaterThan(0);
-    if (rows[0]) expect(trustSummaryLine(rows[0]).length).toBeGreaterThan(0);
+    const lendings = [
+      {
+        dueDate: "2026-01-01",
+        payments: [
+          { date: "2026-01-06", amount: 1000, onTime: false },
+          { date: "2026-02-05", amount: 1000, onTime: false },
+        ],
+        remainingAmount: 0,
+        totalAmount: 2000,
+      },
+    ];
+    const analysis = analyzeLendingTrust(row, lendings);
+    expect(analysis.avgDaysLate).toBeGreaterThan(0);
+    expect(analysis.narrativeLines.length).toBeGreaterThan(0);
+    expect(analysis.tone).toBeTruthy();
   });
 
-  it("lendingTrustByPerson groups by personKey", () => {
-    const rows = lendingTrustByPerson([
-      { personName: "Ravi", payments: [{ onTime: true }] },
-      { personName: "ravi", payments: [{ onTime: false }] },
-      { personName: "Priya", payments: [{ onTime: true }] },
-    ]);
-    expect(rows).toHaveLength(2);
-    const ravi = rows.find((r) => r.personKey === "ravi");
-    expect(ravi?.totalDeals).toBe(2);
-    expect(ravi?.successfulRepayments).toBe(1);
-    expect(ravi?.delayedRepayments).toBe(1);
+  it("returns semantic tone not CSS", () => {
+    expect(trustScoreToTone(85)).toBe("success");
+    expect(trustScoreToTone(85)).not.toMatch(/bg-/);
   });
 });

@@ -1,6 +1,8 @@
+import { addMonths, format, parseISO } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
 
 /** @typedef {"critical" | "weak" | "moderate" | "healthy" | "strong"} SurvivalTier */
+/** @typedef {"stable" | "vulnerable" | "fragile" | "critical"} SurvivalClassification */
 
 const TIER_LABELS = {
   critical: "Critical",
@@ -9,6 +11,19 @@ const TIER_LABELS = {
   healthy: "Healthy",
   strong: "Strong",
 };
+
+const ESSENTIAL_CATEGORIES = new Set([
+  "Rent",
+  "EMI",
+  "Utility",
+  "Groceries",
+  "Insurance",
+  "Education",
+  "School",
+  "Food",
+]);
+
+const STRESSED_EMERGENCY_HIT = 150_000;
 
 export function survivalTierFromMonths(months) {
   if (months == null || !Number.isFinite(months)) return { tier: "critical", label: TIER_LABELS.critical };
@@ -19,31 +34,134 @@ export function survivalTierFromMonths(months) {
   return { tier: "strong", label: TIER_LABELS.strong };
 }
 
-export function survivalTierBadgeClass(tier) {
+/** Semantic tone for UI — no CSS classes. */
+export function survivalTierTone(tier) {
   switch (tier) {
     case "strong":
-      return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800";
+      return "success";
     case "healthy":
-      return "bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800";
+      return "teal";
     case "moderate":
-      return "bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800";
+      return "warning";
     case "weak":
-      return "bg-orange-100 text-orange-900 border-orange-200 dark:bg-orange-950/50 dark:text-orange-300 dark:border-orange-800";
+      return "coral";
+    case "critical":
+      return "danger";
     default:
-      return "bg-red-100 text-red-800 border-red-200 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800";
+      return "neutral";
+  }
+}
+
+function essentialMonthlyBurden(commitments, getEffectiveStatus) {
+  let sum = 0;
+  for (const c of commitments || []) {
+    if (getEffectiveStatus(c) === "paid") continue;
+    if (!ESSENTIAL_CATEGORIES.has(c.category)) continue;
+    sum += Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
+  }
+  return sum;
+}
+
+function computeRunwayMonths(pool, burn) {
+  if (burn <= 0) return pool > 0 ? 99 : null;
+  return Math.round((pool / burn) * 10) / 10;
+}
+
+function breakingMonthLabel(runwayMonths, todayStr) {
+  if (runwayMonths == null || runwayMonths >= 99) return null;
+  if (!todayStr) return null;
+  try {
+    const breakDate = addMonths(parseISO(`${todayStr}T12:00:00`), Math.max(0, Math.floor(runwayMonths)));
+    return format(breakDate, "MMM yyyy");
+  } catch {
+    return null;
   }
 }
 
 /**
- * How long user can cover monthly burn using liquid savings + current free cash runway.
- * @param {{ income: number, freeMoney: number, liquidSavings: number, monthlyBurden: number, lendingOutflow?: number }} params
+ * @param {object} params
  */
-export function computeSurvivalAnalysis({ income, freeMoney, liquidSavings, monthlyBurden, lendingOutflow = 0 }) {
+function runScenario({
+  income,
+  freeMoney,
+  liquidSavings,
+  monthlyBurden,
+  lendingOutflow = 0,
+  emergencyHit = 0,
+  todayStr = "",
+}) {
   const burn = Math.max(0, monthlyBurden + Math.max(0, lendingOutflow));
+  const pool = Math.max(0, liquidSavings) + Math.max(0, freeMoney) - Math.max(0, emergencyHit);
+  const runwayMonths = computeRunwayMonths(pool, burn);
+  const { tier, label: tierLabel } = survivalTierFromMonths(runwayMonths);
+  const inc = Math.max(0, income || 0);
+
+  return {
+    runwayMonths,
+    breakingMonth: breakingMonthLabel(runwayMonths, todayStr),
+    freeCashflow: Math.round(inc - burn),
+    requiredMonthlyBurn: Math.round(burn),
+    tier,
+    tierLabel,
+    tone: survivalTierTone(tier),
+    poolAfterEmergency: Math.round(pool),
+  };
+}
+
+function survivalClassification(baselineMonths, stressedMonths) {
+  if (baselineMonths == null || baselineMonths < 2) return "critical";
+  if (baselineMonths < 4 || (stressedMonths != null && stressedMonths < 2)) return "fragile";
+  if (baselineMonths < 6 || (stressedMonths != null && stressedMonths < 4)) return "vulnerable";
+  return "stable";
+}
+
+function timeToSafetyMonths(liquidSavings, freeMoney, monthlyBurden, monthlySavingsRate) {
+  const burn = Math.max(0, monthlyBurden);
+  const target = burn * 6;
+  const current = Math.max(0, liquidSavings) + Math.max(0, freeMoney);
+  const save = Math.max(0, monthlySavingsRate);
+  if (current >= target) return 0;
+  if (save <= 0) return null;
+  return Math.ceil((target - current) / save);
+}
+
+function buildSurvivalNarratives(baseline, stressed, classification, timeToSafety) {
+  const lines = [];
+  if (baseline.runwayMonths != null) {
+    lines.push(`Current emergency reserves cover about ${baseline.runwayMonths} month${baseline.runwayMonths === 1 ? "" : "s"}.`);
+  }
+  if (stressed?.runwayMonths != null && stressed.runwayMonths < 2) {
+    lines.push("Under income disruption, runway falls below 60 days.");
+  }
+  if (classification === "stable" && timeToSafety != null && timeToSafety > 0) {
+    lines.push(`At current savings pace, a 6-month safety buffer may take about ${timeToSafety} month${timeToSafety === 1 ? "" : "s"}.`);
+  }
+  if (classification === "stable") {
+    lines.push("Savings behaviour is rebuilding financial safety.");
+  }
+  return lines;
+}
+
+/**
+ * How long user can cover monthly burn using liquid savings + current free cash runway.
+ */
+export function computeSurvivalAnalysis({
+  income,
+  freeMoney,
+  liquidSavings,
+  monthlyBurden,
+  lendingOutflow = 0,
+  commitments = [],
+  getEffectiveStatus = () => "pending",
+  todayStr = "",
+  monthlySavingsRate = null,
+}) {
+  const inc = Math.max(0, income || 0);
   const liquid = Math.max(0, liquidSavings);
   const free = Math.max(0, freeMoney);
+  const saveRate = monthlySavingsRate != null ? monthlySavingsRate : Math.max(0, inc - monthlyBurden - lendingOutflow);
 
-  if (burn <= 0) {
+  if (monthlyBurden <= 0 && lendingOutflow <= 0) {
     const pool = liquid + free;
     return {
       survivalMonths: pool > 0 ? 99 : null,
@@ -51,33 +169,78 @@ export function computeSurvivalAnalysis({ income, freeMoney, liquidSavings, mont
       liquidSavings: liquid,
       tier: "strong",
       tierLabel: TIER_LABELS.strong,
+      tone: survivalTierTone("strong"),
       headline: "No fixed monthly burn tracked — add bills to refine survival estimate.",
       warnings: [],
-      badgeClass: survivalTierBadgeClass("strong"),
+      scenarios: null,
+      classification: "stable",
+      timeToSafetyMonths: null,
+      narrativeLines: [],
     };
   }
 
-  const pool = liquid + free;
-  const survivalMonths = pool / burn;
-  const { tier, label: tierLabel } = survivalTierFromMonths(survivalMonths);
+  const baseline = runScenario({
+    income: inc,
+    freeMoney: free,
+    liquidSavings: liquid,
+    monthlyBurden,
+    lendingOutflow,
+    todayStr,
+  });
+
+  const stressedBurden = monthlyBurden;
+  const stressedIncome = Math.round(inc * 0.7);
+  const stressedFree = Math.max(0, stressedIncome - monthlyBurden);
+
+  const stressed = runScenario({
+    income: stressedIncome,
+    freeMoney: stressedFree,
+    liquidSavings: liquid,
+    monthlyBurden: stressedBurden,
+    lendingOutflow,
+    emergencyHit: STRESSED_EMERGENCY_HIT,
+    todayStr,
+  });
+
+  const essentialBurn = essentialMonthlyBurden(commitments, getEffectiveStatus) + Math.max(0, lendingOutflow);
+  const critical = runScenario({
+    income: 0,
+    freeMoney: 0,
+    liquidSavings: liquid,
+    monthlyBurden: essentialBurn > 0 ? essentialBurn : monthlyBurden,
+    lendingOutflow: 0,
+    todayStr,
+  });
+
+  const classification = survivalClassification(baseline.runwayMonths, stressed.runwayMonths);
+  const timeToSafety = timeToSafetyMonths(liquid, free, monthlyBurden + lendingOutflow, saveRate);
   const warnings = [];
-  if (survivalMonths < 4) {
+  if (baseline.runwayMonths != null && baseline.runwayMonths < 4) {
     warnings.push("Emergency reserve is below a commonly recommended safe level (3–6 months of expenses).");
   }
-  if (income > 0 && free < income * 0.1) {
+  if (inc > 0 && free < inc * 0.1) {
     warnings.push("Very little free cash after monthly obligations — income shock would hurt quickly.");
   }
 
-  const monthsRounded = Math.round(survivalMonths * 10) / 10;
+  const narrativeLines = buildSurvivalNarratives(baseline, stressed, classification, timeToSafety);
+
   return {
-    survivalMonths: monthsRounded,
-    monthlyBurn: Math.round(burn),
+    survivalMonths: baseline.runwayMonths,
+    monthlyBurn: baseline.requiredMonthlyBurn,
     liquidSavings: liquid,
-    tier,
-    tierLabel,
-    headline: `If income stops today, you can survive about ${monthsRounded} month${monthsRounded === 1 ? "" : "s"}.`,
+    tier: baseline.tier,
+    tierLabel: baseline.tierLabel,
+    tone: baseline.tone,
+    headline: `If income stops today, you can survive about ${baseline.runwayMonths} month${baseline.runwayMonths === 1 ? "" : "s"}.`,
     warnings,
-    badgeClass: survivalTierBadgeClass(tier),
+    scenarios: {
+      baseline,
+      stressed,
+      critical,
+    },
+    classification,
+    timeToSafetyMonths: timeToSafety,
+    narrativeLines,
   };
 }
 
@@ -105,11 +268,16 @@ export function buildSurvivalContext(commitments, lendings, settings, getEffecti
   const income = Math.max(0, Number(settings.monthlyIncome) || 0);
   const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
   const lendingOut = lendingMonthlyOutflow(lendings, getEffectiveLendingStatus, todayStr);
+  const freeMoney = cashMetrics?.freeMoney ?? Math.max(0, income - burden);
   return computeSurvivalAnalysis({
     income,
-    freeMoney: cashMetrics?.freeMoney ?? Math.max(0, income - burden),
+    freeMoney,
     liquidSavings: Math.max(0, Number(settings.liquidSavings) || 0),
     monthlyBurden: burden,
     lendingOutflow: lendingOut,
+    commitments,
+    getEffectiveStatus,
+    todayStr,
+    monthlySavingsRate: Math.max(0, freeMoney),
   });
 }

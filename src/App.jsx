@@ -5,7 +5,7 @@ import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContex
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
-import { Navbar, InstallAppBanner, Screen, MainContent } from "./ui";
+import { Navbar, InstallAppBanner, Screen, MainContent, PageLoader, RouteFallback } from "./ui";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import AuthGatePage from "./ui/features/auth/AuthGatePage.jsx";
 import ModeRoute from "./app/ModeRoute.jsx";
@@ -17,7 +17,7 @@ import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
-import { I18nProvider, useTranslation } from "./i18n/index.js";
+import { I18nProvider } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
@@ -32,27 +32,15 @@ const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferRe
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 
-function PageLoader() {
-  const { t } = useTranslation();
-  return (
-    <div className="ct-loader ct-caption" role="status">
-      {t("common.loading")}
-    </div>
-  );
-}
-
 function AuthGateShell() {
   return (
-    <Screen narrow>
+    <div className="ct-screen ct-auth-shell">
       <ThemeSync />
-      <div className="mb-6">
-        <InstallAppBanner />
-      </div>
       <Routes>
         <Route path="/auth" element={<AuthGatePage />} />
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
-    </Screen>
+    </div>
   );
 }
 
@@ -64,7 +52,7 @@ function OnboardingShell() {
       <div className="mb-6">
         <InstallAppBanner />
       </div>
-      <Suspense fallback={<PageLoader />}>
+      <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/privacy" element={<Privacy />} />
@@ -84,7 +72,7 @@ function MainShell() {
       <Navbar />
       <NotificationSync />
       <MainContent>
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/commitments" element={<Commitments />} />

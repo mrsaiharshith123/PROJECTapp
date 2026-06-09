@@ -54,7 +54,7 @@ src/ui/
 ├── index.js              Barrel export — import { Card, Button, … } from "../ui"
 ├── ARCHITECTURE.md       Pointer → docs/03-rules.md
 ├── primitives/           Card, Button, Input, Text, Modal, Badge, Stack, …
-├── patterns/             PageHeader, ListRow, MetricTile, FormField, …
+├── patterns/             PageHeader, ListRow, MetricTile, FormField, Loading, …
 ├── features/             Product screens & widgets
 │   ├── pages/            Full-page screens (lazy-loaded from App.jsx)
 │   ├── dashboard/        Home dashboard sections
@@ -64,7 +64,7 @@ src/ui/
 │   ├── profile/          Profile sections + `hub/` (control center, admin entry)
 │   ├── admin/            Internal product intelligence widgets
 │   ├── analytics/        Charts & breakdowns
-│   └── auth/             Account panel
+│   └── auth/             Auth gate (`AuthGatePage.jsx` — sign-in, sign-up, forgot/reset password)
 ├── layout/               Screen shell (`Screen.jsx` — `max-w-lg` column), Navbar, ErrorBoundary
 ├── styles/               tokens.css, components.css, theme-light.css, net-worth.css
 └── tokens/               chartTheme.js, severity, category chips, bill status mapping
@@ -116,7 +116,9 @@ No React imports. Examples:
 | `supabase/auth.js` | Sign-in, profile upsert (merge-safe onboarding flag) |
 | `sync/syncEngine.js` | Cloud backup bridge |
 | `notifications/*` | PWA reminders, delivery |
-| `razorpay.js` | Client checkout for Pro/Power (verify server-side before prod) |
+| `razorpaySubscription.js` | Razorpay script load, checkout modal, server verify flow |
+| `razorpaySubscription.js` | Order + checkout + verify orchestration |
+| `razorpayConfig.js` | Test-key detection, simulation vs live checkout |
 | `otpConfirmation.js` | Declared lender/borrower confirmation refs (not Aadhaar eSign) |
 | `smsAutoDetect.js` | SMS parse helpers for commitment detect modal |
 | `analytics/trackEvent.js` | Public product-event API — fan-out via `analyticsHub.js` |

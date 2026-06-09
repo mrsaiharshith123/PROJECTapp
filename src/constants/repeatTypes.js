@@ -112,3 +112,18 @@ export function isBillDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, to
   const paid = paymentsInMonth(c, monthKey);
   return gross - paid > 0.01;
 }
+
+/** Whether a specific calendar day carries a scheduled due for this bill. */
+export function isBillDueOnDate(c, dateStr, getEffectiveStatusFn, todayStr = todayYmd()) {
+  if (!dateStr || !c) return false;
+  const monthKey = dateStr.slice(0, 7);
+  if (!isScheduledInMonth(c, monthKey, todayStr)) return false;
+
+  const rt = normalizeRepeatType(c.repeatType);
+  if (rt === "none") return (c.dueDate || "") === dateStr;
+
+  const dueDay = (c.dueDate || c.startDate || "").slice(8, 10);
+  if (dueDay && dateStr.slice(8, 10) !== dueDay) return false;
+
+  return isBillDueInMonth(c, monthKey, Number(dateStr.slice(8, 10)), getEffectiveStatusFn, todayStr);
+}

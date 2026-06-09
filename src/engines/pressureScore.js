@@ -1,14 +1,177 @@
-import { format, parseISO, getDate, getDaysInMonth } from "date-fns";
+import { format, parseISO, getDate, getDaysInMonth, differenceInCalendarDays } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
 import { commitmentToIncomeRatio } from "./pressureAdvanced.js";
 import { totalMonthlyLendingBurden } from "./lendingMonthCash.js";
 import { sumDailySpendsInRange } from "../utils/dailySpends.js";
 
+const HOUSING_CATEGORIES = new Set(["Rent", "EMI", "Loan"]);
+const VEHICLE_CATEGORIES = new Set(["EMI", "Loan", "Transport"]);
+
 /**
- * Canonical 0–100 pressure score (higher = more stressed).
- * Combines burden/income ratio, overdue penalty, lending burden, spend pace, and snapshot trend.
+ * @param {object[]} commitments
+ * @param {(c: object) => string} getEffectiveStatus
  */
-export function computeCanonicalPressureScore({
+export function totalOverdueAmount(commitments, getEffectiveStatus) {
+  let sum = 0;
+  for (const c of commitments || []) {
+    if (getEffectiveStatus(c) !== "overdue") continue;
+    sum += Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
+  }
+  return sum;
+}
+
+/**
+ * Weeks (Mon-start label) where 3+ open commitments share a 7-day window.
+ * @returns {{ weekStart: string, count: number, commitmentIds: string[] }[]}
+ */
+export function detectDueClusters(commitments, getEffectiveStatus, _todayStr) {
+  const open = (commitments || []).filter((c) => {
+    const st = getEffectiveStatus(c);
+    return st !== "paid" && st !== "skipped" && c.dueDate;
+  });
+  if (open.length < 3) return [];
+
+  /** @type {Map<string, { weekStart: string, count: number, commitmentIds: Set<string> }>} */
+  const clusters = new Map();
+
+  for (const c of open) {
+    try {
+      const due = parseISO(`${c.dueDate}T12:00:00`);
+      const weekStart = format(due, "yyyy-MM-dd");
+      const key = weekStart;
+      if (!clusters.has(key)) {
+        clusters.set(key, { weekStart, count: 0, commitmentIds: new Set() });
+      }
+      const row = clusters.get(key);
+      const id = String(c.id || c.name || due);
+      if (!row.commitmentIds.has(id)) {
+        row.commitmentIds.add(id);
+        row.count += 1;
+      }
+
+      for (const other of open) {
+        if (other === c || !other.dueDate) continue;
+        const otherDue = parseISO(`${other.dueDate}T12:00:00`);
+        const days = Math.abs(differenceInCalendarDays(otherDue, due));
+        if (days <= 6) {
+          const oid = String(other.id || other.name || otherDue);
+          if (!row.commitmentIds.has(oid)) {
+            row.commitmentIds.add(oid);
+            row.count += 1;
+          }
+        }
+      }
+    } catch {
+      /* skip invalid dates */
+    }
+  }
+
+  return [...clusters.values()]
+    .filter((c) => c.count >= 3)
+    .map((c) => ({
+      weekStart: c.weekStart,
+      count: c.count,
+      commitmentIds: [...c.commitmentIds],
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Simple linear regression slope on y values (x = 0, 1, 2, …).
+ * @param {number[]} ys
+ */
+export function linearRegressionSlope(ys) {
+  const n = ys.length;
+  if (n < 2) return 0;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumXX = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += ys[i];
+    sumXY += i * ys[i];
+    sumXX += i * i;
+  }
+  const denom = n * sumXX - sumX * sumX;
+  if (denom === 0) return 0;
+  return (n * sumXY - sumX * sumY) / denom;
+}
+
+/**
+ * @param {object[]} commitments
+ * @param {(c: object) => string} getEffectiveStatus
+ * @param {number} income
+ */
+export function buildPressureDrivers(commitments, getEffectiveStatus, income) {
+  const inc = Math.max(0, income || 0);
+  /** @type {Map<string, { category: string, amount: number, overdueAmount: number }>} */
+  const byCat = new Map();
+
+  for (const c of commitments || []) {
+    const st = getEffectiveStatus(c);
+    if (st === "paid" || st === "skipped") continue;
+    const cat = c.category || "Other";
+    const amt = Math.max(0, Number(c.remainingAmount ?? c.amount) || 0);
+    if (!byCat.has(cat)) byCat.set(cat, { category: cat, amount: 0, overdueAmount: 0 });
+    const row = byCat.get(cat);
+    row.amount += amt;
+    if (st === "overdue") row.overdueAmount += amt;
+  }
+
+  return [...byCat.values()]
+    .map((r) => ({
+      category: r.category,
+      amount: Math.round(r.amount),
+      overdueAmount: Math.round(r.overdueAmount),
+      shareOfIncome: inc > 0 ? Math.round((r.amount / inc) * 100) : null,
+      points: Math.round(r.overdueAmount / Math.max(1, inc) * 30) + (inc > 0 ? Math.round((r.amount / inc) * 10) : 0),
+    }))
+    .sort((a, b) => b.points - a.points)
+    .slice(0, 5);
+}
+
+/**
+ * @param {object} analysis
+ */
+export function buildPressureNarratives(analysis) {
+  const lines = [];
+  const drivers = analysis.pressureDrivers || [];
+
+  if (drivers.length > 0) {
+    const cats = drivers.slice(0, 3).map((d) => d.category);
+    const hasHousing = cats.some((c) => HOUSING_CATEGORIES.has(c));
+    const hasVehicle = cats.some((c) => VEHICLE_CATEGORIES.has(c));
+    if (hasHousing && hasVehicle) {
+      lines.push("Pressure heavily driven by housing and vehicle commitments.");
+    } else if (hasHousing) {
+      lines.push("Pressure heavily driven by housing commitments.");
+    } else if (drivers[0]) {
+      lines.push(`Pressure is most influenced by ${drivers[0].category} commitments.`);
+    }
+  }
+
+  if (analysis.clusterWeeks?.length > 0) {
+    lines.push("Multiple obligations are clustering in the same calendar week.");
+  }
+
+  if (analysis.trendDirection === "improving") {
+    lines.push("Pressure improving over the last 90 days.");
+  } else if (analysis.trendDirection === "worsening") {
+    lines.push("Pressure has been rising over recent months.");
+  }
+
+  if (analysis.overdueBurdenRatio > 0.15) {
+    lines.push("Overdue amounts represent a significant share of monthly income.");
+  }
+
+  return lines;
+}
+
+/**
+ * Full pressure analysis — canonical intelligence output.
+ */
+export function computePressureAnalysis({
   commitments,
   income,
   getEffectiveStatus,
@@ -25,8 +188,13 @@ export function computeCanonicalPressureScore({
   }
   let score = inc > 0 ? Math.round(ratio * 100) : ratio > 0 ? 85 : 0;
 
-  const overdue = commitments.filter((c) => getEffectiveStatus(c) === "overdue").length;
-  score += overdue * 8;
+  const overdueAmt = totalOverdueAmount(commitments, getEffectiveStatus);
+  const overdueBurdenRatio = inc > 0 ? overdueAmt / inc : overdueAmt > 0 ? 1 : 0;
+  const overduePenalty = inc > 0 ? Math.min(25, Math.round(overdueBurdenRatio * 30)) : overdueAmt > 0 ? 25 : 0;
+  score += overduePenalty;
+
+  const clusterWeeks = detectDueClusters(commitments, getEffectiveStatus, todayStr);
+  if (clusterWeeks.length > 0) score += 5;
 
   if (inc > 0 && todayStr && dailySpends?.length) {
     const monthKey = format(parseISO(`${todayStr}T12:00:00`), "yyyy-MM");
@@ -38,19 +206,42 @@ export function computeCanonicalPressureScore({
     else if (projected / inc > 0.25) score += 2;
   }
 
-  const sorted = [...(monthlySnapshots || [])].sort((a, b) => a.month.localeCompare(b.month));
-  if (sorted.length >= 2) {
-    const prev = sorted[sorted.length - 2];
-    const last = sorted[sorted.length - 1];
-    if (last.pressureScore > prev.pressureScore + 5) {
-      score += 5;
-    }
+  const sorted = [...(monthlySnapshots || [])]
+    .filter((s) => s.pressureScore != null)
+    .sort((a, b) => a.month.localeCompare(b.month));
+  const last3 = sorted.slice(-3).map((s) => Number(s.pressureScore) || 0);
+  const pressureTrendSlope = linearRegressionSlope(last3);
+  let trendDirection = "stable";
+  if (last3.length >= 2) {
+    if (pressureTrendSlope > 2) trendDirection = "worsening";
+    else if (pressureTrendSlope < -2) trendDirection = "improving";
   }
 
-  return Math.min(100, Math.max(0, score));
+  score = Math.min(100, Math.max(0, score));
+  const pressureDrivers = buildPressureDrivers(commitments, getEffectiveStatus, inc);
+
+  const analysis = {
+    score,
+    overdueBurdenRatio: Math.round(overdueBurdenRatio * 1000) / 1000,
+    overduePenalty,
+    clusterWeeks,
+    pressureDrivers,
+    pressureTrendSlope: Math.round(pressureTrendSlope * 10) / 10,
+    trendDirection,
+    narrativeLines: [],
+  };
+  analysis.narrativeLines = buildPressureNarratives(analysis);
+  return analysis;
 }
 
-/** Colour tone for badges — 71–80 uses coral (act soon). */
+/**
+ * Canonical 0–100 pressure score (higher = more stressed).
+ */
+export function computeCanonicalPressureScore(params) {
+  return computePressureAnalysis(params).score;
+}
+
+/** Semantic tone for badges — engines return tokens only. */
 export function pressureScoreTone(score) {
   if (score <= 40) return "success";
   if (score <= 60) return "info";
@@ -74,33 +265,6 @@ export function pressureScoreLabel(score) {
     return { level: "risky", tone, label: "Elevated", hint: "Limited buffer for unexpected costs — defer new long commitments." };
   }
   return { level: "dangerous", tone, label: "Critical", hint: "Pressure is high — address overdue items and essentials first." };
-}
-
-export function pressureScoreBadgeClass(levelOrTone) {
-  const levelToTone = {
-    healthy: "success",
-    moderate: "info",
-    stressed: "warning",
-    risky: "coral",
-    dangerous: "danger",
-  };
-  const tone = levelToTone[levelOrTone] || levelOrTone;
-  switch (tone) {
-    case "success":
-      return "ct-status ct-status-success";
-    case "info":
-      return "ct-status ct-status-info";
-    case "warning":
-      return "ct-status ct-status-warning";
-    case "coral":
-      return "ct-badge ct-badge-coral";
-    case "teal":
-      return "ct-badge ct-badge-teal";
-    case "danger":
-      return "ct-status ct-status-danger";
-    default:
-      return "ct-status ct-status-neutral";
-  }
 }
 
 /**

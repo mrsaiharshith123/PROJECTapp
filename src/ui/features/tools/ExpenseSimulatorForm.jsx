@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { formatInr } from "../../../constants/symbols.js";
-import { affordabilityBadgeClass } from "../../../engines/affordability.js";
+import { affordabilityTierTone } from "../../../engines/affordability.js";
+import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { getExpensePresetsForMode, simulateNewExpense } from "../../../engines/expenseSimulator.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -177,7 +178,7 @@ export default function ExpenseSimulatorForm() {
       {sim && (
         <div className="space-y-2 text-sm">
           <span
-            className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${affordabilityBadgeClass(sim.affordability.tier)}`}
+            className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${semanticToneToClass(affordabilityTierTone(sim.affordability.tier))}`}
           >
             {translateAffordabilityLabel(t, sim.affordability)}
           </span>

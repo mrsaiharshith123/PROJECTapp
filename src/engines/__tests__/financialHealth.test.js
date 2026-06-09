@@ -4,7 +4,7 @@ import { computeFinancialHealthScore } from "../financialHealth.js";
 const getEffectiveStatus = (c) => c._status || "pending";
 
 describe("computeFinancialHealthScore", () => {
-  it("returns 100 excellent when there are no open bills", () => {
+  it("returns high score when no commitments and healthy buffer", () => {
     const result = computeFinancialHealthScore({
       commitments: [],
       lendings: [],
@@ -12,21 +12,25 @@ describe("computeFinancialHealthScore", () => {
       getEffectiveStatus,
       openRemaining: 0,
       freeMoneyAfterBurden: 80000,
+      liquidSavings: 200000,
     });
-    expect(result.score).toBe(100);
-    expect(result.level).toBe("excellent");
+    expect(result.score).toBeGreaterThan(80);
+    expect(result.burdenScore).toBeGreaterThan(80);
+    expect(result.improvementPath.length).toBeGreaterThan(0);
   });
 
-  it("returns 100 when all commitments are paid", () => {
+  it("does not score excellent when income is fully committed despite no overdues", () => {
     const result = computeFinancialHealthScore({
-      commitments: [{ id: 1, _status: "paid", amount: 5000 }],
+      commitments: [{ id: 1, _status: "pending", amount: 48500, remainingAmount: 48500, repeatType: "monthly" }],
       lendings: [],
       income: 50000,
       getEffectiveStatus,
-      openRemaining: 0,
-      freeMoneyAfterBurden: 50000,
+      openRemaining: 48500,
+      freeMoneyAfterBurden: 1500,
+      liquidSavings: 5000,
     });
-    expect(result.score).toBe(100);
+    expect(result.score).toBeLessThan(75);
+    expect(result.burdenScore).toBeLessThan(60);
   });
 
   it("penalizes overdue bills", () => {
@@ -38,18 +42,22 @@ describe("computeFinancialHealthScore", () => {
       openRemaining: 3000,
       freeMoneyAfterBurden: 47000,
     });
-    expect(result.score).toBeLessThan(100);
+    expect(result.score).toBeLessThan(90);
   });
 
-  it("penalizes high burden vs income", () => {
+  it("returns four component scores", () => {
     const result = computeFinancialHealthScore({
-      commitments: [{ id: 1, _status: "pending", amount: 40000, remainingAmount: 40000 }],
+      commitments: [{ id: 1, _status: "pending", amount: 20000, remainingAmount: 20000 }],
       lendings: [],
       income: 50000,
       getEffectiveStatus,
-      openRemaining: 40000,
-      freeMoneyAfterBurden: 10000,
+      openRemaining: 20000,
+      freeMoneyAfterBurden: 30000,
     });
-    expect(result.score).toBeLessThan(90);
+    expect(result.burdenScore).toBeDefined();
+    expect(result.behaviourScore).toBeDefined();
+    expect(result.bufferScore).toBeDefined();
+    expect(result.trajectoryScore).toBeDefined();
+    expect(result.tone).toBeTruthy();
   });
 });

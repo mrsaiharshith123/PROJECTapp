@@ -4,12 +4,13 @@ import { Modal, Button, Badge, Caption, Heading, Body, ToneSurface } from "../..
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { PLAN_PRESENTATION } from "../../../constants/subscriptionTiers.js";
-import { openRazorpayCheckout } from "../../../services/razorpay.js";
-import { saveSubscriptionTier } from "../../../services/supabase/auth.js";
 import {
-  completeSimulatedSubscriptionUpgrade,
   isPaymentSimulationEnabled,
-} from "../../../services/simulateSubscriptionPayment.js";
+  isRazorpayConfigured,
+  isRazorpayTestMode,
+} from "../../../services/razorpayConfig.js";
+import { startSubscriptionCheckout } from "../../../services/razorpaySubscription.js";
+import { completeSimulatedSubscriptionUpgrade } from "../../../services/simulateSubscriptionPayment.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /**
@@ -27,6 +28,8 @@ export default function PlansModal({ open, onClose }) {
   if (!open) return null;
 
   const simulatePay = isPaymentSimulationEnabled();
+  const razorpayReady = isRazorpayConfigured();
+  const razorpayTest = isRazorpayTestMode();
 
   const handleUpgrade = (tier) => {
     setMsg({ type: "", text: "" });
@@ -48,22 +51,33 @@ export default function PlansModal({ open, onClose }) {
       return;
     }
 
-    const amountPaise = tier === "pro" ? 79900 : 149900;
+    if (!user?.id) {
+      setMsg({ type: "error", text: "Sign in from Profile to pay with Razorpay." });
+      setPaying(null);
+      return;
+    }
 
-    openRazorpayCheckout({
-      amountPaise,
-      description: `CommitTrack ${tier === "pro" ? "Pro" : "Power"} Annual`,
-      prefillName: settings.displayName || "",
-      prefillEmail: user?.email || "",
-      onSuccess: async (paymentId) => {
-        await saveSubscriptionTier(user?.id, tier, paymentId);
-        updateSettings({ subscriptionTier: tier });
-        setMsg({ type: "success", text: `Your plan is now ${tier}. Thank you for subscribing.` });
+    startSubscriptionCheckout({
+      tier,
+      userId: user.id,
+      settings,
+      user,
+      updateSettings,
+      onSuccess: ({ tier: paidTier, verified }) => {
+        setMsg({
+          type: "success",
+          text: verified
+            ? `Your plan is now ${paidTier}. Payment verified — thank you!`
+            : `Your plan is now ${paidTier}. Thank you for subscribing.`,
+        });
         setPaying(null);
       },
       onDismiss: () => setPaying(null),
       onError: (err) => {
-        setMsg({ type: "error", text: "Payment could not be completed. Please try again." });
+        setMsg({
+          type: "error",
+          text: err?.message || "Payment could not be completed. Please try again.",
+        });
         console.error("Razorpay:", err);
         setPaying(null);
       },
@@ -80,8 +94,35 @@ export default function PlansModal({ open, onClose }) {
         {simulatePay && (
           <ToneSurface tone="warning">
             <Caption className="block">
-              Test mode: upgrades simulate payment (no Razorpay). Console:{" "}
-              <code className="text-[11px]">__commitTrackDev.simulatePayment(&quot;pro&quot;)</code>
+              Simulation mode: no Razorpay checkout. Add{" "}
+              <code className="text-[11px]">VITE_RAZORPAY_KEY_ID=rzp_test_…</code> to{" "}
+              <code className="text-[11px]">.env</code> and restart dev to use test payments.
+            </Caption>
+          </ToneSurface>
+        )}
+
+        {razorpayReady && razorpayTest && (
+          <ToneSurface tone="warning">
+            <Caption className="block">
+              Razorpay test mode — India-only account. Easiest: choose <strong>UPI</strong> and enter{" "}
+              <strong>success@razorpay</strong>. Or <strong>Netbanking</strong> → any bank → Success. Domestic test
+              card: <strong>5267 3181 8797 5449</strong> (any expiry/CVV). Foreign cards show “International cards
+              are not supported”.
+            </Caption>
+          </ToneSurface>
+        )}
+
+        {razorpayReady && !razorpayTest && (
+          <ToneSurface tone="info">
+            <Caption className="block">Live Razorpay checkout — real charges apply.</Caption>
+          </ToneSurface>
+        )}
+
+        {!razorpayReady && !simulatePay && (
+          <ToneSurface tone="danger">
+            <Caption className="block">
+              Razorpay is not configured. Set <code className="text-[11px]">VITE_RAZORPAY_KEY_ID</code> in your build
+              environment.
             </Caption>
           </ToneSurface>
         )}
@@ -114,7 +155,7 @@ export default function PlansModal({ open, onClose }) {
                     type="button"
                     variant="primary"
                     size="sm"
-                    disabled={paying !== null}
+                    disabled={paying !== null || (!simulatePay && !razorpayReady)}
                     onClick={() => handleUpgrade(plan.tier)}
                   >
                     {paying === plan.tier
@@ -143,7 +184,7 @@ export default function PlansModal({ open, onClose }) {
 
         <Caption className="block">
           {simulatePay
-            ? "Production builds use Razorpay. This dev session skips real checkout."
+            ? "Add Razorpay test keys to .env for real checkout in dev."
             : "Payments processed by Razorpay. Cancel anytime from Profile."}
         </Caption>
 

@@ -361,3 +361,127 @@ export function adviseChitTakeMonth({
     baselineBurden: Math.round(baseline.monthlyBurden),
   };
 }
+
+/**
+ * Newton-Raphson monthly IRR from cash flows (negative = outflow, positive = inflow).
+ * @param {number[]} cashFlows ordered by period
+ * @param {number} [guess]
+ */
+export function computeChitIrr(cashFlows, guess = 0.01) {
+  const flows = (cashFlows || []).map((f) => Number(f) || 0);
+  if (flows.length < 2) return null;
+
+  const npv = (rate) => flows.reduce((s, cf, i) => s + cf / (1 + rate) ** i, 0);
+  const dnpv = (rate) =>
+    flows.reduce((s, cf, i) => (i === 0 ? s : s - (i * cf) / (1 + rate) ** (i + 1)), 0);
+
+  let rate = guess;
+  for (let i = 0; i < 50; i++) {
+    const f = npv(rate);
+    const df = dnpv(rate);
+    if (Math.abs(df) < 1e-10) break;
+    const next = rate - f / df;
+    if (Math.abs(next - rate) < 1e-7) {
+      rate = next;
+      break;
+    }
+    rate = Math.max(-0.99, Math.min(5, next));
+  }
+
+  const monthly = rate;
+  const annual = (1 + monthly) ** 12 - 1;
+  return {
+    monthlyIrr: Math.round(monthly * 10000) / 10000,
+    annualIrrPercent: Math.round(annual * 1000) / 10,
+  };
+}
+
+/**
+ * Build cash flows for a chit: installments out until payout month, then net payout in.
+ */
+export function buildChitCashFlows({
+  chitValue,
+  totalMonths,
+  payoutMonth,
+  mode = "equal",
+  customAmount = null,
+  payoutAmount = null,
+  foremanPct = DEFAULT_FOREMAN_PCT,
+}) {
+  const V = Math.max(0, Number(chitValue) || 0);
+  const N = Math.max(1, Math.floor(Number(totalMonths) || 1));
+  const take = Math.min(N, Math.max(1, Math.floor(Number(payoutMonth) || N)));
+  const flows = [];
+
+  for (let m = 1; m <= N; m++) {
+    const inst = resolveChitInstallment(V, N, m, /** @type {ChitInstallmentMode} */ (mode), customAmount);
+    if (m < take) {
+      flows.push(-inst);
+    } else if (m === take) {
+      const discountPct = estimatedDiscountPercent(take, N);
+      const payout =
+        payoutAmount != null
+          ? Math.max(0, Number(payoutAmount))
+          : chitPayout(V, Math.round(V * discountPct), foremanPct);
+      flows.push(-inst + payout);
+    } else {
+      flows.push(-inst);
+    }
+  }
+  return flows;
+}
+
+/**
+ * Multi-chit portfolio burden and overlap analysis.
+ * @param {{ chitCommitments?: object[], monthlyIncome?: number, commitments?: object[], getEffectiveStatus: Function, todayStr?: string }} params
+ */
+export function analyzeChitPortfolio({
+  chitCommitments = [],
+  monthlyIncome = 0,
+  commitments = [],
+  getEffectiveStatus,
+  todayStr = "",
+}) {
+  const income = Math.max(0, Number(monthlyIncome) || 0);
+  let combinedInstallment = 0;
+  const roundOverlaps = [];
+  const stressMonths = [];
+
+  for (const c of chitCommitments) {
+    const meta = c.chitFund || {};
+    const V = Math.max(0, Number(meta.chitValue ?? c.amount) || 0);
+    const N = Math.max(1, Number(meta.totalMonths) || 12);
+    const cur = deriveChitCurrentMonth(meta.startDate || c.startDate, N, todayStr);
+    const inst = resolveChitInstallment(V, N, cur, meta.installmentMode, meta.customInstallment);
+    combinedInstallment += inst;
+  }
+
+  const burdenRatio = income > 0 ? combinedInstallment / income : combinedInstallment > 0 ? 1 : 0;
+
+  if (chitCommitments.length >= 2) {
+    roundOverlaps.push({
+      count: chitCommitments.length,
+      combinedInstallment: Math.round(combinedInstallment),
+      note: "Multiple active chits increase monthly installment overlap.",
+    });
+  }
+
+  const baseline = freeMoneyAfterBurden(commitments, income, getEffectiveStatus);
+  let bidRecommendation = "Current liquidity allows planned chit participation.";
+  if (burdenRatio > 0.35 || baseline.freeMoney < income * 0.08) {
+    bidRecommendation = "Avoid aggressive bidding during projected low-liquidity months.";
+    stressMonths.push({ severity: "high", reason: "Combined chit burden strains free cash." });
+  } else if (baseline.freeMoney > income * 0.2) {
+    bidRecommendation = "Current liquidity allows early bid participation.";
+  }
+
+  return {
+    chitCount: chitCommitments.length,
+    combinedInstallment: Math.round(combinedInstallment),
+    burdenRatio: Math.round(burdenRatio * 100),
+    roundOverlaps,
+    stressMonths,
+    bidRecommendation,
+    freeCash: Math.round(baseline.freeMoney),
+  };
+}

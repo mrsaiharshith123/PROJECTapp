@@ -5,7 +5,8 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { decodeOfferPayload, trustScoreLabel } from "../../../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { trustBadgeClass } from "../../../engines/lendingTrust.js";
+import { trustScoreToTone } from "../../../engines/lendingTrust.js";
+import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 
 export default function LendingOfferReview() {
@@ -94,7 +95,7 @@ export default function LendingOfferReview() {
       <Card className="space-y-2">
         <p className="text-xs font-semibold text-gray-500 uppercase">Trust score</p>
         <div className="flex items-center gap-2">
-          <span className={`text-sm font-bold px-3 py-1 rounded-full border ${trustBadgeClass(score)}`}>
+          <span className={`text-sm font-bold px-3 py-1 rounded-full border ${semanticToneToClass(trustScoreToTone(score))}`}>
             {score}/100 · {label}
           </span>
         </div>

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdminOverview } from "../../../hooks/useAdminOverview.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { Button, Caption, Eyebrow, Heading, Body } from "../../index.js";
+import { Button, Caption, Eyebrow, Heading, Body, AdminSkeleton } from "../../index.js";
 import AdminMetricCard from "../admin/AdminMetricCard.jsx";
 import AdminGrowthChart from "../admin/AdminGrowthChart.jsx";
 
@@ -45,6 +45,14 @@ export default function AdminPage() {
   const modules = useMemo(() => (Array.isArray(data?.modules) ? data.modules : []), [data]);
   const onboarding = useMemo(() => (Array.isArray(data?.onboarding) ? data.onboarding : []), [data]);
   const recent = useMemo(() => (Array.isArray(data?.recent_signups) ? data.recent_signups : []), [data]);
+
+  if (loading && !data) {
+    return (
+      <div className="ct-page ct-admin-page">
+        <AdminSkeleton />
+      </div>
+    );
+  }
 
   if (error === "NOT_ADMIN") {
     return (

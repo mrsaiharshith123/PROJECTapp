@@ -1,6 +1,7 @@
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { computeHouseholdMetrics } from "../../../engines/householdEntity.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { Card } from "../../primitives/Card.jsx";
@@ -27,7 +28,7 @@ function HouseholdRunwayCard({ survival }) {
           </Heading>
           <Caption className="mt-0.5 block">{t("family.dashboard.ifIncomeStops")}</Caption>
         </div>
-        <Badge className={survival.badgeClass}>{survival.tierLabel}</Badge>
+        <Badge tone={survival.tone}>{survival.tierLabel}</Badge>
       </div>
       <Body>{survival.headline}</Body>
       <Grid cols={2}>
@@ -41,10 +42,16 @@ function HouseholdRunwayCard({ survival }) {
 /** Household / family experience — shared expenses, education, renewals. */
 export default function FamilyModeDashboard() {
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings, commitments, getEffectiveStatus, todayStr } = useCommitTrack();
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
   const family = stable.family;
+  const household = computeHouseholdMetrics({
+    settings,
+    commitments,
+    getEffectiveStatus,
+    todayStr,
+  });
 
   if (!family) return <HouseholdRunwayCard survival={stable.survival} />;
 
@@ -104,6 +111,26 @@ export default function FamilyModeDashboard() {
         <StatCard label={t("family.dashboard.emergencyReadiness")} value={stable.emergency?.label || "—"} />
         <StatCard label={t("family.dashboard.dependents")} value={String(settings.dependents || 0)} />
       </Grid>
+
+      <Card variant="flat" className="ct-stack">
+        <Heading level={3}>Household entity</Heading>
+        <Caption className="block">
+          {household.memberCount} members · combined income {formatInr(household.combinedIncome)} · burden{" "}
+          {household.burdenRatio != null ? `${household.burdenRatio}%` : "—"}
+        </Caption>
+        <div className="ct-row-between">
+          <Caption>Shared free cash</Caption>
+          <Body className="font-semibold">{formatInr(household.combinedFreeCash)}</Body>
+        </div>
+        <Badge tone={household.stabilityLabel === "stable" ? "success" : household.stabilityLabel === "tight" ? "warning" : "danger"}>
+          {household.stabilityLabel}
+        </Badge>
+        {household.members.map((m) => (
+          <Caption key={m.id} className="block">
+            {m.label} · {m.role}
+          </Caption>
+        ))}
+      </Card>
 
       {topGroups.length > 0 && (
         <Card variant="flat" className="ct-stack">

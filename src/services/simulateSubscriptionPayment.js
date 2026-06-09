@@ -1,9 +1,7 @@
 import { saveSubscriptionTier } from "./supabase/auth.js";
+import { isPaymentSimulationEnabled } from "./razorpayConfig.js";
 
-/** Dev / test builds only — never enable in production deploys. */
-export function isPaymentSimulationEnabled() {
-  return import.meta.env.DEV || import.meta.env.VITE_SIMULATE_PAYMENTS === "true";
-}
+export { isPaymentSimulationEnabled } from "./razorpayConfig.js";
 
 /**
  * Grants a paid tier as if Razorpay succeeded (local + Supabase when signed in).
@@ -11,7 +9,7 @@ export function isPaymentSimulationEnabled() {
  */
 export async function completeSimulatedSubscriptionUpgrade({ tier, userId, updateSettings }) {
   if (!isPaymentSimulationEnabled()) {
-    throw new Error("Payment simulation is disabled outside dev / VITE_SIMULATE_PAYMENTS.");
+    throw new Error("Payment simulation is disabled when Razorpay is configured.");
   }
   if (tier !== "pro" && tier !== "power") {
     throw new Error('Simulated tier must be "pro" or "power".');

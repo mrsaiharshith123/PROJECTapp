@@ -45,7 +45,7 @@ See [10-i18n.md](./10-i18n.md).
 ### Payments (Pro / Power)
 
 1. `constants/subscriptionTiers.js` — tier ids, `PLAN_PRESENTATION`, `PRO_FEATURES`
-2. `services/razorpay.js` — client checkout only
+2. `services/razorpaySubscription.js` — client checkout + server verify
 3. `ui/features/profile/PlansModal.jsx` — upgrade UI
 4. `ui/patterns/ProGate.jsx` — gate features by tier
 5. **Before production:** add server-side payment verification (Supabase Edge Function) — do not trust client-only success

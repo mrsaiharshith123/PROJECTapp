@@ -5,6 +5,7 @@ import ProfileManager from "./ProfileManager.jsx";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
 import { isSalariedFamily, resolveUserMode } from "../../../constants/modeExperience.js";
+import { normalizeHouseholdMembers } from "../../../engines/householdEntity.js";
 import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { applyColorScheme } from "../../../utils/theme.js";
@@ -289,6 +290,59 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
                 });
               }}
             />
+          </ProfileField>
+        )}
+
+        {settings.householdScope === "family" && (
+          <ProfileField label="Household members" hint="Names and roles for shared household tracking.">
+            <div className="ct-stack-sm">
+              {normalizeHouseholdMembers(settings.householdMembers).map((m, i) => (
+                <div key={m.id} className="ct-row gap-2 flex-wrap">
+                  <input
+                    className={profileInputClass}
+                    value={m.label}
+                    onChange={(e) => {
+                      const members = normalizeHouseholdMembers(settings.householdMembers);
+                      members[i] = { ...members[i], label: e.target.value.slice(0, 40) };
+                      updateSettings({ householdMembers: members });
+                    }}
+                    placeholder="Name"
+                  />
+                  <select
+                    className={profileInputClass}
+                    value={m.role}
+                    onChange={(e) => {
+                      const members = normalizeHouseholdMembers(settings.householdMembers);
+                      members[i] = { ...members[i], role: e.target.value };
+                      updateSettings({ householdMembers: members });
+                    }}
+                  >
+                    <option value="owner">Owner</option>
+                    <option value="spouse">Spouse</option>
+                    <option value="dependent">Dependent</option>
+                    <option value="parent">Parent</option>
+                    <option value="contributor">Contributor</option>
+                  </select>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="ct-btn ct-btn-ghost !text-sm self-start"
+                onClick={() => {
+                  const members = normalizeHouseholdMembers(settings.householdMembers);
+                  members.push({
+                    id: `member-${Date.now()}`,
+                    label: "Member",
+                    role: "contributor",
+                    incomeShare: 0,
+                    permission: "shared_edit",
+                  });
+                  updateSettings({ householdMembers: members });
+                }}
+              >
+                Add member
+              </button>
+            </div>
           </ProfileField>
         )}
         </div>

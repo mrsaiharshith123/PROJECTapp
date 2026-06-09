@@ -4,10 +4,12 @@ import {
   getSupabaseClient,
   loadUserProfile,
   onAuthStateChanged,
+  requestPasswordReset,
   saveUserProfile,
   signInWithEmail,
   signOutAuth,
   signUpWithEmail,
+  updateUserPassword,
 } from "../services/supabase/auth.js";
 import { formatAuthError } from "../utils/authErrors.js";
 import {
@@ -178,6 +180,16 @@ export function AuthProvider({ children }) {
     await hardSignOut(uid);
   }, [user?.id, hardSignOut]);
 
+  const resetPassword = useCallback(async (email) => {
+    setAuthNotice("");
+    await requestPasswordReset(email);
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword) => {
+    setAuthNotice("");
+    await updateUserPassword(newPassword);
+  }, []);
+
   const saveProfile = useCallback(
     async (patch) => {
       if (!user?.id) throw new Error("Please sign in first.");
@@ -204,11 +216,27 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signOut,
+      resetPassword,
+      updatePassword,
       saveProfile,
       refreshProfile: () => refreshProfile(user?.id),
       clearAuthNotice: () => setAuthNotice(""),
     }),
-    [isReady, session, user, profile, profileResolved, authNotice, signUp, signIn, signOut, saveProfile, refreshProfile],
+    [
+      isReady,
+      session,
+      user,
+      profile,
+      profileResolved,
+      authNotice,
+      signUp,
+      signIn,
+      signOut,
+      resetPassword,
+      updatePassword,
+      saveProfile,
+      refreshProfile,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
