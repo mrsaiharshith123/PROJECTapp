@@ -36,6 +36,7 @@ const Commitments = () => {
     addCommitmentPayment,
     deleteCommitment,
     updateCommitment,
+    dailySpends,
     todayStr,
     settings,
   } = useCommitTrack();
@@ -210,6 +211,7 @@ const Commitments = () => {
           onOpenPayment={openPayment}
           onEdit={setEditing}
           onDelete={deleteCommitment}
+          dailySpends={dailySpends}
         />
       )}
 

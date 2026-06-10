@@ -9,17 +9,6 @@ export function translateBondRecommendation(t, recommendation) {
   return t(key);
 }
 
-/** @param {(key: string, params?: object) => string} t */
-export function translateBondDetail(t, recommendation) {
-  const map = {
-    Good: "bond.detail.good",
-    "Not good": "bond.detail.notGood",
-    Borderline: "bond.detail.borderline",
-  };
-  const key = map[recommendation] || "bond.detail.borderline";
-  return t(key);
-}
-
 /**
  * @param {(key: string, params?: object) => string} t
  * @param {{ verdict?: string, premiumShareOfIncome?: number | null }} analysis

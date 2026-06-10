@@ -298,6 +298,33 @@ console.log(paint(C.bold, "Running checks…\n"));
   record("i18n", "Translations (22 Indian languages)", data.errors || 0, 0, r.ok && (data.errors || 0) === 0, notes);
 }
 
+// 4d — i18n hardcoded UI (strict fails on JSX English leaks)
+{
+  const hardArgs = ["scripts/audit-i18n-hardcoded.mjs"];
+  if (STRICT) hardArgs.push("--strict");
+  const r = runQuiet("i18n hardcoded UI strings", "node", hardArgs);
+  const notes = [];
+  let errors = r.ok ? 0 : 1;
+  if (!r.ok) notes.push("Hardcoded English in JSX — npm run audit:i18n:hardcoded -- --list");
+  else notes.push("No hardcoded UI strings (or under threshold)");
+  record("i18n-hardcoded", "i18n UI hardcoded strings", errors, 0, r.ok, notes, STRICT);
+}
+
+// 4e — i18n English fallback in non-en locales (strict threshold in fallback script)
+{
+  const fallArgs = ["scripts/audit-i18n-fallback.mjs", "--json"];
+  if (STRICT) fallArgs.push("--strict");
+  const r = runQuiet("i18n English fallback locales", "node", fallArgs);
+  const data = parseJson(r.out) || { totalIdentical: 0 };
+  const notes = [];
+  const fallCount = data.totalIdentical ?? 0;
+  if (fallCount > 0) {
+    notes.push(`${fallCount} locale value(s) still identical to English`);
+    if (!STRICT) notes.push("Advisory — use --strict to fail above threshold");
+  } else notes.push("No English fallback values detected");
+  record("i18n-fallback", "i18n locale English fallbacks", r.ok ? 0 : 1, 0, r.ok, notes, STRICT);
+}
+
 // 5 — Code (lint, knip, hygiene)
 {
   const codeArgs = ["scripts/audit-code.mjs", "--json", "--quiet"];

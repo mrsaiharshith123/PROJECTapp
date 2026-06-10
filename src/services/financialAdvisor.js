@@ -1,4 +1,7 @@
 import { pressureScoreLabel } from "../engines/pressureScore.js";
+import { getSupabaseClient } from "./supabase/auth.js";
+
+const ADVISOR_FUNCTION = "financial-advisor";
 
 /**
  * @param {{ commitments?: object[], settings?: object, intel?: object, stable?: object, income?: number }} params
@@ -70,29 +73,20 @@ Rules:
  * @returns {Promise<{ answer: string, source: "ai" | "local" }>}
  */
 export async function askFinancialAdvisor({ question, contextData }) {
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 350,
-        system: buildSystemPrompt(contextData),
-        messages: [{ role: "user", content: question }],
-      }),
-    });
-    if (!res.ok) return buildLocalAnswer(question, contextData);
-    const data = await res.json();
-    const answer = (data.content || [])
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("\n")
-      .trim();
-    if (!answer) return buildLocalAnswer(question, contextData);
-    return { answer, source: "ai" };
-  } catch {
-    return buildLocalAnswer(question, contextData);
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.functions.invoke(ADVISOR_FUNCTION, {
+        body: { question, contextData },
+      });
+      if (!error && data?.answer) {
+        return { answer: String(data.answer), source: "ai" };
+      }
+    } catch {
+      // fall through to local answer
+    }
   }
+  return buildLocalAnswer(question, contextData);
 }
 
 /**

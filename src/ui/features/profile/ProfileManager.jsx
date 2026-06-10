@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
+import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
 const COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 
@@ -16,9 +18,11 @@ export default function ProfileManager() {
 
   const saveProfiles = (next) => updateSettings({ profiles: next });
 
+  const canAddProfile = tierHasFeature("multiple_profiles", settings);
+
   const addProfile = () => {
     const label = newLabel.trim();
-    if (!label) return;
+    if (!label || !canAddProfile) return;
     const id = `p-${Date.now()}`;
     saveProfiles([...profiles, { id, label, color: newColor }]);
     setNewLabel("");
@@ -96,6 +100,9 @@ export default function ProfileManager() {
           </li>
         ))}
       </ul>
+      {!canAddProfile && profiles.length <= 1 && (
+        <TierLimitBanner title={t("tier.limit.profilesTitle")} message={t("tier.limit.profilesMessage")} />
+      )}
       <div className="flex flex-wrap gap-2">
         <input
           className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
@@ -114,7 +121,12 @@ export default function ProfileManager() {
             </option>
           ))}
         </select>
-        <button type="button" onClick={addProfile} className="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold">
+        <button
+          type="button"
+          onClick={addProfile}
+          disabled={!canAddProfile}
+          className="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold disabled:opacity-50"
+        >
           {t("common.add")}
         </button>
       </div>

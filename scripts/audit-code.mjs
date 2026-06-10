@@ -356,6 +356,64 @@ function formatUiDepthFinding(f) {
   }
 }
 
+function runTierGatesAudit() {
+  const r = spawnSync("node", ["scripts/audit-tier-gates.mjs", "--json"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+  let data = { total: 0, items: [] };
+  try {
+    data = JSON.parse((r.stdout || "").trim() || "{}");
+  } catch {
+    addWarning("tier-gate", "Could not parse tier-gates audit output");
+    return;
+  }
+  for (const id of data.items || []) {
+    addError("tier-gate", `Feature "${id}" declared in tiers but not gated in UI/tierAccess`);
+  }
+  if (!data.total && !QUIET) console.log("  Tier gates: all declared features enforced");
+  else if (!QUIET) console.log(`  Tier gates: ${data.total} ungated feature(s)`);
+}
+
+function runInsightI18nAudit() {
+  const r = spawnSync("node", ["scripts/audit-insights-i18n.mjs", "--json"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+  let data = { total: 0, items: [] };
+  try {
+    data = JSON.parse((r.stdout || "").trim() || "{}");
+  } catch {
+    addWarning("insight-i18n", "Could not parse insight-i18n audit output");
+    return;
+  }
+  for (const item of data.items || []) {
+    addError("insight-i18n", `${item.file}:${item.line} — hardcoded insight text in engine`);
+  }
+  if (!data.total && !QUIET) console.log("  Insight i18n: engines use id/tone keys");
+}
+
+function runRegistrySyncAudit() {
+  const r = spawnSync("node", ["scripts/audit-registry-sync.mjs", "--json"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+  let data = { total: 0, items: [] };
+  try {
+    data = JSON.parse((r.stdout || "").trim() || "{}");
+  } catch {
+    addWarning("registry-sync", "Could not parse registry-sync audit output");
+    return;
+  }
+  for (const item of data.items || []) {
+    addError("registry-sync", `[${item.feature}] missing path ${item.path}`);
+  }
+  if (!data.total && !QUIET) console.log("  Registry sync: all feature paths exist");
+}
+
 function runOrphanModulesAudit() {
   const r = spawnSync("node", ["scripts/audit-orphan-modules.mjs", "--json"], {
     cwd: ROOT,
@@ -411,6 +469,15 @@ checkPageShells();
 checkDuplicateBasenames();
 checkIdenticalFiles();
 checkUnresolvedImports();
+
+if (!QUIET) console.log("\n── Tier gates (Pro/Power features)");
+runTierGatesAudit();
+
+if (!QUIET) console.log("\n── Insight i18n (engines)");
+runInsightI18nAudit();
+
+if (!QUIET) console.log("\n── Feature registry (paths on disk)");
+runRegistrySyncAudit();
 
 if (!QUIET) console.log("\n── Orphan modules (engines/services only in tests)");
 runOrphanModulesAudit();

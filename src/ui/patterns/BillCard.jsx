@@ -78,6 +78,7 @@ function billCardVariant(eff, item, monthPaid) {
  *   onEdit: () => void,
  *   onDelete: () => void,
  *   variant?: "active" | "history",
+ *   health?: { score: number, band: string, insightId?: string | null, params?: object },
  * }} props
  */
 export function BillCard({
@@ -92,6 +93,7 @@ export function BillCard({
   onEdit,
   onDelete,
   variant = "active",
+  health = null,
 }) {
   const { t, locale } = useTranslation();
   const { classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
@@ -143,7 +145,15 @@ export function BillCard({
             {item.repeatType !== "none" && (
               <span className="ct-chip-repeat">{translateRepeatType(t, item.repeatType)}</span>
             )}
+            {health && (
+              <span className={`ct-chip-health ct-chip-health-${health.band}`}>
+                {t(`bill.health.${health.band}`)} · {health.score}
+              </span>
+            )}
           </div>
+          {health?.insightId && (
+            <p className="ct-caption ct-text-warn">{t(`insight.${health.insightId}`, health.params || {})}</p>
+          )}
           <p className="ct-caption">
             {dateParts.join(" · ")}
             {item.notes ? <span className="block mt-1">{item.notes}</span> : null}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { computeGoalProgress } from "../../../engines/goalsProgress.js";
+import { analyzeSipForGoal } from "../../../engines/sipAdvisor.js";
 import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -24,11 +25,14 @@ export default function GoalsToolPanel() {
     settings,
     getEffectiveStatus,
     logSavingsToGoal,
+    updateSettings,
+    todayStr,
   } = useCommitTrack();
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
   const [gType, setGType] = useState("reduce_open_debt");
   const [gTitle, setGTitle] = useState("");
   const [gTarget, setGTarget] = useState("");
+  const [gTargetDate, setGTargetDate] = useState("");
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
@@ -48,12 +52,42 @@ export default function GoalsToolPanel() {
     } else if (gType === "income_ratio_cap") {
       addGoal({ ...base, targetRatio: Math.min(0.9, Math.max(0.1, Number(gTarget) || 0.45)) });
     } else if (gType === "education" || gType === "wedding") {
-      addGoal({ ...base, type: gType, targetAmount: Math.max(1, Number(gTarget) || 100000) });
+      addGoal({
+        ...base,
+        type: gType,
+        targetAmount: Math.max(1, Number(gTarget) || 100000),
+        targetDate: gTargetDate || undefined,
+      });
     } else {
-      addGoal({ ...base, targetAmount: Math.max(1, Number(gTarget) || 10000) });
+      addGoal({
+        ...base,
+        targetAmount: Math.max(1, Number(gTarget) || 10000),
+        targetDate: gTargetDate || undefined,
+      });
     }
     setGTitle("");
     setGTarget("");
+    setGTargetDate("");
+  };
+
+  const monthlyBurden = commitments.reduce(
+    (s, c) => s + (getEffectiveStatus(c) === "paid" ? 0 : Math.max(0, Number(c.amount) || 0)),
+    0,
+  );
+  const freeMoney = Math.max(0, income - monthlyBurden);
+  const autoSaveRules = settings.goalAutoSaveRules || [];
+
+  const toggleSalaryAutoSave = (goalId, defaultAmount) => {
+    const exists = autoSaveRules.some((r) => String(r.goalId) === String(goalId));
+    if (exists) {
+      updateSettings({
+        goalAutoSaveRules: autoSaveRules.filter((r) => String(r.goalId) !== String(goalId)),
+      });
+    } else {
+      updateSettings({
+        goalAutoSaveRules: [...autoSaveRules, { goalId, amount: defaultAmount }],
+      });
+    }
   };
 
   return (
@@ -90,6 +124,17 @@ export default function GoalsToolPanel() {
         </label>
         <input className="ct-input mt-1" value={gTarget} onChange={(e) => setGTarget(e.target.value)} inputMode="decimal" />
       </div>
+      {(gType === "save_amount" || gType === "education" || gType === "wedding") && (
+        <div>
+          <label className="ct-metric-label block">{t("goals.targetDate")}</label>
+          <input
+            type="date"
+            className="ct-input mt-1"
+            value={gTargetDate}
+            onChange={(e) => setGTargetDate(e.target.value)}
+          />
+        </div>
+      )}
       <Button type="button" onClick={submitGoal} disabled={!goalGate.ok}>
         {t("goals.addGoal")}
       </Button>
@@ -108,6 +153,16 @@ export default function GoalsToolPanel() {
               burdenRatio: ratio,
               savedAmountTowardGoal: savedForGoal,
             });
+            const sipPlan =
+              (g.type === "save_amount" || g.type === "education" || g.type === "wedding") &&
+              Number(g.targetAmount) > 0
+                ? analyzeSipForGoal({
+                    targetAmount: g.targetAmount,
+                    targetDate: g.targetDate,
+                    todayStr,
+                    monthlyFreeCash: freeMoney,
+                  })
+                : null;
             return (
               <div key={g.id} className="ct-card-flat ct-stack-sm !p-3">
                 <div className="ct-row-between gap-2">
@@ -117,6 +172,20 @@ export default function GoalsToolPanel() {
                     <div className="mt-2">
                       <ProgressBar value={Math.round(p * 100)} />
                     </div>
+                    {sipPlan?.monthlySipNeeded > 0 && (
+                      <Caption className="block mt-1">
+                        {t("goals.sipNeeded", {
+                          amount: sipPlan.monthlySipNeeded.toLocaleString("en-IN"),
+                          years: sipPlan.years,
+                        })}
+                        {!sipPlan.affordable ? ` · ${t("goals.sipTight")}` : ""}
+                      </Caption>
+                    )}
+                    {savedForGoal > 0 && (
+                      <Caption className="block mt-0.5">
+                        {t("goals.savedSoFar", { amount: savedForGoal.toLocaleString("en-IN") })}
+                      </Caption>
+                    )}
                   </div>
                   <div className="ct-stack-sm shrink-0">
                     <button
@@ -139,26 +208,43 @@ export default function GoalsToolPanel() {
                   </div>
                 </div>
                 {(g.type === "save_amount" || g.type === "education" || g.type === "wedding") && (
-                  <div className="ct-row gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      placeholder={t("goals.addAmount", { currency: INR })}
-                      className="ct-input flex-1 !py-1.5 !text-xs"
-                      value={goalLogAmounts[g.id] ?? ""}
-                      onChange={(e) => setGoalLogAmounts((prev) => ({ ...prev, [g.id]: e.target.value }))}
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => {
-                        logSavingsToGoal(g.id, goalLogAmounts[g.id]);
-                        setGoalLogAmounts((prev) => ({ ...prev, [g.id]: "" }));
-                      }}
-                    >
-                      {t("common.add")}
-                    </Button>
-                  </div>
+                  <>
+                    <div className="ct-row gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder={t("goals.addAmount", { currency: INR })}
+                        className="ct-input flex-1 !py-1.5 !text-xs"
+                        value={goalLogAmounts[g.id] ?? ""}
+                        onChange={(e) => setGoalLogAmounts((prev) => ({ ...prev, [g.id]: e.target.value }))}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          logSavingsToGoal(g.id, goalLogAmounts[g.id]);
+                          setGoalLogAmounts((prev) => ({ ...prev, [g.id]: "" }));
+                        }}
+                      >
+                        {t("common.add")}
+                      </Button>
+                    </div>
+                    {settings.salaryCreditDay && (
+                      <label className="flex items-center gap-2 text-xs cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={autoSaveRules.some((r) => String(r.goalId) === String(g.id))}
+                          onChange={() =>
+                            toggleSalaryAutoSave(
+                              g.id,
+                              Math.max(500, Math.round((sipPlan?.monthlySipNeeded || 5000) / 100) * 100),
+                            )
+                          }
+                        />
+                        {t("goals.salaryAutoSave", { day: settings.salaryCreditDay })}
+                      </label>
+                    )}
+                  </>
                 )}
               </div>
             );

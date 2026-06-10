@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
@@ -34,6 +34,9 @@ import {
   ProgressBar,
 } from "../../index.js";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
+import SafeToSpendCard from "../paycheck/SafeToSpendCard.jsx";
+import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
+import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return EM_DASH;
@@ -82,6 +85,21 @@ const Home = () => {
 
   const overdue = sortedCommitments.filter((c) => getEffectiveStatus(c) === "overdue");
 
+  const income = combinedMonthlyIncome(settings);
+  const paycheckBuffer = useMemo(
+    () =>
+      settings.salaryCreditDay
+        ? buildPaycheckTimeline({
+            commitments,
+            getEffectiveStatus,
+            salaryCreditDay: settings.salaryCreditDay,
+            income,
+            todayStr,
+          }).bufferAfterBills
+        : 0,
+    [commitments, getEffectiveStatus, settings.salaryCreditDay, income, todayStr],
+  );
+
   const { t } = useTranslation();
   const displayName = settings.displayName?.trim() || "there";
   const greeting = t("home.welcome", { name: displayName });
@@ -106,6 +124,15 @@ const Home = () => {
       <HomeOverviewCard />
 
       <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
+
+      {settings.salaryCreditDay && (
+        <SafeToSpendCard
+          compact
+          bufferAfterBills={paycheckBuffer}
+          salaryCreditDay={settings.salaryCreditDay}
+          todayStr={todayStr}
+        />
+      )}
 
       <MicroTipCard seed={commitments.length + goals.length} />
 

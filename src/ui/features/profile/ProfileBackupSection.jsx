@@ -7,6 +7,9 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { buildAnnualReportData, formatAnnualReportPlainText } from "../../../engines/annualReport.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
+import { buildCaSummarySnapshot, formatCaSummaryPlainText } from "../../../engines/caExport.js";
+import { useNetWorth } from "../../../context/NetWorthContext.jsx";
+import { ProGate } from "../../patterns/ProGate.jsx";
 import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";
 import { previewImportCounts } from "../../../utils/dataImport.js";
@@ -27,6 +30,7 @@ export default function ProfileBackupSection({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const ctx = useCommitTrack();
+  const wealth = useNetWorth();
   const { user } = useAuth();
   const { importAppData } = ctx;
   const [preview, setPreview] = useState(null);
@@ -61,6 +65,55 @@ export default function ProfileBackupSection({
     a.click();
     URL.revokeObjectURL(url);
   }, [ctx]);
+
+  const exportCaJson = () => {
+    const data = buildCaSummarySnapshot({
+      commitments: ctx.commitments,
+      lendings: ctx.lendings,
+      goals: allGoals,
+      settings: ctx.settings,
+      wealth: {
+        netWorth: wealth.core?.netWorth,
+        liquidTotal: wealth.core?.liquidNetWorth,
+        debtTotal: wealth.core?.totalLiabilities,
+      },
+      getEffectiveStatus: ctx.getEffectiveStatus,
+      getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
+      todayStr: ctx.todayStr,
+    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "committrack-ca-summary.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportCaSummary = () => {
+    const data = buildCaSummarySnapshot({
+      commitments: ctx.commitments,
+      lendings: ctx.lendings,
+      goals: allGoals,
+      settings: ctx.settings,
+      wealth: {
+        netWorth: wealth.core?.netWorth,
+        liquidTotal: wealth.core?.liquidNetWorth,
+        debtTotal: wealth.core?.totalLiabilities,
+      },
+      getEffectiveStatus: ctx.getEffectiveStatus,
+      getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
+      todayStr: ctx.todayStr,
+    });
+    const text = formatCaSummaryPlainText(data);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "committrack-ca-summary.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const exportJson = () => {
     const payload = buildAppSnapshot({
@@ -153,6 +206,17 @@ export default function ProfileBackupSection({
           <Body className="font-semibold">{t("backup.exportJson")}</Body>
           <Caption className="block mt-0.5">{t("backup.exportJsonHint")}</Caption>
         </button>
+
+        <ProGate featureId="ca_share">
+          <button type="button" className="ct-list-row w-full text-left" onClick={exportCaSummary}>
+            <Body className="font-semibold">{t("caExport.download")}</Body>
+            <Caption className="block mt-0.5">{t("caExport.hint")}</Caption>
+          </button>
+          <button type="button" className="ct-list-row w-full text-left" onClick={exportCaJson}>
+            <Body className="font-semibold">{t("caExport.downloadJson")}</Body>
+            <Caption className="block mt-0.5">{t("caExport.hintJson")}</Caption>
+          </button>
+        </ProGate>
 
         <div className="ct-stack">
           <Body className="font-semibold !text-sm">{t("backup.importJson")}</Body>

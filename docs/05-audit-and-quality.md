@@ -93,7 +93,7 @@ npm run audit:merge
 - Parses summary: `Tests N passed`, `Test Files N passed`
 - **Fails** if Vitest exits non-zero
 - Focused runs: `npm run test:sync` (snapshot + backup log), `npm run test:engines`, `npm run test:utils`
-- Current baseline: **264** tests in **85** files (see `npm test` summary)
+- Current baseline: **322** tests in **115** files (see `npm test` summary)
 
 ### TypeScript safety
 

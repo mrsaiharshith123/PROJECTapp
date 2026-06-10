@@ -20,6 +20,19 @@ export function sipFutureValue(monthlySip, months, annualRate = 0.12) {
 /**
  * Months needed to reach target with fixed SIP.
  */
+/**
+ * Monthly SIP needed to reach target in given months.
+ */
+export function monthlySipForGoal(targetAmount, months, annualRate = 0.12) {
+  const target = Math.max(0, Number(targetAmount) || 0);
+  const n = Math.max(1, Math.floor(Number(months) || 0));
+  const r = Math.max(0, Number(annualRate) || 0) / 12;
+  if (target <= 0) return 0;
+  if (r <= 0) return Math.ceil(target / n);
+  const factor = ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  return Math.round(target / factor);
+}
+
 export function monthsToSipGoal(monthlySip, targetAmount, annualRate = 0.12) {
   const p = Math.max(0, Number(monthlySip) || 0);
   const target = Math.max(0, Number(targetAmount) || 0);
@@ -71,14 +84,52 @@ export function analyzeSipPlan(input) {
     narrativeLines.push("SIP fits within a conservative share of monthly free cash.");
   }
 
+  const sipNeededForTarget =
+    target > 0 && months > 0 ? monthlySipForGoal(target, months, rate) : null;
+
   return {
     monthlySip: Math.round(sip),
     years,
     projectedCorpus: projected,
     targetAmount: Math.round(target),
     monthsToGoal: monthsForGoal,
+    monthlySipNeeded: sipNeededForTarget,
     annualReturnPercent: Math.round(rate * 100),
     affordable,
     narrativeLines,
+  };
+}
+
+/**
+ * SIP plan aligned to a savings goal.
+ * @param {{ targetAmount: number, targetDate?: string, todayStr?: string, monthlyFreeCash?: number, annualReturn?: number }} goalInput
+ */
+export function analyzeSipForGoal(goalInput) {
+  /** @type {Date} */
+  let end;
+  /** @type {Date} */
+  let start;
+  const target = Math.max(0, Number(goalInput.targetAmount) || 0);
+  const rate = Math.min(0.18, Math.max(0.06, Number(goalInput.annualReturn) || 0.12));
+  let months = 120;
+  if (goalInput.targetDate && goalInput.todayStr) {
+    try {
+      end = new Date(`${goalInput.targetDate}T12:00:00`);
+      start = new Date(`${goalInput.todayStr}T12:00:00`);
+      months = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30.44)));
+    } catch {
+      months = 120;
+    }
+  }
+  const sipNeeded = monthlySipForGoal(target, months, rate);
+  const freeCash = Math.max(0, Number(goalInput.monthlyFreeCash) || 0);
+  return {
+    targetAmount: target,
+    months,
+    years: Math.round((months / 12) * 10) / 10,
+    monthlySipNeeded: sipNeeded,
+    affordable: freeCash <= 0 || sipNeeded <= freeCash * 0.4,
+    annualReturnPercent: Math.round(rate * 100),
+    projectedIfCurrentSip: sipNeeded > 0 ? sipFutureValue(sipNeeded, months, rate) : 0,
   };
 }

@@ -41,7 +41,8 @@ export function buildSubscriptionEndReminders(commitments, todayStr) {
           category: c.category,
           urgency: /** @type {ReminderUrgency} */ ("high"),
           reason: "subscription_ending",
-          message: `${c.name} ends soon — cancel auto-pay if you do not want to renew.`,
+          messageKey: "notifications.reminder.subEnd",
+          messageParams: { name: c.name },
         });
       }
     } catch {
@@ -74,7 +75,8 @@ export function buildLumpyBillHorizonReminders(commitments, getEffectiveStatusFn
           category: c.category,
           urgency: /** @type {ReminderUrgency} */ ("low"),
           reason: "lumpy_horizon",
-          message: `${c.name} (${c.repeatType}) due in ~${mo} mo — set cash aside before that month.`,
+          messageKey: "notifications.reminder.lumpyHorizon",
+          messageParams: { name: c.name, repeatType: c.repeatType, months: mo },
         });
       }
     } catch {
@@ -101,12 +103,13 @@ export function buildCommitmentReminders(commitments, getEffectiveStatusFn, toda
         category: c.category,
         urgency: /** @type {ReminderUrgency} */ (urgency),
         reason,
-        message:
+        messageKey:
           urgency === "critical"
-            ? `Overdue: ${c.name}`
+            ? "notifications.reminder.overdue"
             : urgency === "high"
-              ? `Due soon: ${c.name}`
-              : `Upcoming: ${c.name}`,
+              ? "notifications.reminder.dueSoon"
+              : "notifications.reminder.upcoming",
+        messageParams: { name: c.name },
       };
     })
     .sort((a, b) => {
@@ -138,7 +141,8 @@ export function buildLendingReminders(lendings, todayStr, getEffectiveLendingSta
         category: "Lending",
         urgency,
         reason: st,
-        message: st === "overdue" ? `Lending overdue: ${l.personName}` : `Lending due: ${l.personName}`,
+        messageKey: st === "overdue" ? "notifications.reminder.lendingOverdue" : "notifications.reminder.lendingDue",
+        messageParams: { name: l.personName },
       };
     })
     .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));

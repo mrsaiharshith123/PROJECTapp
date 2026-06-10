@@ -50,7 +50,7 @@ npm run audit:platform   # architecture, features
 
 | Scan | Item | Action |
 |------|------|--------|
-| `audit:charts` (duplicates) | `categories.js` in two folders | Intentional split (`constants/` vs feature-local); rename only when touching imports |
+| `audit:charts` (duplicates) | Resolved: net worth categories → `wealthCategories.js` | Bill categories stay in `constants/categories.js` |
 
 ### Flags
 

@@ -508,8 +508,12 @@ const DEFAULT_SETTINGS = {
   homeQuickActionOrder: [],
   /** Legacy flag — backup is on whenever signed in + Supabase configured. */
   cloudSyncEnabled: false,
-  /** Day of month (1–31) salary credits — used by paycheck flow when UI is wired. */
+  /** Day of month (1–31) salary credits — paycheck timeline + safe-to-spend. */
   salaryCreditDay: null,
+  /** Salary-day auto-save: [{ goalId, amount }] */
+  goalAutoSaveRules: [],
+  /** yyyy-MM-dd — last salary-day auto-save run */
+  goalAutoSaveLastRun: null,
   /** BCP-47-ish app locale: en + 22 scheduled Indian languages */
   appLanguage: "en",
   /** Household entity model — members with roles and permissions */
@@ -586,6 +590,16 @@ export function loadSettingsFromStorage() {
           o.salaryCreditDay != null && o.salaryCreditDay !== ""
             ? Math.min(31, Math.max(1, Math.floor(Number(o.salaryCreditDay) || 0)))
             : null,
+        goalAutoSaveRules: Array.isArray(o.goalAutoSaveRules)
+          ? o.goalAutoSaveRules
+              .map((r) => ({
+                goalId: r.goalId,
+                amount: Math.max(0, Number(r.amount) || 0),
+              }))
+              .filter((r) => r.goalId != null && r.amount > 0)
+          : [],
+        goalAutoSaveLastRun:
+          typeof o.goalAutoSaveLastRun === "string" ? o.goalAutoSaveLastRun.slice(0, 10) : null,
         appLanguage: normalizeAppLanguage(o.appLanguage),
         householdMembers: normalizeHouseholdMembers(o.householdMembers),
         epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),

@@ -14,6 +14,7 @@ import BillSplitModal from "../modals/BillSplitModal.jsx";
 import { canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 import LendingProfileCard from "../lending/LendingProfileCard.jsx";
+import LendingOverduePanel from "../lending/LendingOverduePanel.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -202,6 +203,8 @@ const Lending = () => {
       )}
 
       <LendingProfileCard totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+
+      <LendingOverduePanel />
 
       <div className="grid grid-cols-2 gap-3">
         <StatCard value={formatInr(totals.recovered)} label={t("lending.stat.recovered")} valueClassName="text-emerald-300" />

@@ -6,6 +6,7 @@ export const HOME_QUICK_ACTION_IDS = [
   "lending",
   "income",
   "analytics",
+  "paycheck",
   "profile",
   "calculators",
   "tool_planner",

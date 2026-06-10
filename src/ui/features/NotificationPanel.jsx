@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
+import { useTranslation } from "../../i18n/I18nProvider.js";
+import { translateNotification } from "../../i18n/notificationLabels.js";
 import { Button } from "../primitives/Button.jsx";
 import { Badge } from "../primitives/Badge.jsx";
 import { Heading, Body, Caption } from "../primitives/Text.jsx";
@@ -9,6 +12,8 @@ import { Card } from "../primitives/Card.jsx";
 
 export function NotificationPanel({ onClose }) {
   const panelRef = useRef(null);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { markNotificationRead, markAllNotificationsRead } = useCommitTrack();
   const { notifications } = useCommitIntel();
   const unread = notifications.filter((n) => !n.read).length;
@@ -48,21 +53,40 @@ export function NotificationPanel({ onClose }) {
               <Caption className="block py-6 text-center">No reminders right now.</Caption>
             ) : (
               <ul>
-                {notifications.map((n) => (
+                {notifications.map((n) => {
+                  const copy = translateNotification(t, n);
+                  return (
                   <li key={n.id} className={n.read ? "ct-notif-item" : "ct-notif-item ct-notif-item-unread"}>
                     <div className="ct-row-between items-start">
                       <div>
-                        <Body className="text-[var(--ct-text)]">{n.message}</Body>
+                        <Body className="text-[var(--ct-text)]">{copy.message}</Body>
                         <Caption className="uppercase font-semibold mt-1 block">{n.urgency}</Caption>
                       </div>
-                      {!n.read && (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => markNotificationRead(n.id)}>
-                          Read
-                        </Button>
-                      )}
+                      <div className="ct-row gap-1">
+                        {"href" in n && n.href && (
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              markNotificationRead(n.id);
+                              onClose();
+                              navigate(String(n.href));
+                            }}
+                          >
+                            {"actionKey" in n && n.actionKey ? "Open" : "View"}
+                          </Button>
+                        )}
+                        {!n.read && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => markNotificationRead(n.id)}>
+                            Read
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </li>
-                ))}
+                );
+                })}
               </ul>
             )}
           </div>

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useCommitIntel } from "../hooks/useCommitIntel.js";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { useTranslation } from "../i18n/I18nProvider.js";
+import { translateNotification } from "../i18n/notificationLabels.js";
 import {
   getNotificationPermission,
   syncFeedToBrowserNotifications,
@@ -20,6 +22,7 @@ const URGENT_INTERVAL_MS = 15 * 60 * 1000;
 
 /** Pushes reminders to the OS notification panel (tray) and in-app bell. */
 export default function NotificationSync() {
+  const { t } = useTranslation();
   const { todayStr, settings } = useCommitTrack();
   const { notifications } = useCommitIntel();
   const digestRan = useRef(false);
@@ -53,12 +56,17 @@ export default function NotificationSync() {
       );
       if (urgent.length === 0) return;
       syncFeedToBrowserNotifications(
-        urgent.map((n) => ({
-          id: n.id,
-          title: n.urgency === "critical" ? "CommitTrack — overdue" : "CommitTrack — due soon",
-          message: n.message,
-          read: n.read,
-        })),
+        urgent.map((n) => {
+          const copy = translateNotification(t, n);
+          return {
+            id: n.id,
+            title:
+              copy.title ||
+              t(n.urgency === "critical" ? "notifications.title.overdue" : "notifications.title.dueSoon"),
+            message: copy.message,
+            read: n.read,
+          };
+        }),
         { max: 3, todayStr, skipAlreadySent: true }
       );
     };
@@ -69,12 +77,15 @@ export default function NotificationSync() {
       if (digest.length === 0) return;
       digestRan.current = true;
       syncFeedToBrowserNotifications(
-        digest.map((n) => ({
-          id: n.id,
-          title: "CommitTrack",
-          message: n.message,
-          read: n.read,
-        })),
+        digest.map((n) => {
+          const copy = translateNotification(t, n);
+          return {
+            id: n.id,
+            title: copy.title || t("notifications.insight.title"),
+            message: copy.message,
+            read: n.read,
+          };
+        }),
         { max: 4, todayStr, skipAlreadySent: true }
       ).then((sent) => {
         if (sent > 0) markDailyDigestRan(todayStr);
@@ -112,7 +123,7 @@ export default function NotificationSync() {
       document.removeEventListener("visibilitychange", onVisibility);
       clearInterval(timer);
     };
-  }, [notifications, todayStr, settings.remindersEnabled]);
+  }, [notifications, todayStr, settings.remindersEnabled, t]);
 
   return null;
 }

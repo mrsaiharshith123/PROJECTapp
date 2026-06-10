@@ -5,6 +5,7 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { formatInr, INR, ARROW, EM_DASH } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
 
@@ -156,7 +157,11 @@ export default function LoanToolsPanel() {
           todayStr={todayStr}
         />
       )}
-      {tab === "order" && <DebtOrderPanel />}
+      {tab === "order" && (
+        <ProGate featureId="payoff_optimizer">
+          <DebtOrderPanel />
+        </ProGate>
+      )}
     </div>
   );
 }

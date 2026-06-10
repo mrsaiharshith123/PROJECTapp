@@ -6,7 +6,7 @@ function skeletonKindForPath(pathname) {
   if (path === "/") return "dashboard";
   if (path.startsWith("/commitments") || path.startsWith("/lending")) return "list";
   if (path.startsWith("/add") || path.startsWith("/onboarding")) return "form";
-  if (path.startsWith("/analytics") || path.startsWith("/net-worth")) return "analytics";
+  if (path.startsWith("/analytics") || path.startsWith("/net-worth") || path.startsWith("/paycheck")) return "analytics";
   if (path.startsWith("/profile")) return "profile";
   if (path.startsWith("/admin")) return "admin";
   return "generic";

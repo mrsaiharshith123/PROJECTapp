@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption } from "../../primitives/Text.jsx";
 import ExpenseSimulatorForm from "./ExpenseSimulatorForm.jsx";
 import GoalsToolPanel from "./GoalsToolPanel.jsx";
@@ -28,7 +29,11 @@ export default function MoneyPlannerPanel() {
       <Caption>{t("tools.planner.intro")}</Caption>
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "afford" && <ExpenseSimulatorForm />}
-      {tab === "whatif" && <UnifiedScenariosPanel />}
+      {tab === "whatif" && (
+        <ProGate featureId="survival_scenarios">
+          <UnifiedScenariosPanel />
+        </ProGate>
+      )}
       {tab === "goals" && <GoalsToolPanel />}
     </div>
   );

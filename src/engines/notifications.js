@@ -10,6 +10,7 @@ import { buildAdvanceTaxReminders } from "./advanceTax.js";
 import { deriveTaxDeductionsFromCommitments } from "./incomeTaxEstimate.js";
 import { computeSalaryBreakdown } from "./salaryBreakdown.js";
 import { totalMonthlyBurden } from "./burden.js";
+import { getOverdueInstallments, computeOverdueTotal } from "./lendingRecovery.js";
 
 /**
  * Context-aware intelligence notifications from pressure drivers.
@@ -42,8 +43,11 @@ export function buildSmartPressureNotifications({
     const driverPts = top ? Math.min(delta, Math.round(top.points * 0.4)) : delta;
     items.push({
       id: `pressure-jump-${todayStr}`,
-      title: "CommitTrack — pressure change",
-      message: `Pressure jumped ${delta} points${top ? ` — ${top.category} commitments contributed ~${driverPts}.` : "."}`,
+      titleKey: "notifications.pressureJump.title",
+      messageKey: top ? "notifications.pressureJump.messageWithDriver" : "notifications.pressureJump.message",
+      messageParams: top
+        ? { delta, category: top.category, driverPts }
+        : { delta },
       urgency: "high",
       createdAt: now,
       read: false,
@@ -53,8 +57,8 @@ export function buildSmartPressureNotifications({
   if (analysis.clusterWeeks?.length > 0) {
     items.push({
       id: `due-cluster-${todayStr}`,
-      title: "CommitTrack — due cluster",
-      message: "Three or more commitments are clustering in the same calendar week.",
+      titleKey: "notifications.dueCluster.title",
+      messageKey: "notifications.dueCluster.message",
       urgency: "normal",
       createdAt: now,
       read: false,
@@ -65,8 +69,8 @@ export function buildSmartPressureNotifications({
     if (line.includes("improving")) {
       items.push({
         id: `pressure-easing-${todayStr}`,
-        title: "CommitTrack",
-        message: line,
+        titleKey: "notifications.pressureEasing.title",
+        messageKey: "notifications.pressureEasing.message",
         urgency: "low",
         createdAt: now,
         read: false,
@@ -82,8 +86,8 @@ export function buildSmartPressureNotifications({
   if (runwayMonths != null && runwayMonths < 1.5) {
     items.push({
       id: `low-buffer-${todayStr}`,
-      title: "CommitTrack — low reserve",
-      message: "Emergency buffer covers less than 6 weeks of bills — consider pausing new commitments.",
+      titleKey: "notifications.lowBuffer.title",
+      messageKey: "notifications.lowBuffer.message",
       urgency: "high",
       createdAt: now,
       read: false,
@@ -101,8 +105,9 @@ export function buildSmartPressureNotifications({
         });
         items.push({
           id: `salary-day-${todayStr}`,
-          title: "CommitTrack — salary day",
-          message: `Salary credited — about ₹${Math.round(breakdown.freeCash || 0).toLocaleString("en-IN")} likely free after scheduled bills this month.`,
+          titleKey: "notifications.salaryDay.title",
+          messageKey: "notifications.salaryDay.message",
+          messageParams: { amount: Math.round(breakdown.freeCash || 0).toLocaleString("en-IN") },
           urgency: "normal",
           createdAt: now,
           read: false,
@@ -120,13 +125,21 @@ export function buildSmartPressureNotifications({
         .slice(0, 2)
         .map((l) => l.personName)
         .join(", ");
+      const totalOverdue = overdueLend.reduce((sum, l) => sum + computeOverdueTotal(getOverdueInstallments(l)), 0);
       items.push({
         id: `lending-overdue-${todayStr}`,
-        title: "CommitTrack — lending overdue",
-        message: `${overdueLend.length} lending record(s) overdue${names ? ` (${names})` : ""}. Follow up or log a payment.`,
+        titleKey: "notifications.lendingOverdue.title",
+        messageKey: names ? "notifications.lendingOverdue.messageNamed" : "notifications.lendingOverdue.message",
+        messageParams: {
+          count: overdueLend.length,
+          names: names || "",
+          amount: Math.round(totalOverdue).toLocaleString("en-IN"),
+        },
         urgency: "critical",
         createdAt: now,
         read: false,
+        href: "/lending",
+        actionKey: "notifications.lendingMarkPaid",
       });
     }
   }
@@ -180,24 +193,50 @@ export function buildContextualReminderFeed({
     }
 
     const afterPay = Math.round(cash.freeMoney - amt);
-    let detail = "";
+    const dueToday = daysUntil === 0;
+    let suffixKey = null;
+    /** @type {Record<string, string | number>} */
+    const suffixParams = {};
     if (amt > 0 && daysUntil != null && daysUntil >= 0) {
-      detail = ` ₹${amt.toLocaleString("en-IN")} due`;
-      if (daysUntil === 0) detail += " today";
-      else if (daysUntil <= 7) detail += ` in ${daysUntil}d`;
-      if (income > 0) {
-        detail += afterPay >= 0 ? ` · ~₹${afterPay.toLocaleString("en-IN")} left after` : " · may exceed free cash";
+      const amount = amt.toLocaleString("en-IN");
+      if (daysUntil === 0) {
+        suffixKey =
+          income > 0
+            ? afterPay >= 0
+              ? "notifications.reminder.suffix.amountTodayWithCash"
+              : "notifications.reminder.suffix.amountTodayExceeds"
+            : "notifications.reminder.suffix.amountToday";
+        suffixParams.amount = amount;
+        if (income > 0 && afterPay >= 0) suffixParams.afterPay = afterPay.toLocaleString("en-IN");
+      } else if (daysUntil <= 7) {
+        suffixKey =
+          income > 0
+            ? afterPay >= 0
+              ? "notifications.reminder.suffix.amountInDaysWithCash"
+              : "notifications.reminder.suffix.amountInDaysExceeds"
+            : "notifications.reminder.suffix.amountInDays";
+        suffixParams.amount = amount;
+        suffixParams.days = daysUntil;
+        if (income > 0 && afterPay >= 0) suffixParams.afterPay = afterPay.toLocaleString("en-IN");
       }
     }
 
-    const title =
-      r.urgency === "critical" ? "CommitTrack — overdue" : "CommitTrack reminder";
+    const titleKey =
+      r.urgency === "critical"
+        ? "notifications.title.overdue"
+        : dueToday
+          ? "notifications.title.dueToday"
+          : "notifications.title.reminder";
 
     return {
       ...r,
-      title,
-      message: `${r.message}${detail}`,
-      osBody: `${r.name}:${detail || ` ₹${amt.toLocaleString("en-IN")}`}`.trim(),
+      titleKey,
+      suffixKey,
+      suffixParams,
+      osBodyKey: "notifications.reminder.osBody",
+      osBodyParams: { name: r.name, amount: amt > 0 ? amt.toLocaleString("en-IN") : "" },
+      href: r.href || "/commitments",
+      actionKey: dueToday ? "notifications.payBillToday" : "notifications.viewBills",
     };
   });
 }
@@ -240,9 +279,13 @@ export function buildNotificationFeed({
     const nid = notificationId(r);
     items.push({
       id: nid,
-      message: r.message,
-      title: r.title,
-      osBody: r.osBody,
+      messageKey: r.messageKey,
+      messageParams: r.messageParams,
+      suffixKey: r.suffixKey,
+      suffixParams: r.suffixParams,
+      titleKey: r.titleKey,
+      osBodyKey: r.osBodyKey,
+      osBodyParams: r.osBodyParams,
       urgency: r.urgency,
       dueDate: r.dueDate,
       amount: r.amount,
@@ -275,9 +318,9 @@ export function buildNotificationFeed({
       const nid = `ins-${ins.id}`;
       items.push({
         id: nid,
-        message: ins.text,
-        title: "CommitTrack",
-        osBody: ins.text,
+        insightId: ins.id,
+        insightParams: ins.params,
+        titleKey: "notifications.insight.title",
         urgency: ins.tone === "critical" ? "critical" : "high",
         createdAt: now,
         read: readSet.has(nid),

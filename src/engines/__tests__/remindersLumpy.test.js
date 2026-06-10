@@ -19,7 +19,8 @@ describe("buildLumpyBillHorizonReminders", () => {
     const rows = buildLumpyBillHorizonReminders(commitments, getEff, "2026-01-10");
     expect(rows.length).toBe(1);
     expect(rows[0].id).toBe("lumpy-1");
-    expect(rows[0].message).toContain("yearly");
+    expect(rows[0].messageKey).toBe("notifications.reminder.lumpyHorizon");
+    expect(rows[0].messageParams.repeatType).toBe("yearly");
   });
 
   it("skips paid bills", () => {

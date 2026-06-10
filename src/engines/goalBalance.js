@@ -6,7 +6,7 @@ import { computeGoalProgress, goalTypeLabel } from "./goalsProgress.js";
 export function analyzeGoalBalance(goals, ctx) {
   const active = (goals || []).filter((g) => g.active !== false && !g.archived);
   if (active.length === 0) {
-    return { feasible: true, message: null, tensions: [], insights: [] };
+    return { feasible: true, messageKey: null, messageParams: null, tensions: [], insights: [] };
   }
 
   const burdenRatio = ctx.burdenRatio ?? 0;
@@ -24,7 +24,7 @@ export function analyzeGoalBalance(goals, ctx) {
     insights.push({
       id: "goal-overlap",
       tone: "warning",
-      text: `You are tracking ${active.length} goals while monthly dues use a large share of income — progress may be slow on all fronts.`,
+      params: { count: active.length },
     });
   }
 
@@ -32,7 +32,6 @@ export function analyzeGoalBalance(goals, ctx) {
     insights.push({
       id: "goal-edu-wedding",
       tone: "info",
-      text: "Education and wedding/event goals together need a clear monthly slice — consider which comes first.",
     });
   }
 
@@ -40,7 +39,6 @@ export function analyzeGoalBalance(goals, ctx) {
     insights.push({
       id: "goal-debt-save",
       tone: "warning",
-      text: "Paying down debt and building savings simultaneously is difficult on limited free cash — prioritize one objective.",
     });
   }
 
@@ -50,16 +48,20 @@ export function analyzeGoalBalance(goals, ctx) {
     progress: Math.round(computeGoalProgress(g, ctx) * 100),
   }));
 
-  const message =
-    tensions.length > 0
-      ? `Current finances may struggle to support ${tensions.join(", ")} at the same time.`
-      : active.length >= 2 && burdenRatio > 0.5
-        ? "Multiple goals are active — stagger targets so one milestone does not reduce progress on the others."
-        : null;
+  let messageKey = null;
+  /** @type {Record<string, unknown> | null} */
+  let messageParams = null;
+  if (tensions.length > 0) {
+    messageKey = "stability.goalBalance.tensions";
+    messageParams = { tensions: tensions.join(", ") };
+  } else if (active.length >= 2 && burdenRatio > 0.5) {
+    messageKey = "stability.goalBalance.stagger";
+  }
 
   return {
     feasible: tensions.length === 0 && burdenRatio < 0.7,
-    message,
+    messageKey,
+    messageParams,
     tensions,
     insights,
     progressRows,

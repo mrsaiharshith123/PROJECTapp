@@ -46,9 +46,7 @@ export function detectLargeOverlaps(commitments, todayStr, thresholdMultiple = 1
     return s;
   }, 0);
   if (current <= 0 || total < current * thresholdMultiple) return null;
-  return {
-    message: `Next month obligations look heavier than typical recurring load (≈₹${Math.round(total).toLocaleString()} vs ₹${Math.round(current).toLocaleString()}).`,
-  };
+  return { total, current };
 }
 
 export function forecastInsights(commitments, todayStr) {
@@ -63,17 +61,28 @@ export function forecastInsights(commitments, todayStr) {
   const delta = total - currentMonthBurden;
   if (delta > 3000) {
     out.push({
-      id: "next-month-up",
-      text: `Next month obligations may increase by about ₹${Math.round(delta).toLocaleString()} (renewals / one-offs in that month).`,
+      id: "forecast-next-month-up",
+      tone: "warning",
+      params: { amount: Math.round(delta).toLocaleString("en-IN") },
     });
   }
   if (itemNames.length >= 3 && total > 0) {
     out.push({
-      id: "overlap",
-      text: `${itemNames.length} sizeable items cluster next month—prepare cash flow early.`,
+      id: "forecast-overlap-cluster",
+      tone: "info",
+      params: { count: itemNames.length },
     });
   }
   const overlap = detectLargeOverlaps(commitments, todayStr);
-  if (overlap) out.push({ id: "overlap-heavy", text: overlap.message });
+  if (overlap?.total && overlap?.current) {
+    out.push({
+      id: "forecast-overlap-heavy",
+      tone: "warning",
+      params: {
+        total: Math.round(overlap.total).toLocaleString("en-IN"),
+        current: Math.round(overlap.current).toLocaleString("en-IN"),
+      },
+    });
+  }
   return out.slice(0, 4);
 }

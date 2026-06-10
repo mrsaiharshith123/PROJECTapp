@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, Caption, Heading, inputClassName } from "../../index.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
 import ProfileManager from "./ProfileManager.jsx";
@@ -219,6 +220,9 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
               }}
               placeholder="1"
             />
+            <Link to="/paycheck" className="ct-link text-xs font-semibold mt-2 inline-block">
+              {t("profile.paycheckLink")}
+            </Link>
           </ProfileField>
         )}
 

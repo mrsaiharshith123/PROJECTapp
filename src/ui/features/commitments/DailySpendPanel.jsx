@@ -18,6 +18,7 @@ import {
   Badge,
 } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { detectRecurringFromDailySpends } from "../../../engines/recurringSpendDetect.js";
 
 const LIFE_ICONS = {
   survival: "shield",
@@ -38,7 +39,7 @@ function formatSpendDate(dateStr) {
 
 /** Variable spend logs — totals, period filter, history. Charts live on Analytics. */
 export default function DailySpendPanel() {
-  const { dailySpends, deleteDailySpend, todayStr } = useCommitTrack();
+  const { dailySpends, deleteDailySpend, todayStr, addCommitment } = useCommitTrack();
   const { t } = useTranslation();
   const [period, setPeriod] = useState("30d");
   const [lifeFilter, setLifeFilter] = useState("");
@@ -98,8 +99,50 @@ export default function DailySpendPanel() {
     ...TRANSACTION_LIFE_CATEGORIES.map((c) => ({ id: c.id, label: c.label })),
   ];
 
+  const monthKey = todayStr?.slice(0, 7) || "";
+
+  const recurringSuggestions = useMemo(
+    () => detectRecurringFromDailySpends(dailySpends, { monthKey, minOccurrences: 3 }),
+    [dailySpends, monthKey],
+  );
+
   return (
     <div className="ct-stack">
+      {recurringSuggestions.length > 0 && (
+        <Card className="ct-stack-sm">
+          <Body className="font-semibold">{t("recurring.suggestTitle")}</Body>
+          <Caption className="block">{t("recurring.suggestSubtitle")}</Caption>
+          <ul className="ct-stack-sm">
+            {recurringSuggestions.slice(0, 4).map((s) => (
+              <li key={s.name} className="ct-row-between gap-2 flex-wrap">
+                <Caption>
+                  {t("insight.recurring-spend-suggest", {
+                    name: s.params.name,
+                    count: s.params.count,
+                    amount: formatInr(s.params.amount),
+                  })}
+                </Caption>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() =>
+                    addCommitment({
+                      name: s.name,
+                      amount: s.suggestedAmount,
+                      category: s.category,
+                      repeatType: "monthly",
+                      dueDate: s.lastDate,
+                    })
+                  }
+                >
+                  {t("recurring.convertToBill")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <div>
         <Body className="ct-body-strong">{t("bills.variableSpend.title")}</Body>
         <Caption className="block mt-0.5">{t("bills.variableSpend.subtitle")}</Caption>

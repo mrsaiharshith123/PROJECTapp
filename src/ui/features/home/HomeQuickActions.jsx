@@ -45,6 +45,11 @@ const HOME_QUICK_ACTION_DEFS = {
     labelKey: "nav.analytics",
     run: ({ navigate }) => navigate("/analytics"),
   },
+  paycheck: {
+    icon: "currency-inr",
+    labelKey: "nav.paycheck",
+    run: ({ navigate }) => navigate("/paycheck"),
+  },
   profile: {
     icon: "user",
     labelKey: "nav.profile",

@@ -1,4 +1,4 @@
-import { getAssetCategory, liquidityTierWeight } from "../../constants/netWorth/categories.js";
+import { getAssetCategory, liquidityTierWeight } from "../../constants/netWorth/wealthCategories.js";
 
 /** @typedef {import('../../utils/netWorth/wealthStorage.js').WealthEntry} WealthEntry */
 

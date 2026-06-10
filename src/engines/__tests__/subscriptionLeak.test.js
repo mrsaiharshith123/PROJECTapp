@@ -38,6 +38,11 @@ describe("subscriptionLeakReport", () => {
       .reduce((s, x) => s + x.monthly, 0);
     expect(luxuryMonthly).toBeGreaterThan(0);
     expect(r.insights.length).toBeGreaterThan(0);
+    for (const ins of r.insights) {
+      expect(ins.id).toBeTruthy();
+      expect(ins.tone).toBeTruthy();
+      expect(ins.text).toBeUndefined();
+    }
   });
 
   it("does not throw on empty commitments array", () => {

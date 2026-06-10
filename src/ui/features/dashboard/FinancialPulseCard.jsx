@@ -21,7 +21,7 @@ import { pickMicroTip } from "../../../guidance/index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { joinEngineMessages, translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
-import { tierHasFeature } from "../../../utils/tierAccess.js";
+import { tierHasFeature, aheadForecastMonthsForTier } from "../../../utils/tierAccess.js";
 
 function mergeTips(intel, stable, settings) {
   const seenIds = new Set();
@@ -48,16 +48,10 @@ function mergeTips(intel, stable, settings) {
     else add(ins);
   }
   for (const f of intel.forecast || []) {
-    add({ id: f.id || `forecast-${f.id}`, tone: "info", params: f.params, text: f.text });
+    add({ id: f.id, tone: f.tone || "info", params: f.params });
   }
   if (tierHasFeature("subscription_leak", settings)) {
-    (intel.subscriptionLeak?.insights || []).forEach((item, i) => {
-      if (typeof item === "string") {
-        add({ id: `sub-leak-${i}`, tone: "warning", text: item });
-      } else {
-        add(item);
-      }
-    });
+    (intel.subscriptionLeak?.insights || []).forEach((item) => add(item));
   }
   if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.messageKey) {
     add({ id: "lifestyle-inflation", tone: "info", key: stable.lifestyle.messageKey, params: stable.lifestyle.params });
@@ -69,12 +63,10 @@ function mergeTips(intel, stable, settings) {
       id: "goal-balance",
       tone: "warning",
       key: stable.goalBalance.messageKey,
-      params: stable.goalBalance.params,
+      params: stable.goalBalance.messageParams,
     });
-  } else if (stable.goalBalance?.message && !(stable.stabilityInsights || []).some((i) => i.id === "goal-capacity")) {
-    add({ id: "goal-balance", tone: "warning", text: stable.goalBalance.message });
   }
-  if (stable.pressureIntel?.forecastMessageKey) {
+  if (tierHasFeature("advanced_pressure", settings) && stable.pressureIntel?.forecastMessageKey) {
     add({
       id: "pressure-forecast",
       tone: "info",
@@ -103,6 +95,8 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const narrative = stable.healthNarrative;
   const pressureIntel = stable.pressureIntel;
   const family = stable.family;
+  const advancedPressure = tierHasFeature("advanced_pressure", settings);
+  const aheadForecastLimit = aheadForecastMonthsForTier(settings);
 
   const tabDefs = useMemo(() => {
     const base = [
@@ -192,10 +186,10 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
               </Badge>
             </div>
           </div>
-          {pressureIntel?.emotionalHintKey && (
+          {advancedPressure && pressureIntel?.emotionalHintKey && (
             <Caption className="block italic">{t(pressureIntel.emotionalHintKey)}</Caption>
           )}
-          {pressureIntel?.trendMessageKey && (
+          {advancedPressure && pressureIntel?.trendMessageKey && (
             <Caption className="block">
               {t(pressureIntel.trendMessageKey, pressureIntel.trendMessageParams || {})}
             </Caption>
@@ -277,7 +271,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.nextMonths")}</p>
               <ul className="space-y-1 text-xs text-gray-600 dark:text-slate-300">
-                {ahead.forecastMonths.slice(0, 6).map((m) => (
+                {ahead.forecastMonths.slice(0, aheadForecastLimit).map((m) => (
                   <li key={m.monthKey || m.month} className="flex justify-between gap-2">
                     <span>{m.month}</span>
                     <span className="shrink-0">
@@ -415,7 +409,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <p className="text-sm text-gray-500">{t("pulse.noActiveBills")}</p>
           )}
 
-          {pressureIntel?.forecastMessageKey && (
+          {advancedPressure && pressureIntel?.forecastMessageKey && (
             <p className="ct-insight-violet">
               {t(pressureIntel.forecastMessageKey, pressureIntel.forecastMessageParams || {})}
             </p>

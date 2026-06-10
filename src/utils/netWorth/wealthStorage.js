@@ -1,10 +1,10 @@
 import { emitLocalDataChanged } from "../../storage/events.js";
 import { STORAGE_KEYS } from "../../storage/keys.js";
-import { getAssetCategory, getLiabilityCategory } from "../../constants/netWorth/categories.js";
+import { getAssetCategory, getLiabilityCategory } from "../../constants/netWorth/wealthCategories.js";
 
 export const WEALTH_SCHEMA_VERSION = 1;
 
-/** @typedef {import('../../constants/netWorth/categories.js').LiquidityTier} LiquidityTier */
+/** @typedef {import('../../constants/netWorth/wealthCategories.js').LiquidityTier} LiquidityTier */
 
 /**
  * @typedef {object} WealthEntry

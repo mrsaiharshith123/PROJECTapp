@@ -14,7 +14,8 @@ import {
   lendingPrincipalInterestTotals,
   lendingCompletionStats,
 } from "../../../engines/analyticsSeries.js";
-import { buildCashflowForecastSeries, MONEY_OUTLOOK_WINDOW } from "../../../engines/forecastSeries.js";
+import { buildCashflowForecastSeries } from "../../../engines/forecastSeries.js";
+import { moneyOutlookWindowForTier } from "../../../utils/tierAccess.js";
 import { buildIncomeSensitivityRows } from "../../../engines/pressureScore.js";
 import { summarizeHouseholdPayerBurden } from "../../../engines/householdPayer.js";
 import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
@@ -30,6 +31,7 @@ import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
+import SubscriptionsAuditPanel from "../analytics/SubscriptionsAuditPanel.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
@@ -125,21 +127,22 @@ const Analytics = () => {
   );
 
   const debtReduction = useMemo(() => debtReductionFromSnapshots(monthlySnapshots), [monthlySnapshots]);
+  const outlookWindow = moneyOutlookWindowForTier(settings);
   const forecastSeries = useMemo(() => {
     const rows = buildCashflowForecastSeries(
       commitments,
       income,
       getEffectiveStatus,
       today,
-      MONEY_OUTLOOK_WINDOW.months,
+      outlookWindow.months,
       {
-        startOffset: MONEY_OUTLOOK_WINDOW.startOffset,
+        startOffset: outlookWindow.startOffset,
         lendings,
         getEffectiveLendingStatus,
       },
     );
     return attachVariableSpendToForecast(rows, dailySpends);
-  }, [commitments, income, getEffectiveStatus, today, lendings, getEffectiveLendingStatus, dailySpends]);
+  }, [commitments, income, getEffectiveStatus, today, lendings, getEffectiveLendingStatus, dailySpends, outlookWindow]);
 
   const lendingTotals = useMemo(() => lendingPrincipalInterestTotals(lendings), [lendings]);
   const lendingStats = useMemo(
@@ -162,6 +165,8 @@ const Analytics = () => {
       )}
 
       <FinancialPulseCard microTipSeed={microTipSeed} />
+
+      <SubscriptionsAuditPanel />
 
       <CashflowCalendarStrip />
 

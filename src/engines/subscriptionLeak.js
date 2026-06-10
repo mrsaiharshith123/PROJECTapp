@@ -39,20 +39,28 @@ export function subscriptionLeakReport(commitments, getEffectiveStatusFn, todayS
 
   const insights = [];
   if (subs.length >= 4) {
-    insights.push(`You track ${subs.length} subscriptions—review for duplicates or unused plans.`);
+    insights.push({ id: "sub-leak-many", tone: "info", params: { count: subs.length } });
   }
   if (annualized > 0) {
-    insights.push(`You may spend about ₹${Math.round(annualized).toLocaleString("en-IN")}/year on subscriptions.`);
+    insights.push({
+      id: "sub-leak-annual",
+      tone: "info",
+      params: { amount: Math.round(annualized).toLocaleString("en-IN") },
+    });
   }
   if (luxuryMonthly >= 800) {
-    insights.push(
-      `Optional and luxury subscriptions add ~₹${Math.round(luxuryMonthly).toLocaleString("en-IN")}/mo — a practical area to reduce recurring cost.`,
-    );
+    insights.push({
+      id: "sub-leak-luxury",
+      tone: "warning",
+      params: { amount: Math.round(luxuryMonthly).toLocaleString("en-IN") },
+    });
   }
   if (lowPriorityRecurring >= 500) {
-    insights.push(
-      `Low-priority recurring entertainment/tools add ~₹${Math.round(lowPriorityRecurring).toLocaleString()}/mo.`
-    );
+    insights.push({
+      id: "sub-leak-low-priority",
+      tone: "info",
+      params: { amount: Math.round(lowPriorityRecurring).toLocaleString("en-IN") },
+    });
   }
   for (const c of subs) {
     const trialEnd = c.trialEnd ? String(c.trialEnd).slice(0, 10) : "";
@@ -60,7 +68,11 @@ export function subscriptionLeakReport(commitments, getEffectiveStatusFn, todayS
     try {
       const days = differenceInCalendarDays(parseISO(`${trialEnd}T12:00:00`), parseISO(`${todayStr}T12:00:00`));
       if (days >= 0 && days <= 14) {
-        insights.push(`${c.name} trial ends in ${days} day${days === 1 ? "" : "s"} (${trialEnd})—cancel or budget.`);
+        insights.push({
+          id: "sub-leak-trial",
+          tone: "caution",
+          params: { name: c.name, days, date: trialEnd },
+        });
       }
     } catch {
       /* ignore bad dates */

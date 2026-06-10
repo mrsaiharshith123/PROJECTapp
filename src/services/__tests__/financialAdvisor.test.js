@@ -1,10 +1,15 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   buildContextData,
   buildSystemPrompt,
   buildLocalAnswer,
   askFinancialAdvisor,
 } from "../financialAdvisor.js";
+import { getSupabaseClient } from "../supabase/auth.js";
+
+vi.mock("../supabase/auth.js", () => ({
+  getSupabaseClient: vi.fn(),
+}));
 
 describe("buildContextData", () => {
   it("maps hook intel and stability shapes", () => {
@@ -82,12 +87,12 @@ describe("buildLocalAnswer", () => {
 });
 
 describe("askFinancialAdvisor", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
+  beforeEach(() => {
+    vi.mocked(getSupabaseClient).mockReset();
   });
 
-  it("falls back locally when API fails", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+  it("falls back locally when edge function is unavailable", async () => {
+    vi.mocked(getSupabaseClient).mockReturnValue(null);
     const result = await askFinancialAdvisor({
       question: "What is my pressure score?",
       contextData: buildContextData({
@@ -102,19 +107,15 @@ describe("askFinancialAdvisor", () => {
     expect(result.answer).toMatch(/pressure score/i);
   });
 
-  it("parses AI text blocks on success", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          content: [
-            { type: "text", text: "Your free cash looks healthy." },
-            { type: "text", text: "Educational only — not financial advice." },
-          ],
+  it("uses edge function answer when available", async () => {
+    vi.mocked(getSupabaseClient).mockReturnValue({
+      functions: {
+        invoke: vi.fn().mockResolvedValue({
+          data: { answer: "Your free cash looks healthy. Educational only." },
+          error: null,
         }),
-      }),
-    );
+      },
+    });
     const result = await askFinancialAdvisor({
       question: "How am I doing?",
       contextData: buildContextData({

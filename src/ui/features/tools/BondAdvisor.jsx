@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { analyzeBond } from "../../../engines/bondAnalyzer.js";
+import { analyzeBond, compareBondAlternatives } from "../../../engines/bondAnalyzer.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { translateBondDetail, translateBondRecommendation } from "../../../i18n/toolLabels.js";
+import { translateBondRecommendation } from "../../../i18n/toolLabels.js";
 
 const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
@@ -20,11 +20,21 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
     yearsToMaturity: "5",
     taxRatePct: "20",
     inflationPct: "6",
+    creditRating: "unrated",
   });
 
   const result = useMemo(
     () =>
       analyzeBond({
+        ...form,
+        monthlyIncome,
+      }),
+    [form, monthlyIncome],
+  );
+
+  const compare = useMemo(
+    () =>
+      compareBondAlternatives({
         ...form,
         monthlyIncome,
       }),
@@ -58,6 +68,21 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
               <option value="government">{t("bond.type.government")}</option>
               <option value="corporate">{t("bond.type.corporate")}</option>
               <option value="taxfree">{t("bond.type.taxfree")}</option>
+              <option value="sgb">{t("bond.type.sgb")}</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-gray-700">{t("bond.creditRating")}</label>
+            <select
+              className={fieldClass}
+              value={form.creditRating}
+              onChange={(e) => setField("creditRating", e.target.value)}
+            >
+              {["AAA", "AA", "A", "BBB", "BB", "B", "unrated"].map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -123,9 +148,13 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
         <div className={`rounded-xl px-3 py-2 text-sm font-semibold ${verdictClass}`}>
           {translateBondRecommendation(t, result.recommendation)}
         </div>
-        <p className="text-xs text-gray-600">{translateBondDetail(t, result.recommendation)}</p>
+        <p className="text-xs text-gray-600">{t(result.detailKey || "bond.detail.borderline")}</p>
 
         <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-xl bg-gray-50 p-3">
+            <p className="text-[11px] text-gray-500">{t("bond.ytm")}</p>
+            <p className="font-semibold">{result.ytmPct.toFixed(2)}%</p>
+          </div>
           <div className="rounded-xl bg-gray-50 p-3">
             <p className="text-[11px] text-gray-500">{t("bond.annualYield")}</p>
             <p className="font-semibold">{result.annualYieldPct.toFixed(2)}%</p>
@@ -148,6 +177,19 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             {t("bond.salaryLoad", { percent: result.affordabilityPct.toFixed(1) })}
           </p>
         )}
+        <div className="pt-2 border-t border-gray-100">
+          <p className="text-xs font-semibold text-gray-700 mb-2">{t("bond.compareTitle")}</p>
+          <ul className="space-y-1 text-xs text-gray-600">
+            {compare.map((row) => (
+              <li key={row.id} className="flex justify-between gap-2">
+                <span>{t(row.labelKey)}</span>
+                <span>
+                  {row.postTaxYieldPct.toFixed(1)}% · {translateBondRecommendation(t, row.recommendation)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </ProGate>
   );

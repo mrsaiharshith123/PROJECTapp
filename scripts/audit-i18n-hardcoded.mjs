@@ -16,6 +16,7 @@ const MESSAGES_DIR = path.join(ROOT, "src/i18n/messages");
 
 const STRICT = process.argv.includes("--strict");
 const LIST = process.argv.includes("--list");
+const JSON_OUT = process.argv.includes("--json");
 
 const SKIP_DIRS = new Set(["__tests__", "tokens", "utils"]);
 const SKIP_FILE_RE = /\.(test|spec)\./;
@@ -188,6 +189,18 @@ for (const row of localeLatin.sort((a, b) => b.latin - a.latin).slice(0, 8)) {
 }
 
 const total = uiHitCount + localeLatin.reduce((s, r) => s + r.latin, 0);
+if (JSON_OUT) {
+  console.log(
+    JSON.stringify({
+      total,
+      errors: uiHitCount,
+      uiFiles: uiIssues.length,
+      localeLatin: localeLatin.reduce((s, r) => s + r.latin, 0),
+    }),
+  );
+  process.exit(STRICT && uiHitCount > 0 ? 1 : 0);
+}
+
 console.log(`\n  Total issues: ${total}`);
 console.log("  Fix: wire UI through t() — see .cursor/rules/single-language-i18n.mdc\n");
 

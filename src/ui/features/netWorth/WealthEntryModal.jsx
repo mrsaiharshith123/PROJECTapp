@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ASSET_CATEGORIES, LIABILITY_CATEGORIES } from "../../../constants/netWorth/categories.js";
+import { ASSET_CATEGORIES, LIABILITY_CATEGORIES } from "../../../constants/netWorth/wealthCategories.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Modal, Button, inputClassName } from "../../index.js";
 

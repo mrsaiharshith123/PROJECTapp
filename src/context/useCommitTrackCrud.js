@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { normalizeCommitmentStatusForSave, getEffectiveStatus } from "../utils/commitmentStatus.js";
-import { applyPaymentToCommitment } from "../utils/commitmentPayments.js";
+import { applyPaymentToCommitment, totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
 import {
   normalizeCommitment,
@@ -70,10 +70,16 @@ export function useCommitTrackCrud({
 
   const addCommitmentPayment = useCallback(
     (id, payment) => {
+      let goalCredit = null;
       persistCommitments((prev) =>
         prev.flatMap((c) => {
           if (String(c.id) !== String(id)) return [c];
+          const prevPaid = totalPaidOnPayments(c.payments);
           let updated = applyPaymentToCommitment(c, payment, prev, todayStr);
+          const applied = totalPaidOnPayments(updated.payments) - prevPaid;
+          if (applied > 0 && updated.goalId && updated.category === "SIP") {
+            goalCredit = { goalId: updated.goalId, amount: applied };
+          }
           updated = normalizeCommitmentStatusForSave(normalizeCommitment(updated), todayStr, prev);
           if (Number(updated.remainingAmount) > 0) return [updated];
           const nextId = Date.now() + Math.floor(Math.random() * 1000);
@@ -81,8 +87,21 @@ export function useCommitTrackCrud({
           return nextCycle ? [paidRow, nextCycle] : [paidRow];
         })
       );
+      if (goalCredit) {
+        persistGoals((prev) =>
+          prev.map((g) =>
+            String(g.id) !== String(goalCredit.goalId)
+              ? g
+              : normalizeGoal({
+                  ...g,
+                  savedAmount: Math.max(0, Number(g.savedAmount) || 0) + goalCredit.amount,
+                  updatedAt: Date.now(),
+                })
+          )
+        );
+      }
     },
-    [persistCommitments, todayStr]
+    [persistCommitments, persistGoals, todayStr]
   );
 
   const removeCommitmentPayment = useCallback(

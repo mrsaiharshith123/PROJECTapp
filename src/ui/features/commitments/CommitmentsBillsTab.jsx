@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   FilterChips,
   FilterChipsWithSearch,
@@ -10,6 +11,10 @@ import {
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { suggestedCyclePaymentAmount } from "../../../utils/commitmentPayments.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
+import { scoreBillHealth, scoreAllBillsHealth, aggregateBillHealthScore } from "../../../engines/billHealth.js";
+import { translateInsight } from "../../../i18n/insightLabels.js";
+import { Badge } from "../../primitives/Badge.jsx";
+import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 
 const CATEGORY_OPTIONS = [
   ["EMI", "category.emi"],
@@ -45,8 +50,20 @@ export default function CommitmentsBillsTab({
   onOpenPayment,
   onEdit,
   onDelete,
+  dailySpends = [],
 }) {
   const { t } = useTranslation();
+  const stable = useStabilityIntel();
+  const topStressorName = stable.stress?.top?.[0]?.name ?? null;
+
+  const portfolioHealth = useMemo(() => {
+    const scored = scoreAllBillsHealth(activeBills, (c) => c.effectiveStatus, {
+      dailySpends,
+      todayStr,
+      topStressorName,
+    });
+    return aggregateBillHealthScore(scored);
+  }, [activeBills, dailySpends, todayStr, topStressorName]);
 
   const presetChips = [
     { id: "", label: t("bills.filterAll") },
@@ -92,6 +109,31 @@ export default function CommitmentsBillsTab({
         <Caption className="block mt-0.5">{t("bills.recurringBills.subtitle")}</Caption>
         <Caption className="block mt-1 opacity-80">{t("bills.recurringBills.hint")}</Caption>
       </div>
+
+      {activeBills.length > 0 && (
+        <div className="ct-row-between gap-2 flex-wrap ct-inset !p-3">
+          <div>
+            <Caption className="block font-semibold">{t("bills.portfolioHealth")}</Caption>
+            <Caption className="block mt-0.5 text-[var(--ct-text-muted)]">
+              {translateInsight(t, {
+                id: portfolioHealth.insightId,
+                params: {
+                  score: portfolioHealth.score,
+                  stress: portfolioHealth.stressCount,
+                  watch: portfolioHealth.watchCount,
+                },
+              })}
+            </Caption>
+          </div>
+          <Badge
+            tone={
+              portfolioHealth.band === "good" ? "success" : portfolioHealth.band === "watch" ? "warning" : "danger"
+            }
+          >
+            {portfolioHealth.score}/100
+          </Badge>
+        </div>
+      )}
 
       <div className="ct-grid-2">
         <StatCard value={String(counts.pending || 0)} label={t("bills.due")} />
@@ -142,6 +184,12 @@ export default function CommitmentsBillsTab({
             const partial = (eff === "pending" || eff === "overdue") && cycleDue > 0 && cycleDue < total;
             const monthPaid = eff === "paid";
             const progress = computeBillPaymentProgress(item, todayStr, commitments);
+            const health = scoreBillHealth(item, {
+              effectiveStatus: eff,
+              dailySpends,
+              todayStr,
+              topStressorName,
+            });
 
             return (
               <BillCard
@@ -152,6 +200,7 @@ export default function CommitmentsBillsTab({
                 partial={partial}
                 monthPaid={monthPaid}
                 progress={progress}
+                health={health}
                 onOpen={() => onOpenDetail(item)}
                 onPay={() => onOpenPayment(item)}
                 onEdit={() => onEdit(item)}

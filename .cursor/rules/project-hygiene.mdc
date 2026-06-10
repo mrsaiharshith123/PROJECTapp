@@ -19,6 +19,11 @@ globs:
 - `npm run audit:orphans` — fails if `engines/` or `services/` files are only imported from `__tests__`
 - `npm run audit:dead-code` — unmounted screens / orphan tool handlers
 - `npm run audit:merge` — advisory; fold single-consumer helper panels when sensible
+- `npm run audit:duplicates` — basename collisions (e.g. rename `netWorth/categories.js` → `wealthCategories.js`)
+- `npm run audit:engine-tests` — engines missing dedicated `__tests__` files
+- `npm run audit:notification-i18n` — `notifications.js` feed builders must use `titleKey` / `messageKey`, not hardcoded English
+- `npm run audit:pro-features-built` — Pro/Power features in registry have UI wiring
+- `npm run audit:docs-sync` — docs match shipped paths and test counts
 
 ## Tool layout (Home)
 
@@ -31,6 +36,8 @@ globs:
 ## i18n
 
 Source of truth: `src/i18n/messages/en.js`. Removing keys from `en.js` + `npm run sync:i18n` prunes all locales.
+
+Notification feeds: engines return `{ titleKey, messageKey, messageParams?, suffixKey? }`; UI resolves via `translateNotification()` in `src/i18n/notificationLabels.js`.
 
 ## Do not leave
 

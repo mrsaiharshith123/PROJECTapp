@@ -12,6 +12,7 @@ import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
+import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
 import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
@@ -32,6 +33,7 @@ const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
+const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 
 function AuthGateShell() {
   return (
@@ -69,6 +71,7 @@ function MainShell() {
     <Screen>
       <ThemeSync />
       <CloudSyncBridge />
+      <SalaryDayBridge />
       <AnalyticsBridge />
       <Navbar />
       <NotificationSync />
@@ -87,6 +90,7 @@ function MainShell() {
               }
             />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/paycheck" element={<Paycheck />} />
             <Route path="/net-worth" element={<NetWorth />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />

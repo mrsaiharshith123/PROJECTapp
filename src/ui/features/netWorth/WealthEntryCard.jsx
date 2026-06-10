@@ -1,5 +1,5 @@
 import { formatInr } from "../../../constants/symbols.js";
-import { getAssetCategory, getLiabilityCategory } from "../../../constants/netWorth/categories.js";
+import { getAssetCategory, getLiabilityCategory } from "../../../constants/netWorth/wealthCategories.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Card, Caption, Body } from "../../index.js";
