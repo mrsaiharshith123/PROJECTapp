@@ -6,10 +6,11 @@ Source of truth: `src/governance/registries/features.js`
 |----|------|-----|---------|
 | `home-dashboard` | Home dashboard | `HomePage`, `dashboard/*` | stability, survival, burden, forecast |
 | `commitments` | Bills | `CommitmentsPage` (recurring + variable spend tabs), bill modals, `DailySpendPanel` | reminders, forecastSeries, `dailySpends` utils |
-| `lending` | Money / lending | `LendingPage`, `lending/*` | lendingTrust, lendingAgreement, agreementExport, lendingShareCard |
+| `lending` | Money / lending | `LendingPage`, `LendingProfileCard`, `lending/*` | lendingTrust, lendingAgreement, lendingProfileShare |
 | `analytics` | Analytics | `AnalyticsPage`, `analytics/*` | analyticsSeries, salaryBreakdown, subscriptionLeak |
+| `net-worth` | Financial life / net worth | `ProfileFinancialHero`, `netWorth/*` | netWorth engines, `useNetWorthIntel` |
 | `calculators` | Dashboard tools | `DashboardTools`, `tools/*` | affordability, loanPayoff, chit, bond, incomeTax, … |
-| `profile` | Profile | `ProfilePage`, `profile/*` | auth, backup; `PlansModal` + `razorpaySubscription.js` for upgrades |
+| `profile` | Profile | `ProfilePage`, `ProfileScoresDetailPage`, `profile/*` | `useProfileScoreGuide`; cloud via `services/sync`; `PlansModal` for upgrades |
 | `subscriptions` | Pro / Power gates | `ProGate`, `PlansButton`, `PlansModal` | `subscriptionTiers.js` |
 | `notifications` | Bell / reminders | `NotificationPanel` | notifications, reminders |
 | `onboarding` | First-run | `OnboardingPage` | — |

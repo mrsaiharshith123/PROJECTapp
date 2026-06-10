@@ -11,6 +11,9 @@ import { useLendingLists } from "../lending/useLendingLists.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import BillSplitModal from "../modals/BillSplitModal.jsx";
+import { canAddLendingRecord } from "../../../utils/tierAccess.js";
+import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
+import LendingProfileCard from "../lending/LendingProfileCard.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -29,7 +32,8 @@ const emptyLendingForm = () => ({
 
 const Lending = () => {
   const { t } = useTranslation();
-  const { lendings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } = useCommitTrack();
+  const { lendings, settings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } =
+    useCommitTrack();
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
@@ -41,7 +45,7 @@ const Lending = () => {
   const [showRequest, setShowRequest] = useState(false);
   const [billSplitOpen, setBillSplitOpen] = useState(false);
 
-  const { borrowedList, lentList, trustRows, totals } = useLendingLists(lendings);
+  const { borrowedList, lentList, trustRows, totals, trustScore } = useLendingLists(lendings);
 
   const resetForm = () => {
     setForm(emptyLendingForm());
@@ -85,6 +89,8 @@ const Lending = () => {
       setFormErrors(errs);
       return;
     }
+    const gate = canAddLendingRecord(settings, lendings);
+    if (!gate.ok) return;
     addLending(lendingPayload());
     resetForm();
     setShowAdd(false);
@@ -188,9 +194,16 @@ const Lending = () => {
         }
       />
 
+      {!canAddLendingRecord(settings, lendings).ok && (
+        <TierLimitBanner
+          title={t("tier.limit.lendingTitle")}
+          message={t("tier.limit.lendingMessage", { limit: 5 })}
+        />
+      )}
+
+      <LendingProfileCard totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+
       <div className="grid grid-cols-2 gap-3">
-        <StatCard value={formatInr(totals.lentOut)} label={t("lending.stat.lentOut")} />
-        <StatCard value={formatInr(totals.borrowedIn)} label={t("lending.stat.borrowedIn")} valueClassName="text-violet-300" />
         <StatCard value={formatInr(totals.recovered)} label={t("lending.stat.recovered")} valueClassName="text-emerald-300" />
         <StatCard value={formatInr(totals.repaid)} label={t("lending.stat.repaid")} />
       </div>

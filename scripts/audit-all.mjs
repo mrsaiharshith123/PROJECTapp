@@ -441,7 +441,10 @@ console.log(
   paint(C.dim, "  ● Checks: env, deps, CSS, UI layout, copy tone, i18n, code+UI depth, tests, types, build"),
 );
 console.log(
-  paint(C.dim, "  ● Governance scans: npm run audit:governance:quick · docs/08-governance.md"),
+  paint(C.dim, "  ● Focused tests: npm run test:sync · test:engines · test:utils"),
+);
+console.log(
+  paint(C.dim, "  ● Governance scans: npm run audit:governance:quick · audit:sync · docs/08-governance.md"),
 );
 
 console.log();

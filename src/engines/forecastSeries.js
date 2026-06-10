@@ -28,8 +28,8 @@ export function amountDueInMonth(c, monthKey, monthNum, getEffectiveStatusFn, to
 /**
  * 6–12 month cashflow forecast: bill obligations + lending outflow vs income + expected receivables.
  */
-/** Money outlook window: 2 months back, current, 3 months ahead. */
-export const MONEY_OUTLOOK_WINDOW = { months: 6, startOffset: -2 };
+/** Money outlook window: 3 months back, current month, 3 months ahead (7 bars). */
+export const MONEY_OUTLOOK_WINDOW = { months: 7, startOffset: -3 };
 
 /**
  * @param {{ lendings?: object[], getEffectiveLendingStatus?: (l: object, todayStr?: string) => string, startOffset?: number }} [options]

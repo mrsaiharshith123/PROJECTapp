@@ -13,6 +13,7 @@ import {
   Body,
   EmptyState,
   FilterChips,
+  FilterChipsWithSearch,
   StatCard,
   Badge,
 } from "../../index.js";
@@ -41,6 +42,7 @@ export default function DailySpendPanel() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState("30d");
   const [lifeFilter, setLifeFilter] = useState("");
+  const [search, setSearch] = useState("");
 
   const range = useMemo(() => {
     const end = todayStr;
@@ -70,12 +72,20 @@ export default function DailySpendPanel() {
   const listSpends = useMemo(() => {
     let rows = [...periodSpends];
     if (lifeFilter) rows = rows.filter((s) => s.lifeCategory === lifeFilter);
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      rows = rows.filter((s) => {
+        const label = String(s.label || "").toLowerCase();
+        const merchant = String(s.merchantId || "").toLowerCase();
+        return label.includes(q) || merchant.includes(q);
+      });
+    }
     return rows.sort((a, b) => {
       const d = (b.date || "").localeCompare(a.date || "");
       if (d !== 0) return d;
       return (b.createdAt || 0) - (a.createdAt || 0);
     });
-  }, [periodSpends, lifeFilter]);
+  }, [periodSpends, lifeFilter, search]);
 
   const periodOptions = [
     { id: "7d", label: t("bills.dailySpend.period7d") },
@@ -109,7 +119,14 @@ export default function DailySpendPanel() {
 
       <div>
         <Body className="ct-body-strong mb-2">{t("bills.dailySpend.history")}</Body>
-        <FilterChips options={lifeFilterOptions} value={lifeFilter} onChange={setLifeFilter} />
+        <FilterChipsWithSearch
+          options={lifeFilterOptions}
+          value={lifeFilter}
+          onChange={setLifeFilter}
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={t("bills.dailySpend.searchPlaceholder")}
+        />
       </div>
 
       {listSpends.length === 0 ? (

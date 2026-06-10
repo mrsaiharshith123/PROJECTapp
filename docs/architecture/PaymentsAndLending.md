@@ -10,12 +10,20 @@
 | `src/ui/patterns/ProGate.jsx` | Feature gating by tier |
 | `src/types/global.d.ts` | `window.Razorpay` types |
 
-### Amounts (annual, paise)
+### Billing cycles
 
-| Tier | Paise | INR |
-|------|-------|-----|
-| Pro | `79900` | ₹799/yr |
-| Power | `149900` | ₹1,499/yr |
+`PlansModal` toggles **monthly** vs **yearly**. Checkout passes `billing` to `startSubscriptionCheckout()` and the `razorpay-checkout` edge function.
+
+Yearly prices use `yearlyInrAfterSave()` in `subscriptionTiers.js` (**29%** off paying monthly × 12).
+
+### Amounts (paise)
+
+| Tier | Monthly | Yearly | Notes |
+|------|---------|--------|--------|
+| Pro | `9900` (₹99) | `84300` (₹843) | ≈ ₹70/mo when billed annually |
+| Power | `19900` (₹199) | `169500` (₹1,695) | ≈ ₹141/mo when billed annually |
+
+Client amounts come from `getTierPaise(tier, billing)` in `razorpayConfig.js` (derived from `PLAN_PRESENTATION`).
 
 ### Dev with test keys
 

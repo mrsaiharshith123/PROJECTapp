@@ -1,13 +1,29 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { cn } from "../utils/cn.js";
 import { Heading } from "./Text.jsx";
 
 /**
- * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode }} props
+ * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode, fullScreen?: boolean }} props
  */
-export function Modal({ title, children, onClose, footer }) {
-  return (
-    <div className="ct-modal-overlay" role="dialog" aria-modal="true">
+export function Modal({ title, children, onClose, footer, fullScreen = false }) {
+  useEffect(() => {
+    if (!fullScreen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [fullScreen]);
+
+  const panel = (
+    <div
+      className={cn("ct-modal-overlay", fullScreen && "ct-modal-overlay--fullscreen")}
+      role="dialog"
+      aria-modal="true"
+    >
       <button type="button" className="ct-modal-backdrop" aria-label="Close" onClick={onClose} />
-      <div className="ct-modal-panel">
+      <div className={cn("ct-modal-panel", fullScreen && "ct-modal-panel--fullscreen")}>
         {title && (
           <div className="ct-row-between px-5 py-4 border-b border-white/10 shrink-0">
             <Heading level={2}>{title}</Heading>
@@ -16,11 +32,19 @@ export function Modal({ title, children, onClose, footer }) {
             </button>
           </div>
         )}
-        <div className="overflow-y-auto px-5 py-4 flex-1">{children}</div>
+        <div className={cn("overflow-y-auto flex-1", fullScreen ? "ct-modal-body--fullscreen" : "px-5 py-4")}>
+          {children}
+        </div>
         {footer && <div className="px-5 py-4 border-t border-white/10 shrink-0">{footer}</div>}
       </div>
     </div>
   );
+
+  if (fullScreen && typeof document !== "undefined") {
+    return createPortal(panel, document.body);
+  }
+
+  return panel;
 }
 
 export default Modal;

@@ -5,12 +5,22 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const TIER_AMOUNTS: Record<string, number> = {
-  pro: 79900,
-  power: 149900,
+type Tier = "pro" | "power";
+
+const TIER_ANNUAL_PAISE: Record<Tier, number> = {
+  pro: 84300,
+  power: 169500,
 };
 
-type Tier = "pro" | "power";
+const TIER_MONTHLY_PAISE: Record<Tier, number> = {
+  pro: 9900,
+  power: 19900,
+};
+
+function tierAmountPaise(tier: Tier, billing: unknown): number {
+  if (billing === "monthly") return TIER_MONTHLY_PAISE[tier];
+  return TIER_ANNUAL_PAISE[tier];
+}
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -76,8 +86,9 @@ Deno.serve(async (req) => {
         return json({ error: "Invalid tier." }, 400);
       }
 
-      const amount = TIER_AMOUNTS[tier];
-      const receipt = `ct_${user.id.replace(/-/g, "").slice(0, 12)}_${tier}_${Date.now()}`;
+      const billing = body?.billing === "monthly" ? "monthly" : "yearly";
+      const amount = tierAmountPaise(tier, billing);
+      const receipt = `ct_${user.id.replace(/-/g, "").slice(0, 12)}_${tier}_${billing}_${Date.now()}`;
       const basicAuth = btoa(`${razorpayKeyId}:${razorpayKeySecret}`);
 
       const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
@@ -90,7 +101,7 @@ Deno.serve(async (req) => {
           amount,
           currency: "INR",
           receipt,
-          notes: { tier, user_id: user.id },
+          notes: { tier, billing, user_id: user.id },
         }),
       });
 
@@ -141,7 +152,7 @@ Deno.serve(async (req) => {
         ok: true,
         tier,
         paymentId,
-        amount: TIER_AMOUNTS[tier],
+        amount: tierAmountPaise(tier, body?.billing === "monthly" ? "monthly" : "yearly"),
       });
     }
 

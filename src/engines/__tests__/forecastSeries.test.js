@@ -26,12 +26,13 @@ describe("buildCashflowForecastSeries", () => {
     expect(june.due).toBe(50000);
   });
 
-  it("returns six months with two months of history when using outlook window", () => {
+  it("returns seven months with three months of history when using outlook window", () => {
     const rows = buildCashflowForecastSeries([], 50000, getEffectiveStatus, "2026-06-15", MONEY_OUTLOOK_WINDOW.months, {
       startOffset: MONEY_OUTLOOK_WINDOW.startOffset,
     });
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(7);
     expect(rows.map((r) => r.monthKey)).toEqual([
+      "2026-03",
       "2026-04",
       "2026-05",
       "2026-06",

@@ -99,6 +99,8 @@ html[data-ui="ct"] {
   --ct-border-subtle: rgba(155, 109, 255, 0.06);
   --ct-border-strong: rgba(155, 109, 255, 0.16);
   --ct-border-accent: rgba(124, 77, 255, 0.42);
+  --ct-border-accent-soft: rgba(124, 92, 255, 0.35);
+  --ct-border-success: rgba(52, 211, 153, 0.45);
   --ct-page-inset-top: 1.25rem;
   --ct-page-inset-x: 1rem;
   --ct-accent: var(--ct-life-violet);
@@ -268,6 +270,8 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-border-subtle: rgba(15, 23, 42, 0.05);
   --ct-border-strong: rgba(15, 23, 42, 0.12);
   --ct-border-accent: rgba(109, 74, 255, 0.32);
+  --ct-border-accent-soft: rgba(109, 74, 255, 0.28);
+  --ct-border-success: rgba(21, 128, 61, 0.35);
   --ct-accent: #6d4aff;
   --ct-accent-hover: #5b4dff;
   --ct-accent-muted: #7c4dff;

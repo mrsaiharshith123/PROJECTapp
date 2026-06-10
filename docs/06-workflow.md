@@ -44,11 +44,13 @@ See [10-i18n.md](./10-i18n.md).
 
 ### Payments (Pro / Power)
 
-1. `constants/subscriptionTiers.js` — tier ids, `PLAN_PRESENTATION`, `PRO_FEATURES`
-2. `services/razorpaySubscription.js` — client checkout + server verify
-3. `ui/features/profile/PlansModal.jsx` — upgrade UI
-4. `ui/patterns/ProGate.jsx` — gate features by tier
-5. **Before production:** add server-side payment verification (Supabase Edge Function) — do not trust client-only success
+1. `constants/subscriptionTiers.js` — `PLAN_PRESENTATION`, `yearlyInrAfterSave()`, `PRO_FEATURES` / `POWER_FEATURES`
+2. `services/razorpayConfig.js` — `getTierPaise(tier, billing)` for Razorpay amounts
+3. `services/razorpaySubscription.js` — checkout + server verify (`billing` passed through)
+4. `supabase/functions/razorpay-checkout` — create order + HMAC verify (deploy after price changes)
+5. `ui/features/profile/PlansModal.jsx` — monthly/yearly toggle, equal-height plan cards
+6. `ui/patterns/ProGate.jsx` — gate features by tier
+7. Tests: `constants/__tests__/subscriptionTiers.test.js`, `services/__tests__/razorpayConfig.test.js`
 
 ### Lending legal export
 
@@ -77,7 +79,7 @@ See [10-i18n.md](./10-i18n.md).
 
 Reviewers should see:
 
-- [ ] `npm run audit` passes
+- [ ] `npm run audit` passes (CI: `npm run audit -- --strict` recommended before release)
 - [ ] No UI outside `src/ui/` (except `ct-*` layout)
 - [ ] Engine changes have tests when behavior is non-trivial
 - [ ] New exports from `ui/index.js` are actually used

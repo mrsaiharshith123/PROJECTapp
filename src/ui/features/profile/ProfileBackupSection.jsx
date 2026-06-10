@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, Caption, Body, Heading, Button, Modal } from "../../index.js";
-import { ProGate } from "../../patterns/ProGate.jsx";
 import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { buildAnnualReportData } from "../../../engines/annualReport.js";
+import { buildAnnualReportData, formatAnnualReportPlainText } from "../../../engines/annualReport.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";
 import { previewImportCounts } from "../../../utils/dataImport.js";
@@ -48,7 +48,18 @@ export default function ProfileBackupSection({
       getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
       todayStr: ctx.todayStr,
     });
-    openHtmlInNewTab(generateAnnualReportHtml(report));
+    if (tierHasFeature("health_report", ctx.settings)) {
+      openHtmlInNewTab(generateAnnualReportHtml(report));
+      return;
+    }
+    const text = formatAnnualReportPlainText(report);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "committrack-annual-report.txt";
+    a.click();
+    URL.revokeObjectURL(url);
   }, [ctx]);
 
   const exportJson = () => {
@@ -215,17 +226,19 @@ export default function ProfileBackupSection({
         </Modal>
       )}
 
-      <ProGate featureId="health_report">
-        <div className="ct-plan-row">
-          <div className="min-w-0 flex-1">
-            <Heading level={4}>{t("backup.annualReport")}</Heading>
-            <Caption className="block">{t("backup.annualReportHint")}</Caption>
-          </div>
-          <Button type="button" variant="primary" size="sm" onClick={handleAnnualReport}>
-            {t("common.generate")}
-          </Button>
+      <div className="ct-plan-row">
+        <div className="min-w-0 flex-1">
+          <Heading level={4}>{t("backup.annualReport")}</Heading>
+          <Caption className="block">
+            {tierHasFeature("health_report", settings)
+              ? t("backup.annualReportHintPro")
+              : t("backup.annualReportHintFree")}
+          </Caption>
         </div>
-      </ProGate>
+        <Button type="button" variant="primary" size="sm" onClick={handleAnnualReport}>
+          {t("common.generate")}
+        </Button>
+      </div>
     </div>
   );
 }

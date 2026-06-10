@@ -35,7 +35,7 @@ It runs `scripts/audit-all.mjs`, which orchestrates smaller scripts and prints a
 
 ### Translations (`audit-i18n.mjs`)
 
-- Every `src/i18n/messages/{locale}.js` must match `en.js` key set (~1565 keys)
+- Every `src/i18n/messages/{locale}.js` must match `en.js` key set (~1800+ keys)
 - Detects corruption patterns (`tokens.push`, broken `{0}` artifacts)
 - Fix: `npm run sync:i18n`, `npm run i18n:repair` — see [10-i18n.md](./10-i18n.md)
 
@@ -69,7 +69,7 @@ Finds “built but not on screen” problems:
 
 #### Merge / simplify suggestions (`audit-merge-suggestions.mjs`)
 
-**Advisory only** — does not fail the audit. Each line is actionable:
+**Advisory only** — does not fail `npm run audit` or `--strict` (merge-suggest warnings are excluded from strict blocking). Each line is actionable:
 
 ```text
 Merge `toolSourcePickerItems.js` → `ToolSourcePicker.jsx`
@@ -91,6 +91,8 @@ npm run audit:merge
 - Runs `npm test` (`vitest run`)
 - Parses summary: `Tests N passed`, `Test Files N passed`
 - **Fails** if Vitest exits non-zero
+- Focused runs: `npm run test:sync` (snapshot + backup log), `npm run test:engines`, `npm run test:utils`
+- Current baseline: **264** tests in **85** files (see `npm test` summary)
 
 ### TypeScript safety
 

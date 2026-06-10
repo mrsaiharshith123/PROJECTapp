@@ -116,9 +116,8 @@ No React imports. Examples:
 | `supabase/auth.js` | Sign-in, profile upsert (merge-safe onboarding flag) |
 | `sync/syncEngine.js` | Cloud backup bridge |
 | `notifications/*` | PWA reminders, delivery |
-| `razorpaySubscription.js` | Razorpay script load, checkout modal, server verify flow |
-| `razorpaySubscription.js` | Order + checkout + verify orchestration |
-| `razorpayConfig.js` | Test-key detection, simulation vs live checkout |
+| `razorpaySubscription.js` | Checkout modal, monthly/yearly billing, server verify |
+| `razorpayConfig.js` | `getTierPaise()`, test-key detection, simulation vs live |
 | `otpConfirmation.js` | Declared lender/borrower confirmation refs (not Aadhaar eSign) |
 | `smsAutoDetect.js` | SMS parse helpers for commitment detect modal |
 | `analytics/trackEvent.js` | Public product-event API — fan-out via `analyticsHub.js` |

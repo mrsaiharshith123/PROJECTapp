@@ -12,6 +12,7 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body, Heading } from "../../primitives/Text.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { ProGate } from "../../patterns/ProGate.jsx";
 
 function HraCalculatorTab() {
   const { t } = useTranslation();
@@ -135,7 +136,11 @@ export default function IncomeTaxPanel() {
         onChange={setPanelTab}
       />
 
-      {panelTab === "hra" && <HraCalculatorTab />}
+      {panelTab === "hra" && (
+        <ProGate featureId="full_income_tax">
+          <HraCalculatorTab />
+        </ProGate>
+      )}
 
       {panelTab === "tax" && (
         <>

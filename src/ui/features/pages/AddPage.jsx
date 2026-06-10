@@ -33,8 +33,11 @@ import {
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
 import AddCommitmentForm from "../forms/AddCommitmentForm.jsx";
+import { canAddChitRecord } from "../../../utils/tierAccess.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const Add = () => {
+  const { t } = useTranslation();
   const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = useCommitTrack();
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -186,6 +189,14 @@ const Add = () => {
     if (Object.keys(errs).length > 0) {
       setErrors(/** @type {Record<string, string>} */ (/** @type {unknown} */ (errs)));
       return;
+    }
+
+    if (showChit) {
+      const chitGate = canAddChitRecord(settings, commitments, getEffectiveStatus);
+      if (!chitGate.ok) {
+        setErrors({ chitValue: t("tier.limit.chitMessage", { limit: chitGate.limit }) });
+        return;
+      }
     }
 
     const dueDate = form.dueDate || form.startDate;

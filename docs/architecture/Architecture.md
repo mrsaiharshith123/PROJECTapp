@@ -37,11 +37,12 @@
 - **Subscriptions** — `subscriptionTiers.js`, `ProGate`, `services/razorpaySubscription.js`
 - **Insights** — `intelligence.js`, `insightsExtended.js` (see [InsightEngine.md](./InsightEngine.md))
 
-## Payments (client-side today)
+## Payments
 
-1. User taps upgrade in `PlansModal` → `startSubscriptionCheckout()` in `services/razorpaySubscription.js`.
-2. On success handler, `updateSettings({ subscriptionTier })` runs locally.
-3. Server verify via Edge Function `razorpay-checkout` when order + signature are present; client falls back to `saveSubscriptionTier` when verify is unavailable.
+1. User picks **monthly** or **yearly** in `PlansModal`, then taps upgrade → `startSubscriptionCheckout({ tier, billing })`.
+2. Amounts from `getTierPaise()` / `PLAN_PRESENTATION` (yearly ≈ 29% off monthly×12).
+3. Edge Function `razorpay-checkout` creates order with matching `billing`; Razorpay modal opens.
+4. On success, server verify when order + signature exist; else `saveSubscriptionTier`; then `updateSettings({ subscriptionTier })`.
 
 ## Lending legal documents
 

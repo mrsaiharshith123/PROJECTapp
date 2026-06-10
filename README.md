@@ -33,7 +33,10 @@ npm run audit        # full quality gate before PR
 |---------|---------|
 | `npm run dev` | Dev server |
 | `npm run build` | Production build + PWA |
-| `npm run test` | Vitest (245 tests) |
+| `npm run test` | Vitest (**264** tests, 85 files) |
+| `npm run test:sync` | Snapshot + cloud backup meta tests |
+| `npm run test:engines` | Engine tests only |
+| `npm run test:utils` | Utils tests only |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript (`checkJs` on `src/`) |
 | `npm run audit` | **Full audit** (lint, UI rules, depth, tests, types, build) |

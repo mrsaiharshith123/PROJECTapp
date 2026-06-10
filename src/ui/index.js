@@ -17,6 +17,7 @@ export { FormField } from "./patterns/FormField.jsx";
 export { MetricTile } from "./patterns/MetricTile.jsx";
 export { SegmentedControl } from "./patterns/SegmentedControl.jsx";
 export { FilterChips } from "./patterns/FilterChips.jsx";
+export { FilterChipsWithSearch } from "./patterns/FilterChipsWithSearch.jsx";
 export { ListRow } from "./patterns/ListRow.jsx";
 export { InsightBanner } from "./patterns/InsightBanner.jsx";
 export { EmptyState } from "./patterns/EmptyState.jsx";
@@ -35,6 +36,7 @@ export { PlansButton } from "./patterns/PlansButton.jsx";
 export { SettingsRow } from "./patterns/SettingsRow.jsx";
 export { BillCard } from "./patterns/BillCard.jsx";
 export { ProGate } from "./patterns/ProGate.jsx";
+export { TierLimitBanner } from "./patterns/TierLimitBanner.jsx";
 
 export { HeroMonthCard } from "./features/HeroMonthCard.jsx";
 export { ToolTile } from "./features/ToolTile.jsx";

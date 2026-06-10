@@ -1,7 +1,7 @@
 {
   "name": "committrack",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -58,6 +58,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:sync": "vitest run src/storage/__tests__ src/services/sync/__tests__",
+    "test:engines": "vitest run src/engines",
+    "test:utils": "vitest run src/utils/__tests__",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "git:ship": "node scripts/git-commit-push.mjs"

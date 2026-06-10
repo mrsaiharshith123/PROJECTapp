@@ -302,19 +302,10 @@ function runMergeSuggestionsAudit() {
     return;
   }
   const items = mergeSummary.items || [];
-  const cap = 10;
-  for (const s of items.slice(0, cap)) {
-    const from = (s.from || []).map((f) => path.basename(f)).join(", ");
-    const into = s.into ? path.basename(String(s.into)) : "?";
-    const msg = from
-      ? `Merge \`${from}\` → \`${into}\``
-      : String(s.into || "merge");
-    addWarning("merge-suggest", msg, s.reason || "");
-  }
-  if (items.length > cap) {
-    addWarning("merge-suggest", `… and ${items.length - cap} more suggestion(s) — npm run audit:merge`);
-  }
   if (!mergeSummary.total && !QUIET) console.log("  Merge suggestions: none");
+  else if (!QUIET && items.length) {
+    console.log(`  Merge suggestions: ${items.length} (advisory — npm run audit:merge)`);
+  }
 }
 
 function runUiDepthAudit() {
@@ -403,7 +394,8 @@ runUiDepthAudit();
 if (!QUIET) console.log("\n── Merge / simplify suggestions (advisory)");
 runMergeSuggestionsAudit();
 
-const strictWarnings = STRICT ? warnings : [];
+/** Merge suggestions are advisory — never block strict audit (see docs/05-audit-and-quality.md). */
+const strictWarnings = STRICT ? warnings.filter((w) => w.category !== "merge-suggest") : [];
 const failCount = errors.length + strictWarnings.length;
 
 const payload = {

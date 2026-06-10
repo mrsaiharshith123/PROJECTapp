@@ -9,6 +9,7 @@ import { formatInr } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body, Heading } from "../../primitives/Text.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import FdRdTrackerPanel from "./FdRdTrackerPanel.jsx";
 
 /** @param {{ onProjectedChange?: (n: number) => void }} props */
 function EpfTrackerTab({ onProjectedChange }) {
@@ -246,6 +247,7 @@ export default function RetirementPlannerPanel() {
       { id: "ppf", label: t("tools.retirement.tabPpf") },
       { id: "nps", label: t("tools.retirement.tabNps") },
       { id: "gratuity", label: t("tools.retirement.tabGratuity") },
+      { id: "fdrd", label: t("tools.retirement.tabFdrd") },
     ],
     [t],
   );
@@ -264,7 +266,8 @@ export default function RetirementPlannerPanel() {
       {tab === "ppf" && <PpfTrackerTab onProjectedChange={setMixPpf} />}
       {tab === "nps" && <NpsTrackerTab onProjectedChange={setMixNps} />}
       {tab === "gratuity" && <GratuityTab />}
-      {mix.total > 0 && tab !== "gratuity" && (
+      {tab === "fdrd" && <FdRdTrackerPanel />}
+      {mix.total > 0 && tab !== "gratuity" && tab !== "fdrd" && (
         <div className="ct-inset ct-stack-sm">
           <Caption className="font-semibold block">{t("tools.retirement.mixTitle")}</Caption>
           <Caption className="block">{mix.message}</Caption>

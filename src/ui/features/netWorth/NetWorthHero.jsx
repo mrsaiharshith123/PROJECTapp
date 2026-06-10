@@ -39,27 +39,33 @@ export function NetWorthHeroBody({ intel, privacyMode, compact = false }) {
     <>
       <div className="ct-row-between">
         <Caption className="ct-nw-eyebrow">{t("netWorth.hero.eyebrow")}</Caption>
-        <span className={`ct-nw-status ct-nw-status-${intel.emotionalStatus}`}>
-          {t(intel.emotionalStatusKey)}
-        </span>
+        {!privacyMode ? (
+          <span className={`ct-nw-status ct-nw-status-${intel.emotionalStatus}`}>
+            {t(intel.emotionalStatusKey)}
+          </span>
+        ) : null}
       </div>
       <p className="ct-nw-hero-value ct-numeral">{display}</p>
       <div className="ct-row-between mt-2 flex-wrap gap-2">
-        <div className="ct-row gap-3">
-          {monthly != null && (
-            <span className={`ct-nw-delta ${monthly >= 0 ? "ct-nw-delta-up" : "ct-nw-delta-down"}`}>
-              <CtIcon name={monthly >= 0 ? "chart-line-up" : "chart-line-down"} size={14} />
-              {monthly >= 0 ? "+" : ""}
-              {monthly.toFixed(1)}% {t("netWorth.hero.thisMonth")}
-            </span>
-          )}
-          {yearly != null && (
-            <Caption>
-              {yearly >= 0 ? "+" : ""}
-              {yearly.toFixed(1)}% {t("netWorth.hero.thisYear")}
-            </Caption>
-          )}
-        </div>
+        {!privacyMode ? (
+          <div className="ct-row gap-3">
+            {monthly != null && (
+              <span className={`ct-nw-delta ${monthly >= 0 ? "ct-nw-delta-up" : "ct-nw-delta-down"}`}>
+                <CtIcon name={monthly >= 0 ? "chart-line-up" : "chart-line-down"} size={14} />
+                {monthly >= 0 ? "+" : ""}
+                {monthly.toFixed(1)}% {t("netWorth.hero.thisMonth")}
+              </span>
+            )}
+            {yearly != null && (
+              <Caption>
+                {yearly >= 0 ? "+" : ""}
+                {yearly.toFixed(1)}% {t("netWorth.hero.thisYear")}
+              </Caption>
+            )}
+          </div>
+        ) : (
+          <span />
+        )}
         {!privacyMode && intel.growth.trend.length > 1 && <NetWorthSparkline data={intel.growth.trend} />}
       </div>
       {!compact && (

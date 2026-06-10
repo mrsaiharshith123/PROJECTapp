@@ -1,7 +1,6 @@
 import {
-  Card,
   FilterChips,
-  inputClassName,
+  FilterChipsWithSearch,
   BillCard,
   Caption,
   Body,
@@ -38,12 +37,8 @@ export default function CommitmentsBillsTab({
   onFilterCategoryChange,
   filterStatus,
   onFilterStatusChange,
-  filterPriority,
-  onFilterPriorityChange,
   filterPreset,
   onFilterPresetChange,
-  sortBy,
-  onSortByChange,
   showHistory,
   onToggleHistory,
   onOpenDetail,
@@ -85,6 +80,11 @@ export default function CommitmentsBillsTab({
     }
   };
 
+  const categoryChips = [
+    { id: "", label: t("bills.allCategories") },
+    ...CATEGORY_OPTIONS.map(([value, key]) => ({ id: value, label: t(key) })),
+  ];
+
   return (
     <div className="ct-stack">
       <div>
@@ -112,81 +112,16 @@ export default function CommitmentsBillsTab({
         />
       </div>
 
-      <FilterChips options={presetChips} value={chipValue} onChange={onChipChange} />
+      <FilterChipsWithSearch
+        options={presetChips}
+        value={chipValue}
+        onChange={onChipChange}
+        search={search}
+        onSearchChange={onSearchChange}
+        searchPlaceholder={t("bills.searchPlaceholder")}
+      />
 
-      <div>
-        <Body className="ct-body-strong mb-2">{t("bills.recurringBills.searchFilters")}</Body>
-        <Card variant="flat" className="ct-stack-sm">
-          <input
-            type="search"
-            placeholder={t("bills.searchPlaceholder")}
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className={inputClassName()}
-          />
-          <div className="ct-grid-2">
-            <select
-              value={filterCategory}
-              onChange={(e) => onFilterCategoryChange(e.target.value)}
-              className={inputClassName("text-xs font-medium")}
-            >
-              <option value="">{t("bills.allCategories")}</option>
-              {CATEGORY_OPTIONS.map(([value, key]) => (
-                <option key={value} value={value}>
-                  {t(key)}
-                </option>
-              ))}
-            </select>
-            <select
-              value={filterStatus}
-              onChange={(e) => onFilterStatusChange(e.target.value)}
-              className={inputClassName("text-xs font-medium")}
-            >
-              <option value="">{t("bills.allStatuses")}</option>
-              <option value="pending">{t("bills.statusDueNow")}</option>
-              <option value="upnext">{t("bills.upNext")}</option>
-              <option value="overdue">{t("bills.overdue")}</option>
-              <option value="paid">{t("bills.paid")}</option>
-            </select>
-            <select
-              value={filterPriority}
-              onChange={(e) => onFilterPriorityChange(e.target.value)}
-              className={inputClassName("text-xs font-medium")}
-            >
-              <option value="">{t("bills.allPriorities")}</option>
-              <option value="critical">{t("priority.critical")}</option>
-              <option value="medium">{t("priority.medium")}</option>
-              <option value="low">{t("priority.low")}</option>
-            </select>
-            <select
-              value={sortBy}
-              onChange={(e) => onSortByChange(e.target.value)}
-              className={inputClassName("text-xs font-medium")}
-            >
-              <option value="priority_due">{t("bills.sortPriorityDue")}</option>
-              <option value="due_soonest">{t("bills.sortDueSoonest")}</option>
-              <option value="burden_desc">{t("bills.sortBurdenDesc")}</option>
-              <option value="remaining_desc">{t("bills.sortRemainingDesc")}</option>
-              <option value="priority">{t("bills.sortPriority")}</option>
-            </select>
-            <select
-              value={filterPreset}
-              onChange={(e) => onFilterPresetChange(e.target.value)}
-              className={inputClassName("text-xs font-medium")}
-              style={{ gridColumn: "1 / -1" }}
-            >
-              <option value="">{t("bills.allTypes")}</option>
-              <option value="recurring">{t("bills.recurringOnly")}</option>
-              <option value="subscriptions">{t("bills.subscriptionsFilter")}</option>
-              <option value="loans_emi">{t("bills.emiLoanFilter")}</option>
-              <option value="overdue_only">{t("bills.overdue")}</option>
-              <option value="upcoming">{t("bills.upcoming14d")}</option>
-              <option value="high_remaining">{t("bills.highRemaining")}</option>
-              <option value="high_pressure">{t("bills.highBurden")}</option>
-            </select>
-          </div>
-        </Card>
-      </div>
+      <FilterChips options={categoryChips} value={filterCategory} onChange={onFilterCategoryChange} />
 
       <div>
         <Body className="ct-body-strong mb-2">{t("bills.recurringBills.activeList")}</Body>

@@ -1,0 +1,28 @@
+/** @param {unknown} payload */
+export function snapshotDataCounts(payload) {
+  const p = /** @type {Record<string, unknown>} */ (payload && typeof payload === "object" ? payload : {});
+  return {
+    bills: Array.isArray(p.commitments) ? p.commitments.length : 0,
+    lending: Array.isArray(p.lendings) ? p.lendings.length : 0,
+    goals: Array.isArray(p.goals) ? p.goals.length : 0,
+    spends: Array.isArray(p.dailySpends) ? p.dailySpends.length : 0,
+  };
+}
+
+/** @param {unknown} payload */
+export function snapshotHasUserData(payload) {
+  const c = snapshotDataCounts(payload);
+  return c.bills > 0 || c.lending > 0 || c.goals > 0 || c.spends > 0;
+}
+
+/**
+ * @param {{ commitments?: unknown[], lendings?: unknown[], goals?: unknown[], dailySpends?: unknown[] }} state
+ */
+export function localStateHasUserData(state) {
+  return (
+    (state.commitments?.length ?? 0) > 0 ||
+    (state.lendings?.length ?? 0) > 0 ||
+    (state.goals?.length ?? 0) > 0 ||
+    (state.dailySpends?.length ?? 0) > 0
+  );
+}

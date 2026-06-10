@@ -1,0 +1,23 @@
+---
+description: Local-first storage and Supabase account backup — never wipe local data on enable
+alwaysApply: true
+---
+
+# Cloud sync & local-first backup
+
+CommitTrack is **local-first**. Supabase account backup is optional debounced sync — not a live database product.
+
+## Rules
+
+1. **Never auto-pull remote on startup** when cloud sync is enabled. Restore is **manual** via the restore modal in `ProfileCloudSyncSection` only.
+2. **Empty remote must not overwrite local data.** Use `snapshotHasUserData` / `localStateHasUserData` in `syncEngine.js` before applying a pull.
+3. **Enabling backup pushes local → cloud** (`ProfileCloudSyncSection` / explicit push). Do not replace local state when toggling sync on.
+4. **UI calls sync through services** — `services/sync/syncEngine.js`, `hooks/useCloudSync.js`. No direct Supabase queries in feature pages except allowed profile/auth files (see `scripts/governance/sync.mjs`).
+5. **Backup history** lives in `syncMeta.js` (`backupLog`, device label). Append on push/restore; show in restore modal and `ProfileSecuritySection`.
+6. **Tests** for snapshot/sync helpers: `npm run test:sync`. Governance: `npm run audit:sync`.
+
+## Adding backup-related UI
+
+- Cloud toggle + restore: `ProfileCloudSyncSection.jsx` (inline restore modal)
+- Account security (sign-in time, device): `ProfileSecuritySection.jsx` under Settings → Account → Security
+- Bridge (debounced push on data change): `app/CloudSyncBridge.jsx` — no startup pull

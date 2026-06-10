@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { lendingTrustByPerson } from "../../../engines/lendingTrust.js";
+import { lendingTrustByPerson, trustScoreForLendingEntry } from "../../../engines/lendingTrust.js";
 
 function sortLendings(list) {
   return [...list].sort((a, b) => {
@@ -20,6 +20,8 @@ export function useLendingLists(lendings) {
     let borrowedIn = 0;
     let recovered = 0;
     let repaid = 0;
+    let lentOutstanding = 0;
+    let borrowedOutstanding = 0;
     for (const l of lendings) {
       const total = Number(l.totalAmount) || 0;
       const rem = Number(l.remainingAmount) || 0;
@@ -27,13 +29,21 @@ export function useLendingLists(lendings) {
       if (l.type === "lent") {
         lentOut += total;
         recovered += paid;
+        lentOutstanding += rem;
       } else {
         borrowedIn += total;
         repaid += paid;
+        borrowedOutstanding += rem;
       }
     }
-    return { lentOut, borrowedIn, recovered, repaid };
+    return { lentOut, borrowedIn, recovered, repaid, lentOutstanding, borrowedOutstanding };
   }, [lendings]);
 
-  return { borrowedList, lentList, trustRows, totals };
+  const trustScore = useMemo(() => {
+    if (!lendings?.length) return null;
+    const scores = lendings.map((l) => trustScoreForLendingEntry(l, lendings));
+    return Math.round(scores.reduce((sum, n) => sum + n, 0) / scores.length);
+  }, [lendings]);
+
+  return { borrowedList, lentList, trustRows, totals, trustScore };
 }

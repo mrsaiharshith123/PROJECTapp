@@ -10,6 +10,7 @@ import { Caption, Body, Heading } from "../../primitives/Text.jsx";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
+import { ProGate } from "../../patterns/ProGate.jsx";
 
 function EmergencyFundTab() {
   const { t } = useTranslation();
@@ -148,7 +149,11 @@ export default function SafetyPlannerPanel() {
       <Caption>{t("tools.safety.intro")}</Caption>
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "emergency" && <EmergencyFundTab />}
-      {tab === "sip" && <SipAdvisorTab />}
+      {tab === "sip" && (
+        <ProGate featureId="sip_advisor">
+          <SipAdvisorTab />
+        </ProGate>
+      )}
     </div>
   );
 }

@@ -1,13 +1,34 @@
-import { SUBSCRIPTION_TIERS } from "../constants/subscriptionTiers.js";
+import { PLAN_PRESENTATION, SUBSCRIPTION_TIERS } from "../constants/subscriptionTiers.js";
 
-/** Annual plan prices in paise (INR × 100). */
+/**
+ * @param {"pro"|"power"|string} tier
+ * @param {"monthly"|"yearly"} [billing]
+ */
+export function getTierPaise(tier, billing = "yearly") {
+  const plan = PLAN_PRESENTATION.find((p) => p.tier === tier);
+  if (!plan) return null;
+  const inr = billing === "monthly" ? plan.monthlyInr : plan.annualInr;
+  return inr > 0 ? inr * 100 : null;
+}
+
+/** Annual plan prices in paise (INR × 100) — synced from PLAN_PRESENTATION. */
 export const TIER_ANNUAL_PAISE = {
-  [SUBSCRIPTION_TIERS.pro]: 79900,
-  [SUBSCRIPTION_TIERS.power]: 149900,
+  [SUBSCRIPTION_TIERS.pro]: getTierPaise(SUBSCRIPTION_TIERS.pro, "yearly"),
+  [SUBSCRIPTION_TIERS.power]: getTierPaise(SUBSCRIPTION_TIERS.power, "yearly"),
+};
+
+/** Monthly plan prices in paise (INR × 100). */
+export const TIER_MONTHLY_PAISE = {
+  [SUBSCRIPTION_TIERS.pro]: getTierPaise(SUBSCRIPTION_TIERS.pro, "monthly"),
+  [SUBSCRIPTION_TIERS.power]: getTierPaise(SUBSCRIPTION_TIERS.power, "monthly"),
 };
 
 export function getTierAnnualPaise(tier) {
-  return TIER_ANNUAL_PAISE[tier] ?? null;
+  return getTierPaise(tier, "yearly");
+}
+
+export function getTierMonthlyPaise(tier) {
+  return getTierPaise(tier, "monthly");
 }
 
 export function isRazorpayKeyPresent(keyId = import.meta.env.VITE_RAZORPAY_KEY_ID) {

@@ -21,6 +21,47 @@ html[data-ui="ct"] .ct-nw-embedded {
   margin-top: -0.25rem;
 }
 
+html[data-ui="ct"] .ct-profile-hero-chips-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+html[data-ui="ct"] .ct-profile-hero-chips-row .ct-profile-hero-chips {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+html[data-ui="ct"] .ct-profile-hero-chips-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+html[data-ui="ct"] .ct-profile-hero-chips-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 480px) {
+  html[data-ui="ct"] .ct-profile-hero-chips-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+html[data-ui="ct"] .ct-profile-chip-plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-self: center;
+  border-radius: 50%;
+  border: 1px solid var(--ct-border-accent);
+  background: var(--ct-accent-muted-bg, rgba(124, 92, 255, 0.18));
+  color: var(--ct-accent);
+  transition: border-color var(--ct-motion), background var(--ct-motion), transform var(--ct-motion);
+}
+html[data-ui="ct"] .ct-profile-chip-plus:hover {
+  border-color: var(--ct-accent);
+  background: rgba(124, 92, 255, 0.28);
+  transform: scale(1.04);
+}
 html[data-ui="ct"] .ct-profile-hero-chips-status {
   margin-top: 0.75rem;
 }
@@ -255,4 +296,66 @@ html[data-ui="ct"] .ct-nw-sim-result {
   border-radius: var(--ct-radius-lg, 1rem);
   background: rgba(124, 92, 255, 0.06);
   border: 1px solid var(--ct-border-subtle);
+}
+
+html[data-ui="ct"] .ct-lending-profile-hero {
+  margin-bottom: 0.25rem;
+}
+
+html[data-ui="ct"] .ct-lending-profile-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+html[data-ui="ct"] .ct-lending-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--ct-border-accent);
+  background: var(--ct-life-inset-bg);
+  color: var(--ct-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--ct-motion), background var(--ct-motion);
+}
+
+html[data-ui="ct"] .ct-lending-share-btn:hover {
+  border-color: var(--ct-accent);
+  background: rgba(124, 92, 255, 0.12);
+}
+
+html[data-ui="ct"] .ct-lending-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--ct-border-subtle);
+}
+
+html[data-ui="ct"] .ct-lending-trust-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--ct-border-subtle);
+  white-space: nowrap;
+}
+
+html[data-ui="ct"] .ct-lending-trust-empty {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ct-text-muted);
+  background: var(--ct-life-inset-bg);
+  border-color: var(--ct-life-inset-border);
+  max-width: 9rem;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
 }

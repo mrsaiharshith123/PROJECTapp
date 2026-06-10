@@ -21,6 +21,7 @@ import {
   suggestedCyclePaymentAmount,
 } from "../../../utils/commitmentPayments.js";
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
 
 const Commitments = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Commitments = () => {
     deleteCommitment,
     updateCommitment,
     todayStr,
+    settings,
   } = useCommitTrack();
 
   const [search, setSearch] = useState("");
@@ -43,9 +45,9 @@ const Commitments = () => {
     searchParams.get("filter") === "Subscription" ? "Subscription" : "",
   );
   const [filterStatus, setFilterStatus] = useState("");
-  const [filterPriority, setFilterPriority] = useState("");
   const [filterPreset, setFilterPreset] = useState("");
-  const [sortBy, setSortBy] = useState("priority_due");
+  const filterPriority = "";
+  const sortBy = "priority_due";
   const [showHistory, setShowHistory] = useState(true);
   const [editing, setEditing] = useState(null);
   const [detailFor, setDetailFor] = useState(null);
@@ -58,6 +60,14 @@ const Commitments = () => {
   const [pageTab, setPageTab] = useState(() =>
     searchParams.get("tab") === "spend" ? "spend" : "bills",
   );
+
+  const openBankImport = () => {
+    if (!tierHasFeature("bank_import", settings)) {
+      navigate("/profile#upgrade");
+      return;
+    }
+    setBankImportOpen(true);
+  };
 
   const switchTab = (tab) => {
     setPageTab(tab);
@@ -127,7 +137,7 @@ const Commitments = () => {
                   type="button"
                   className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
                   aria-label="Import bank statement"
-                  onClick={() => setBankImportOpen(true)}
+                  onClick={openBankImport}
                 >
                   <CtIcon name="file-text" size={22} />
                 </button>
@@ -192,12 +202,8 @@ const Commitments = () => {
           onFilterCategoryChange={setFilterCategory}
           filterStatus={filterStatus}
           onFilterStatusChange={setFilterStatus}
-          filterPriority={filterPriority}
-          onFilterPriorityChange={setFilterPriority}
           filterPreset={filterPreset}
           onFilterPresetChange={setFilterPreset}
-          sortBy={sortBy}
-          onSortByChange={setSortBy}
           showHistory={showHistory}
           onToggleHistory={() => setShowHistory((v) => !v)}
           onOpenDetail={setDetailFor}

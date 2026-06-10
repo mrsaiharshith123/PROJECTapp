@@ -4,24 +4,34 @@ import { computeBillSplit, buildLendingRecordsFromSplit } from "../../../engines
 import { billSplitSharePlainText, openBillSplitShareCard } from "../../../utils/billSplitShareCard.js";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { Modal, Stack, Button, Input, Caption } from "../../index.js";
+import { canRunBillSplit, billSplitUsagePatch } from "../../../utils/tierAccess.js";
+import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function BillSplitModal({ onClose }) {
-  const { addLending, settings } = useCommitTrack();
+  const { t } = useTranslation();
+  const { addLending, settings, updateSettings, todayStr } = useCommitTrack();
   const [total, setTotal] = useState("");
   const [source, setSource] = useState("Restaurant bill");
   const [names, setNames] = useState(["", "", ""]);
 
-  const split = useMemo(() => {
-    const participants = names
-      .map((n) => ({ name: n.trim(), weight: 1 }))
-      .filter((p) => p.name);
-    return computeBillSplit(Number(total) || 0, participants);
-  }, [total, names]);
+  const participants = useMemo(
+    () =>
+      names
+        .map((n) => ({ name: n.trim(), weight: 1 }))
+        .filter((p) => p.name),
+    [names],
+  );
+
+  const split = useMemo(() => computeBillSplit(Number(total) || 0, participants), [total, participants]);
+
+  const splitGate = canRunBillSplit(settings, todayStr, participants.length);
 
   const addPerson = () => setNames((prev) => [...prev, ""]);
   const updateName = (i, v) => setNames((prev) => prev.map((x, j) => (j === i ? v : x)));
 
   const createLendings = () => {
+    if (!splitGate.ok) return;
     const records = buildLendingRecordsFromSplit(
       { totalAmount: split.total, participants: split.participants },
       {
@@ -31,6 +41,7 @@ export default function BillSplitModal({ onClose }) {
       },
     );
     for (const r of records) addLending(r);
+    updateSettings(billSplitUsagePatch(settings, todayStr));
     onClose();
   };
 
@@ -40,9 +51,20 @@ export default function BillSplitModal({ onClose }) {
   };
 
   return (
-    <Modal title="Split a bill" onClose={onClose}>
+    <Modal title={t("tier.split.title")} onClose={onClose}>
       <Stack>
-        <Caption>Total bill → equal shares → lending records + WhatsApp-ready card per person.</Caption>
+        <Caption>{t("tier.split.intro")}</Caption>
+        {!splitGate.ok && (
+          <TierLimitBanner
+            compact
+            title={t("tier.limit.splitTitle")}
+            message={
+              splitGate.reason === "split_people_limit"
+                ? t("tier.limit.splitPeopleMessage", { limit: splitGate.limit })
+                : t("tier.limit.splitMessage", { limit: splitGate.limit })
+            }
+          />
+        )}
         <Input value={total} onChange={(e) => setTotal(e.target.value.replace(/[^\d.]/g, ""))} placeholder="Total amount" inputMode="numeric" />
         <Input value={source} onChange={(e) => setSource(e.target.value)} placeholder="What was it for?" />
         {names.map((n, i) => (
@@ -67,7 +89,7 @@ export default function BillSplitModal({ onClose }) {
           <Button type="button" variant="outline" disabled={!split.participants.length} onClick={share}>
             Share card
           </Button>
-          <Button type="button" disabled={!split.participants.length} onClick={createLendings}>
+          <Button type="button" disabled={!split.participants.length || !splitGate.ok} onClick={createLendings}>
             Create lending entries
           </Button>
         </div>

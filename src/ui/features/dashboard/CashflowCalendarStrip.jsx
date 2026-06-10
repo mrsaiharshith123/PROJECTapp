@@ -4,6 +4,8 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { buildCashflowCalendar } from "../../../engines/cashflowCalendar.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { cashflowDaysForTier } from "../../../utils/tierAccess.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const PRESSURE_CLASS = {
   salary: "ct-cashflow-day ct-cashflow-salary",
@@ -14,8 +16,10 @@ const PRESSURE_CLASS = {
 };
 
 export default function CashflowCalendarStrip() {
+  const { t } = useTranslation();
   const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
   const [selected, setSelected] = useState(null);
+  const daysAhead = cashflowDaysForTier(settings);
 
   const cal = useMemo(
     () =>
@@ -25,17 +29,17 @@ export default function CashflowCalendarStrip() {
         todayStr,
         salaryCreditDay: settings.salaryCreditDay,
         income: combinedMonthlyIncome(settings),
-        daysAhead: 90,
+        daysAhead,
       }),
-    [commitments, getEffectiveStatus, todayStr, settings],
+    [commitments, getEffectiveStatus, todayStr, settings, daysAhead],
   );
 
   const active = selected ? cal.days.find((d) => d.date === selected) : null;
 
   return (
     <Card className="ct-stack">
-      <Heading level={3}>90-day cashflow</Heading>
-      <Caption className="block">Salary · heavy dues · moderate · free days</Caption>
+      <Heading level={3}>{t("tier.cashflow.title", { days: daysAhead })}</Heading>
+      <Caption className="block">{t("tier.cashflow.subtitle")}</Caption>
       <div className="ct-cashflow-strip" role="list">
         {cal.days.map((d) => (
           <button

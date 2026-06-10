@@ -1,23 +1,24 @@
 import { buildAppSnapshot } from "../../storage/appSnapshot.js";
+import { localStateHasUserData, snapshotDataCounts, snapshotHasUserData } from "../../storage/snapshotData.js";
 import { getSupabaseClient } from "../supabase/auth.js";
 import { hasPaidBackupTier } from "../../constants/subscriptionTiers.js";
 import { log } from "../../utils/logger.js";
 import { SYNC_TABLE, SYNC_MIN_PUSH_INTERVAL_MS } from "./constants.js";
-import { loadSyncMeta, saveSyncMeta } from "./syncMeta.js";
+import { appendBackupLog, getDeviceLabel, loadSyncMeta, saveSyncMeta } from "./syncMeta.js";
 
 let pushTimer = null;
 let pushInFlight = false;
 let skipNextPush = false;
 
 /**
- * @returns {Promise<{ payload: object, updatedAt: string, snapshotVersion: number } | null>}
+ * @returns {Promise<{ payload: object, updatedAt: string, snapshotVersion: number, deviceId: string | null } | null>}
  */
 async function fetchRemoteSnapshot(userId) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId) return null;
   const { data, error } = await supabase
     .from(SYNC_TABLE)
-    .select("payload, updated_at, snapshot_version")
+    .select("payload, updated_at, snapshot_version, device_id")
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
@@ -26,6 +27,20 @@ async function fetchRemoteSnapshot(userId) {
     payload: data.payload,
     updatedAt: data.updated_at,
     snapshotVersion: Number(data.snapshot_version) || 1,
+    deviceId: data.device_id ?? null,
+  };
+}
+
+/** @param {string} userId */
+export async function fetchRemoteBackupMeta(userId) {
+  const remote = await fetchRemoteSnapshot(userId);
+  if (!remote) return null;
+  const counts = snapshotDataCounts(remote.payload);
+  return {
+    updatedAt: remote.updatedAt,
+    deviceId: remote.deviceId,
+    counts,
+    hasData: snapshotHasUserData(remote.payload),
   };
 }
 
@@ -96,11 +111,18 @@ export async function pushLocalSnapshotToCloud(ctx) {
       deviceId: meta.deviceId,
       snapshotVersion: payload.schemaVersion,
     });
+    const pushedAt = new Date().toISOString();
     saveSyncMeta({
       userId: ctx.userId,
-      lastPushedAt: new Date().toISOString(),
+      lastPushedAt: pushedAt,
       remoteUpdatedAt: updatedAt,
       pendingPush: false,
+      deviceLabel: getDeviceLabel(),
+    });
+    appendBackupLog({
+      type: "push",
+      at: pushedAt,
+      counts: snapshotDataCounts(payload),
     });
     log.sync.info("Cloud backup saved", { userId: ctx.userId });
     return { ok: true, updatedAt };
@@ -118,31 +140,47 @@ export async function pushLocalSnapshotToCloud(ctx) {
  *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots },
  *   applySnapshot: (payload: object, options: { mode: string }) => unknown,
  *   preferLocal?: boolean,
+ *   force?: boolean,
  * }} ctx
  */
 export async function pullRemoteSnapshotToLocal(ctx) {
   const remote = await fetchRemoteSnapshot(ctx.userId);
   if (!remote?.payload) return { ok: false, reason: "empty" };
 
+  const localState = ctx.getState();
+  const localHasData = localStateHasUserData(localState);
+  const remoteHasData = snapshotHasUserData(remote.payload);
+
+  if (!remoteHasData && localHasData && !ctx.force) {
+    return { ok: false, reason: "remote-empty" };
+  }
+
   const meta = loadSyncMeta();
   const localPushed = meta.lastPushedAt ? new Date(meta.lastPushedAt).getTime() : 0;
   const remoteTime = new Date(remote.updatedAt).getTime();
 
-  if (ctx.preferLocal && localPushed >= remoteTime) {
+  if (ctx.preferLocal && localPushed >= remoteTime && !ctx.force) {
     return { ok: false, reason: "local-newer" };
   }
 
   skipNextPush = true;
   try {
     const summary = ctx.applySnapshot(remote.payload, { mode: "replace" });
+    const pulledAt = new Date().toISOString();
     saveSyncMeta({
       userId: ctx.userId,
-      lastPulledAt: new Date().toISOString(),
+      lastPulledAt: pulledAt,
       remoteUpdatedAt: remote.updatedAt,
       pendingPush: false,
     });
+    appendBackupLog({
+      type: "restore",
+      at: pulledAt,
+      remoteDeviceId: remote.deviceId || undefined,
+      counts: snapshotDataCounts(remote.payload),
+    });
     log.sync.info("Cloud restore applied", { userId: ctx.userId });
-    return { ok: true, summary, updatedAt: remote.updatedAt };
+    return { ok: true, summary, updatedAt: remote.updatedAt, deviceId: remote.deviceId };
   } catch (err) {
     log.sync.error("Cloud pull failed", { message: err instanceof Error ? err.message : String(err) });
     throw err;

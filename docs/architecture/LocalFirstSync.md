@@ -13,10 +13,12 @@
 | Storage keys | `src/storage/keys.js` | Canonical localStorage key names |
 | Snapshots | `src/storage/appSnapshot.js` | Export/sync JSON shape |
 | Events | `src/storage/events.js` | `committrack:data-changed` after local writes |
-| Sync engine | `src/services/sync/syncEngine.js` | Push/pull, debounce, conflict (local-newer preference) |
-| Cloud sync | `src/services/sync/syncEngine.js` | Supabase `user_finance_snapshots` |
-| Bridge | `src/app/CloudSyncBridge.jsx` | Background sync when cloud enabled |
-| UI | `ProfileCloudSyncSection.jsx` | Account backup, restore |
+| Snapshot helpers | `src/storage/snapshotData.js` | Detect empty remote vs local user data |
+| Sync meta | `src/services/sync/syncMeta.js` | Device id/label, backup log (push/restore history) |
+| Sync engine | `src/services/sync/syncEngine.js` | Push/pull, debounce, empty-remote guard |
+| Bridge | `src/app/CloudSyncBridge.jsx` | Debounced push on `DATA_CHANGED_EVENT` — **no auto-pull on startup** |
+| UI | `ProfileCloudSyncSection.jsx` | Enable backup (push local), manual restore modal + history |
+| Security UI | `ProfileSecuritySection.jsx` | Sign-in email, last login, device, last backup/restore |
 
 ## Supabase
 
@@ -34,7 +36,9 @@ Also run `20260604150000_profiles.sql` for Account name/mode fields.
 | Case | Behavior |
 |------|----------|
 | No sign-in | Full app on device; JSON export/import |
-| Signed in + Supabase keys | Auto backup to `user_finance_snapshots` (RLS per user) |
+| Signed in + Pro/Power + sync enabled | Debounced push to `user_finance_snapshots` (RLS per user) |
+| Restore | Manual only — pick latest remote or local backup log entry |
+| Empty remote + local has data | Pull blocked unless `force: true` (restore modal) |
 
 ## Backup options
 

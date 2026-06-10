@@ -4,21 +4,87 @@ import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   hiddenHomeQuickActions,
+  HOME_QUICK_ACTION_IDS,
   orderHomeQuickActions,
 } from "../../../utils/homeQuickActionOrder.js";
 import { useDragReorder } from "../../hooks/useDragReorder.js";
 import { QuickAction, QuickActionRow } from "../QuickAction.jsx";
 import { ScreenSection } from "../../layout/Screen.jsx";
 
-const ACTION_DEFS = {
-  lending: { icon: "handshake", labelKey: "nav.lending", run: (nav) => nav("/lending") },
+/** @typedef {{ icon: string, labelKey: string, run: (ctx: { navigate: Function, scrollToTools: () => void }) => void }} QuickActionDef */
+
+/** @type {Record<string, QuickActionDef>} */
+const HOME_QUICK_ACTION_DEFS = {
+  add_bill: {
+    icon: "+",
+    labelKey: "copy.addBill",
+    run: ({ navigate }) => navigate("/add"),
+  },
+  bills: {
+    icon: "receipt",
+    labelKey: "nav.bills",
+    run: ({ navigate }) => navigate("/commitments"),
+  },
+  log_spend: {
+    icon: "fork-knife",
+    labelKey: "bills.actionLogSpend",
+    run: ({ navigate }) => navigate("/commitments?tab=spend"),
+  },
+  lending: {
+    icon: "handshake",
+    labelKey: "nav.lending",
+    run: ({ navigate }) => navigate("/lending"),
+  },
   income: {
     icon: "currency-inr",
     labelKey: "home.actionAddIncome",
-    run: (nav) => nav("/profile", { state: { openSection: "personal-money" } }),
+    run: ({ navigate }) => navigate("/profile", { state: { openSection: "personal-money" } }),
   },
-  calculators: { icon: "calculator", labelKey: "tools.calculators", run: (_nav, scrollToTools) => scrollToTools() },
-  analytics: { icon: "chart-bar", labelKey: "nav.analytics", run: (nav) => nav("/analytics") },
+  analytics: {
+    icon: "chart-bar",
+    labelKey: "nav.analytics",
+    run: ({ navigate }) => navigate("/analytics"),
+  },
+  profile: {
+    icon: "user",
+    labelKey: "nav.profile",
+    run: ({ navigate }) => navigate("/profile"),
+  },
+  calculators: {
+    icon: "calculator",
+    labelKey: "tools.calculators",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_planner: {
+    icon: "calendar",
+    labelKey: "tools.planner.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_loan: {
+    icon: "bank",
+    labelKey: "tools.loan.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_tax: {
+    icon: "scroll",
+    labelKey: "tools.tax.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_retirement: {
+    icon: "coin",
+    labelKey: "tools.retirement.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_safety: {
+    icon: "shield",
+    labelKey: "tools.safety.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
+  tool_chit: {
+    icon: "coins",
+    labelKey: "tools.chit.title",
+    run: ({ scrollToTools }) => scrollToTools(),
+  },
 };
 
 /**
@@ -43,8 +109,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
   const persistOrder = (ids) => {
     const normalized = orderHomeQuickActions(ids);
     const allVisible =
-      normalized.length === ACTION_DEFS.length &&
-      hiddenHomeQuickActions(normalized).length === 0;
+      normalized.length === HOME_QUICK_ACTION_IDS.length && hiddenHomeQuickActions(normalized).length === 0;
     updateSettings({ homeQuickActionOrder: allVisible ? [] : normalized });
   };
 
@@ -55,6 +120,8 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
   const addAction = (id) => persistOrder([...orderedIds, id]);
 
   const { getDragProps } = useDragReorder(orderedIds, persistOrder);
+
+  const runCtx = { navigate, scrollToTools };
 
   const sectionAction = (
     <div className="ct-row shrink-0">
@@ -75,7 +142,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
 
   return (
     <ScreenSection title={t("home.quickActions")} action={sectionAction}>
-      {reorderMode && <p className="ct-caption mb-2">{t("home.reorderHint")}</p>}
+      {reorderMode && <p className="ct-caption mb-2">{t("home.reorderHintExpanded")}</p>}
       <QuickActionRow>
         <QuickAction
           icon="calendar"
@@ -83,13 +150,16 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
           onClick={onOpenCalendar}
           disabled={reorderMode}
         />
-        <QuickAction icon="+" label={t("copy.addBill")} onClick={() => navigate("/add")} disabled={reorderMode} />
         {orderedIds.map((id) => {
-          const def = ACTION_DEFS[id];
+          const def = HOME_QUICK_ACTION_DEFS[id];
           if (!def) return null;
           const dragProps = getDragProps(id, { enabled: reorderMode });
           return (
-            <div key={id} className={`ct-quick-action-wrap${reorderMode ? " ct-quick-action-draggable" : ""}`} {...dragProps}>
+            <div
+              key={id}
+              className={`ct-quick-action-wrap${reorderMode ? " ct-quick-action-draggable" : ""}`}
+              {...dragProps}
+            >
               {reorderMode && (
                 <button
                   type="button"
@@ -103,7 +173,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
               <QuickAction
                 icon={def.icon}
                 label={t(def.labelKey)}
-                onClick={reorderMode ? undefined : () => def.run(navigate, scrollToTools)}
+                onClick={reorderMode ? undefined : () => def.run(runCtx)}
                 disabled={reorderMode}
               />
             </div>
@@ -115,19 +185,21 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
           <p className="ct-caption">{t("home.addAction")}</p>
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
             {hiddenIds.map((id) => {
-              const def = ACTION_DEFS[id];
+              const def = HOME_QUICK_ACTION_DEFS[id];
               if (!def) return null;
               return (
-                <button key={id} type="button" className="ct-btn ct-btn-outline ct-btn-sm" onClick={() => addAction(id)}>
+                <button
+                  key={id}
+                  type="button"
+                  className="ct-btn ct-btn-outline ct-btn-sm"
+                  onClick={() => addAction(id)}
+                >
                   + {t(def.labelKey)}
                 </button>
               );
             })}
           </div>
         </div>
-      )}
-      {reorderMode && hiddenIds.length === 0 && orderedIds.length === ACTION_DEFS.length && (
-        <p className="ct-caption mt-2">{t("home.allActionsVisible")}</p>
       )}
     </ScreenSection>
   );

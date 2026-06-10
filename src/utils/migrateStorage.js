@@ -515,6 +515,9 @@ const DEFAULT_SETTINGS = {
   epfBasicSalary: 0,
   epfCorpus: 0,
   epfAge: 30,
+  /** yyyy-MM — resets bill-split counter when month changes */
+  usageMonthKey: "",
+  billSplitsThisMonth: 0,
 };
 
 export function loadSettingsFromStorage() {
@@ -585,6 +588,8 @@ export function loadSettingsFromStorage() {
         epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),
         epfCorpus: Math.max(0, Number(o.epfCorpus) || 0),
         epfAge: Math.min(70, Math.max(18, Math.floor(Number(o.epfAge) || 30))),
+        usageMonthKey: String(o.usageMonthKey || ""),
+        billSplitsThisMonth: Math.max(0, Number(o.billSplitsThisMonth) || 0),
       };
     }
   } catch {

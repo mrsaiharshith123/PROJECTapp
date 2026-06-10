@@ -10,6 +10,7 @@ const ALLOWED_SUPABASE_UI = [
   "ui/features/auth/",
   "ui/features/profile/ProfileCloudSyncSection.jsx",
   "ui/features/profile/ProfileBackupSection.jsx",
+  "ui/features/profile/ProfileSecuritySection.jsx",
 ];
 
 const FORBIDDEN_GOOGLE_BACKUP = [

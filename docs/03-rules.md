@@ -75,7 +75,15 @@ Do not disable checks to “make it pass” without team agreement.
 - Copy `.env.example` — never commit real keys
 - Audit fails if `.env` is tracked by git
 
-## 6. Quality gate before you finish
+## 6. Cloud sync (local-first)
+
+- Data lives in `localStorage` first; Supabase is **account backup** only.
+- **Do not** auto-pull remote snapshots on app load when sync is enabled.
+- **Do not** overwrite local data when remote backup is empty — guard with `snapshotData.js`.
+- Restore is **manual** (restore modal inside `ProfileCloudSyncSection`). Push on enable + debounced push on data change (`CloudSyncBridge`).
+- See `.cursor/rules/cloud-sync-local-first.mdc` and `docs/architecture/LocalFirstSync.md`.
+
+## 7. Quality gate before you finish
 
 ```bash
 npm run audit
@@ -89,7 +97,7 @@ npm run audit -- --strict
 
 (`--strict` treats more warnings as failures; large bundle size stays advisory.)
 
-## 7. Dead UI & orphan features
+## 8. Dead UI & orphan features
 
 Audit depth checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
 
@@ -100,12 +108,12 @@ Audit depth checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
 
 If you add a tool or export, wire it through to a screen.
 
-## 8. Git / deploy (summary)
+## 9. Git / deploy (summary)
 
 - Do not commit `dist/` or `node_modules/`
 - Deploy: `npm run deploy` (build + gh-pages) — see root README
 
-## 9. User-facing copy & i18n
+## 10. User-facing copy & i18n
 
 - **Source of truth:** `src/i18n/messages/en.js`
 - **In UI:** `useTranslation()` → `t("key")` — never hard-code product copy in JSX

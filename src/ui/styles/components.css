@@ -209,6 +209,22 @@ html[data-ui="ct"] .ct-hero-month-icon {
   justify-content: center;
   color: var(--ct-accent-muted);
 }
+html[data-ui="ct"] .ct-privacy-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ct-text-muted);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+html[data-ui="ct"] .ct-privacy-toggle:hover {
+  color: var(--ct-text);
+}
 html[data-ui="ct"] .ct-quick-action-icon {
   width: 3rem;
   height: 3rem;
@@ -645,7 +661,6 @@ html[data-ui="ct"] .ct-cashflow-strip {
   gap: 0.35rem;
   overflow-x: auto;
   padding-bottom: 0.35rem;
-  -webkit-overflow-scrolling: touch;
 }
 html[data-ui="ct"] .ct-cashflow-day {
   flex: 0 0 3.25rem;
@@ -1707,6 +1722,7 @@ html[data-ui="ct"] .ct-load-grid {
     linear-gradient(rgba(124, 92, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(124, 92, 255, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 45%, #000 15%, transparent 72%);
   mask-image: radial-gradient(ellipse 65% 55% at 50% 45%, #000 15%, transparent 72%);
   animation: ct-auth-grid-drift 24s linear infinite;
 }
@@ -2055,6 +2071,7 @@ html[data-ui="ct"] .ct-auth-grid {
     linear-gradient(rgba(124, 92, 255, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(124, 92, 255, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
   animation: ct-auth-grid-drift 28s linear infinite;
 }
@@ -2441,6 +2458,44 @@ html[data-ui="ct"] .ct-input-prefix {
 }
 html[data-ui="ct"] .ct-input-with-prefix { padding-left: 2.25rem; }
 
+html[data-ui="ct"] .ct-search-field {
+  position: relative;
+}
+html[data-ui="ct"] .ct-search-field-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ct-text-muted);
+  pointer-events: none;
+  opacity: 0.75;
+}
+html[data-ui="ct"] .ct-search-field-input {
+  padding-left: 2.5rem;
+  width: 100%;
+}
+html[data-ui="ct"] .ct-search-field-compact {
+  margin-top: 0.35rem;
+}
+html[data-ui="ct"] .ct-filter-row-search-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+html[data-ui="ct"] .ct-filter-row-search-chips > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+html[data-ui="ct"] .ct-chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 2.25rem;
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
+}
+
 /* ── Due heatmap ── */
 html[data-ui="ct"] .ct-heat-col { text-align: center; }
 html[data-ui="ct"] .ct-heat-track {
@@ -2646,6 +2701,222 @@ html[data-ui="ct"] .ct-plan-row {
   border-radius: var(--ct-radius);
   border: 1px solid var(--ct-border);
   background: var(--ct-surface-inset);
+}
+
+/* ── Full-screen modal (plans) ── */
+html[data-ui="ct"] .ct-modal-overlay--fullscreen {
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+  z-index: 200;
+}
+@media (min-width: 768px) {
+  html[data-ui="ct"] .ct-modal-overlay--fullscreen {
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+}
+html[data-ui="ct"] .ct-modal-panel--fullscreen {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  border-left: none;
+  border-right: none;
+}
+html[data-ui="ct"] .ct-modal-body--fullscreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Plans — compact full-screen tier cards ── */
+html[data-ui="ct"] .ct-plans-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0.5rem 0.875rem 1rem;
+  box-sizing: border-box;
+}
+@media (min-width: 720px) {
+  html[data-ui="ct"] .ct-plans-layout {
+    max-width: 56rem;
+    padding: 0.625rem 1rem 1.25rem;
+  }
+}
+html[data-ui="ct"] .ct-plans-topbar {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+html[data-ui="ct"] .ct-plans-hero {
+  flex-shrink: 0;
+  padding: 0;
+}
+html[data-ui="ct"] .ct-plans-hero .ct-h2,
+html[data-ui="ct"] .ct-plans-hero h2 {
+  font-size: clamp(1.125rem, 2.2vw, 1.375rem) !important;
+  line-height: 1.25 !important;
+}
+html[data-ui="ct"] .ct-plans-hero .ct-caption {
+  font-size: 0.75rem !important;
+  line-height: 1.4;
+}
+html[data-ui="ct"] .ct-plans-billing-toggle {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+html[data-ui="ct"] .ct-plans-alerts {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+html[data-ui="ct"] .ct-plans-alerts .ct-caption {
+  font-size: 0.6875rem !important;
+  line-height: 1.35;
+}
+html[data-ui="ct"] .ct-plans-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.625rem;
+  align-items: stretch;
+  flex: 0 0 auto;
+}
+@media (min-width: 720px) {
+  html[data-ui="ct"] .ct-plans-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+html[data-ui="ct"] .ct-plans-footer {
+  flex-shrink: 0;
+  text-align: center;
+}
+html[data-ui="ct"] .ct-plans-footer .ct-caption {
+  font-size: 0.6875rem !important;
+}
+html[data-ui="ct"] .ct-plan-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  padding: 0.75rem 0.75rem 0.875rem;
+  border-radius: var(--ct-radius-xl);
+  border: 1px solid var(--ct-border);
+  background: var(--ct-surface-inset);
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+html[data-ui="ct"] .ct-plan-card--featured {
+  border-color: var(--ct-border-accent);
+  background: linear-gradient(165deg, var(--ct-surface-inset) 0%, var(--ct-accent-soft) 100%);
+  box-shadow: var(--ct-shadow-glow);
+}
+html[data-ui="ct"] .ct-plan-card--current {
+  border-color: var(--ct-border-success);
+}
+html[data-ui="ct"] .ct-plan-card-top {
+  flex: 0 0 auto;
+}
+html[data-ui="ct"] .ct-plan-card-icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ct-radius);
+  background: var(--ct-accent-soft);
+  color: var(--ct-text);
+  margin-bottom: 0.5rem;
+}
+html[data-ui="ct"] .ct-plan-card-badge {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  font-size: 0.625rem !important;
+  padding: 0.15rem 0.4rem !important;
+}
+html[data-ui="ct"] .ct-plan-card-title {
+  font-size: 1.0625rem !important;
+  margin: 0 0 0.2rem;
+}
+html[data-ui="ct"] .ct-plan-card-tagline {
+  font-size: 0.6875rem !important;
+  opacity: 0.88;
+  line-height: 1.35;
+  margin-bottom: 0.5rem;
+}
+html[data-ui="ct"] .ct-plan-card-price {
+  margin-bottom: 0.5rem;
+}
+html[data-ui="ct"] .ct-plan-card-price-main {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+html[data-ui="ct"] .ct-plan-card-price-sub {
+  margin-top: 0.125rem;
+  font-size: 0.6875rem !important;
+  opacity: 0.75;
+}
+html[data-ui="ct"] .ct-plan-card-cta {
+  flex: 0 0 auto;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--ct-border-subtle);
+}
+html[data-ui="ct"] .ct-plan-card-cta .ct-btn {
+  min-height: 2rem;
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  font-size: 0.75rem;
+}
+html[data-ui="ct"] .ct-plan-card-cta .ct-caption {
+  font-size: 0.625rem !important;
+  margin-top: 0.35rem !important;
+}
+html[data-ui="ct"] .ct-plan-card-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+}
+html[data-ui="ct"] .ct-plan-card-feature .ct-caption {
+  font-size: 0.6875rem !important;
+  line-height: 1.35;
+}
+html[data-ui="ct"] .ct-plan-card-includes .ct-body {
+  font-size: 0.75rem !important;
+}
+html[data-ui="ct"] .ct-plan-card-includes {
+  margin-bottom: 0.25rem;
+}
+html[data-ui="ct"] .ct-plan-card-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+html[data-ui="ct"] .ct-plan-card-check {
+  margin-top: 0.1rem;
+  color: var(--ct-success-text);
+  opacity: 0.95;
 }
 html[data-ui="ct"] .ct-stats-compact .ct-metric {
   padding: 0.5rem 0.35rem;
@@ -2886,7 +3157,7 @@ html[data-ui="ct"] .ct-profile-admin-tile-wrap {
   max-width: calc((100% - 1rem) / 3);
 }
 html[data-ui="ct"] .ct-profile-admin-tile {
-  border-color: color-mix(in srgb, var(--ct-accent, #7c5cff) 35%, var(--ct-border, rgba(255, 255, 255, 0.08)));
+  border-color: var(--ct-border-accent-soft);
 }
 html[data-ui="ct"] .ct-profile-settings-panel {
   padding: 1rem;

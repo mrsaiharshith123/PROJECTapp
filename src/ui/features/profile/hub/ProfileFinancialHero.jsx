@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { getUserModeConfig } from "../../../../constants/userModes.js";
 import { resolveUserMode, hasPowerFeatures, isSalariedFamily } from "../../../../constants/modeExperience.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import { useNetWorthIntel } from "../../../../hooks/useNetWorthIntel.js";
+import { useProfileScoreGuide } from "../../../../hooks/useProfileScoreGuide.js";
 import { useNetWorth } from "../../../../context/NetWorthContext.jsx";
 import ProfileAvatar from "../ProfileAvatar.jsx";
 import { Caption, Eyebrow, Heading } from "../../../primitives/Text.jsx";
@@ -18,7 +20,6 @@ import { NetWorthHeroBody } from "../../netWorth/NetWorthHero.jsx";
  * @param {{
  *   settings: object,
  *   updateSettings: (p: object) => void,
- *   hub: ReturnType<import('../../../../hooks/useProfileHubIntel.js').useProfileHubIntel>,
  *   onOpenAccount?: () => void,
  *   onOpenSettings?: () => void,
  * }} props
@@ -26,7 +27,6 @@ import { NetWorthHeroBody } from "../../netWorth/NetWorthHero.jsx";
 export default function ProfileFinancialHero({
   settings,
   updateSettings,
-  hub,
   onOpenAccount,
   onOpenSettings,
 }) {
@@ -34,6 +34,7 @@ export default function ProfileFinancialHero({
   const intel = useNetWorthIntel();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const { notificationUnread } = useCommitIntel();
+  const { heroChips } = useProfileScoreGuide();
   const [showNotifications, setShowNotifications] = useState(false);
   const modeCfg = getUserModeConfig(resolveUserMode(settings));
   const salariedFamily = isSalariedFamily(settings);
@@ -46,34 +47,6 @@ export default function ProfileFinancialHero({
     .filter(Boolean)
     .join(" · ");
 
-  const emergencyPct = hub.emergency?.progressPercent;
-  const emergencyTone =
-    hub.emergency?.tier === "on_track" || hub.emergency?.tier === "almost" ? "ok" : "watch";
-  const pressureTone = hub.pressureScore <= 40 ? "ok" : hub.pressureScore <= 70 ? "mid" : "risk";
-  const billsTone = hub.overdueCount > 0 ? "risk" : hub.pendingCount > 0 ? "mid" : "ok";
-
-  const statusChips = [
-    {
-      id: "emergency",
-      label: t("profileHub.widget.emergency"),
-      value: emergencyPct != null ? `${emergencyPct}%` : "—",
-      tone: emergencyTone,
-    },
-    {
-      id: "pressure",
-      label: t("profileHub.widget.pressure"),
-      value: `${hub.pressureScore ?? 0}`,
-      tone: pressureTone,
-    },
-    {
-      id: "bills",
-      label: t("profileHub.widget.pending"),
-      value: `${hub.pendingCount}`,
-      sub: hub.overdueCount > 0 ? t("profileHub.widget.pressureOverdue") : null,
-      tone: billsTone,
-    },
-  ];
-
   return (
     <section className="ct-nw-hero ct-profile-financial-hero ct-reveal">
       <div className="ct-nw-hero-glow" aria-hidden />
@@ -82,11 +55,11 @@ export default function ProfileFinancialHero({
         <div className="ct-row gap-1.5 shrink-0">
           <button
             type="button"
-            className="ct-notif-bell"
+            className="ct-privacy-toggle"
             onClick={togglePrivacyMode}
             aria-label={privacyMode ? t("netWorth.privacy.show") : t("netWorth.privacy.hide")}
           >
-            <CtIcon name="lock" size={18} />
+            <CtIcon name={privacyMode ? "eye-slash" : "eye"} size={18} />
           </button>
           <PlansButton />
           <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
@@ -121,14 +94,25 @@ export default function ProfileFinancialHero({
         <NetWorthHeroBody intel={intel} privacyMode={privacyMode} compact />
       </div>
 
-      <div className="ct-profile-hero-chips ct-profile-hero-chips-status">
-        {statusChips.map((chip) => (
-          <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
-            <Caption className="block ct-profile-chip-label">{chip.label}</Caption>
-            <span className="ct-profile-chip-value">{chip.value}</span>
-            {chip.sub && <Caption className="block ct-profile-chip-sub">{chip.sub}</Caption>}
-          </div>
-        ))}
+      <div className="ct-profile-hero-chips-row">
+        <div className="ct-profile-hero-chips ct-profile-hero-chips-status ct-profile-hero-chips-3">
+          {heroChips.map((chip) => (
+            <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
+              <Caption className="block ct-profile-chip-label">{t(chip.labelKey)}</Caption>
+              <span className="ct-profile-chip-value">{privacyMode ? "•••" : chip.value}</span>
+              {!privacyMode && chip.subKey ? (
+                <Caption className="block ct-profile-chip-sub">{t(chip.subKey)}</Caption>
+              ) : null}
+            </div>
+          ))}
+        </div>
+        <Link
+          to="/profile/scores"
+          className="ct-profile-chip-plus"
+          aria-label={t("profileHub.scoresDetailLink")}
+        >
+          <CtIcon name="plus" size={20} />
+        </Link>
       </div>
 
       {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)} />}

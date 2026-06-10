@@ -8,8 +8,11 @@ All commands run from the project root (`PROJECTapp/`).
 |---------|----------------|
 | `npm run dev` | Start Vite dev server with HMR (default `http://localhost:5173`) |
 | `npm run preview` | Serve production build locally (run `build` first) |
-| `npm test` | Run Vitest once (245 tests across engines/utils/services/i18n) |
-| `npm run audit -- --strict` | Full gate; warnings in code-health merge-suggest also fail |
+| `npm test` | Run Vitest once (all unit tests — engines, utils, storage, sync, i18n) |
+| `npm run test:sync` | Snapshot + sync meta tests only |
+| `npm run test:engines` | Engine tests only |
+| `npm run test:utils` | Utils tests only |
+| `npm run audit -- --strict` | Full gate; merge suggestions stay advisory (not blocking) |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint on the repo |
 | `npm run lint:fix` | ESLint with auto-fix where safe |
@@ -37,7 +40,8 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:architecture` | Layer boundaries, large files |
 | `audit:features` | Feature registry & cross-feature imports |
 | `audit:modes` | User mode isolation |
-| `audit:sync` | Local-first vs cloud sync boundaries |
+| `audit:sync` | Local-first vs cloud sync boundaries (no auto-pull, allowed Supabase UI paths) |
+| `audit:guidance` | Financial guidance / education copy wiring |
 | `audit:insights` | Insight engine overlap |
 | `audit:performance` | Heavy pages & render heuristics |
 | `audit:mobile` | Responsive / overflow risks |

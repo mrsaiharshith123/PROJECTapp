@@ -10,7 +10,7 @@ const PROFILE_CONTROL_GROUPS = [
     icon: "user",
     titleKey: "profileHub.group.account",
     hintKey: "profileHub.group.accountHint",
-    panels: ["personal-identity", "personal-account"],
+    panels: ["personal-identity", "personal-account", "personal-security"],
   },
   {
     id: "financial",

@@ -21,8 +21,9 @@ import { pickMicroTip } from "../../../guidance/index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { joinEngineMessages, translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
 
-function mergeTips(intel, stable) {
+function mergeTips(intel, stable, settings) {
   const seenIds = new Set();
   const seenText = new Set();
   const out = [];
@@ -49,16 +50,18 @@ function mergeTips(intel, stable) {
   for (const f of intel.forecast || []) {
     add({ id: f.id || `forecast-${f.id}`, tone: "info", params: f.params, text: f.text });
   }
-  (intel.subscriptionLeak?.insights || []).forEach((item, i) => {
-    if (typeof item === "string") {
-      add({ id: `sub-leak-${i}`, tone: "warning", text: item });
-    } else {
-      add(item);
-    }
-  });
-  if (stable.lifestyle?.messageKey) {
+  if (tierHasFeature("subscription_leak", settings)) {
+    (intel.subscriptionLeak?.insights || []).forEach((item, i) => {
+      if (typeof item === "string") {
+        add({ id: `sub-leak-${i}`, tone: "warning", text: item });
+      } else {
+        add(item);
+      }
+    });
+  }
+  if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.messageKey) {
     add({ id: "lifestyle-inflation", tone: "info", key: stable.lifestyle.messageKey, params: stable.lifestyle.params });
-  } else if (stable.lifestyle?.message) {
+  } else if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.message) {
     add({ id: "lifestyle-inflation", tone: "info", text: stable.lifestyle.message });
   }
   if (stable.goalBalance?.messageKey) {
@@ -93,7 +96,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const isFamily = isSalariedFamily(settings);
   const ahead = stable.ahead;
 
-  const tips = useMemo(() => mergeTips(intel, stable), [intel, stable]);
+  const tips = useMemo(() => mergeTips(intel, stable, settings), [intel, stable, settings]);
   const stress = stable.stress;
   const emergency = stable.emergency;
   const payoffRec = intel.payoffRec;

@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 9 June 2026 (audit + docs refresh).
+Last reviewed: 10 June 2026 (full audit pass — pricing, docs, strict gate green).
 
 ## V1 product scope
 
@@ -12,19 +12,23 @@ Last reviewed: 9 June 2026 (audit + docs refresh).
 | Salaried **family** household (`householdScope: family`) | Full accounting / ERP / banking |
 | Local-first commitments + pressure + lending | Mass-market spend tracking (Walnut-style) |
 
-**Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` — they are not separate user-facing “modes”.
+**Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` / `tierAccess.js` — they are not separate user-facing “modes”. Free caps: 5 lending, 2 chits, 3 goals, 50 spends/mo, 5 splits/mo (3 people), 30-day cashflow; plain-text annual report.
 
 ## Shipped — core product
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` (reorderable: lending, income, calculators, analytics) |
+| Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` (customize: bills, log spend, tools, lending, income, analytics, profile, …) |
 | Home month hero card | ✅ | `HeroMonthCard.jsx`, `HomeOverviewCard.jsx` — scheduled/paid/unpaid, free cash + variable spend tiles, salary bar + sparkline |
 | Financial Life palette (app-wide) | ✅ | `tokens.css`, `components.css`, `theme-light.css`, `tailwind.config.js` (`--ct-life-*`, `--ct-tw-*` bridge) |
 | PWA dev / white-screen guard | ✅ | `vite.config.js` `devOptions.enabled: false`; SW registers in prod only (`main.jsx`) |
 | Bills — variable spend logging | ✅ | `CommitmentsPage` spend tab, `DailySpendPanel.jsx`, `LogSpendModal.jsx` (nav long-press **+** or Bills FAB; no charts — charts on Analytics) |
 | Commitments / Add | ✅ | `ui/features/pages/*` |
-| Profile hub (financial identity + net worth) | ✅ | `ProfileFinancialHero`, `ProfileNetWorthSection`, `ProfileMilestonesPanel`, `ProfilePage.jsx` |
+| Profile hub (financial identity + net worth) | ✅ | `ProfileFinancialHero` (3 hero chips + circle + → `/profile/scores`), `ProfileNetWorthSection`, `ProfileScoresDetailPage`, `ProfilePage.jsx` |
+| Privacy eye toggle (amounts + scores) | ✅ | `NetWorthContext.privacyMode` — Home hero, Profile hero, Lending profile card |
+| Cloud account backup (local-first) | ✅ | `services/sync/*`, `CloudSyncBridge`, `ProfileCloudSyncSection` (restore modal inline) — manual restore, empty-remote guard |
+| Profile security panel | ✅ | `ProfileSecuritySection` — sign-in email, device, last backup/restore |
+| Lending profile share card | ✅ | `LendingProfileCard.jsx`, `utils/lendingProfileShare.js` — financial-life hero palette |
 | Analytics — pulse + monthly spend + wealth | ✅ | `AnalyticsPage.jsx`, `MonthlySpendAnalyticsSection.jsx`, `WealthAnalyticsSection.jsx`, `BillInsightsCards.jsx` |
 | Dashboard tools (8 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax`, `retirement`, `safety` — `modeExperience.js`, `DashboardTools.jsx` |
 | Money planner (3 tabs) | ✅ | Afford · Scenarios · Goals — `MoneyPlannerPanel.jsx`, `UnifiedScenariosPanel.jsx` |
@@ -50,7 +54,11 @@ Last reviewed: 9 June 2026 (audit + docs refresh).
 | Life score share cards | ✅ | `utils/lifeShareCards.js` — Financial pulse snapshot tab |
 | Engine depth (pressure, health, survival, lending trust, chit IRR) | ✅ | Phase A–F engines — see `engines/*` |
 | 90-day cashflow calendar | ✅ | `engines/cashflowCalendar.js`, `CashflowCalendarStrip.jsx` on Analytics |
-| Smart pressure notifications | ✅ | `buildSmartPressureNotifications()` in `notifications.js` |
+| Smart pressure notifications | ✅ | `notifications.js` — pressure spike, salary-day, low-buffer, lending overdue |
+| Tier limit enforcement (UI) | ✅ | `tierLimits.js`, `tierAccess.js`, `TierLimitBanner.jsx` — lending, chits, goals, spend, splits, cashflow |
+| FD/RD maturity tracker | ✅ | `FdRdTrackerPanel.jsx` — Retirement tool tab on Home; net worth FD/RD categories |
+| Money outlook chart window | ✅ | ±3 months (`MONEY_OUTLOOK_WINDOW` in `forecastSeries.js`) |
+| App version 1.0.0 | ✅ | `package.json` |
 | Semantic badge tokens (Phase B) | ✅ | `ui/tokens/semanticBadge.js` — engines return `tone` only |
 | Intel memoization | ✅ | `utils/intelMemo.js` in `useCommitIntel.js` |
 | Annual health report (Pro) | ✅ | `ProfileBackupSection.jsx` |
@@ -77,7 +85,8 @@ Last reviewed: 9 June 2026 (audit + docs refresh).
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Razorpay checkout (client) | ✅ Wired | `services/razorpaySubscription.js` (script load + checkout), `PlansModal.jsx` |
+| Razorpay checkout (client) | ✅ Wired | `services/razorpaySubscription.js`, `PlansModal.jsx` — **monthly** or **yearly** billing toggle; yearly ~29% off monthly×12 |
+| Subscription pricing (source of truth) | ✅ | `subscriptionTiers.js` — Pro ₹99/mo or ₹843/yr; Power ₹199/mo or ₹1,695/yr (`yearlyInrAfterSave`) |
 | Razorpay test keys in dev | ✅ Wired | Set `VITE_RAZORPAY_KEY_ID=rzp_test_…` — disables simulation; UPI `success@razorpay` for test pay |
 | Server payment verify | ✅ Edge Function | `supabase/functions/razorpay-checkout` — deploy + `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` secrets |
 | Tools discovery toast | ✅ | `ToolsDiscoveryPrompt.jsx` — Home/Analytics nudge to calculators |
@@ -126,10 +135,11 @@ Edge Function secrets (Supabase Dashboard, not `.env`): `RAZORPAY_KEY_ID`, `RAZO
 
 ## Tests & quality
 
-- **245** unit tests (`npm test`) — engines, utils, services, analytics, i18n, Razorpay config
-- Gate: `npm run audit` — **ALL CHECKS PASSED** (lint, Knip, UI depth, copy tone, i18n parity, types, build)
-- Strict: `npm run audit -- --strict` — all gates green (`npm run audit:merge` — 0 suggestions)
-- Governance quick: `npm run audit:governance:quick` — 0 errors; 3 warnings (large page files, duplicate `categories.js` name)
+- **264** unit tests in **85** files (`npm test`) — engines, utils, storage/snapshot, sync meta, subscription pricing, lending share, analytics, i18n
+- Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
+- Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, code+depth, tests, types, build
+- Strict: `npm run audit -- --strict` — **ALL CHECKS PASSED** (merge suggestions advisory only)
+- Governance: `npm run audit:governance:quick` (0 errors) · cloud: `npm run audit:sync` · merge: `npm run audit:merge` (0)
 
 ## Related docs
 

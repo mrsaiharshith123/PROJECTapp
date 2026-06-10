@@ -11,6 +11,8 @@ export const ASSET_CATEGORIES = [
   { id: "sip", labelKey: "netWorth.asset.sip", icon: "chart-line-up", tier: "semi-liquid", indian: true },
   { id: "stocks", labelKey: "netWorth.asset.stocks", icon: "chart-line", tier: "semi-liquid" },
   { id: "mutual_fund", labelKey: "netWorth.asset.mutualFund", icon: "chart-pie-slice", tier: "semi-liquid", indian: true },
+  { id: "fd", labelKey: "netWorth.asset.fd", icon: "vault", tier: "locked", indian: true },
+  { id: "rd", labelKey: "netWorth.asset.rd", icon: "calendar-check", tier: "locked", indian: true },
   { id: "gold", labelKey: "netWorth.asset.gold", icon: "coins", tier: "semi-liquid", indian: true },
   { id: "crypto", labelKey: "netWorth.asset.crypto", icon: "currency-btc", tier: "high-risk" },
   { id: "property", labelKey: "netWorth.asset.property", icon: "house-line", tier: "locked" },

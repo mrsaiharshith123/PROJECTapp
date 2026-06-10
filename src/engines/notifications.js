@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from "date-fns";
+import { differenceInCalendarDays, getDate, parseISO } from "date-fns";
 import {
   buildCommitmentReminders,
   buildLendingReminders,
@@ -8,14 +8,19 @@ import { freeMoneyAfterBurden, computePressureAnalysis } from "./pressureScore.j
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { buildAdvanceTaxReminders } from "./advanceTax.js";
 import { deriveTaxDeductionsFromCommitments } from "./incomeTaxEstimate.js";
+import { computeSalaryBreakdown } from "./salaryBreakdown.js";
+import { totalMonthlyBurden } from "./burden.js";
 
 /**
  * Context-aware intelligence notifications from pressure drivers.
  */
 export function buildSmartPressureNotifications({
   commitments,
+  lendings = [],
+  settings = /** @type {{ liquidSavings?: number, salaryCreditDay?: number | null }} */ ({}),
   income,
   getEffectiveStatus,
+  getEffectiveLendingStatus = undefined,
   monthlySnapshots = [],
   previousScore = null,
   todayStr = "",
@@ -67,6 +72,62 @@ export function buildSmartPressureNotifications({
         read: false,
       });
       break;
+    }
+  }
+
+  const inc = Math.max(0, Number(income) || 0);
+  const liquid = Math.max(0, Number(settings.liquidSavings) || 0);
+  const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
+  const runwayMonths = burden > 0 ? (liquid + Math.max(0, inc - burden)) / burden : null;
+  if (runwayMonths != null && runwayMonths < 1.5) {
+    items.push({
+      id: `low-buffer-${todayStr}`,
+      title: "CommitTrack — low reserve",
+      message: "Emergency buffer covers less than 6 weeks of bills — consider pausing new commitments.",
+      urgency: "high",
+      createdAt: now,
+      read: false,
+    });
+  }
+
+  const salaryDay = settings.salaryCreditDay != null ? Number(settings.salaryCreditDay) : null;
+  if (salaryDay && todayStr) {
+    try {
+      const today = parseISO(`${todayStr}T12:00:00`);
+      if (getDate(today) === Math.min(31, Math.max(1, salaryDay))) {
+        const breakdown = computeSalaryBreakdown(commitments, inc, getEffectiveStatus, {
+          dailySpends: [],
+          todayStr,
+        });
+        items.push({
+          id: `salary-day-${todayStr}`,
+          title: "CommitTrack — salary day",
+          message: `Salary credited — about ₹${Math.round(breakdown.freeCash || 0).toLocaleString("en-IN")} likely free after scheduled bills this month.`,
+          urgency: "normal",
+          createdAt: now,
+          read: false,
+        });
+      }
+    } catch {
+      /* ignore invalid date */
+    }
+  }
+
+  if (getEffectiveLendingStatus && lendings?.length) {
+    const overdueLend = lendings.filter((l) => getEffectiveLendingStatus(l, todayStr) === "overdue");
+    if (overdueLend.length > 0) {
+      const names = overdueLend
+        .slice(0, 2)
+        .map((l) => l.personName)
+        .join(", ");
+      items.push({
+        id: `lending-overdue-${todayStr}`,
+        title: "CommitTrack — lending overdue",
+        message: `${overdueLend.length} lending record(s) overdue${names ? ` (${names})` : ""}. Follow up or log a payment.`,
+        urgency: "critical",
+        createdAt: now,
+        read: false,
+      });
     }
   }
 
@@ -193,8 +254,11 @@ export function buildNotificationFeed({
   const income = combinedMonthlyIncome(settings || {});
   const smart = buildSmartPressureNotifications({
     commitments,
+    lendings,
+    settings: settings || {},
     income,
     getEffectiveStatus,
+    getEffectiveLendingStatus,
     monthlySnapshots,
     previousScore: previousPressureScore,
     todayStr,

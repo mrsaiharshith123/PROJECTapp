@@ -6,7 +6,6 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { resolveUserMode } from "../../../constants/modeExperience.js";
 import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
-import { useProfileHubIntel } from "../../../hooks/useProfileHubIntel.js";
 import ProfileNotificationsSection from "../profile/ProfileNotificationsSection.jsx";
 import ProfileBackupSection from "../profile/ProfileBackupSection.jsx";
 import ProfileHistorySection from "../profile/ProfileHistorySection.jsx";
@@ -18,13 +17,15 @@ import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
 import ProfileSettingsSheet from "../profile/hub/ProfileSettingsSheet.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
+import ProfileSecuritySection from "../profile/ProfileSecuritySection.jsx";
 
 /** @param {string | undefined} fromNav @returns {string | null} */
 function resolveSettingsSection(fromNav) {
   if (!fromNav) return null;
   if (fromNav === "financial-life" || fromNav === "net-worth") return null;
   if (fromNav === "money" || fromNav === "personal-money") return "personal-money";
-  if (fromNav === "cloud" || fromNav === "security" || fromNav === "import") return "backup";
+  if (fromNav === "cloud" || fromNav === "import") return "backup";
+  if (fromNav === "security") return "personal-security";
   if (fromNav === "personal") return "personal-identity";
   if (fromNav === "notifications") return "notifications";
   return fromNav;
@@ -35,7 +36,6 @@ const Profile = () => {
   const location = useLocation();
   const { isLoggedIn, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
-  const hub = useProfileHubIntel();
   const {
     commitments,
     allCommitments,
@@ -99,6 +99,8 @@ const Profile = () => {
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="appearance" />;
         case "personal-account":
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="account" />;
+        case "personal-security":
+          return <ProfileSecuritySection />;
         case "backup":
           return (
             <ProfileBackupSection
@@ -157,7 +159,6 @@ const Profile = () => {
       <ProfileFinancialHero
         settings={settings}
         updateSettings={updateSettings}
-        hub={hub}
         onOpenAccount={() => openSettings("personal-identity")}
         onOpenSettings={() => openSettings(null)}
       />

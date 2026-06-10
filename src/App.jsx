@@ -25,6 +25,7 @@ const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx")
 const Add = lazy(() => import("./ui/features/pages/AddPage.jsx"));
 const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
+const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
 const NetWorth = lazy(() => import("./ui/features/pages/NetWorthPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
@@ -89,6 +90,7 @@ function MainShell() {
             <Route path="/net-worth" element={<NetWorth />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/scores" element={<ProfileScoresDetail />} />
             <Route
               path="/admin"
               element={

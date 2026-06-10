@@ -57,7 +57,7 @@ Tap anywhere on the card → Analytics.
 
 ## Home quick actions
 
-`HomeQuickActions.jsx` — horizontal scroll row below the hero. Calendar and Add stay pinned; reorderable actions: **Lending**, **Add income**, **Calculators** (scroll to tools), **Analytics**. Order persisted in `settings.homeQuickActionOrder` via `utils/homeQuickActionOrder.js`.
+`HomeQuickActions.jsx` — horizontal scroll row below the hero. **Calendar** stays pinned left. **Customize** opens reorder mode: add/remove/reorder from the full catalog (`HOME_QUICK_ACTION_DEFS` in-file + `homeQuickActionOrder.js`) — bills, log spend, lending, income, analytics, profile, calculators, and individual tool shortcuts. Order persisted in `settings.homeQuickActionOrder`.
 
 ## Bills (commitments)
 
@@ -76,12 +76,15 @@ Charts live on **Analytics only** — one chart at a time with `FilterChips` to 
 
 | Piece | File | Notes |
 |-------|------|-------|
-| Financial hero | `hub/ProfileFinancialHero.jsx` | Net worth headline + emergency %, pressure, bills-due chips |
+| Financial hero | `hub/ProfileFinancialHero.jsx` | Net worth headline + 3 chips (emergency, pressure, bills due) + circle **+** → `/profile/scores`; privacy eye |
+| Scores detail | `pages/ProfileScoresDetailPage.jsx` | All scores + lending trust + how to improve |
 | Net worth section | `ProfileNetWorthSection.jsx` | Tabs: Overview · Milestones · Assets · Liabilities; bill-derived read-only rows |
 | Financial life overview | `hub/FinancialLifeOverviewPanel.jsx` | Overview tab — journey snippets and stability context |
 | Milestones panel | `hub/ProfileMilestonesPanel.jsx` | Milestones tab — wins: goals, cleared bills/loans, wealth milestones, payment streaks |
 | Admin entry | `hub/ProfileAdminEntry.jsx` | **Admin only** — Product intelligence → `/admin` |
-| Settings / backup | `ProfileBackupSection.jsx`, `ProfileSettingsSheet.jsx` | Appearance, language, income, backup, history |
+| Settings / backup | `ProfileBackupSection.jsx`, `ProfileCloudSyncSection.jsx`, `ProfileSettingsSheet.jsx` | Appearance, language, income, local export, cloud backup + restore history |
+| Security | `ProfileSecuritySection.jsx` | Settings → Account → Security — sign-in, device, backup times |
+| Lending profile card | `lending/LendingProfileCard.jsx` | Financial-life hero on Lending page — totals, trust, share, privacy eye |
 
 ## Analytics layout
 
@@ -112,7 +115,7 @@ Scenarios only appear when the user has the underlying data (e.g. no loan payoff
 | Home (scroll dashboard) | `features/pages/HomePage.jsx` |
 | Analytics | `features/pages/AnalyticsPage.jsx` |
 | Tools | embedded on Home via `dashboard/DashboardTools.jsx` |
-| Plans / upgrades | `profile/PlansModal.jsx` |
+| Plans / upgrades | `profile/PlansModal.jsx` — monthly/yearly toggle; equal-height tier cards; prices from `subscriptionTiers.js` |
 | Admin intelligence (internal) | `features/pages/AdminPage.jsx` — `/admin`; entry via Profile for admins only |
 | Auth gate | `features/auth/AuthGatePage.jsx` — `/auth`; forgot password + recovery reset |
 

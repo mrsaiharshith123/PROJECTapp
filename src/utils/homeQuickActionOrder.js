@@ -1,15 +1,31 @@
-/** Reorderable home quick actions (calendar and add stay pinned first). */
-export const HOME_QUICK_ACTION_IDS = ["lending", "income", "calculators", "analytics"];
+/** Reorderable home quick actions — calendar stays pinned in UI. */
+export const HOME_QUICK_ACTION_IDS = [
+  "add_bill",
+  "bills",
+  "log_spend",
+  "lending",
+  "income",
+  "analytics",
+  "profile",
+  "calculators",
+  "tool_planner",
+  "tool_loan",
+  "tool_tax",
+  "tool_retirement",
+  "tool_safety",
+  "tool_chit",
+];
 
 const ALLOWED = new Set(HOME_QUICK_ACTION_IDS);
+
+const DEFAULT_VISIBLE = ["lending", "income", "calculators", "analytics"];
 
 /**
  * @param {string[] | undefined} savedOrder
  * @returns {string[]}
  */
 export function orderHomeQuickActions(savedOrder) {
-  const defaultOrder = [...HOME_QUICK_ACTION_IDS];
-  if (!Array.isArray(savedOrder) || savedOrder.length === 0) return defaultOrder;
+  if (!Array.isArray(savedOrder) || savedOrder.length === 0) return [...DEFAULT_VISIBLE];
 
   const seen = new Set();
   /** @type {string[]} */

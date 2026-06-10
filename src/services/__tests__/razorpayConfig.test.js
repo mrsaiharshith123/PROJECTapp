@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getTierAnnualPaise, isRazorpayKeyPresent } from "../razorpayConfig.js";
+import {
+  getTierAnnualPaise,
+  getTierMonthlyPaise,
+  getTierPaise,
+  isRazorpayKeyPresent,
+} from "../razorpayConfig.js";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -8,9 +13,16 @@ afterEach(() => {
 
 describe("razorpayConfig", () => {
   it("returns annual paise for paid tiers", () => {
-    expect(getTierAnnualPaise("pro")).toBe(79900);
-    expect(getTierAnnualPaise("power")).toBe(149900);
+    expect(getTierAnnualPaise("pro")).toBe(84300);
+    expect(getTierAnnualPaise("power")).toBe(169500);
     expect(getTierAnnualPaise("free")).toBeNull();
+  });
+
+  it("returns monthly paise when billing is monthly", () => {
+    expect(getTierMonthlyPaise("pro")).toBe(9900);
+    expect(getTierMonthlyPaise("power")).toBe(19900);
+    expect(getTierPaise("pro", "monthly")).toBe(9900);
+    expect(getTierPaise("power", "yearly")).toBe(169500);
   });
 
   it("detects real test keys", () => {

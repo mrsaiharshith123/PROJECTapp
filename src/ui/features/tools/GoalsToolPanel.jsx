@@ -8,6 +8,8 @@ import { Caption, Body } from "../../primitives/Text.jsx";
 import { Button } from "../../primitives/Button.jsx";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { canAddGoal } from "../../../utils/tierAccess.js";
+import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
 
@@ -35,8 +37,11 @@ export default function GoalsToolPanel() {
   const income = combinedMonthlyIncome(settings);
   const ratio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
 
+  const goalGate = canAddGoal(settings, allGoals);
+
   const submitGoal = () => {
     if (!gTitle.trim()) return;
+    if (!goalGate.ok) return;
     const base = { type: gType, title: gTitle.trim() };
     if (gType === "reduce_open_debt") {
       addGoal({ ...base, targetReduction: Math.max(1, Number(gTarget) || 25000) });
@@ -54,6 +59,12 @@ export default function GoalsToolPanel() {
   return (
     <div className="ct-stack">
       <Caption>{t("goals.intro")}</Caption>
+      {!goalGate.ok && (
+        <TierLimitBanner
+          title={t("tier.limit.goalsTitle")}
+          message={t("tier.limit.goalsMessage", { limit: goalGate.limit })}
+        />
+      )}
       <div>
         <label className="ct-metric-label block">{t("goals.typeLabel")}</label>
         <select className="ct-input mt-1" value={gType} onChange={(e) => setGType(e.target.value)}>
@@ -79,7 +90,7 @@ export default function GoalsToolPanel() {
         </label>
         <input className="ct-input mt-1" value={gTarget} onChange={(e) => setGTarget(e.target.value)} inputMode="decimal" />
       </div>
-      <Button type="button" onClick={submitGoal}>
+      <Button type="button" onClick={submitGoal} disabled={!goalGate.ok}>
         {t("goals.addGoal")}
       </Button>
       <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">

@@ -6,6 +6,8 @@ import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
 import { classifyMerchant } from "../../../utils/merchantNormalize.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { Modal, Stack, Button, Input, FormField, Caption, CtIcon } from "../../index.js";
+import { canAddDailySpend } from "../../../utils/tierAccess.js";
+import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
 const LIFE_CATEGORY_ICON = {
   survival: "shield",
@@ -17,7 +19,7 @@ const LIFE_CATEGORY_ICON = {
 
 /** Quick-add daily spend — primary entry on Bills → Daily spend. */
 export default function LogSpendModal({ onClose }) {
-  const { addDailySpend, todayStr, settings } = useCommitTrack();
+  const { addDailySpend, allDailySpends, todayStr, settings } = useCommitTrack();
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
@@ -50,9 +52,12 @@ export default function LogSpendModal({ onClose }) {
     if (draft.date) setDate(draft.date);
   };
 
+  const spendGate = canAddDailySpend(settings, allDailySpends, todayStr || date);
+
   const save = () => {
     const amt = Math.max(0, Number(amount) || 0);
     if (amt <= 0 || !label.trim()) return;
+    if (!spendGate.ok) return;
     addDailySpend({
       amount: amt,
       label: label.trim(),
@@ -72,7 +77,7 @@ export default function LogSpendModal({ onClose }) {
       onClose={onClose}
       footer={
         <Stack gap="sm">
-          <Button type="button" onClick={save}>
+          <Button type="button" onClick={save} disabled={!spendGate.ok}>
             {t("common.save")}
           </Button>
           <Button type="button" variant="ghost" onClick={onClose}>
@@ -82,6 +87,13 @@ export default function LogSpendModal({ onClose }) {
       }
     >
       <Caption className="block mb-3">{t("bills.dailySpend.formHint")}</Caption>
+      {!spendGate.ok && (
+        <TierLimitBanner
+          compact
+          title={t("tier.limit.spendTitle")}
+          message={t("tier.limit.spendMessage", { limit: spendGate.limit })}
+        />
+      )}
       <Stack gap="md">
         <FormField label={t("bills.dailySpend.amount")}>
           <Input

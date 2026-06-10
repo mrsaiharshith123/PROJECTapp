@@ -21,6 +21,8 @@ export function HeroMonthCard({
   freeCashValue,
   freeCashWarn = false,
   statusLine = undefined,
+  privacyMode = false,
+  onTogglePrivacy,
   onClick,
   className = "",
 }) {
@@ -45,18 +47,35 @@ export function HeroMonthCard({
           <p className="ct-eyebrow">{title}</p>
           <p className="ct-caption mt-0.5">{monthLabel}</p>
         </div>
-        {icon && (
-          <span className="ct-hero-month-icon" aria-hidden>
-            <CtIcon name={icon} size={28} />
-          </span>
-        )}
+        <div className="ct-row gap-1.5 shrink-0">
+          {onTogglePrivacy ? (
+            <button
+              type="button"
+              className="ct-privacy-toggle"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePrivacy();
+              }}
+              aria-label={privacyMode ? t("netWorth.privacy.show") : t("netWorth.privacy.hide")}
+            >
+              <CtIcon name={privacyMode ? "eye-slash" : "eye"} size={18} />
+            </button>
+          ) : null}
+          {icon ? (
+            <span className="ct-hero-month-icon" aria-hidden>
+              <CtIcon name={icon} size={28} />
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="ct-hero-metrics-row px-1 mt-2 relative">
         {metrics.map((m) => (
           <div key={m.label} className="ct-hero-inset ct-hero-inset-financial">
             <p className="ct-hero-metric-label">{m.label}</p>
-            <p className={cn("ct-hero-metric ct-numeral mt-1", m.valueClass)}>{m.value}</p>
+            <p className={cn("ct-hero-metric ct-numeral mt-1", m.valueClass)}>
+              {privacyMode ? "••••" : m.value}
+            </p>
           </div>
         ))}
       </div>
@@ -72,20 +91,22 @@ export function HeroMonthCard({
                   freeCashWarn ? "ct-hero-metric-warn" : "ct-hero-metric-success",
                 )}
               >
-                {freeCashValue}
+                {privacyMode ? "••••" : freeCashValue}
               </p>
             </div>
           ) : null}
           {variableSpent ? (
             <div className="ct-hero-inset ct-hero-inset-financial ct-hero-cash-tile">
               <p className="ct-hero-metric-label">{t("home.metricVariable")}</p>
-              <p className="ct-hero-metric ct-numeral mt-1 ct-hero-metric-accent">{variableSpent}</p>
+              <p className="ct-hero-metric ct-numeral mt-1 ct-hero-metric-accent">
+                {privacyMode ? "••••" : variableSpent}
+              </p>
             </div>
           ) : null}
         </div>
       ) : null}
 
-      {statusLine ? (
+      {statusLine && !privacyMode ? (
         <div className="ct-hero-inset ct-hero-inset-financial ct-hero-status-copy mt-2 mx-1 relative text-left">
           {statusLine}
         </div>
@@ -95,10 +116,10 @@ export function HeroMonthCard({
         <div className="ct-row-between ct-caption mb-1">
           <span>{t("home.salarySpendTitle")}</span>
           <span className={overBudget ? "ct-hero-metric-danger font-semibold" : ""}>
-            {salaryLabel}
+            {privacyMode ? "••••" : salaryLabel}
           </span>
         </div>
-        <SalarySpendBar pct={spendPct} overBudget={overBudget} />
+        <SalarySpendBar pct={privacyMode ? 0 : spendPct} overBudget={privacyMode ? false : overBudget} />
       </div>
 
       <div className="ct-hero-spend-footer relative">

@@ -19,6 +19,8 @@ import { inputClassName } from "../../primitives/Input.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateRepaymentMode } from "../../../i18n/domainLabels.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
+import { useNavigate } from "react-router-dom";
 
 export default function LendingDetailDashboard({
   lending,
@@ -32,6 +34,8 @@ export default function LendingDetailDashboard({
   const { t } = useTranslation();
   const { settings, updateLending, allLendings } = useCommitTrack();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const canPrintAgreement = tierHasFeature("legal_agreement", settings);
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
     [lending, settings],
@@ -163,9 +167,13 @@ export default function LendingDetailDashboard({
           variant="outline"
           size="sm"
           className="flex-1 min-w-0"
-          onClick={() =>
-            sealAndDownloadAgreement({ ...lending, agreementText: agreementDraft }, settings, user?.id)
-          }
+          onClick={() => {
+            if (!canPrintAgreement) {
+              navigate("/profile#upgrade");
+              return;
+            }
+            sealAndDownloadAgreement({ ...lending, agreementText: agreementDraft }, settings, user?.id);
+          }}
         >
           {t("lending.detail.printAgreement")}
         </Button>

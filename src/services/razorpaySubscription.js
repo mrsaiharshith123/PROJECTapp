@@ -1,4 +1,4 @@
-import { getTierAnnualPaise, isRazorpayConfigured } from "./razorpayConfig.js";
+import { getTierPaise, isRazorpayConfigured } from "./razorpayConfig.js";
 import { getSupabaseClient, saveSubscriptionTier } from "./supabase/auth.js";
 
 const SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
@@ -130,15 +130,16 @@ async function invokeCheckoutFunction(supabase, body) {
 
 /**
  * @param {"pro"|"power"} tier
+ * @param {"monthly"|"yearly"} billing
  * @param {string} userId
  * @returns {Promise<{ orderId: string, amount: number } | null>}
  */
-async function createServerOrder(tier, userId) {
+async function createServerOrder(tier, billing, userId) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId) return null;
 
   try {
-    const data = await invokeCheckoutFunction(supabase, { action: "create-order", tier });
+    const data = await invokeCheckoutFunction(supabase, { action: "create-order", tier, billing });
     if (!data?.orderId) return null;
     return { orderId: String(data.orderId), amount: Number(data.amount) };
   } catch {
@@ -174,6 +175,7 @@ async function verifyServerPayment(tier, userId, payment) {
  * Full Razorpay upgrade flow: optional server order + checkout + verify.
  * @param {{
  *   tier: "pro"|"power",
+ *   billing?: "monthly"|"yearly",
  *   userId?: string|null,
  *   settings: { displayName?: string, phoneNumber?: string },
  *   user?: import("../types/context.js").AuthUser | null,
@@ -185,6 +187,7 @@ async function verifyServerPayment(tier, userId, payment) {
  */
 export async function startSubscriptionCheckout({
   tier,
+  billing = "yearly",
   userId,
   settings,
   user,
@@ -198,18 +201,22 @@ export async function startSubscriptionCheckout({
     return;
   }
 
-  const amountPaise = getTierAnnualPaise(tier);
+  const cycle = billing === "monthly" ? "monthly" : "yearly";
+  const amountPaise = getTierPaise(tier, cycle);
   if (!amountPaise) {
     onError(new Error("Invalid plan tier."));
     return;
   }
 
-  const serverOrder = userId ? await createServerOrder(tier, userId) : null;
+  const serverOrder = userId ? await createServerOrder(tier, cycle, userId) : null;
+
+  const planLabel = tier === "pro" ? "Pro" : "Power";
+  const cycleLabel = cycle === "monthly" ? "Monthly" : "Annual";
 
   await openRazorpayCheckout({
     amountPaise: serverOrder?.amount ?? amountPaise,
     orderId: serverOrder?.orderId ?? "",
-    description: `CommitTrack ${tier === "pro" ? "Pro" : "Power"} Annual`,
+    description: `CommitTrack ${planLabel} ${cycleLabel}`,
     prefillName: settings.displayName || "",
     prefillEmail: user?.email || "",
     prefillPhone: settings.phoneNumber || "",
