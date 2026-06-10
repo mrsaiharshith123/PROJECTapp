@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { ToolTile } from "../ToolTile.jsx";
 import { Modal } from "../../primitives/Modal.jsx";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
-import InsuranceCalculatorModal from "../modals/InsuranceCalculatorModal.jsx";
 import {
   getToolsForMode,
   getDashboardToolsHeadingKey,
@@ -17,6 +16,9 @@ import LoanToolsPanel from "../tools/LoanToolsPanel.jsx";
 import IncomeTaxPanel from "../tools/IncomeTaxPanel.jsx";
 import RetirementPlannerPanel from "../tools/RetirementPlannerPanel.jsx";
 import SafetyPlannerPanel from "../tools/SafetyPlannerPanel.jsx";
+import FinancialAdvisorTool from "../tools/FinancialAdvisorTool.jsx";
+import InsuranceCalculatorModal from "../modals/InsuranceCalculatorModal.jsx";
+import InvestSavingsPanel from "../tools/InvestSavingsPanel.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -176,6 +178,18 @@ export default function DashboardTools() {
       {activeTool === "safety" && (
         <Modal title={modalTitle} onClose={closeTool}>
           <SafetyPlannerPanel />
+        </Modal>
+      )}
+
+      {activeTool === "advisor" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <FinancialAdvisorTool />
+        </Modal>
+      )}
+
+      {activeTool === "invest" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <InvestSavingsPanel />
         </Modal>
       )}
 

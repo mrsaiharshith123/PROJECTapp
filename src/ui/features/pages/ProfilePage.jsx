@@ -25,7 +25,7 @@ function resolveSettingsSection(fromNav) {
   if (fromNav === "financial-life" || fromNav === "net-worth") return null;
   if (fromNav === "money" || fromNav === "personal-money") return "personal-money";
   if (fromNav === "cloud" || fromNav === "import") return "backup";
-  if (fromNav === "security") return "personal-security";
+  if (fromNav === "security") return "security-sessions"; // opens Privacy & security group
   if (fromNav === "personal") return "personal-identity";
   if (fromNav === "notifications") return "notifications";
   return fromNav;
@@ -99,7 +99,7 @@ const Profile = () => {
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="appearance" />;
         case "personal-account":
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="account" />;
-        case "personal-security":
+        case "security-sessions":
           return <ProfileSecuritySection />;
         case "backup":
           return (

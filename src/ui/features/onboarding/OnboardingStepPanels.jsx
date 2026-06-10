@@ -5,6 +5,7 @@ import { getCategoryById } from "../../../constants/categories.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { QUICK_COMMITMENT_TEMPLATES } from "../../../utils/onboardingTemplates.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CitySelect } from "../../patterns/CitySelect.jsx";
 
 export function OnboardingModeStep({
   replay,
@@ -115,6 +116,8 @@ export function OnboardingBasicsStep({
   onPhoneNumberChange,
   monthlyIncome,
   onMonthlyIncomeChange,
+  userCity,
+  onUserCityChange,
   fieldError,
   fieldClass,
   onBack,
@@ -156,6 +159,11 @@ export function OnboardingBasicsStep({
             onChange={(e) => onMonthlyIncomeChange(e.target.value)}
             required
           />
+        </div>
+        <div>
+          <label className="ct-field-label">{t("profile.userCity")} *</label>
+          <CitySelect value={userCity} onChange={onUserCityChange} required />
+          <Caption className="block mt-1">{t("profile.userCityHint")}</Caption>
         </div>
       </Card>
       {fieldError && <Caption className="block text-[var(--ct-danger)]">{fieldError}</Caption>}

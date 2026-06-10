@@ -6,6 +6,7 @@ import { isValidPan, maskPan, normalizePan } from "../../../utils/pan.js";
 import { formatAuthError } from "../../../utils/authErrors.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CitySelect } from "../../patterns/CitySelect.jsx";
 
 const fieldClass = inputClassName();
 
@@ -13,7 +14,7 @@ const fieldClass = inputClassName();
 export default function AccountSettingsBlock() {
   const { t } = useTranslation();
   const { isReady, isLoggedIn, user, profile, signOut, saveProfile } = useAuth();
-  const { settings } = useCommitTrack();
+  const { settings, updateSettings } = useCommitTrack();
   const [username, setUsername] = useState("");
   const [pan, setPan] = useState("");
   const [showPan, setShowPan] = useState(false);
@@ -83,6 +84,15 @@ export default function AccountSettingsBlock() {
         <Button type="button" variant="outline" size="sm" onClick={handleSignOut} disabled={busy} className="!w-auto shrink-0">
           {t("account.logout")}
         </Button>
+      </div>
+
+      <div className="ct-stack-sm">
+        <label className="ct-field-label">{t("profile.userCity")}</label>
+        <CitySelect
+          value={settings.userCity || ""}
+          onChange={(cityId) => updateSettings({ userCity: cityId })}
+        />
+        <Caption className="block">{t("profile.userCityHint")}</Caption>
       </div>
 
       <div className="ct-stack-sm">

@@ -24,6 +24,9 @@ import { log } from "../utils/logger.js";
 import { trackEvent } from "../services/analytics/trackEvent.js";
 import { ANALYTICS_EVENTS } from "../services/analytics/eventNames.js";
 import { setAnalyticsUser, clearAnalyticsUser } from "../services/analytics/analyticsHub.js";
+import { isCurrentDeviceRevoked, upsertDeviceSession } from "../services/deviceSessions.js";
+import { loadSettingsFromStorage } from "../utils/migrateStorage.js";
+import { isCloudSyncConfigured } from "../services/sync/syncEngine.js";
 
 /** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
 const AuthContext = createContext(/** @type {import('../types/context.js').AuthContextValue | null} */ (null));
@@ -139,6 +142,18 @@ export function AuthProvider({ children }) {
       }
       try {
         await refreshProfile(u.id);
+        if (isCloudSyncConfigured()) {
+          try {
+            const revoked = await isCurrentDeviceRevoked(u.id);
+            if (revoked) {
+              await hardSignOut(u.id, "This device was signed out from Security settings.");
+              return;
+            }
+            await upsertDeviceSession(u.id, loadSettingsFromStorage());
+          } catch {
+            /* device table may not exist yet */
+          }
+        }
       } catch (e) {
         log.auth.error("Profile refresh failed", { message: formatAuthError(e) });
         if (!isProfilesTableMissingError(e)) {

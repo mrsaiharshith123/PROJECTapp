@@ -356,6 +356,30 @@ function formatUiDepthFinding(f) {
   }
 }
 
+function runOrphanModulesAudit() {
+  const r = spawnSync("node", ["scripts/audit-orphan-modules.mjs", "--json"], {
+    cwd: ROOT,
+    encoding: "utf8",
+    shell: true,
+  });
+  let data = { total: 0, items: [] };
+  try {
+    data = JSON.parse((r.stdout || "").trim() || "{}");
+  } catch {
+    addWarning("orphan-module", "Could not parse orphan-modules audit output");
+    return;
+  }
+  for (const item of data.items || []) {
+    addError(
+      "orphan-module",
+      `Production module only used in tests: ${item.file}`,
+      (item.importers || []).join(", "),
+    );
+  }
+  if (!data.total && !QUIET) console.log("  Orphan modules: none");
+  else if (!QUIET) console.log(`  Orphan modules: ${data.total} (test-only imports)`);
+}
+
 function checkUnresolvedImports() {
   const importRe = /from\s+["']([^"']+)["']/g;
   for (const file of walk(SRC)) {
@@ -387,6 +411,9 @@ checkPageShells();
 checkDuplicateBasenames();
 checkIdenticalFiles();
 checkUnresolvedImports();
+
+if (!QUIET) console.log("\n── Orphan modules (engines/services only in tests)");
+runOrphanModulesAudit();
 
 if (!QUIET) console.log("\n── UI depth (screens, buttons, tools, barrel)");
 runUiDepthAudit();

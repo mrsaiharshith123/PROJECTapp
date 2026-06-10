@@ -1,5 +1,6 @@
 import { addMonths, format, parseISO } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
+import { resolveDailyLivingCost } from "./lifestyleBurn.js";
 
 /** @typedef {"critical" | "weak" | "moderate" | "healthy" | "strong"} SurvivalTier */
 /** @typedef {"stable" | "vulnerable" | "fragile" | "critical"} SurvivalClassification */
@@ -151,6 +152,8 @@ export function computeSurvivalAnalysis({
   liquidSavings,
   monthlyBurden,
   lendingOutflow = 0,
+  lifestyleMonthlyBurn = 0,
+  lifestyle = null,
   commitments = [],
   getEffectiveStatus = () => "pending",
   todayStr = "",
@@ -159,9 +162,14 @@ export function computeSurvivalAnalysis({
   const inc = Math.max(0, income || 0);
   const liquid = Math.max(0, liquidSavings);
   const free = Math.max(0, freeMoney);
-  const saveRate = monthlySavingsRate != null ? monthlySavingsRate : Math.max(0, inc - monthlyBurden - lendingOutflow);
+  const lifestyleBurn = Math.max(0, lifestyleMonthlyBurn);
+  const totalBurn = Math.max(0, monthlyBurden) + Math.max(0, lendingOutflow) + lifestyleBurn;
+  const saveRate =
+    monthlySavingsRate != null
+      ? monthlySavingsRate
+      : Math.max(0, inc - totalBurn);
 
-  if (monthlyBurden <= 0 && lendingOutflow <= 0) {
+  if (totalBurn <= 0) {
     const pool = liquid + free;
     return {
       survivalMonths: pool > 0 ? 99 : null,
@@ -183,37 +191,40 @@ export function computeSurvivalAnalysis({
     income: inc,
     freeMoney: free,
     liquidSavings: liquid,
-    monthlyBurden,
-    lendingOutflow,
+    monthlyBurden: totalBurn,
+    lendingOutflow: 0,
     todayStr,
   });
 
-  const stressedBurden = monthlyBurden;
+  const stressedBurden = totalBurn;
   const stressedIncome = Math.round(inc * 0.7);
-  const stressedFree = Math.max(0, stressedIncome - monthlyBurden);
+  const stressedFree = Math.max(0, stressedIncome - totalBurn);
 
   const stressed = runScenario({
     income: stressedIncome,
     freeMoney: stressedFree,
     liquidSavings: liquid,
     monthlyBurden: stressedBurden,
-    lendingOutflow,
+    lendingOutflow: 0,
     emergencyHit: STRESSED_EMERGENCY_HIT,
     todayStr,
   });
 
-  const essentialBurn = essentialMonthlyBurden(commitments, getEffectiveStatus) + Math.max(0, lendingOutflow);
+  const essentialBurn =
+    essentialMonthlyBurden(commitments, getEffectiveStatus) +
+    Math.max(0, lendingOutflow) +
+    lifestyleBurn;
   const critical = runScenario({
     income: 0,
     freeMoney: 0,
     liquidSavings: liquid,
-    monthlyBurden: essentialBurn > 0 ? essentialBurn : monthlyBurden,
+    monthlyBurden: essentialBurn > 0 ? essentialBurn : totalBurn,
     lendingOutflow: 0,
     todayStr,
   });
 
   const classification = survivalClassification(baseline.runwayMonths, stressed.runwayMonths);
-  const timeToSafety = timeToSafetyMonths(liquid, free, monthlyBurden + lendingOutflow, saveRate);
+  const timeToSafety = timeToSafetyMonths(liquid, free, totalBurn, saveRate);
   const warnings = [];
   if (baseline.runwayMonths != null && baseline.runwayMonths < 4) {
     warnings.push("Emergency reserve is below a commonly recommended safe level (3–6 months of expenses).");
@@ -224,9 +235,19 @@ export function computeSurvivalAnalysis({
 
   const narrativeLines = buildSurvivalNarratives(baseline, stressed, classification, timeToSafety);
 
+  const lifestyleNote =
+    lifestyle?.source === "logged"
+      ? `Includes ~₹${lifestyle.dailyInr.toLocaleString("en-IN")}/day from your recent spend logs.`
+      : lifestyle?.cityLabel
+        ? `Includes ~₹${lifestyle.dailyInr.toLocaleString("en-IN")}/day living costs for ${lifestyle.cityLabel}.`
+        : null;
+
   return {
     survivalMonths: baseline.runwayMonths,
     monthlyBurn: baseline.requiredMonthlyBurn,
+    lifestyleMonthlyBurn: lifestyleBurn,
+    lifestyle,
+    lifestyleNote,
     liquidSavings: liquid,
     tier: baseline.tier,
     tierLabel: baseline.tierLabel,
@@ -264,17 +285,29 @@ export function lendingMonthlyOutflow(lendings, getEffectiveLendingStatus, today
   return sum;
 }
 
-export function buildSurvivalContext(commitments, lendings, settings, getEffectiveStatus, getEffectiveLendingStatus, todayStr, cashMetrics) {
+export function buildSurvivalContext(
+  commitments,
+  lendings,
+  settings,
+  getEffectiveStatus,
+  getEffectiveLendingStatus,
+  todayStr,
+  cashMetrics,
+  dailySpends = [],
+) {
   const income = Math.max(0, Number(settings.monthlyIncome) || 0);
   const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
   const lendingOut = lendingMonthlyOutflow(lendings, getEffectiveLendingStatus, todayStr);
   const freeMoney = cashMetrics?.freeMoney ?? Math.max(0, income - burden);
+  const lifestyle = resolveDailyLivingCost({ settings, dailySpends, todayStr });
   return computeSurvivalAnalysis({
     income,
     freeMoney,
     liquidSavings: Math.max(0, Number(settings.liquidSavings) || 0),
     monthlyBurden: burden,
     lendingOutflow: lendingOut,
+    lifestyleMonthlyBurn: lifestyle.monthlyInr,
+    lifestyle,
     commitments,
     getEffectiveStatus,
     todayStr,

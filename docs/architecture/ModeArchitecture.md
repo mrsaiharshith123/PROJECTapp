@@ -43,12 +43,16 @@ Registry: `src/governance/registries/modes.js`
 
 | Id | Panel / modal |
 |----|----------------|
-| `planner` | `MoneyPlannerPanel` — Afford · Scenarios · Goals (`UnifiedScenariosPanel` on Scenarios tab) |
+| `planner` | `MoneyPlannerPanel` — Afford · Scenarios · Goals |
+| `advisor` | `FinancialAdvisorTool` — AI on your numbers (Pro) |
 | `loan` | `LoanToolsPanel` — Extra EMI · Timing · Payoff order |
 | `insurance` | `InsuranceCalculatorModal` |
 | `chit` | `ChitFundAdvisor` |
 | `bond` | `BondAdvisor` (Power tier) |
-| `incomeTax` | `IncomeTaxPanel` |
+| `incomeTax` | `IncomeTaxPanel` — Tax + HRA |
+| `retirement` | `RetirementPlannerPanel` — EPF · PPF · NPS · gratuity |
+| `safety` | `SafetyPlannerPanel` — emergency fund only |
+| `invest` | `InvestSavingsPanel` — SIP · FD/RD (misplaced subs from Safety/Retirement) |
 
 Reorder per mode via `settings.dashboardToolOrderByMode` (persisted in `migrateStorage.js`).
 

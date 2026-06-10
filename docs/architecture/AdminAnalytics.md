@@ -6,7 +6,7 @@ Built-in **product intelligence** for CommitTrack operators — not a separate a
 
 | Role | What they see |
 |------|----------------|
-| **Admin** (`profiles.is_admin = true`) | Profile → **Product intelligence** tile (below Control center) and `/admin` dashboard |
+| **Admin** (`profiles.is_admin = true`) | Profile → **Admin board** tile (below Control center) and `/admin` — analytics + user management |
 | **Everyone else** | No nav link, no profile tile, `/admin` redirects to Home |
 
 Admin status is **never self-granted** from the app API. Grant via Supabase SQL Editor only (see [Granting admin](#granting-admin)).
@@ -46,7 +46,8 @@ Admin opens /admin
 | Admin fetch | `src/services/analytics/adminIntel.js` | `isAdminProfile()`, `fetchAdminOverview()` |
 | Admin hook | `src/hooks/useAdminOverview.js` | Loading/error/refresh for dashboard |
 | Dashboard UI | `src/ui/features/pages/AdminPage.jsx` | Full page |
-| Widgets | `src/ui/features/admin/*` | `AdminMetricCard`, `AdminGrowthChart` |
+| Widgets | `src/ui/features/admin/*` | `AdminMetricCard`, `AdminGrowthChart`, `AdminUsersPanel` |
+| User admin API | `src/services/adminUsers.js` | List, verify PAN, grant admin, edit profile, delete user |
 | Profile entry | `src/ui/features/profile/hub/ProfileAdminEntry.jsx` | Admin-only tile |
 | Auth flag | `src/context/AuthContext.jsx` | Exposes `isAdmin: Boolean(profile?.is_admin)` |
 
@@ -75,6 +76,7 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 | `20260606010000_fix_admin_rls_recursion.sql` | Fix login break — security-definer admin check; policies no longer recurse on `profiles` |
 | `20260606020000_fix_admin_grant_trigger.sql` | Allow SQL Editor to grant admin; `grant_committrack_admin(uuid)` helper |
 | `20260606030000_daily_spends_table_from_snapshot.sql` | Creates `public.daily_spends` + RLS and materializes `payload.dailySpends` from `user_finance_snapshots` |
+| `20260610020000_admin_user_management.sql` | Admin RPCs: `admin_list_users`, `admin_update_user`, `admin_set_user_admin`, `admin_delete_user`; admins may grant `is_admin` from the app |
 
 `supabase/schema-final.sql` is a convenience snapshot — **migrations are the source of truth** for admin schema until schema-final is refreshed.
 
@@ -88,21 +90,23 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 
 - Users insert/read **own** `app_events` only.
 - Admins read **all** `app_events` and **all** `profiles` via `is_committrack_admin()`.
-- `profiles_guard_admin_column` trigger: app API cannot flip `is_admin`; SQL Editor (`auth.uid()` null) can.
+- `profiles_guard_admin_column` trigger: non-admins cannot flip `is_admin`; CommitTrack admins and SQL Editor can.
 
 ### Granting admin
 
-In Supabase SQL Editor (after all three migrations):
+**In app (after `20260610020000_admin_user_management.sql`):** `/admin` → User management → **Make admin** on a user row.
+
+**First admin (SQL Editor only):**
 
 ```sql
--- Preferred helper (from fix migration):
 SELECT grant_committrack_admin('<user-uuid>');
-
--- Or direct update (works after fix migration):
-UPDATE public.profiles SET is_admin = true WHERE id = '<user-uuid>';
 ```
 
 Find the user UUID in **Authentication → Users**. Sign out and back in so the client reloads `profile.is_admin`.
+
+### User management (in-app)
+
+Admins can search users, verify/revoke PAN, edit profile fields (name, phone, tier, income), grant/revoke admin, and delete accounts (not self). All mutations go through secured RPCs — no Supabase dashboard required for day-to-day ops.
 
 ### Troubleshooting
 

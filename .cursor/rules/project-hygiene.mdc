@@ -1,0 +1,39 @@
+---
+description: Keep CommitTrack free of dead code, duplicate tools, and stale copy keys
+globs:
+  - src/**/*
+  - scripts/audit*.mjs
+  - docs/**/*
+---
+
+# Project hygiene
+
+## Before finishing a feature
+
+1. Run `npm run audit -- --strict`
+2. If you remove a feature, delete its engine, tests, i18n keys (`en.js` first), and tier flags — then `npm run sync:i18n`
+3. Dashboard tools: each id in `modeExperience.js` needs exactly one handler in `DashboardTools.jsx`. Do not duplicate standalone tools inside grouped hubs.
+
+## Dead code
+
+- `npm run audit:orphans` — fails if `engines/` or `services/` files are only imported from `__tests__`
+- `npm run audit:dead-code` — unmounted screens / orphan tool handlers
+- `npm run audit:merge` — advisory; fold single-consumer helper panels when sensible
+
+## Tool layout (Home)
+
+10 tools: planner, advisor, loan, insurance, chit, bond, incomeTax, retirement, safety, **invest**.
+
+- **Retirement** subtitle: EPF · PPF · NPS · gratuity (no FD/RD)
+- **Invest & save**: SIP · FD · RD (voluntary savings moved from wrong parents)
+- **Safety**: emergency fund only (no SIP)
+
+## i18n
+
+Source of truth: `src/i18n/messages/en.js`. Removing keys from `en.js` + `npm run sync:i18n` prunes all locales.
+
+## Do not leave
+
+- Engines with tests but no UI wiring
+- Duplicate settings tiles (e.g. Security + Privacy — merge under Privacy and security)
+- Stale docs in `docs/09-implementation-status.md` after shipping features

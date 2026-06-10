@@ -499,6 +499,8 @@ const DEFAULT_SETTINGS = {
   avatarSource: "auto",
   profileImageDataUrl: "",
   liquidSavings: 0,
+  /** City id from constants/cityLivingCosts.js — set during onboarding or account */
+  userCity: "",
   dependents: 0,
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
@@ -573,6 +575,7 @@ export function loadSettingsFromStorage() {
             ? o.profileImageDataUrl
             : "",
         liquidSavings: Math.max(0, Number(o.liquidSavings) || 0),
+        userCity: typeof o.userCity === "string" ? String(o.userCity) : "",
         dependents: Math.max(0, Math.min(12, Math.floor(Number(o.dependents) || 0))),
         profiles: normalizeProfiles(o.profiles),
         remindersEnabled: "remindersEnabled" in o ? Boolean(o.remindersEnabled) : true,

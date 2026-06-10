@@ -48,6 +48,7 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:charts` | Duplicate / similar UI |
 | `audit:ui` / `audit:styles` | Layout rules & CSS tokens |
 | `audit:ui-depth` / `audit:dead-code` | Unmounted screens, dead buttons |
+| `audit:orphans` | Production modules only referenced from tests |
 | `audit:merge` | Advisory file merge suggestions |
 | `npm run audit:copy` / `audit:copy:list` | Formal copy tone scan |
 | `npm run audit:i18n` | Locale key parity (22 langs + en) |

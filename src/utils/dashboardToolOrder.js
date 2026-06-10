@@ -14,6 +14,7 @@ export const LEGACY_TOOL_ID_MAP = {
   emi: "loan",
   loanTiming: "loan",
   epf: "retirement",
+  wealth: "invest",
 };
 
 /**

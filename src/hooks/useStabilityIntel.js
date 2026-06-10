@@ -38,7 +38,8 @@ export function useStabilityIntel() {
       ctx.getEffectiveStatus,
       ctx.getEffectiveLendingStatus,
       ctx.todayStr,
-      cash
+      cash,
+      ctx.dailySpends,
     );
     const stress = rankStressContributors(ctx.commitments, ctx.getEffectiveStatus);
     const lifestyle = detectLifestyleInflation(ctx.commitments, ctx.getEffectiveStatus);

@@ -16,11 +16,13 @@ export const TOOL_ICONS = {
   planner: "calculator",
   loan: "chart-line-down",
   insurance: "shield",
+  invest: "chart-line-up",
   chit: "coin",
   bond: "receipt",
   incomeTax: "currency-inr",
   retirement: "bank",
   safety: "shield",
+  advisor: "chat-dots",
   logSpend: "note-pencil",
 };
 

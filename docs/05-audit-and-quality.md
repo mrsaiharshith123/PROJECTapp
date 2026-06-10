@@ -49,6 +49,7 @@ Includes:
 | Dead code | Knip | Unused files/exports (with ignores for intentional barrel exports) |
 | Hygiene | Custom | Legacy paths (`src/components/`), duplicate files, bad imports |
 | Unresolved imports | Custom | Broken relative imports |
+| **Orphan modules** | `audit-orphan-modules.mjs` | `engines/` / `services/` files only imported from `__tests__` |
 | **UI depth** | `audit-ui-depth.mjs` | See below |
 
 #### UI depth checks (`npm run audit:ui-depth`)

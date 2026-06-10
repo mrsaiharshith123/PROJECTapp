@@ -5,6 +5,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Button, Caption, Eyebrow, Heading, Body, AdminSkeleton } from "../../index.js";
 import AdminMetricCard from "../admin/AdminMetricCard.jsx";
 import AdminGrowthChart from "../admin/AdminGrowthChart.jsx";
+import AdminUsersPanel from "../admin/AdminUsersPanel.jsx";
 
 function pct(value) {
   const n = Number(value);
@@ -84,6 +85,10 @@ export default function AdminPage() {
       </div>
 
       {error && error !== "NOT_ADMIN" && <Body className="ct-admin-error">{error}</Body>}
+
+      <section className="ct-admin-section">
+        <AdminUsersPanel />
+      </section>
 
       <section className="ct-admin-section">
         <Heading level={3}>{t("admin.section.overview")}</Heading>

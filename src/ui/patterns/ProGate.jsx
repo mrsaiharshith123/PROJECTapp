@@ -22,7 +22,7 @@ function ProUpgradeNudge({ featureId }) {
       <Body className="font-semibold">{isPower ? "Power feature" : "Pro feature"}</Body>
       <Caption className="block">
         {isPower
-          ? "A Power subscription unlocks household tools, CIBIL simulation, and CA-ready exports."
+          ? "A Power subscription unlocks household tools, bond analysis, and CA-ready exports."
           : "A Pro subscription unlocks advanced tools, reports, and extended analysis."}
       </Caption>
       <Button type="button" variant="primary" onClick={() => navigate("/profile#upgrade")}>

@@ -97,14 +97,17 @@ npm run audit -- --strict
 
 (`--strict` treats more warnings as failures; large bundle size stays advisory.)
 
-## 8. Dead UI & orphan features
+## 8. Dead UI, orphan modules & project hygiene
 
-Audit depth checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
+Audit checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
 
 - Barrel exports in `ui/index.js` must be used somewhere in `src/`
 - Every `*Page.jsx` must have a route in `App.jsx` (lazy import from `ui/features/pages/`)
 - Dashboard tool ids in `modeExperience.js` must have a handler in `DashboardTools.jsx`
 - UI files unreachable from `App.jsx` / `pages/` are flagged
+- **`engines/` / `services/` modules only imported from `__tests__` fail audit** — remove or wire into UI (`npm run audit:orphans`)
+
+Before merge, run `npm run audit -- --strict`. Remove dead engines, duplicate tool groupings, and stale i18n keys (delete from `en.js`, then `npm run sync:i18n`).
 
 If you add a tool or export, wire it through to a screen.
 

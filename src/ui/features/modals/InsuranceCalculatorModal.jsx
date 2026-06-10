@@ -11,7 +11,22 @@ import { translateInsuranceVerdictDetail } from "../../../i18n/toolLabels.js";
 const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 text-sm";
 
-export default function InsuranceCalculatorModal({ commitments, todayStr, monthlyIncome, onClose }) {
+function InsuranceShell({ embedded, title, onClose, children }) {
+  if (embedded) return <div className="ct-stack">{children}</div>;
+  return (
+    <Modal title={title} onClose={onClose} footer={null}>
+      {children}
+    </Modal>
+  );
+}
+
+export default function InsuranceCalculatorModal({
+  commitments,
+  todayStr,
+  monthlyIncome,
+  onClose,
+  embedded = false,
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const insuranceBills = useMemo(
@@ -118,7 +133,7 @@ export default function InsuranceCalculatorModal({ commitments, todayStr, monthl
 
   if (step === "pick") {
     return (
-      <Modal title={t("insurance.calculator.title")} onClose={onClose} footer={null}>
+      <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
         <ToolSourcePicker
           accent="teal"
           title={t("insurance.calculator.whichPolicy")}
@@ -130,17 +145,17 @@ export default function InsuranceCalculatorModal({ commitments, todayStr, monthl
           onPick={(item) => pickBill(item.raw)}
           onManual={startManual}
           onAdd={() => {
-            onClose();
+            if (!embedded) onClose();
             navigate("/add");
           }}
         />
-      </Modal>
+      </InsuranceShell>
     );
   }
 
   if (step === "manualSetup") {
     return (
-      <Modal title={t("insurance.calculator.title")} onClose={onClose} footer={null}>
+      <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
         <div className="space-y-3">
           <button type="button" onClick={() => setStep("pick")} className="text-xs font-semibold text-indigo-600">
             ← {t("insurance.calculator.back")}
@@ -174,12 +189,12 @@ export default function InsuranceCalculatorModal({ commitments, todayStr, monthl
             {t("common.continue")}
           </button>
         </div>
-      </Modal>
+      </InsuranceShell>
     );
   }
 
   return (
-    <Modal title={t("insurance.calculator.title")} onClose={onClose} footer={null}>
+    <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
       {step === "calc" && fromBill && (
         <div>
           <button
@@ -266,15 +281,17 @@ export default function InsuranceCalculatorModal({ commitments, todayStr, monthl
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full py-2.5 mt-4 text-sm font-semibold bg-slate-200 dark:bg-slate-700 rounded-xl"
-          >
-            {t("common.done")}
-          </button>
+          {!embedded && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-2.5 mt-4 text-sm font-semibold bg-slate-200 dark:bg-slate-700 rounded-xl"
+            >
+              {t("common.done")}
+            </button>
+          )}
         </div>
       )}
-    </Modal>
+    </InsuranceShell>
   );
 }

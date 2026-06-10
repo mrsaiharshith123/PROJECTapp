@@ -10,6 +10,7 @@ import { isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
 import { saveUserProfile } from "../../../services/supabase/auth.js";
 import { markSignupPending } from "../../../utils/authSessionCleanup.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CitySelect } from "../../patterns/CitySelect.jsx";
 
 const fieldClass = inputClassName();
 
@@ -63,6 +64,7 @@ export default function AuthGatePage() {
   const [phone, setPhone] = useState("");
   const [income, setIncome] = useState("");
   const [householdScope, setHouseholdScope] = useState("single");
+  const [userCity, setUserCity] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [noteTone, setNoteTone] = useState("neutral");
@@ -87,6 +89,7 @@ export default function AuthGatePage() {
     if (!isValidIndianPhone(phone)) return t("auth.errPhoneInvalid");
     const incomeNum = Number(income);
     if (!income || incomeNum <= 0) return t("auth.errSalaryRequired");
+    if (!userCity) return t("auth.errCityRequired");
     return null;
   };
 
@@ -100,6 +103,7 @@ export default function AuthGatePage() {
       monthlyIncome: incomeNum,
       userMode: "salaried",
       householdScope: scope,
+      userCity,
       onboardingComplete: false,
     });
   };
@@ -379,6 +383,9 @@ export default function AuthGatePage() {
                   <option value="single">{t("auth.householdSingle")}</option>
                   <option value="family">{t("auth.householdFamily")}</option>
                 </select>
+              </FormField>
+              <FormField label={t("profile.userCity")}>
+                <CitySelect value={userCity} onChange={setUserCity} required />
               </FormField>
             </>
           )}

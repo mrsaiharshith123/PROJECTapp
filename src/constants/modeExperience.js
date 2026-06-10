@@ -10,9 +10,9 @@ export const MODE_CATEGORY_IDS = {
 
 /** Quick calculator tool ids per mode. */
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
-  family: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
-  power: ["planner", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety"],
+  salaried: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
+  family: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
+  power: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
 };
 
 export const MODE_TOOL_DEFS = {
@@ -20,6 +20,12 @@ export const MODE_TOOL_DEFS = {
     id: "planner",
     title: "Plan & decide",
     subtitle: "Afford · scenarios · goals",
+    accent: "indigo",
+  },
+  advisor: {
+    id: "advisor",
+    title: "Ask your finances",
+    subtitle: "AI advisor on your numbers",
     accent: "indigo",
   },
   loan: {
@@ -60,9 +66,15 @@ export const MODE_TOOL_DEFS = {
   },
   safety: {
     id: "safety",
-    title: "Safety & SIP",
-    subtitle: "Emergency fund · goal SIP",
+    title: "Safety & emergency",
+    subtitle: "Liquid reserve target",
     accent: "violet",
+  },
+  invest: {
+    id: "invest",
+    title: "Invest & save",
+    subtitle: "SIP · FD · RD",
+    accent: "teal",
   },
 };
 

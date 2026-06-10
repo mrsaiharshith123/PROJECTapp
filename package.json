@@ -45,6 +45,7 @@
     "audit:charts": "node scripts/audit-runner.mjs duplicates",
     "audit:duplicates": "node scripts/audit-runner.mjs duplicates",
     "audit:dead-code": "node scripts/audit-ui-depth.mjs --list",
+    "audit:orphans": "node scripts/audit-orphan-modules.mjs --list",
     "audit:code": "node scripts/audit-code.mjs",
     "audit:dependencies": "node scripts/audit-runner.mjs features architecture",
     "audit:architecture": "node scripts/audit-runner.mjs architecture",

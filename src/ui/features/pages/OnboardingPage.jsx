@@ -42,6 +42,7 @@ export default function Onboarding() {
   const [monthlyIncome, setMonthlyIncome] = useState(() =>
     settings.monthlyIncome ? String(settings.monthlyIncome) : profile?.monthly_income ? String(profile.monthly_income) : "",
   );
+  const [userCity, setUserCity] = useState(() => settings.userCity || "");
   const [selectedLabels, setSelectedLabels] = useState(() => new Set());
   const [amounts, setAmounts] = useState(() => ({}));
   const [fieldError, setFieldError] = useState("");
@@ -70,6 +71,7 @@ export default function Onboarding() {
       user?.id,
     );
     if (msg) return msg;
+    if (!userCity) return "Select the city you live in — we use it for survival runway estimates.";
     return null;
   };
 
@@ -87,6 +89,7 @@ export default function Onboarding() {
       displayName: displayName.trim(),
       phoneNumber: normalizeIndianPhone(phoneNumber),
       monthlyIncome: incomeNum,
+      userCity,
       onboardingComplete: true,
       ...(replay ? {} : { appGuideComplete: false }),
     };
@@ -127,6 +130,7 @@ export default function Onboarding() {
       displayName: displayName.trim(),
       phoneNumber: normalizeIndianPhone(phoneNumber),
       monthlyIncome: incomeNum,
+      userCity,
     });
     setStep(3);
   };
@@ -183,6 +187,8 @@ export default function Onboarding() {
         onPhoneNumberChange={setPhoneNumber}
         monthlyIncome={monthlyIncome}
         onMonthlyIncomeChange={setMonthlyIncome}
+        userCity={userCity}
+        onUserCityChange={setUserCity}
         fieldError={fieldError}
         fieldClass={fieldClass}
         onBack={() => setStep(1)}

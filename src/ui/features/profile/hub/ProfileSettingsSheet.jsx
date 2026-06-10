@@ -10,7 +10,7 @@ const PROFILE_CONTROL_GROUPS = [
     icon: "user",
     titleKey: "profileHub.group.account",
     hintKey: "profileHub.group.accountHint",
-    panels: ["personal-identity", "personal-account", "personal-security"],
+    panels: ["personal-identity", "personal-account"],
   },
   {
     id: "financial",
@@ -31,7 +31,7 @@ const PROFILE_CONTROL_GROUPS = [
     icon: "lock",
     titleKey: "profileHub.group.privacy",
     hintKey: "profileHub.group.privacyHint",
-    panels: ["backup"],
+    panels: ["security-sessions", "backup"],
     privacyLink: true,
   },
   {

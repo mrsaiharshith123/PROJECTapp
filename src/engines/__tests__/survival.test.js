@@ -89,4 +89,21 @@ describe("survival edge cases", () => {
       buildSurvivalContext([], [], { monthlyIncome: 50000, liquidSavings: 0 }, () => "pending", () => "active", "2026-06-05"),
     ).not.toThrow();
   });
+
+  it("includes city-based daily living cost in survival burn", () => {
+    const r = buildSurvivalContext(
+      [],
+      [],
+      { monthlyIncome: 100000, liquidSavings: 80000, userCity: "hyderabad", householdScope: "single" },
+      () => "pending",
+      () => "active",
+      "2026-06-01",
+      { freeMoney: 20000 },
+      [],
+    );
+    expect(r.lifestyle?.dailyInr).toBe(1350);
+    expect(r.lifestyleMonthlyBurn).toBe(40500);
+    expect(r.survivalMonths).toBeLessThan(4);
+    expect(r.lifestyleNote).toContain("Hyderabad");
+  });
 });

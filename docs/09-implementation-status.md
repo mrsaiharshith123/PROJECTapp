@@ -30,7 +30,7 @@ Last reviewed: 10 June 2026 (full audit pass — pricing, docs, strict gate gree
 | Profile security panel | ✅ | `ProfileSecuritySection` — sign-in email, device, last backup/restore |
 | Lending profile share card | ✅ | `LendingProfileCard.jsx`, `utils/lendingProfileShare.js` — financial-life hero palette |
 | Analytics — pulse + monthly spend + wealth | ✅ | `AnalyticsPage.jsx`, `MonthlySpendAnalyticsSection.jsx`, `WealthAnalyticsSection.jsx`, `BillInsightsCards.jsx` |
-| Dashboard tools (8 tiles) | ✅ | `planner`, `loan`, `insurance`, `chit`, `bond`, `incomeTax`, `retirement`, `safety` — `modeExperience.js`, `DashboardTools.jsx` |
+| Dashboard tools (10 tiles) | ✅ | `planner`, `advisor`, `loan`, `insurance`, `chit`, `bond`, `incomeTax`, `retirement`, `safety`, `invest` — `modeExperience.js`, `DashboardTools.jsx` |
 | Money planner (3 tabs) | ✅ | Afford · Scenarios · Goals — `MoneyPlannerPanel.jsx`, `UnifiedScenariosPanel.jsx` |
 | Loan helpers + payoff order | ✅ | `LoanToolsPanel.jsx` — Extra EMI · Timing · Payoff order |
 | Unified scenarios (data-gated) | ✅ | `UnifiedScenariosPanel.jsx`, `engines/scenarioCatalog.js` |
@@ -46,7 +46,9 @@ Last reviewed: 10 June 2026 (full audit pass — pricing, docs, strict gate gree
 | Stability narrative in Financial pulse | ✅ | `engines/stabilityNarrative.js`, `FinancialPulseCard.jsx` |
 | Income tax tool | ✅ | `engines/incomeTaxEstimate.js`, `tools/IncomeTaxPanel.jsx` — HRA, 80CCD(1B), prof tax, advance tax schedule + one-click bills |
 | Retirement planner (EPF·PPF·NPS·gratuity) | ✅ | `RetirementPlannerPanel.jsx`, engines `epfTracker`, `ppfTracker`, `npsPlanner`, `gratuityEstimate` |
-| Safety & SIP planner | ✅ | `SafetyPlannerPanel.jsx` — emergency fund + SIP advisor |
+| Safety & emergency | ✅ | `SafetyPlannerPanel.jsx` — liquid reserve target only |
+| Invest & save (SIP · FD/RD) | ✅ | `InvestSavingsPanel.jsx` — SIP moved from Safety; FD/RD moved from Retirement |
+| AI financial advisor (Pro) | ✅ | `FinancialAdvisorTool.jsx`, `services/financialAdvisor.js` |
 | Tax & HRA tool | ✅ | `IncomeTaxPanel.jsx` — tax + HRA tabs (inlined) |
 | Bank statement PDF/CSV import | ✅ | Position-aware PDF extract, Dr/Cr parsing, CSV columns, recurring → bills — `BankStatementImportModal.jsx` |
 | Bill split + share card | ✅ | `engines/billSplit.js`, `BillSplitModal.jsx` — Lending page |
@@ -56,7 +58,7 @@ Last reviewed: 10 June 2026 (full audit pass — pricing, docs, strict gate gree
 | 90-day cashflow calendar | ✅ | `engines/cashflowCalendar.js`, `CashflowCalendarStrip.jsx` on Analytics |
 | Smart pressure notifications | ✅ | `notifications.js` — pressure spike, salary-day, low-buffer, lending overdue |
 | Tier limit enforcement (UI) | ✅ | `tierLimits.js`, `tierAccess.js`, `TierLimitBanner.jsx` — lending, chits, goals, spend, splits, cashflow |
-| FD/RD maturity tracker | ✅ | `FdRdTrackerPanel.jsx` — Retirement tool tab on Home; net worth FD/RD categories |
+| FD/RD maturity tracker | ✅ | `InvestSavingsPanel.jsx` (FD/RD tab); net worth FD/RD categories |
 | Money outlook chart window | ✅ | ±3 months (`MONEY_OUTLOOK_WINDOW` in `forecastSeries.js`) |
 | App version 1.0.0 | ✅ | `package.json` |
 | Semantic badge tokens (Phase B) | ✅ | `ui/tokens/semanticBadge.js` — engines return `tone` only |
@@ -71,13 +73,14 @@ Last reviewed: 10 June 2026 (full audit pass — pricing, docs, strict gate gree
 |------|--------|-----------|
 | Product analytics pipeline | ✅ | `services/analytics/*`, `app/AnalyticsBridge.jsx` |
 | Supabase `app_events` + admin RPC | ✅ | `supabase/migrations/2026060600*.sql` |
-| Admin dashboard `/admin` | ✅ | `ui/features/pages/AdminPage.jsx`, `ui/features/admin/*` |
+| Admin dashboard `/admin` | ✅ | `ui/features/pages/AdminPage.jsx`, `ui/features/admin/*` — analytics + **user management** (verify PAN, grant admin, edit, delete) |
+| Admin user RPCs | ✅ | `supabase/migrations/20260610020000_admin_user_management.sql`, `services/adminUsers.js` |
 | Profile entry (admin-only) | ✅ | `ui/features/profile/hub/ProfileAdminEntry.jsx` |
 | Route guard + `isAdmin` auth flag | ✅ | `app/RequireAdmin.jsx`, `AuthContext.jsx` |
 
 | Supabase `daily_spends` + RLS | ✅ | `supabase/migrations/20260606030000_daily_spends_table_from_snapshot.sql` (materialized from synced payload) |
 
-**Setup:** apply all three admin migrations in order, then `SELECT grant_committrack_admin('<uuid>');` in Supabase SQL Editor. Full detail: [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md).
+**Setup:** apply admin migrations in order (`2026060600*` + `20260610020000_admin_user_management.sql`), then grant the first admin via SQL Editor (`grant_committrack_admin`) or promote from an existing admin in **User management**. Full detail: [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md).
 
 **Not tracked:** bill amounts, PAN, SMS content, or other sensitive financial/identity fields.
 

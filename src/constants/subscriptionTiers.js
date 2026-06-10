@@ -23,6 +23,7 @@ export const PRO_FEATURES = new Set([
   "unlimited_bill_split",
   "unlimited_chits",
   "sip_advisor",
+  "ai_advisor",
 ]);
 
 /** Power-only feature ids (on top of Pro). */
@@ -31,7 +32,6 @@ export const POWER_FEATURES = new Set([
   "bond_advisor",
   "payoff_optimizer",
   "ca_share",
-  "cibil_simulation",
 ]);
 
 /** Discount shown on yearly billing toggle (~29% vs paying monthly × 12). */

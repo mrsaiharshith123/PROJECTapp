@@ -204,6 +204,14 @@ export async function signOutAuth() {
   }
 }
 
+/** Signs out all sessions except the current device refresh token. */
+export async function signOutOtherSessions() {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  const { error } = await supabase.auth.signOut({ scope: "others" });
+  if (error) throwAuth(error, "Could not sign out other devices");
+}
+
 export function onAuthStateChanged(callback) {
   const supabase = getSupabaseClient();
   if (!supabase) {
