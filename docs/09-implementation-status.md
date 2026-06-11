@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 10 June 2026 (hygiene pass — notification i18n, engine tests, duplicate cleanup).
+Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engines deepened).
 
 ## V1 product scope
 
@@ -86,12 +86,12 @@ Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZO
 
 ## Tests & quality
 
-- **322** unit tests (`npm test`) — engines, utils, storage/sync
+- **336** unit tests (`npm test`) — **77/77** engine modules have dedicated tests (`npm run audit:engine-tests`)
 - Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
 - Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, tier gates, insight i18n, code+depth, tests, types, build
 - Strict: `npm run audit -- --strict` — also fails on i18n hardcoded + English fallback threshold
 - New advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
-- Engine coverage report: `npm run audit:engine-tests` (use `--strict` once all engines have tests)
+- Engine coverage: `npm run audit:engine-tests` (77/77) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
 
 ## Related docs
 

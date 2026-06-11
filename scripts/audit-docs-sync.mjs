@@ -16,6 +16,7 @@ const MUST_NOT_SAY_DEFERRED = [
   { pattern: /Paycheck page.*deferred|paycheck.*deferred/i, note: "Paycheck is shipped — remove deferred wording" },
   { pattern: /salaryCreditDay.*no Profile UI/i, note: "salaryCreditDay has Profile UI — update doc" },
   { pattern: /\b264\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b322\b unit tests/i, note: "Test count stale — run npm test and update" },
 ];
 
 const MUST_EXIST = [

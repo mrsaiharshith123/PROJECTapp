@@ -5,7 +5,7 @@ import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 export const MODE_CATEGORY_IDS = {
   salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
   family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Chit Fund", "Subscription", "Utility", "Loan", "Other"],
-  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Rent", "Loan", "Utility", "Other"],
+  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
 };
 
 /** Quick calculator tool ids per mode. */

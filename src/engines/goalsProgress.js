@@ -1,6 +1,8 @@
+import { differenceInCalendarDays, parseISO } from "date-fns";
+
 /**
  * @param {object} goal
- * @param {object} ctx { openRemainingSum, burdenRatio }
+ * @param {object} ctx { openRemainingSum, burdenRatio, savedAmountTowardGoal? }
  */
 export function computeGoalProgress(goal, ctx) {
   const open = Math.max(0, Number(ctx.openRemainingSum) || 0);
@@ -23,6 +25,53 @@ export function computeGoalProgress(goal, ctx) {
     return Math.min(1, saved / target);
   }
   return 0;
+}
+
+/**
+ * Rich goal status for UI — pace, target date, i18n status key.
+ * @param {object} goal
+ * @param {object} ctx
+ * @param {string} [todayStr] YYYY-MM-DD
+ */
+export function computeGoalIntel(goal, ctx, todayStr = "") {
+  const progress = computeGoalProgress(goal, ctx);
+  const progressPercent = Math.round(progress * 100);
+
+  let status = "on_track";
+  if (progress >= 1) status = "complete";
+  else if (progress >= 0.85) status = "near_complete";
+  else if (progress < 0.25) status = "behind";
+  else if (progress < 0.5) status = "slow";
+
+  let daysRemaining = null;
+  let requiredMonthlyPace = null;
+  if (goal.targetDate && todayStr && (goal.type === "save_amount" || goal.type === "education" || goal.type === "wedding")) {
+    try {
+      daysRemaining = differenceInCalendarDays(
+        parseISO(`${goal.targetDate}T12:00:00`),
+        parseISO(`${todayStr}T12:00:00`),
+      );
+      if (daysRemaining > 0 && progress < 1) {
+        const target = Math.max(1, Number(goal.targetAmount) || 1);
+        const saved = Math.max(0, Number(ctx.savedAmountTowardGoal) || 0);
+        const gap = Math.max(0, target - saved);
+        const monthsLeft = Math.max(1, daysRemaining / 30);
+        requiredMonthlyPace = Math.ceil(gap / monthsLeft);
+        if (progress < 0.5 && daysRemaining < 90) status = "behind";
+      }
+    } catch {
+      /* ignore bad dates */
+    }
+  }
+
+  return {
+    progress,
+    progressPercent,
+    status,
+    statusKey: `goals.status.${status}`,
+    daysRemaining,
+    requiredMonthlyPace,
+  };
 }
 
 export function goalTypeLabel(type) {

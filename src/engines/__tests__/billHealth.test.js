@@ -8,12 +8,29 @@ describe("scoreBillHealth", () => {
     expect(r.insightId).toBe("bill-health-overdue");
   });
 
-  it("flags idle subscriptions", () => {
+  it("flags long-running idle subscriptions", () => {
     const r = scoreBillHealth(
-      { name: "Spotify", category: "Subscription" },
+      { name: "Spotify", category: "Subscription", startDate: "2025-01-01" },
       { effectiveStatus: "pending", todayStr: "2026-06-10", dailySpends: [] },
     );
     expect(r.insightId).toBe("bill-health-idle-sub");
+  });
+
+  it("does not flag new subscriptions as idle", () => {
+    const r = scoreBillHealth(
+      { name: "Netflix", category: "Subscription", startDate: "2026-06-01" },
+      { effectiveStatus: "pending", todayStr: "2026-06-10", dailySpends: [] },
+    );
+    expect(r.insightId).not.toBe("bill-health-idle-sub");
+  });
+
+  it("scores paid bills as good", () => {
+    const r = scoreBillHealth(
+      { name: "Netflix", category: "Subscription" },
+      { effectiveStatus: "paid", todayStr: "2026-06-10", dailySpends: [] },
+    );
+    expect(r.band).toBe("good");
+    expect(r.insightId).toBe("bill-health-paid");
   });
 });
 

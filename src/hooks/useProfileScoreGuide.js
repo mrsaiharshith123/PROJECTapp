@@ -21,6 +21,7 @@ import { formatInr } from "../constants/symbols.js";
  *   fixKeys: string[],
  *   subScores?: { labelKey: string, value: string }[],
  *   extraLine?: { key: string, params?: Record<string, string | number> },
+ *   tone?: string,
  * }} ProfileDetailScore
  */
 
@@ -83,6 +84,7 @@ export function useProfileScoreGuide() {
         titleKey: "profileHub.widget.pressure",
         helpKey: "help.pressureScore",
         value: `${intel.stability.score}/100`,
+        tone: intel.stability.tone,
         statusKey: null,
         statusLabel: intel.stability.label,
         whyKeys: buildWhyKeys("pressure", intel.stability.score),
@@ -93,6 +95,8 @@ export function useProfileScoreGuide() {
         titleKey: "profileHub.widget.health",
         helpKey: "help.healthScore",
         value: health?.score != null ? `${health.score}/100` : "—",
+        tone:
+          (health?.score ?? 0) >= 70 ? "success" : (health?.score ?? 0) >= 50 ? "warning" : "danger",
         statusKey: healthLabelKey,
         statusLabel: null,
         whyKeys: buildWhyKeys("health", health?.score ?? 0),
@@ -178,7 +182,8 @@ export function useProfileScoreGuide() {
         {
           id: "pressure",
           labelKey: "profileHub.widget.pressure",
-          value: `${intel.stability.score ?? 0}`,
+          pressureLabel: intel.stability.label,
+          detailValue: intel.stability.score ?? 0,
           tone: pressureTone,
         },
         {

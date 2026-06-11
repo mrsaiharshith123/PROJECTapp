@@ -34,6 +34,7 @@ const Commitments = () => {
     commitments,
     getEffectiveStatus,
     addCommitmentPayment,
+    removeCommitmentPayment,
     deleteCommitment,
     updateCommitment,
     dailySpends,
@@ -228,18 +229,22 @@ const Commitments = () => {
 
       {detailFor && (
         <BillDetailModal
-          bill={detailFor}
+          bill={sortedCommitments.find((c) => c.id === detailFor.id) || detailFor}
           todayStr={todayStr}
           allCommitments={sortedCommitments}
-          displayStatus={getEffectiveStatus(detailFor)}
+          displayStatus={getEffectiveStatus(
+            sortedCommitments.find((c) => c.id === detailFor.id) || detailFor,
+          )}
           onClose={() => setDetailFor(null)}
           onEdit={(bill) => {
             setDetailFor(null);
             setEditing(bill);
           }}
           onAddPayment={(bill) => {
-            setDetailFor(null);
             openPayment(bill);
+          }}
+          onUndoPayment={(bill, paymentIndex) => {
+            removeCommitmentPayment(bill.id, paymentIndex);
           }}
           onDelete={(id) => {
             setDetailFor(null);

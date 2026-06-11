@@ -6,6 +6,7 @@ import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import { useNetWorthIntel } from "../../../../hooks/useNetWorthIntel.js";
 import { useProfileScoreGuide } from "../../../../hooks/useProfileScoreGuide.js";
+import { translatePressureLabel } from "../../../../i18n/engineLabels.js";
 import { useNetWorth } from "../../../../context/NetWorthContext.jsx";
 import ProfileAvatar from "../ProfileAvatar.jsx";
 import { Caption, Eyebrow, Heading } from "../../../primitives/Text.jsx";
@@ -99,7 +100,22 @@ export default function ProfileFinancialHero({
           {heroChips.map((chip) => (
             <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
               <Caption className="block ct-profile-chip-label">{t(chip.labelKey)}</Caption>
-              <span className="ct-profile-chip-value">{privacyMode ? "•••" : chip.value}</span>
+              {privacyMode ? (
+                <span className="ct-profile-chip-value">•••</span>
+              ) : chip.pressureLabel ? (
+                <>
+                  <span className="ct-profile-chip-value">
+                    {translatePressureLabel(t, chip.pressureLabel)}
+                  </span>
+                  {chip.detailValue != null ? (
+                    <Caption className="block ct-profile-chip-sub opacity-75">
+                      {chip.detailValue}/100
+                    </Caption>
+                  ) : null}
+                </>
+              ) : (
+                <span className="ct-profile-chip-value">{chip.value}</span>
+              )}
               {!privacyMode && chip.subKey ? (
                 <Caption className="block ct-profile-chip-sub">{t(chip.subKey)}</Caption>
               ) : null}

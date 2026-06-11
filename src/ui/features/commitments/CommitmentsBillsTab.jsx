@@ -13,7 +13,10 @@ import { suggestedCyclePaymentAmount } from "../../../utils/commitmentPayments.j
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { scoreBillHealth, scoreAllBillsHealth, aggregateBillHealthScore } from "../../../engines/billHealth.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
+import { billHealthBandKey, billHealthSummaryKey } from "../../../i18n/scoreLabels.js";
 import { Badge } from "../../primitives/Badge.jsx";
+import { InfoTip } from "../../primitives/InfoTip.jsx";
+import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 
 const CATEGORY_OPTIONS = [
@@ -111,27 +114,41 @@ export default function CommitmentsBillsTab({
       </div>
 
       {activeBills.length > 0 && (
-        <div className="ct-row-between gap-2 flex-wrap ct-inset !p-3">
-          <div>
-            <Caption className="block font-semibold">{t("bills.portfolioHealth")}</Caption>
-            <Caption className="block mt-0.5 text-[var(--ct-text-muted)]">
-              {translateInsight(t, {
-                id: portfolioHealth.insightId,
-                params: {
-                  score: portfolioHealth.score,
-                  stress: portfolioHealth.stressCount,
-                  watch: portfolioHealth.watchCount,
-                },
-              })}
+        <div className="ct-inset !p-3 ct-stack-sm">
+          <div className="ct-row-between gap-2 flex-wrap items-start">
+            <Caption className="inline-flex items-center font-semibold">
+              {t("bills.portfolioHealth")}
+              <InfoTip text={CALC_HELP.billHealth} />
             </Caption>
+            <Badge
+              tone={
+                portfolioHealth.band === "good" ? "success" : portfolioHealth.band === "watch" ? "warning" : "danger"
+              }
+            >
+              {t(billHealthBandKey(portfolioHealth.band))}
+            </Badge>
           </div>
-          <Badge
-            tone={
-              portfolioHealth.band === "good" ? "success" : portfolioHealth.band === "watch" ? "warning" : "danger"
-            }
-          >
-            {portfolioHealth.score}/100
-          </Badge>
+          <Body className="!text-base ct-body-strong">
+            {t(billHealthSummaryKey(portfolioHealth), {
+              stress: portfolioHealth.stressCount,
+              watch: portfolioHealth.watchCount,
+            })}
+          </Body>
+          <Caption className="block text-[var(--ct-text-muted)]">
+            {translateInsight(t, {
+              id: portfolioHealth.insightId,
+              params: {
+                score: portfolioHealth.score,
+                stress: portfolioHealth.stressCount,
+                watch: portfolioHealth.watchCount,
+              },
+            })}
+          </Caption>
+          <Caption className="block opacity-75">
+            {t("bills.portfolioScoreDetail", { score: portfolioHealth.score })}
+            {" · "}
+            {t("bills.portfolioHealthHint")}
+          </Caption>
         </div>
       )}
 

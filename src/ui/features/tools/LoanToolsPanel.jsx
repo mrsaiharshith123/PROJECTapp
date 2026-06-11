@@ -1,5 +1,10 @@
 import { useMemo, useState } from "react";
-import { simulatePrepayment } from "../../../engines/prepayment.js";
+import {
+  simulatePrepayment,
+  buildPrepaymentBalanceSeries,
+  estimateLoanPayoffStressDelta,
+} from "../../../engines/prepayment.js";
+import { totalMonthlyBurden } from "../../../engines/burden.js";
 import { comparePayoffStrategies } from "../../../engines/payoffOptimizer.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { formatInr, INR, ARROW, EM_DASH } from "../../../constants/symbols.js";
@@ -7,6 +12,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
+import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
 
 function DebtOrderPanel() {
@@ -112,6 +118,34 @@ export default function LoanToolsPanel() {
     });
   }, [principal, rate, emi, extra]);
 
+  const balanceSeries = useMemo(() => {
+    const P = Number(principal) || 0;
+    const r = Number(rate) || 0;
+    const e = Number(emi) || 0;
+    const x = Number(extra) || 0;
+    if (P <= 0 || e <= 0) return [];
+    return buildPrepaymentBalanceSeries({
+      principalOutstanding: P,
+      annualRatePercent: r,
+      scheduledEmi: e,
+      extraMonthly: x,
+    }).rows;
+  }, [principal, rate, emi, extra]);
+
+  const stressDelta = useMemo(() => {
+    const e = Number(emi) || 0;
+    const x = Number(extra) || 0;
+    const income = Number(settings?.monthlyIncome) || 0;
+    if (income <= 0 || e <= 0) return null;
+    const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
+    return estimateLoanPayoffStressDelta({
+      monthlyIncome: income,
+      monthlyBurdenExcludingThisEmi: Math.max(0, burden - e),
+      emi: e,
+      extraMonthly: x,
+    });
+  }, [emi, extra, settings?.monthlyIncome, commitments, getEffectiveStatus]);
+
   return (
     <div className="ct-stack">
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
@@ -137,13 +171,31 @@ export default function LoanToolsPanel() {
             </div>
           </div>
           {sim && (
-            <div className="ct-insight-accent ct-stack-sm">
-              <Body className="!text-sm">
-                <span className="font-semibold">{t("tools.loan.monthsSaved")}</span> {sim.monthsSaved} ({sim.baselineMonths}{" "}
-                {ARROW} {sim.acceleratedMonths})
-              </Body>
-              <Caption>{t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}</Caption>
-            </div>
+            <>
+              <div className="ct-insight-accent ct-stack-sm">
+                <Body className="!text-sm">
+                  <span className="font-semibold">{t("tools.loan.monthsSaved")}</span> {sim.monthsSaved} ({sim.baselineMonths}{" "}
+                  {ARROW} {sim.acceleratedMonths})
+                </Body>
+                <Caption>{t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}</Caption>
+                {stressDelta && (
+                  <Caption className="block">
+                    {t("charts.stressAfterPayoff", {
+                      before: stressDelta.during,
+                      after: stressDelta.after,
+                      delta: stressDelta.delta,
+                    })}
+                  </Caption>
+                )}
+                {Number(extra) > 0 && <Caption className="block opacity-80">{t("charts.stressDuringExtra")}</Caption>}
+              </div>
+              <ToolComparisonChart
+                data={balanceSeries}
+                titleKey="charts.loanBalanceTitle"
+                baselineLabelKey="tools.loan.seriesBalanceBaseline"
+                whatIfLabelKey="tools.loan.seriesBalanceExtra"
+              />
+            </>
           )}
         </>
       )}

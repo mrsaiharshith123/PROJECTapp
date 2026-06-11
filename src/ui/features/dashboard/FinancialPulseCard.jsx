@@ -153,12 +153,15 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             </div>
           )}
 
-          <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
-            <Caption className="inline-flex items-center">
-              {t("pulse.pressure")}
-              <InfoTip text={CALC_HELP.pressureScore} />
-            </Caption>
-            <div className="ct-row gap-2 shrink-0">
+          <div className="ct-row-between gap-2" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
+            <div>
+              <Caption className="inline-flex items-center">
+                {t("pulse.pressure")}
+                <InfoTip text={CALC_HELP.pressureScore} />
+              </Caption>
+              <Caption className="block mt-0.5 opacity-80">{t("pulse.pressureHint")}</Caption>
+            </div>
+            <div className="ct-stack-sm items-end shrink-0">
               <button
                 type="button"
                 className="ct-link !text-xs"
@@ -176,14 +179,14 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
                   openLifeScoreShareCard(data);
                 }}
               >
-                Share card
+                {t("pulse.shareSummary")}
               </button>
               <Badge tone={intel.stability.tone}>
-                {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)} ·{" "}
-                <span ref={scoreRef} className="ct-numeral">
-                  {intel.stability.score}/100
-                </span>
+                {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)}
               </Badge>
+              <Caption className="ct-numeral block opacity-80">
+                <span ref={scoreRef}>{intel.stability.score}</span>/100
+              </Caption>
             </div>
           </div>
           {advancedPressure && pressureIntel?.emotionalHintKey && (

@@ -49,6 +49,8 @@
     "audit:tier": "node scripts/audit-tier-gates.mjs",
     "audit:insights:i18n": "node scripts/audit-insights-i18n.mjs",
     "audit:engine-tests": "node scripts/audit-engine-tests.mjs",
+    "audit:engines": "node scripts/audit-engines.mjs",
+    "audit:complexity": "node scripts/audit-complexity.mjs",
     "audit:i18n:ui": "node scripts/audit-i18n-ui.mjs",
     "audit:registry-sync": "node scripts/audit-registry-sync.mjs",
     "audit:notification-i18n": "node scripts/audit-notification-i18n.mjs",

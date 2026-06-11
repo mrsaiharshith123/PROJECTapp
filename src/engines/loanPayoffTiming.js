@@ -204,3 +204,20 @@ export function adviseLoanExtraPaymentMonths({
 function formatInr(n) {
   return `₹${Number(n || 0).toLocaleString("en-IN")}`;
 }
+
+/**
+ * Chart rows for month-by-month bill pressure vs free cash room.
+ * @param {ReturnType<typeof adviseLoanExtraPaymentMonths>["rows"]} rows
+ */
+export function buildLoanTimingChartSeries(rows) {
+  if (!rows?.length) return [];
+  return rows.map((r) => ({
+    name: r.label,
+    monthKey: r.monthKey,
+    baseline: r.otherBills,
+    whatIf: r.freeAfter,
+    extraRoom: r.extraCapacity,
+    highlight: r.goodForExtra,
+    heavy: r.heavy,
+  }));
+}

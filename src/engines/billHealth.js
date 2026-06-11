@@ -21,6 +21,10 @@ export function scoreBillHealth(commitment, ctx) {
   /** @type {Record<string, unknown> | undefined} */
   let params;
 
+  if (eff === "paid") {
+    return { score: 92, band: "good", insightId: "bill-health-paid", params: undefined };
+  }
+
   if (eff === "overdue") {
     score = 18;
     insightId = "bill-health-overdue";
@@ -43,12 +47,26 @@ export function scoreBillHealth(commitment, ctx) {
   }
 
   if (isSubscription && todayStr) {
+    const start = commitment.startDate || commitment.dueDate || "";
+    let accountAgeDays = 0;
+    if (start) {
+      try {
+        accountAgeDays = differenceInCalendarDays(
+          parseISO(`${todayStr}T12:00:00`),
+          parseISO(`${start}T12:00:00`),
+        );
+      } catch {
+        accountAgeDays = 0;
+      }
+    }
+
     const spends = (ctx.dailySpends || []).filter((s) => {
       const merchant = String(s.merchant || s.note || "").toLowerCase();
       const billName = name.toLowerCase();
       return merchant && billName && (merchant.includes(billName.slice(0, 6)) || billName.includes(merchant.slice(0, 6)));
     });
-    let daysSinceUse = idleDays + 1;
+
+    let daysSinceUse = null;
     if (spends.length > 0) {
       const last = spends.map((s) => s.date).sort().pop();
       try {
@@ -59,8 +77,11 @@ export function scoreBillHealth(commitment, ctx) {
       } catch {
         daysSinceUse = 0;
       }
+    } else if (accountAgeDays >= idleDays) {
+      daysSinceUse = accountAgeDays;
     }
-    if (daysSinceUse >= idleDays) {
+
+    if (daysSinceUse != null && daysSinceUse >= idleDays) {
       score = Math.min(score, 42);
       insightId = "bill-health-idle-sub";
       params = { name, days: idleDays };

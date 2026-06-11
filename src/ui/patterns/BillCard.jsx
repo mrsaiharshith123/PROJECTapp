@@ -147,12 +147,18 @@ export function BillCard({
             )}
             {health && (
               <span className={`ct-chip-health ct-chip-health-${health.band}`}>
-                {t(`bill.health.${health.band}`)} · {health.score}
+                {t(`bill.health.${health.band}`)}
               </span>
             )}
           </div>
           {health?.insightId && (
-            <p className="ct-caption ct-text-warn">{t(`insight.${health.insightId}`, health.params || {})}</p>
+            <p
+              className={
+                health.band === "stress" ? "ct-caption ct-text-warn font-medium" : "ct-caption text-[var(--ct-text-muted)]"
+              }
+            >
+              {t(`insight.${health.insightId}`, health.params || {})}
+            </p>
           )}
           <p className="ct-caption">
             {dateParts.join(" · ")}

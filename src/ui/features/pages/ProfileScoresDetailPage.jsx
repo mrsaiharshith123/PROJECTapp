@@ -35,11 +35,33 @@ export default function ProfileScoresDetailPage() {
         subtitle={t("profileHub.scoresDetailSubtitle")}
       />
 
+      <Card variant="flat" className="ct-stack-sm">
+        <Body className="ct-body-strong">{t("scores.pillars.title")}</Body>
+        <Caption className="block">{t("scores.pillars.pressure")}</Caption>
+        <Caption className="block">{t("scores.pillars.health")}</Caption>
+        <Caption className="block">{t("scores.pillars.life")}</Caption>
+      </Card>
+
       <div className="ct-profile-hero-chips ct-profile-hero-chips-status ct-profile-hero-chips-4">
         {guide.heroChips.map((chip) => (
           <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
             <Caption className="block ct-profile-chip-label">{t(chip.labelKey)}</Caption>
-            <span className="ct-profile-chip-value">{privacyMode ? "•••" : chip.value}</span>
+            {privacyMode ? (
+              <span className="ct-profile-chip-value">•••</span>
+            ) : chip.pressureLabel ? (
+              <>
+                <span className="ct-profile-chip-value">
+                  {translatePressureLabel(t, chip.pressureLabel)}
+                </span>
+                {chip.detailValue != null ? (
+                  <Caption className="block ct-profile-chip-sub opacity-75">
+                    {chip.detailValue}/100
+                  </Caption>
+                ) : null}
+              </>
+            ) : (
+              <span className="ct-profile-chip-value">{chip.value}</span>
+            )}
           </div>
         ))}
         {lendingTrust ? (
@@ -91,16 +113,30 @@ export default function ProfileScoresDetailPage() {
       <div className="ct-stack">
         {guide.detailScores.map((score) => (
           <Card key={score.id} variant="flat" className="ct-stack-sm">
-            <div className="ct-row-between gap-2 flex-wrap">
+            <div className="ct-row-between gap-2 flex-wrap items-start">
               <Body className="ct-body-strong inline-flex items-center gap-1">
                 {t(score.titleKey)}
                 {score.helpKey ? <InfoTip text={t(score.helpKey)} /> : null}
               </Body>
-              <Badge tone="neutral">
-                {score.emptyKey ? t(score.emptyKey) : score.value}
-              </Badge>
+              {score.id === "pressure" && !score.emptyKey ? (
+                <div className="text-right ct-stack-sm">
+                  <Badge tone={score.tone || "neutral"}>
+                    {score.statusLabel ? translatePressureLabel(t, score.statusLabel) : score.value}
+                  </Badge>
+                  <Caption className="block ct-numeral opacity-80">{score.value}</Caption>
+                  <Caption className="block opacity-75">{t("pulse.pressureHint")}</Caption>
+                </div>
+              ) : score.id === "health" && score.statusKey && !score.emptyKey ? (
+                <div className="text-right ct-stack-sm">
+                  <Badge tone={score.tone || "neutral"}>{t(score.statusKey)}</Badge>
+                  <Caption className="block ct-numeral opacity-80">{score.value}</Caption>
+                  <Caption className="block opacity-75">{t("scores.health.hint")}</Caption>
+                </div>
+              ) : (
+                <Badge tone="neutral">{score.emptyKey ? t(score.emptyKey) : score.value}</Badge>
+              )}
             </div>
-            {(score.statusKey || score.statusLabel) && (
+            {score.id !== "pressure" && score.id !== "health" && (score.statusKey || score.statusLabel) && (
               <Caption className="block">
                 {score.statusKey ? t(score.statusKey) : translatePressureLabel(t, score.statusLabel)}
               </Caption>

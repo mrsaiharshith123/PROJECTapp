@@ -25,9 +25,7 @@ export default function CommitmentsPaymentModal({
           disabled={installmentAmount <= 0 || cycleAlreadyPaid}
           className="w-full py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-xl hover:bg-violet-700 disabled:opacity-40"
         >
-          {t("bills.simulateUpiPay", {
-            amount: `\u20b9${installmentAmount.toLocaleString("en-IN")}`,
-          })}
+          {t("bills.markPaid")}
         </button>
       }
     >

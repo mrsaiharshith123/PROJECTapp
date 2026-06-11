@@ -3,9 +3,13 @@ import { CategoryChip } from "../../patterns/CategoryChip.jsx";
 import { PriorityBadge } from "../../patterns/PriorityBadge.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
+import { BillDetailCharts } from "../commitments/BillDetailCharts.jsx";
 import { computeBillSpendSummary } from "../../../utils/commitmentSpendSummary.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
-import { isCurrentCyclePaid } from "../../../utils/commitmentPayments.js";
+import {
+  isCurrentCyclePaid,
+  lastUndoablePaymentIndex,
+} from "../../../utils/commitmentPayments.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateRepeatType } from "../../../i18n/domainLabels.js";
 import { translateBillProgressLabel } from "../../../i18n/billLabels.js";
@@ -19,15 +23,6 @@ function formatDate(dateStr) {
   });
 }
 
-function Stat({ label, value, accentClass = "" }) {
-  return (
-    <div className="ct-stat-cell">
-      <p className="ct-stat-cell-label">{label}</p>
-      <p className={`ct-stat-cell-value ${accentClass}`}>{value}</p>
-    </div>
-  );
-}
-
 export default function BillDetailModal({
   bill,
   todayStr,
@@ -36,6 +31,7 @@ export default function BillDetailModal({
   onClose,
   onEdit,
   onAddPayment,
+  onUndoPayment,
   onDelete,
 }) {
   const { t } = useTranslation();
@@ -43,36 +39,43 @@ export default function BillDetailModal({
   const progress = computeBillPaymentProgress(bill, todayStr, allCommitments);
   const amount = Number(bill.amount) || 0;
   const statusLabel = translateBillStatus(t, displayStatus);
+  const cyclePaid = isCurrentCyclePaid(bill, todayStr, allCommitments);
+  const undoIndex = lastUndoablePaymentIndex(bill, todayStr, allCommitments);
   const canPay =
-    (displayStatus === "pending" || displayStatus === "overdue") &&
-    !isCurrentCyclePaid(bill, todayStr, allCommitments);
+    (displayStatus === "pending" || displayStatus === "overdue") && !cyclePaid;
+  const canUndo = cyclePaid && undoIndex >= 0 && typeof onUndoPayment === "function";
   const isInsurance = bill.category === "Insurance";
-
-  const futureLabel = summary.ended
-    ? t("bill.ended")
-    : summary.ongoing
-      ? t("bill.ongoing")
-      : summary.futureSpend != null
-        ? `₹${summary.futureSpend.toLocaleString()}`
-        : "—";
 
   return (
     <Modal
       title={bill.name}
       onClose={onClose}
       footer={
-        <div className="ct-row-wrap">
-          {canPay && (
-            <Button type="button" variant="primary" size="md" className="flex-1 min-w-0" onClick={() => onAddPayment(bill)}>
-              {t("bill.detail.recordPayment")}
+        <div className="ct-stack-sm w-full">
+          {canPay ? (
+            <Button type="button" variant="primary" size="md" className="w-full" onClick={() => onAddPayment(bill)}>
+              {t("bills.markPaid")}
             </Button>
-          )}
-          <Button type="button" variant="secondary" size="md" onClick={() => onEdit(bill)}>
-            {t("common.edit")}
-          </Button>
-          <Button type="button" variant="danger" size="md" onClick={() => onDelete(bill.id)}>
-            {t("common.delete")}
-          </Button>
+          ) : null}
+          {canUndo ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              className="w-full"
+              onClick={() => onUndoPayment(bill, undoIndex)}
+            >
+              {t("bill.detail.undoPayment")}
+            </Button>
+          ) : null}
+          <div className="ct-row-wrap">
+            <Button type="button" variant="secondary" size="md" onClick={() => onEdit(bill)}>
+              {t("common.edit")}
+            </Button>
+            <Button type="button" variant="danger" size="md" onClick={() => onDelete(bill.id)}>
+              {t("common.delete")}
+            </Button>
+          </div>
         </div>
       }
     >
@@ -146,35 +149,13 @@ export default function BillDetailModal({
           </Caption>
         </div>
 
-        <div className="ct-stat-grid">
-          <Stat
-            label={t("bill.detail.paidTillNow")}
-            value={`₹${(summary.paidTillNow ?? summary.spentSinceStart).toLocaleString("en-IN")}`}
-            accentClass="ct-text-success"
-          />
-          <Stat
-            label={t("bill.detail.stillToPay")}
-            value={
-              summary.ended
-                ? t("bill.ended")
-                : summary.remainingToPay != null
-                  ? `₹${summary.remainingToPay.toLocaleString("en-IN")}`
-                  : futureLabel
-            }
-            accentClass="ct-text-warning"
-          />
-          <Stat label={t("bill.detail.perCycle")} value={`₹${amount.toLocaleString()}`} />
-          <Stat
-            label={summary.totalContractValue != null ? t("bill.detail.totalRange") : t("bill.detail.contractTotal")}
-            value={
-              summary.totalContractValue != null
-                ? `₹${summary.totalContractValue.toLocaleString("en-IN")}`
-                : summary.totalProjected != null
-                  ? `₹${summary.totalProjected.toLocaleString("en-IN")}`
-                  : "—"
-            }
-          />
-        </div>
+        <BillDetailCharts
+          bill={bill}
+          summary={summary}
+          allCommitments={allCommitments}
+          perCycleAmount={amount}
+        />
+
         {progress.paymentEntries > 0 && summary.priorSpend > 0 && (
           <Caption>
             {t("bill.detail.loggedSplit", {

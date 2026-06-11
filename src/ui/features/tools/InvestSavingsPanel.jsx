@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { analyzeSipPlan } from "../../../engines/sipAdvisor.js";
+import { analyzeSipPlan, buildSipCorpusSeries } from "../../../engines/sipAdvisor.js";
+import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { computeFdRdProjection } from "../../../engines/fdRdTracker.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
@@ -14,6 +15,7 @@ function SipAdvisorTab() {
   const intel = useCommitIntel();
   const { commitments } = useCommitTrack();
   const [sip, setSip] = useState("");
+  const [sipBoost, setSipBoost] = useState("");
   const [years, setYears] = useState("10");
   const [target, setTarget] = useState("");
   const [rate, setRate] = useState("12");
@@ -34,6 +36,20 @@ function SipAdvisorTab() {
         monthlyFreeCash: intel.stability?.freeMoney ?? 0,
       }),
     [sip, years, target, rate, sipFromBills, intel.stability?.freeMoney],
+  );
+
+  const monthlySip = Number(sip) || sipFromBills || 0;
+  const boostAmount = Number(sipBoost) || Math.round(monthlySip * 0.2);
+
+  const corpusSeries = useMemo(
+    () =>
+      buildSipCorpusSeries({
+        monthlySip,
+        extraSip: boostAmount,
+        years: Number(years) || 10,
+        annualRate: (Number(rate) || 12) / 100,
+      }).rows,
+    [monthlySip, boostAmount, years, rate],
   );
 
   return (
@@ -64,6 +80,16 @@ function SipAdvisorTab() {
         <label className="ct-metric-label block">{t("tools.sip.return")}</label>
         <input className="ct-input mt-1" value={rate} onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))} inputMode="numeric" />
       </div>
+      <div>
+        <label className="ct-metric-label block">{t("tools.sip.boostLabel")}</label>
+        <input
+          className="ct-input mt-1"
+          value={sipBoost}
+          onChange={(e) => setSipBoost(e.target.value.replace(/[^\d]/g, ""))}
+          placeholder={monthlySip > 0 ? String(Math.round(monthlySip * 0.2)) : "1000"}
+          inputMode="numeric"
+        />
+      </div>
       <div className="ct-inset ct-stack-sm">
         <Heading level={3} className="!text-base">
           {t("tools.sip.projected", { amount: formatInr(plan.projectedCorpus) })}
@@ -74,6 +100,14 @@ function SipAdvisorTab() {
           </Caption>
         ))}
       </div>
+      {monthlySip > 0 && (
+        <ToolComparisonChart
+          data={corpusSeries}
+          titleKey="charts.sipCorpusTitle"
+          baselineLabelKey="tools.sip.seriesCurrent"
+          whatIfLabelKey="tools.sip.seriesIncreased"
+        />
+      )}
     </div>
   );
 }

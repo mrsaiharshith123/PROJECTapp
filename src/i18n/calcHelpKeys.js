@@ -6,6 +6,7 @@ export const CALC_HELP_KEYS = {
   healthScore: "help.healthScore",
   payStreak: "help.payStreak",
   billControl: "help.billControl",
+  billHealth: "help.billHealth",
   survivalMonths: "help.survivalMonths",
   emergencyReserve: "help.emergencyReserve",
   monthlyBurden: "help.monthlyBurden",

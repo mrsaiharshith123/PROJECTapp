@@ -12,12 +12,15 @@ import { Heading, Caption } from "../primitives/Text.jsx";
  * }} props
  */
 export function ChartShell({ title, hint, children, height = 240, className = "", compact = false }) {
+  const showHead = Boolean(title || hint);
   return (
     <Card variant={compact ? "flat" : "default"} className={`ct-chart-card ${className}`.trim()}>
-      <div className="ct-chart-card-head">
-        <Heading level={compact ? 4 : 3}>{title}</Heading>
-        {hint ? <Caption className="block mt-0.5">{hint}</Caption> : null}
-      </div>
+      {showHead ? (
+        <div className="ct-chart-card-head">
+          {title ? <Heading level={compact ? 4 : 3}>{title}</Heading> : null}
+          {hint ? <Caption className="block mt-0.5">{hint}</Caption> : null}
+        </div>
+      ) : null}
       <div className="ct-chart-plot" style={{ height }}>
         {children}
       </div>

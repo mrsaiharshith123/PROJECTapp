@@ -56,6 +56,43 @@ export function monthsToSipGoal(monthlySip, targetAmount, annualRate = 0.12) {
  * @param {number} [input.annualReturn]
  * @param {number} [input.monthlyFreeCash] affordability hint
  */
+/**
+ * Month-by-month corpus — current SIP vs increased SIP.
+ * @returns {{ rows: { name: string, month: number, baseline: number, whatIf: number }[] }}
+ */
+export function buildSipCorpusSeries({ monthlySip, extraSip = 0, years, annualRate = 0.12 }) {
+  const sip = Math.max(0, Number(monthlySip) || 0);
+  const boost = Math.max(0, Number(extraSip) || 0);
+  const whatIfSip = sip + boost;
+  const yr = Math.max(1, Math.floor(Number(years) || 10));
+  const months = yr * 12;
+  const r = Math.max(0, Number(annualRate) || 0) / 12;
+  if (sip <= 0 && whatIfSip <= 0) return { rows: [] };
+
+  let balBase = 0;
+  let balBoost = 0;
+  const rows = [{ month: 0, name: "0", baseline: 0, whatIf: 0 }];
+
+  for (let m = 1; m <= months; m += 1) {
+    if (r > 0) {
+      balBase = balBase * (1 + r) + sip;
+      balBoost = balBoost * (1 + r) + whatIfSip;
+    } else {
+      balBase += sip;
+      balBoost += whatIfSip;
+    }
+    const label = m % 12 === 0 ? `Y${m / 12}` : m % 6 === 0 ? String(m) : "";
+    rows.push({
+      month: m,
+      name: label || `_${m}`,
+      baseline: Math.round(balBase),
+      whatIf: Math.round(balBoost),
+    });
+  }
+
+  return { rows };
+}
+
 export function analyzeSipPlan(input) {
   const sip = Math.max(0, Number(input.monthlySip) || 0);
   const years = Math.max(1, Math.floor(Number(input.years) || 10));

@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import ToolSourcePicker from "./ToolSourcePicker.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
-import { adviseLoanExtraPaymentMonths, listDebtSources } from "../../../engines/loanPayoffTiming.js";
+import {
+  adviseLoanExtraPaymentMonths,
+  buildLoanTimingChartSeries,
+  listDebtSources,
+} from "../../../engines/loanPayoffTiming.js";
+import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateCategory, translateLendingStatus } from "../../../i18n/domainLabels.js";
@@ -103,6 +108,8 @@ export default function LoanPayoffAdvisor({
     settings,
     t,
   ]);
+
+  const timingChart = useMemo(() => buildLoanTimingChartSeries(advice.rows), [advice.rows]);
 
   const showResults = step === "calc" || (step === "manual" && Number(manual.balance) > 0);
 
@@ -218,6 +225,15 @@ export default function LoanPayoffAdvisor({
                 </p>
               )}
             </div>
+          )}
+
+          {timingChart.length > 0 && (
+            <ToolComparisonChart
+              data={timingChart}
+              titleKey="charts.loanTimingTitle"
+              baselineLabelKey="tools.loan.seriesOtherBills"
+              whatIfLabelKey="tools.loan.seriesFreeAfter"
+            />
           )}
 
           {advice.rows.length > 0 && (

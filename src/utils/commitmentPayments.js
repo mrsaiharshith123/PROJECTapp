@@ -37,6 +37,27 @@ export function isDueMonthPaid(c, monthKey, todayStr = todayYmd(), allCommitment
   return paid >= gross - 0.01;
 }
 
+/**
+ * Index of the last payment row for the current cycle (for undo). -1 if none.
+ * @param {object} c
+ * @param {string} [todayStr]
+ * @param {object[]} [allCommitments]
+ */
+export function lastUndoablePaymentIndex(c, todayStr = todayYmd(), allCommitments = []) {
+  if (!isCurrentCyclePaid(c, todayStr, allCommitments)) return -1;
+  const payments = c.payments || [];
+  if (!payments.length) return -1;
+
+  const rt = normalizeRepeatType(c.repeatType);
+  if (rt === "none") return payments.length - 1;
+
+  const monthKey = currentDueMonthKey(c, todayStr);
+  for (let i = payments.length - 1; i >= 0; i--) {
+    if ((payments[i].date || "").startsWith(monthKey)) return i;
+  }
+  return -1;
+}
+
 /** True when this month's installment is fully recorded (locks pay until next cycle). */
 export function isCurrentCyclePaid(c, todayStr = todayYmd(), allCommitments = []) {
   const rt = normalizeRepeatType(c.repeatType);

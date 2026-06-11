@@ -13,7 +13,7 @@ import {
   openHtmlInNewTab,
 } from "../../../utils/lendingShareCard.js";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
-import { ProgressBar } from "../../patterns/ProgressBar.jsx";
+import { LendingDetailCharts } from "./LendingDetailCharts.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
@@ -71,36 +71,20 @@ export default function LendingDetailDashboard({
         )}
       </div>
 
-      <section className="ct-stat-grid">
-        <Stat label={t("lending.detail.principal")} value={`₹${Number(lending.principalAmount ?? lending.totalAmount).toLocaleString()}`} />
-        <Stat
-          label={t("lending.detail.interestRate")}
-          value={`${lending.interestRate ?? 0}% · ${interestTypeLabel}`}
-        />
-        <Stat label={t("lending.detail.totalPayable")} value={`₹${Number(lending.totalPayable || lending.totalAmount).toLocaleString()}`} />
-        <Stat label={t("lending.detail.interest")} value={`₹${Number(lending.interestAmount || 0).toLocaleString()}`} />
-        <Stat label={t("lending.detail.installment")} value={`₹${Number(lending.expectedInstallment || 0).toLocaleString()}`} />
-        <Stat label={t("lending.detail.nextDue")} value={`₹${Number(lending.nextDueAmount ?? lending.remainingAmount).toLocaleString()}`} />
-        <Stat label={t("lending.detail.remaining")} value={`₹${Number(lending.remainingBalance ?? lending.remainingAmount).toLocaleString()}`} />
-        <Stat
-          label={t("lending.detail.duration")}
-          value={`${lending.startDate || "—"} → ${lending.endDate || "—"}`}
-        />
-      </section>
+      <Caption className="block opacity-90">
+        {t("lending.detail.interestRate")}: {lending.interestRate ?? 0}% · {interestTypeLabel}
+        {" · "}
+        {t("lending.detail.duration")}: {lending.startDate || "—"} → {lending.endDate || "—"}
+        {" · "}
+        {t("lending.detail.paidPct", { percent: dash.paidPct })}
+        {" · "}
+        {t("lending.detail.installments", {
+          paid: dash.installmentProgress.paid,
+          total: dash.installmentProgress.total,
+        })}
+      </Caption>
 
-      <section>
-        <div className="ct-row-between ct-caption mb-1">
-          <span>{t("lending.detail.repaymentProgress")}</span>
-          <span>{t("lending.detail.paidPct", { percent: dash.paidPct })}</span>
-        </div>
-        <ProgressBar value={dash.paidPct} />
-        <Caption className="block mt-1">
-          {t("lending.detail.installments", {
-            paid: dash.installmentProgress.paid,
-            total: dash.installmentProgress.total,
-          })}
-        </Caption>
-      </section>
+      <LendingDetailCharts lending={lending} />
 
       {settings.monthlyIncome > 0 && (
         <ToneSurface tone={salaryWarn ? "warning" : "neutral"}>
@@ -114,30 +98,6 @@ export default function LendingDetailDashboard({
       {trustRow && (
         <Caption className="ct-inset block px-3 py-2 rounded-lg">{trustSummaryLine(trustRow)}</Caption>
       )}
-
-      <section>
-        <Body className="text-xs font-semibold mb-2">{t("lending.detail.paymentHistory")}</Body>
-        {(lending.payments || []).length === 0 ? (
-          <Caption>{t("lending.detail.noPayments")}</Caption>
-        ) : (
-          <ul className="ct-scroll-list">
-            {(lending.payments || []).map((p, i) => (
-              <li key={i} className="ct-caption border-b border-[var(--ct-border)] pb-1">
-                <span className="font-medium">₹{Number(p.amount).toLocaleString()}</span> · {p.date}
-                {p.onTime === false && <span className="ct-text-warning ml-1">{t("lending.detail.late")}</span>}
-                {(p.principalPortion > 0 || p.interestPortion > 0) && (
-                  <span className="block">
-                    {t("lending.detail.principalInterest", {
-                      principal: p.principalPortion || 0,
-                      interest: p.interestPortion || 0,
-                    })}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
 
       <section>
         <Body className="text-xs font-semibold mb-2">{t("lending.detail.timeline")}</Body>
@@ -226,15 +186,6 @@ export default function LendingDetailDashboard({
       )}
 
       <ProofSection fileRef={fileRef} proofs={lending.proofs} onAddProof={onAddProof} t={t} />
-    </div>
-  );
-}
-
-function Stat({ label, value }) {
-  return (
-    <div className="ct-stat-cell">
-      <p className="ct-stat-cell-label">{label}</p>
-      <p className="ct-stat-cell-value">{value}</p>
     </div>
   );
 }
