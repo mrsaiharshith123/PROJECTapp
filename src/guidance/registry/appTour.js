@@ -8,8 +8,8 @@ import { getExperienceMode } from "../../constants/modeExperience.js";
 const COMMON = [
   {
     id: "welcome",
-    title: "Welcome to CommitTrack",
-    body: "CommitTrack presents financial pressure, stability, and next steps in clear terms — without spreadsheets.",
+    title: "Welcome to Perovo",
+    body: "Perovo presents financial pressure, stability, and next steps in clear terms — without spreadsheets.",
     tip: "You may reopen this guide from Profile → App guide.",
   },
   {

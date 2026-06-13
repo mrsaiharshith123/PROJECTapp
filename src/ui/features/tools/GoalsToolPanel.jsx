@@ -14,6 +14,18 @@ import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
 
+/** @param {string} id */
+function goalTypeI18nKey(id) {
+  const map = {
+    reduce_open_debt: "reduceOpenDebt",
+    income_ratio_cap: "incomeRatioCap",
+    save_amount: "saveAmount",
+    education: "education",
+    wedding: "wedding",
+  };
+  return `goals.type.${map[id] || id}`;
+}
+
 export default function GoalsToolPanel() {
   const { t } = useTranslation();
   const {
@@ -104,7 +116,7 @@ export default function GoalsToolPanel() {
         <select className="ct-input mt-1" value={gType} onChange={(e) => setGType(e.target.value)}>
           {GOAL_TYPE_IDS.map((id) => (
             <option key={id} value={id}>
-              {t(`goals.type.${id}`)}
+              {t(goalTypeI18nKey(id))}
             </option>
           ))}
         </select>
@@ -168,7 +180,7 @@ export default function GoalsToolPanel() {
                 <div className="ct-row-between gap-2">
                   <div className="min-w-0">
                     <Body className="font-semibold truncate">{g.title}</Body>
-                    <Caption>{t(`goals.type.${g.type}`)}</Caption>
+                    <Caption>{t(goalTypeI18nKey(g.type))}</Caption>
                     <div className="mt-2">
                       <ProgressBar value={Math.round(p * 100)} />
                     </div>

@@ -187,7 +187,7 @@ for (const s of combined.audits) {
 }
 
 if (opts.list && positional.length === 0) {
-  console.log("\nCommitTrack audit registry\n");
+  console.log("\nPerovo audit registry\n");
   for (const g of ["frontend", "platform", "product", "legacy", "standalone"]) {
     const items = REGISTRY.filter((x) => x.group === g);
     if (!items.length) continue;
@@ -211,7 +211,7 @@ if (opts.json) {
   console.log(JSON.stringify({ ...combined, reports }, null, 2));
 } else {
   console.log("\n╔══════════════════════════════════════════════════╗");
-  console.log("║        COMMITTRACK — GOVERNANCE AUDITS           ║");
+  console.log("║        PEROVO — GOVERNANCE AUDITS                ║");
   console.log("╚══════════════════════════════════════════════════╝\n");
   for (const r of reports) {
     const s = summarize(r);

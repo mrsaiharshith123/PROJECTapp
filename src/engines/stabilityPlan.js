@@ -300,7 +300,7 @@ export function buildShareableStabilitySummary({
   void narrativeHeadlineKey;
   void narrativeHeadlineParams;
   const lines = [
-    `CommitTrack — ${mode === "family" ? "Household" : "Salary"} stability`,
+    `Perovo — ${mode === "family" ? "Household" : "Salary"} stability`,
     narrativeHeadline || "",
     income > 0
       ? `Income (${incomeEntryBasis === "gross" ? "gross" : "take-home"}): ₹${Math.round(income).toLocaleString("en-IN")}/mo`

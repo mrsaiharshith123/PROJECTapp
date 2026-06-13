@@ -119,7 +119,7 @@ export default function FamilyModeDashboard() {
           {household.burdenRatio != null ? `${household.burdenRatio}%` : "—"}
         </Caption>
         <div className="ct-row-between">
-          <Caption>Shared free cash</Caption>
+          <Caption>{t("family.dashboard.sharedFreeCash")}</Caption>
           <Body className="font-semibold">{formatInr(household.combinedFreeCash)}</Body>
         </div>
         <Badge tone={household.stabilityLabel === "stable" ? "success" : household.stabilityLabel === "tight" ? "warning" : "danger"}>

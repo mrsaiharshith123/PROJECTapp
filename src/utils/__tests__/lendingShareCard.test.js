@@ -15,7 +15,7 @@ describe("lendingShareCard", () => {
     const html = generateLendingShareCardHtml(lending, { displayName: "Harsha" });
     expect(html).toContain("Ravi Kumar");
     expect(html).toContain("₹50,000");
-    expect(html).toContain("CommitTrack");
+    expect(html).toContain("Perovo");
   });
 
   it("builds plain-text fallback", () => {

@@ -142,7 +142,7 @@ export async function sendTestNotification() {
   }
 
   const ok = await showLocalNotification({
-    title: "CommitTrack",
+    title: "Perovo",
     body: "Notifications are working. Due and overdue bills will alert you here.",
     tag: "committrack-test",
     data: { type: "test" },

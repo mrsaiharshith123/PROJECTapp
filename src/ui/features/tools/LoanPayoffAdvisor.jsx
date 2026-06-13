@@ -5,11 +5,17 @@ import ToolSourcePicker from "./ToolSourcePicker.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import {
   adviseLoanExtraPaymentMonths,
-  buildLoanTimingChartSeries,
   listDebtSources,
 } from "../../../engines/loanPayoffTiming.js";
+import {
+  buildPrepaymentBalanceSeries,
+  extrasFromTimingRows,
+  payoffLabelFromMonths,
+  sampleLoanChartRows,
+} from "../../../engines/prepayment.js";
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { formatInr } from "../../../constants/symbols.js";
+import { Caption } from "../../primitives/Text.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateCategory, translateLendingStatus } from "../../../i18n/domainLabels.js";
 
@@ -109,7 +115,17 @@ export default function LoanPayoffAdvisor({
     t,
   ]);
 
-  const timingChart = useMemo(() => buildLoanTimingChartSeries(advice.rows), [advice.rows]);
+  const payoffSeries = useMemo(() => {
+    const debt = advice.debt;
+    if (!debt || debt.balance <= 0 || debt.emi <= 0) return null;
+    const extraByMonth = extrasFromTimingRows(advice.rows);
+    return buildPrepaymentBalanceSeries({
+      principalOutstanding: debt.balance,
+      annualRatePercent: debt.rate || 0,
+      scheduledEmi: debt.emi,
+      extraByMonth,
+    });
+  }, [advice.debt, advice.rows]);
 
   const showResults = step === "calc" || (step === "manual" && Number(manual.balance) > 0);
 
@@ -201,51 +217,79 @@ export default function LoanPayoffAdvisor({
             <InfoTip text={CALC_HELP.loanExtraTiming} />
           </p>
 
-          {advice.summary && (
-            <p className="rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 p-3 text-xs leading-relaxed text-indigo-900 dark:text-indigo-100">
-              {advice.summary}
-            </p>
+          {payoffSeries && payoffSeries.rows.length > 0 && (
+            <>
+              <Caption className="block">
+                {t("charts.loanBalanceBaseline", {
+                  month: payoffLabelFromMonths(payoffSeries.baselineMonths, todayStr),
+                  balance: formatInr(payoffSeries.rows[0]?.baseline ?? 0),
+                })}
+              </Caption>
+              {payoffSeries.acceleratedMonths < payoffSeries.baselineMonths ? (
+                <Caption className="block">
+                  {t("charts.loanBalanceLumpy", {
+                    month: payoffLabelFromMonths(payoffSeries.acceleratedMonths, todayStr),
+                    balance: formatInr(0),
+                  })}
+                </Caption>
+              ) : null}
+              <ToolComparisonChart
+                data={sampleLoanChartRows(payoffSeries.rows)}
+                titleKey="charts.loanBalanceTitle"
+                baselineLabelKey="tools.loan.seriesBalanceBaseline"
+                whatIfLabelKey="tools.loan.seriesPaidLumpy"
+                hintKey="charts.loanBalanceHint"
+                showPaymentTooltip
+                yDomainTight
+                singleSeriesWhenEqual
+              />
+            </>
           )}
 
-          {advice.bestForExtra?.goodForExtra && (
-            <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 p-3 text-xs space-y-1">
-              <p className="font-semibold text-emerald-900">{t("loan.advisor.bestMonth")}</p>
-              <p>
-                {t("loan.advisor.bestMonthLine", {
-                  label: advice.bestForExtra.label,
-                  extra: formatInr(advice.bestForExtra.extraCapacity),
-                  bills: formatInr(advice.bestForExtra.otherBills),
+          {advice.debt?.emi > 0 && (
+            <div className="rounded-xl bg-violet-50/80 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800 p-3 space-y-1.5">
+              <p className="text-xs font-bold text-violet-900 dark:text-violet-100">
+                {t("loan.advisor.paymentPlanTitle")}
+              </p>
+              <p className="text-xs leading-relaxed text-violet-900 dark:text-violet-100">
+                {t("loan.advisor.emiEveryMonth", {
+                  amount: formatInr(advice.debt.emi),
+                  name: advice.debt.name,
                 })}
               </p>
-              {advice.bestForExtra.interestSaved > 0 && (
-                <p>
-                  {t("loan.advisor.interestSavedYear", {
-                    amount: formatInr(advice.bestForExtra.interestSaved),
+              {advice.lightMonths.length > 0 && (
+                <p className="text-xs leading-relaxed text-emerald-800 dark:text-emerald-200">
+                  {t("loan.advisor.extraInMonths", {
+                    schedule: advice.lightMonths
+                      .slice(0, 4)
+                      .map((m) => `${m.label} ${formatInr(m.recommendedExtra)}`)
+                      .join(" · "),
+                  })}
+                </p>
+              )}
+              {advice.heavyMonths.length > 0 && (
+                <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                  {t("loan.advisor.emiOnlyHeavy", {
+                    months: advice.heavyMonths
+                      .slice(0, 3)
+                      .map((m) => m.label)
+                      .join(", "),
                   })}
                 </p>
               )}
             </div>
           )}
 
-          {timingChart.length > 0 && (
-            <ToolComparisonChart
-              data={timingChart}
-              titleKey="charts.loanTimingTitle"
-              baselineLabelKey="tools.loan.seriesOtherBills"
-              whatIfLabelKey="tools.loan.seriesFreeAfter"
-            />
-          )}
-
           {advice.rows.length > 0 && (
-            <div className="overflow-x-auto -mx-1 max-h-56 overflow-y-auto">
+            <div className="overflow-x-auto -mx-1 max-h-64 overflow-y-auto">
               <table className="w-full text-[11px] border-collapse">
                 <thead className="sticky top-0 bg-white dark:bg-slate-900">
                   <tr className="text-left text-gray-500 border-b">
                     <th className="py-1 pr-2">{t("loan.advisor.colMonth")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colEmi")}</th>
+                    <th className="py-1 pr-2">{t("loan.advisor.colExtra")}</th>
+                    <th className="py-1 pr-2 font-semibold">{t("loan.advisor.colTotalPay")}</th>
                     <th className="py-1 pr-2">{t("loan.advisor.colOtherBills")}</th>
-                    <th className="py-1 pr-2">{t("loan.advisor.colLoanDue")}</th>
-                    <th className="py-1 pr-2">{t("loan.advisor.colFree")}</th>
-                    <th className="py-1 pr-2">{t("loan.advisor.colExtraRoom")}</th>
                     <th className="py-1">{t("loan.advisor.colPress")}</th>
                   </tr>
                 </thead>
@@ -262,10 +306,12 @@ export default function LoanPayoffAdvisor({
                       }`}
                     >
                       <td className="py-1.5 pr-2 whitespace-nowrap">{r.label}</td>
-                      <td className="py-1.5 pr-2">{formatInr(r.otherBills)}</td>
                       <td className="py-1.5 pr-2">{formatInr(r.loanDue)}</td>
-                      <td className="py-1.5 pr-2">{formatInr(r.freeAfter)}</td>
-                      <td className="py-1.5 pr-2">{formatInr(r.extraCapacity)}</td>
+                      <td className="py-1.5 pr-2">
+                        {r.recommendedExtra > 0 ? formatInr(r.recommendedExtra) : "—"}
+                      </td>
+                      <td className="py-1.5 pr-2 font-semibold">{formatInr(r.totalPay)}</td>
+                      <td className="py-1.5 pr-2">{formatInr(r.otherBills)}</td>
                       <td className="py-1.5 capitalize">{r.pressure}</td>
                     </tr>
                   ))}
@@ -273,6 +319,7 @@ export default function LoanPayoffAdvisor({
               </table>
             </div>
           )}
+
         </>
       )}
     </div>

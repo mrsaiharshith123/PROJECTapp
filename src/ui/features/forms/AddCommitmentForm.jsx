@@ -1,7 +1,9 @@
 import { Card, InfoTip, Button, PageHeader } from "../../index.js";
 import { Caption } from "../../primitives/Text.jsx";
+import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import ChitFundFields from "./ChitFundFields.jsx";
 import InsuranceFields from "./InsuranceFields.jsx";
+import AddVariableSpendInline from "./AddVariableSpendInline.jsx";
 import { OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
 import { PROFILE_SETTINGS_HINT } from "../../../constants/plainLanguage.js";
 import { affordabilityTierTone } from "../../../engines/affordability.js";
@@ -12,6 +14,9 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
 
 export default function AddCommitmentForm({
+  entryType,
+  onEntryTypeChange,
+  onVariableSaved,
   form,
   errors,
   fieldClass,
@@ -37,11 +42,24 @@ export default function AddCommitmentForm({
 
   return (
     <div className="ct-page ct-form-narrow">
-      <PageHeader title={copy.addBill} eyebrow={t("add.newEntry")} />
+      <PageHeader title={entryType === "variable" ? t("add.variableTitle") : copy.addBill} eyebrow={t("add.newEntry")} />
 
       <Card className="ct-stack-lg">
+        <SegmentedControl
+          options={[
+            { id: "scheduled", label: t("add.entryScheduled") },
+            { id: "variable", label: t("add.entryVariable") },
+          ]}
+          value={entryType}
+          onChange={onEntryTypeChange}
+        />
+
+        {entryType === "variable" ? (
+          <AddVariableSpendInline onSaved={onVariableSaved} />
+        ) : (
+          <>
         <div>
-          <label className="ct-field-label">Category</label>
+          <label className="ct-field-label">{t("add.categoryLabel")}</label>
           <select name="category" value={form.category} onChange={onChange} className={fieldClass("category")}>
             <option value="">{t("add.selectCategory")}</option>
             {billCategories.map((cat) => (
@@ -252,9 +270,11 @@ export default function AddCommitmentForm({
         <Button type="button" onClick={onSubmit} size="lg">
           {copy.addBill}
         </Button>
+          </>
+        )}
       </Card>
 
-      {affordability && (
+      {entryType === "scheduled" && affordability && (
         <Card className="ct-stack-sm ct-insight-accent">
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
             <Caption className="font-semibold uppercase">Affordability</Caption>
@@ -273,6 +293,7 @@ export default function AddCommitmentForm({
         </Card>
       )}
 
+      {entryType === "scheduled" && (
       <Card className="ct-insight-accent ct-stack-sm">
         <p className="ct-body-strong">{t("add.guidanceTitle")}</p>
         <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
@@ -282,6 +303,7 @@ export default function AddCommitmentForm({
           <li>• {t("add.guidanceRollForward")}</li>
         </ul>
       </Card>
+      )}
     </div>
   );
 }

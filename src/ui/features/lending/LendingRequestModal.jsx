@@ -252,7 +252,7 @@ export default function LendingRequestModal({ onClose }) {
         <div className="space-y-3 text-sm">
           <p className="text-emerald-700 font-medium">Link ready. Send it to your lender.</p>
           <p className="text-xs text-gray-500">
-            They open it in CommitTrack, see your trust score, sign, and accept. Your borrowed entry is saved here and
+            They open it in Perovo, see your trust score, sign, and accept. Your borrowed entry is saved here and
             cannot be deleted until paid or you both agree to cancel.
           </p>
           <input

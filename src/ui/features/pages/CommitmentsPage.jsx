@@ -138,7 +138,7 @@ const Commitments = () => {
                 <button
                   type="button"
                   className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                  aria-label="Import bank statement"
+                  aria-label={t("bills.importBankStatement")}
                   onClick={openBankImport}
                 >
                   <CtIcon name="file-text" size={22} />

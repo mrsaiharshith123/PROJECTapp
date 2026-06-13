@@ -4,7 +4,6 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption } from "../../primitives/Text.jsx";
 import ExpenseSimulatorForm from "./ExpenseSimulatorForm.jsx";
-import GoalsToolPanel from "./GoalsToolPanel.jsx";
 import UnifiedScenariosPanel from "./UnifiedScenariosPanel.jsx";
 
 function usePlannerTabs() {
@@ -13,7 +12,6 @@ function usePlannerTabs() {
     () => [
       { id: "afford", label: t("tools.planner.tabAfford") },
       { id: "whatif", label: t("tools.planner.tabScenarios") },
-      { id: "goals", label: t("tools.planner.tabGoals") },
     ],
     [t],
   );
@@ -34,7 +32,6 @@ export default function MoneyPlannerPanel() {
           <UnifiedScenariosPanel />
         </ProGate>
       )}
-      {tab === "goals" && <GoalsToolPanel />}
     </div>
   );
 }

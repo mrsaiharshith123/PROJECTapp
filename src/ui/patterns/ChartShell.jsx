@@ -3,7 +3,7 @@ import { Heading, Caption } from "../primitives/Text.jsx";
 
 /**
  * @param {{
- *   title: string,
+ *   title?: string,
  *   hint?: string,
  *   children: import('react').ReactNode,
  *   height?: number,

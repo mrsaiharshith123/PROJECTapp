@@ -2,7 +2,7 @@
  * Human-facing score bands — engines stay numeric; UI leads with words.
  */
 
-/** @param {"good" | "watch" | "stress"} band */
+/** @param {string} band */
 export function billHealthBandKey(band) {
   return `scores.billHealth.band.${band || "watch"}`;
 }
@@ -14,9 +14,4 @@ export function billHealthSummaryKey(portfolio) {
   if (portfolio.band === "good") return "scores.billHealth.summary.good";
   if ((portfolio.stressCount || 0) > 0) return "scores.billHealth.summary.stress";
   return "scores.billHealth.summary.watch";
-}
-
-/** @param {"success" | "info" | "warning" | "coral" | "danger" | string} tone */
-export function pressureBadgeTone(tone) {
-  return tone || "neutral";
 }

@@ -1,6 +1,6 @@
 # Engineering governance
 
-CommitTrack uses a **layered audit system**: production gate + focused governance scans.
+Perovo uses a **layered audit system**: production gate + focused governance scans.
 
 ## Production gate (pre-merge)
 

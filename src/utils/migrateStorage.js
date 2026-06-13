@@ -19,6 +19,8 @@ import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "./dailySpends.js";
 import { normalizeHouseholdMembers } from "../engines/householdEntity.js";
+import { loadWealthState } from "./netWorth/wealthStorage.js";
+import { resolveAccountCreatedAt } from "./accountOrigin.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
@@ -429,13 +431,31 @@ export function invalidateInitialAppStateCache() {
 
 export function loadInitialAppState() {
   if (cachedInitialAppState) return cachedInitialAppState;
-  const settings = loadSettingsFromStorage();
+  let settings = loadSettingsFromStorage();
+  const commitments = loadCommitmentsFromStorage();
+  const lendings = loadLendingsFromStorage();
   const goals = loadGoalsFromStorage();
   const migrated = migrateLegacySavedTowardGoals(settings, goals);
+  settings = migrated.settings;
+
+  if (!settings.accountCreatedAt) {
+    const created = resolveAccountCreatedAt(settings, {
+      commitments,
+      lendings,
+      wealthEntries: loadWealthState().entries,
+    });
+    settings = { ...settings, accountCreatedAt: created };
+    try {
+      localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+    } catch {
+      /* ignore */
+    }
+  }
+
   cachedInitialAppState = {
-    commitments: loadCommitmentsFromStorage(),
-    lendings: loadLendingsFromStorage(),
-    settings: migrated.settings,
+    commitments,
+    lendings,
+    settings,
     goals: migrated.goals,
     monthlySnapshots: loadMonthlySnapshotsFromStorage(),
     dailySpends: loadDailySpendsFromStorage(),
@@ -524,6 +544,8 @@ const DEFAULT_SETTINGS = {
   /** yyyy-MM — resets bill-split counter when month changes */
   usageMonthKey: "",
   billSplitsThisMonth: 0,
+  /** ms epoch — when this device account was first created */
+  accountCreatedAt: 0,
 };
 
 export function loadSettingsFromStorage() {
@@ -607,6 +629,7 @@ export function loadSettingsFromStorage() {
         epfAge: Math.min(70, Math.max(18, Math.floor(Number(o.epfAge) || 30))),
         usageMonthKey: String(o.usageMonthKey || ""),
         billSplitsThisMonth: Math.max(0, Number(o.billSplitsThisMonth) || 0),
+        accountCreatedAt: Math.max(0, Number(o.accountCreatedAt) || 0),
       };
     }
   } catch {
@@ -615,7 +638,7 @@ export function loadSettingsFromStorage() {
   return { ...DEFAULT_SETTINGS };
 }
 
-/** Wipes all device-local CommitTrack data (DPDP erasure). Does not sign out. */
+/** Wipes all device-local Perovo data (DPDP erasure). Does not sign out. */
 export function clearAllLocalData() {
   try {
     localStorage.removeItem(STORAGE_KEYS.commitments);

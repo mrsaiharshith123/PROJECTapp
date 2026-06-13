@@ -14,7 +14,7 @@ if (import.meta.env.PROD) {
 
 bootstrapThemeFromStorage();
 applyUiThemeToDocument();
-log.app.info("CommitTrack starting", { mode: import.meta.env.MODE });
+log.app.info("Perovo starting", { mode: import.meta.env.MODE });
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

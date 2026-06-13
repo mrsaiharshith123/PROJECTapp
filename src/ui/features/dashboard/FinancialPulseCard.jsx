@@ -173,7 +173,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
                     pressureLabel: intel.stability.label,
                     survivalMonths: stable.survival?.survivalMonths,
                     survivalLabel: stable.survival?.tierLabel,
-                    displayName: settings.displayName || "CommitTrack user",
+                    displayName: settings.displayName || t("brand.defaultUser"),
                   };
                   await shareOrCopyPlainText(lifeScoreSharePlainText(data), { title: "Financial Life" });
                   openLifeScoreShareCard(data);

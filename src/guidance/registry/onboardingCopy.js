@@ -7,7 +7,7 @@ export const ONBOARDING_EXPERIENCES = [
     label: "Salaried",
     tagline: "Personal salary and monthly commitments",
     explain:
-      "CommitTrack tracks paycheck pressure, EMIs, subscriptions, and monthly financial flexibility.",
+      "Perovo tracks paycheck pressure, EMIs, subscriptions, and monthly financial flexibility.",
     userMode: "salaried",
     householdScope: "single",
   },
@@ -17,7 +17,7 @@ export const ONBOARDING_EXPERIENCES = [
     label: "Household / Family",
     tagline: "Shared home finances",
     explain:
-      "CommitTrack shows household burden, school fees, renewals, and shared runway for clearer household review.",
+      "Perovo shows household burden, school fees, renewals, and shared runway for clearer household review.",
     userMode: "salaried",
     householdScope: "family",
   },

@@ -66,13 +66,14 @@ export function buildProfileAchievements(input) {
     if (!isHistoryBill(c, input.getEffectiveStatus, input.todayStr)) continue;
     const cat = String(c.category || "");
     const isLoan = ["EMI", "Loan", "Credit Card", "BNPL", "Equipment"].includes(cat);
+    if (!isLoan) continue;
     items.push({
       id: `bill-${c.id}`,
-      source: isLoan ? "debt" : "bill",
+      source: "debt",
       label: c.name || cat,
-      labelSuffixKey: isLoan ? "profileHub.achievement.loanCleared" : "profileHub.achievement.billCleared",
+      labelSuffixKey: "profileHub.achievement.loanCleared",
       achievedAt: Number(c.updatedAt) || Number(c.paidAt) || Date.now(),
-      type: isLoan ? "debt" : "bill",
+      type: "debt",
     });
   }
 

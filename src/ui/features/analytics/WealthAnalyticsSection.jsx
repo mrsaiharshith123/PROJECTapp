@@ -8,8 +8,9 @@ import {
   PressureWealthPanel,
   AllocationCharts,
 } from "../netWorth/NetWorthIntelligencePanels.jsx";
+import SafetyPlannerPanel from "../tools/SafetyPlannerPanel.jsx";
 
-/** Net worth intelligence — liquidity, life score, pressure, allocation charts. */
+/** Net worth intelligence — emergency readiness, liquidity, life score, pressure, allocation charts. */
 export default function WealthAnalyticsSection() {
   const { t } = useTranslation();
   const intel = useNetWorthIntel();
@@ -21,6 +22,7 @@ export default function WealthAnalyticsSection() {
         <Heading level={2}>{t("analytics.wealth.title")}</Heading>
         <Caption className="block mt-1">{t("analytics.wealth.subtitle")}</Caption>
       </div>
+      <SafetyPlannerPanel />
       <LiquidityPanel liquidity={intel.liquidity} privacyMode={privacyMode} />
       <HealthScorePanel lifeScore={intel.lifeScore} />
       <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />

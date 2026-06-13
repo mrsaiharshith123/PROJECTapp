@@ -1,5 +1,5 @@
 /**
- * Shared utilities for CommitTrack audit / governance scripts.
+ * Shared utilities for Perovo audit / governance scripts.
  */
 import fs from "fs";
 import path from "path";

@@ -8,8 +8,10 @@ import { formatInr } from "../../../constants/symbols.js";
 import { trustScoreToTone } from "../../../engines/lendingTrust.js";
 import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function LendingOfferReview() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const { addLending, settings } = useCommitTrack();
   const [lenderName, setLenderName] = useState(settings.displayName || "");
@@ -24,7 +26,7 @@ export default function LendingOfferReview() {
       <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 py-10 max-w-lg mx-auto">
         <Card className="text-center py-10 space-y-3">
           <p className="text-lg font-semibold text-gray-800">Link not valid</p>
-          <p className="text-sm text-gray-500">Ask the borrower to send the link again from CommitTrack.</p>
+          <p className="text-sm text-gray-500">{t("lending.offer.invalidLink")}</p>
           <Link to="/" className="text-sm font-semibold text-indigo-600">
             Go to app home
           </Link>

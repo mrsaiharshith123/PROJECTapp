@@ -1,5 +1,7 @@
 import { Row } from "../primitives/Stack.jsx";
-import { Heading, Eyebrow, Caption } from "../primitives/Text.jsx";
+import { Heading, Eyebrow } from "../primitives/Text.jsx";
+import { useTranslation } from "../../i18n/I18nProvider.js";
+import { PerovoWordmark } from "../brand/PerovoWordmark.jsx";
 
 /**
  * @param {{ title: string, eyebrow?: string, subtitle?: import('react').ReactNode, actions?: import('react').ReactNode }} props
@@ -20,10 +22,11 @@ export function PageHeader({ title, eyebrow, subtitle, actions }) {
 }
 
 export function AppHeader({ greeting, actions, showBrand = true }) {
+  const { t } = useTranslation();
   return (
     <Row between>
       <div>
-        {showBrand && <Caption>CommitTrack</Caption>}
+        {showBrand ? <PerovoWordmark size="sm" alt={t("brand.appName")} /> : null}
         <p className={`ct-greeting ${showBrand ? "mt-0.5" : ""}`}>{greeting}</p>
       </div>
       {actions}

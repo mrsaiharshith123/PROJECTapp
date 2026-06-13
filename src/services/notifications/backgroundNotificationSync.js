@@ -24,7 +24,7 @@ export async function pushReminderSnapshotToServiceWorker({
     5
   ).map((n) => ({
     id: n.id,
-    title: n.urgency === "critical" ? "CommitTrack — overdue" : "CommitTrack reminder",
+    title: n.urgency === "critical" ? "Perovo — overdue" : "Perovo reminder",
     body: n.message || "",
     urgency: n.urgency,
   }));

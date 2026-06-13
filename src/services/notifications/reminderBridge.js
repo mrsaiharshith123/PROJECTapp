@@ -18,7 +18,7 @@ export async function syncFeedToBrowserNotifications(
   for (const item of unread) {
     if (skipAlreadySent && todayStr && wasBrowserNotificationSent(item.id, todayStr)) continue;
     const ok = await showLocalNotification({
-      title: item.title || "CommitTrack reminder",
+      title: item.title || "Perovo reminder",
       body: item.osBody || item.message || item.text || "",
       tag: `ct-${item.id}`,
       data: { id: item.id, route: item.route },

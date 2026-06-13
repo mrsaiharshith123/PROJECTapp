@@ -46,7 +46,7 @@ export function generateAnnualReportHtml(report) {
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>CommitTrack Annual Report</title>
+<title>Perovo Annual Report</title>
 <style>
   @page { size: A4; margin: 18mm; }
   body { font-family: system-ui, sans-serif; color: #0f172a; line-height: 1.5; max-width: 720px; margin: 0 auto; padding: 24px; }
@@ -64,7 +64,7 @@ export function generateAnnualReportHtml(report) {
 </style>
 </head>
 <body>
-  <h1>CommitTrack · Annual Financial Health Report</h1>
+  <h1>Perovo · Annual Financial Health Report</h1>
   <p class="muted">${escapeHtml(report.userName)} · ${escapeHtml(report.reportYear)} · Generated ${escapeHtml(new Date(report.generatedAt).toLocaleDateString("en-IN"))}</p>
 
   <h2>Score summary</h2>
@@ -93,7 +93,7 @@ export function generateAnnualReportHtml(report) {
   <h2>Monthly pressure trend</h2>
   <table><thead><tr><th>Month</th><th>Pressure</th></tr></thead><tbody>${trendRows || "<tr><td colspan=2>—</td></tr>"}</tbody></table>
 
-  <footer>Generated privately in CommitTrack. Not financial advice.</footer>
+  <footer>Generated privately in Perovo. Not financial advice.</footer>
 </body>
 </html>`;
 }

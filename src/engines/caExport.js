@@ -98,7 +98,7 @@ export function buildCaSummarySnapshot({
  */
 export function formatCaSummaryPlainText(data) {
   const lines = [
-    "COMMITTRACK — CA SUMMARY",
+    "PEROVO — CA SUMMARY",
     `Generated: ${data.generatedAt}`,
     "",
     `Taxpayer: ${data.taxpayer.displayName || "—"}`,

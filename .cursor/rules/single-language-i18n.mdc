@@ -15,7 +15,7 @@ When the user picks a language, **the entire app must appear in that language on
    - Symbols (`₹`, `%`, `→`)
    - Universal acronyms users expect (`EMI`, `SMS`, `JSON`, `PAN`)
    - Brand suffixes explicitly kept (`Pro`, `Power` plan tiers) if product decision says so
-3. **App name** uses `brand.appName` — translate per locale (e.g. Telugu script), not hardcoded `CommitTrack` in non-English files.
+3. **App name** uses `brand.appName` — translate per locale (e.g. Telugu script), not hardcoded `Perovo` in non-English files unless locale copy requires Latin brand.
 4. **Insights and tips**: engines return `{ id, tone, params? }`; UI resolves via `translateInsight(t, insight)` and keys under `insight.{id}` in `en.js`.
 5. **New copy workflow**: add key to `src/i18n/messages/en.js` → `npm run sync:i18n` → `npm run i18n:translate:all` (or translate manually) → verify with `npm run audit:i18n:fallback`.
 

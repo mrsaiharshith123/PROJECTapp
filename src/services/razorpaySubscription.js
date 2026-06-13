@@ -80,7 +80,7 @@ async function openRazorpayCheckout({
       key: keyId,
       amount: amountPaise,
       currency: "INR",
-      name: "CommitTrack",
+      name: "Perovo",
       description,
       prefill: {
         name: prefillName,
@@ -216,7 +216,7 @@ export async function startSubscriptionCheckout({
   await openRazorpayCheckout({
     amountPaise: serverOrder?.amount ?? amountPaise,
     orderId: serverOrder?.orderId ?? "",
-    description: `CommitTrack ${planLabel} ${cycleLabel}`,
+    description: `Perovo ${planLabel} ${cycleLabel}`,
     prefillName: settings.displayName || "",
     prefillEmail: user?.email || "",
     prefillPhone: settings.phoneNumber || "",

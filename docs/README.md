@@ -1,10 +1,10 @@
-# CommitTrack — developer documentation
+# Perovo — developer documentation
 
 **Start here.** This folder is the single source of truth for how the project works, where code lives, what is allowed, and which commands to run.
 
 | Doc | Read this when you need… |
 |-----|---------------------------|
-| [01-overview.md](./01-overview.md) | What CommitTrack is, tech stack, data & auth |
+| [01-overview.md](./01-overview.md) | What Perovo is, tech stack, data & auth |
 | [02-project-structure.md](./02-project-structure.md) | Folder map, routing, where to add features |
 | [03-rules.md](./03-rules.md) | UI-only rule, banned patterns, TypeScript |
 | [04-commands.md](./04-commands.md) | Every `npm` script and what it does |

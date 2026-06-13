@@ -74,7 +74,7 @@ export function translate(messages, key, params = {}) {
  * @param {Record<string, string>} messages
  */
 export function validateLocaleMessages(locale, messages) {
-  const missing = listMessageKeys().filter((k) => !messages[k]);
+  const missing = listMessageKeys().filter((k) => messages[k] === undefined);
   return { locale, missing, complete: missing.length === 0 };
 }
 

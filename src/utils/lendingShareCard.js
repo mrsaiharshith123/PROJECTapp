@@ -55,7 +55,7 @@ export function generateLendingShareCardHtml(lending, settings = {}) {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CommitTrack · Lending summary</title>
+<title>Perovo · Lending summary</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -122,7 +122,7 @@ export function generateLendingShareCardHtml(lending, settings = {}) {
 <body>
   <div class="card">
     <div>
-      <div class="brand">CommitTrack</div>
+      <div class="brand">Perovo</div>
       <h1>Lending summary</h1>
       <p class="sub">Private record — share only with people you trust</p>
       <div class="grid">
@@ -153,9 +153,9 @@ export function generateLendingShareCardHtml(lending, settings = {}) {
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;">
-      <div class="qr">Scan to track in CommitTrack</div>
+      <div class="qr">Scan to track in Perovo</div>
       <div class="footer" style="border:none;padding:0;flex:1;">
-        Tracked privately in CommitTrack · committrack.app
+        Tracked privately in Perovo · perovo.app
       </div>
     </div>
   </div>

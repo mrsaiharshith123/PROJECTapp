@@ -27,7 +27,9 @@ export const WEALTH_SCHEMA_VERSION = 1;
 
 /**
  * @typedef {object} WealthSnapshot
- * @property {string} month
+ * @property {string} month — yyyy-MM or yyyy-MM-dd for daily rows
+ * @property {string} [day]
+ * @property {string} [label]
  * @property {number} netWorth
  * @property {number} totalAssets
  * @property {number} totalLiabilities
@@ -49,6 +51,7 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} schemaVersion
  * @property {WealthEntry[]} entries
  * @property {WealthSnapshot[]} snapshots
+ * @property {WealthSnapshot[]} dailySnapshots
  * @property {WealthMilestone[]} milestones
  * @property {boolean} privacyMode
  * @property {number} savingsStreakMonths
@@ -60,6 +63,7 @@ function defaultState() {
     schemaVersion: WEALTH_SCHEMA_VERSION,
     entries: [],
     snapshots: [],
+    dailySnapshots: [],
     milestones: [],
     privacyMode: false,
     savingsStreakMonths: 0,
@@ -101,8 +105,11 @@ export function normalizeWealthState(raw) {
     entries: Array.isArray(r.entries) ? r.entries.map(normalizeWealthEntry) : [],
     snapshots: Array.isArray(r.snapshots) ? r.snapshots.map((s) => {
       const row = /** @type {Record<string, unknown>} */ (s || {});
+      const month = String(row.month || row.day || "");
       return {
-        month: String(row.month || ""),
+        month,
+        day: row.day ? String(row.day) : month,
+        label: row.label ? String(row.label) : undefined,
         netWorth: Number(row.netWorth) || 0,
         totalAssets: Number(row.totalAssets) || 0,
         totalLiabilities: Number(row.totalLiabilities) || 0,
@@ -110,6 +117,22 @@ export function normalizeWealthState(raw) {
         recordedAt: Number(row.recordedAt) || Date.now(),
       };
     }) : [],
+    dailySnapshots: Array.isArray(r.dailySnapshots)
+      ? r.dailySnapshots.map((s) => {
+          const row = /** @type {Record<string, unknown>} */ (s || {});
+          const day = String(row.day || row.month || "");
+          return {
+            day,
+            month: day,
+            label: row.label ? String(row.label) : undefined,
+            netWorth: Number(row.netWorth) || 0,
+            totalAssets: Number(row.totalAssets) || 0,
+            totalLiabilities: Number(row.totalLiabilities) || 0,
+            liquidNetWorth: Number(row.liquidNetWorth) || 0,
+            recordedAt: Number(row.recordedAt) || Date.now(),
+          };
+        })
+      : [],
     milestones: Array.isArray(r.milestones) ? r.milestones : [],
     privacyMode: Boolean(r.privacyMode),
     savingsStreakMonths: Math.max(0, Number(r.savingsStreakMonths) || 0),

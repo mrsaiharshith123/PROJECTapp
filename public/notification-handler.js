@@ -86,7 +86,7 @@ async function showTrayNotifications() {
     if (await wasSentToday(todayStr, item.id)) continue;
 
     try {
-      await self.registration.showNotification(item.title || "CommitTrack", {
+      await self.registration.showNotification(item.title || "Perovo", {
         body: item.body,
         tag: `ct-${item.id}`,
         icon,

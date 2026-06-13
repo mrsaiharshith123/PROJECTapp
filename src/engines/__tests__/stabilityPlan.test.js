@@ -42,6 +42,6 @@ describe("buildStabilityAheadPlan", () => {
       mode: "salaried",
     });
     expect(r.forecastMonths.length).toBeGreaterThan(0);
-    expect(r.shareSummary).toContain("CommitTrack");
+    expect(r.shareSummary).toContain("Perovo");
   });
 });

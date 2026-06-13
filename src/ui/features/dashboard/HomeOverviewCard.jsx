@@ -13,7 +13,6 @@ import {
 } from "../../../utils/salarySpendBar.js";
 import {
   buildMonthCumulativeSpendSeries,
-  extendSpendSeriesToMonthEnd,
 } from "../../../utils/monthSpendSeries.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { HeroMonthCard } from "../HeroMonthCard.jsx";
@@ -60,10 +59,10 @@ export default function HomeOverviewCard() {
     ],
   );
 
-  const spendSeries = useMemo(() => {
-    const base = buildMonthCumulativeSpendSeries(commitments, dailySpends, todayStr, profileId);
-    return extendSpendSeriesToMonthEnd(base, income, todayStr);
-  }, [commitments, dailySpends, todayStr, profileId, income]);
+  const spendSeries = useMemo(
+    () => buildMonthCumulativeSpendSeries(commitments, dailySpends, todayStr, profileId),
+    [commitments, dailySpends, todayStr, profileId],
+  );
 
   const overdueCount = useMemo(
     () => commitments.filter((c) => getEffectiveStatus(c) === "overdue").length,

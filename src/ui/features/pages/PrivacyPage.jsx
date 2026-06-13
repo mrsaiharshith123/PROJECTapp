@@ -1,10 +1,9 @@
 import { Card, PageHeader, Body, Caption } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const CONTACT_EMAIL = "support@committrack.app";
-
 export default function PrivacyPage() {
   const { t } = useTranslation();
+  const contactEmail = t("support.contactEmail");
 
   return (
     <div className="ct-page ct-stack">
@@ -32,7 +31,7 @@ export default function PrivacyPage() {
           {"\n"}
           {t("privacy.rightsErasure")}
           {"\n"}
-          {t("privacy.rightsGrievance", { email: CONTACT_EMAIL })}
+          {t("privacy.rightsGrievance", { email: contactEmail })}
         </Body>
 
         <Body className="font-semibold mt-4">{t("privacy.retentionTitle")}</Body>
@@ -43,7 +42,7 @@ export default function PrivacyPage() {
         </Body>
 
         <Body className="font-semibold mt-4">{t("privacy.contactTitle")}</Body>
-        <Body>{CONTACT_EMAIL}</Body>
+        <Body>{contactEmail}</Body>
       </Card>
     </div>
   );

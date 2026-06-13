@@ -15,7 +15,7 @@ export function registerDevSubscriptionTools(next) {
       /** @param {"pro"|"power"} tier */
       async simulatePayment(tier) {
         if (!bridge?.updateSettings) {
-          throw new Error("App not ready — open CommitTrack first, then retry.");
+          throw new Error("App not ready — open Perovo first, then retry.");
         }
         return completeSimulatedSubscriptionUpgrade({
           tier,
@@ -25,7 +25,7 @@ export function registerDevSubscriptionTools(next) {
       },
       resetSubscription() {
         if (!bridge?.updateSettings) {
-          throw new Error("App not ready — open CommitTrack first, then retry.");
+          throw new Error("App not ready — open Perovo first, then retry.");
         }
         bridge.updateSettings({ subscriptionTier: "free", cloudSyncEnabled: false });
         return { tier: "free" };

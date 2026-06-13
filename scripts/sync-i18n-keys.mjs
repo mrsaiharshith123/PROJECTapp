@@ -20,8 +20,8 @@ async function loadLocale(file) {
 /** @param {Record<string, string>} messages @param {string} [file] */
 function serializeLocale(messages, file = "") {
   const headers = {
-    "ks.js": "/** Kashmiri (ks) locale — CommitTrack messages */\n",
-    "ur.js": "/** Urdu (ur) locale — CommitTrack messages */\n",
+    "ks.js": "/** Kashmiri (ks) locale — Perovo messages */\n",
+    "ur.js": "/** Urdu (ur) locale — Perovo messages */\n",
   };
   const lines = [headers[file] || "", "export default {"].filter(Boolean);
   for (const [key, value] of Object.entries(messages)) {

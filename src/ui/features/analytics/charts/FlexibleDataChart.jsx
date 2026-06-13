@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -35,6 +36,11 @@ const rupeeTip = (v) => (v != null ? formatInr(v) : "");
  *   onSeriesClick?: (row: object, seriesKey?: string) => void,
  *   clickableSeriesKeys?: string[],
  *   scoreChart?: boolean,
+ *   hideDots?: boolean,
+ *   yDomainFromZero?: boolean,
+ *   yDomainTight?: boolean,
+ *   customTooltip?: import('react').ComponentType<any>,
+ *   disableTooltipCursor?: boolean,
  * }} props
  */
 export function FlexibleDataChart({
@@ -49,8 +55,38 @@ export function FlexibleDataChart({
   onSeriesClick,
   clickableSeriesKeys = [],
   scoreChart = false,
+  hideDots = false,
+  yDomainFromZero = false,
+  yDomainTight = false,
+  customTooltip = undefined,
+  disableTooltipCursor = false,
 }) {
   const t = getChartTheme(theme);
+
+  const keys = useMemo(
+    () =>
+      seriesKeys?.length > 0
+        ? seriesKeys
+        : [{ key: valueKey, name: valueLabel, color: t.series.accent }],
+    [seriesKeys, valueKey, valueLabel, t.series.accent],
+  );
+
+  /** @type {any} */
+  const yDomain = useMemo(() => {
+    if (scoreChart) return [0, 100];
+    if (yDomainTight) {
+      const vals = (data || []).flatMap((row) => keys.map((k) => Number(row[k.key]) || 0));
+      if (!vals.length) return [0, 1];
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const span = Math.max(max - min, max * 0.05, 1);
+      const pad = Math.max(span * 0.06, 1);
+      return [Math.max(0, Math.floor(min - pad)), Math.ceil(max + pad)];
+    }
+    if (yDomainFromZero) return [0, (max) => Math.max(Math.ceil(max * 1.05), 1)];
+    return undefined;
+  }, [data, keys, scoreChart, yDomainTight, yDomainFromZero]);
+
   if (!data?.length) return <ChartEmpty message={emptyMessage} />;
 
   const isRound = chartType === "pie" || chartType === "donut";
@@ -82,26 +118,32 @@ export function FlexibleDataChart({
     );
   }
 
-  const keys =
-    seriesKeys?.length > 0
-      ? seriesKeys
-      : [{ key: valueKey, name: valueLabel, color: t.series.accent }];
-
   const Chart = chartType === "line" ? LineChart : BarChart;
+  const showDots = !hideDots && data.length <= 12;
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <Chart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <Chart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 20 }}>
         <CartesianGrid {...t.grid} />
-        <XAxis dataKey={xKey} tick={t.tick} axisLine={false} tickLine={false} />
-        <YAxis
-          domain={scoreChart ? [0, 100] : undefined}
+        <XAxis
+          dataKey={xKey}
           tick={t.tick}
           axisLine={false}
           tickLine={false}
+          interval="preserveStartEnd"
+          minTickGap={12}
+        />
+        <YAxis
+          domain={yDomain}
+          tick={t.tick}
+          axisLine={false}
+          tickLine={false}
+          width={52}
           tickFormatter={scoreChart ? (v) => String(v) : (v) => `${INR}${v}`}
         />
         <Tooltip
+          content={/** @type {any} */ (customTooltip)}
+          cursor={disableTooltipCursor ? false : undefined}
           formatter={scoreChart ? (v) => (v != null ? String(v) : "") : (v) => rupeeTip(v)}
           {...t.tooltip}
         />
@@ -117,11 +159,11 @@ export function FlexibleDataChart({
               name={s.name}
               stroke={s.color || t.series.accent}
               strokeWidth={t.lineWidth}
-              dot={{ r: t.dotRadius, fill: s.color || t.series.accentSoft }}
+              dot={showDots ? { r: t.dotRadius, fill: s.color || t.series.accentSoft } : false}
               activeDot={
                 clickable
                   ? {
-                      r: t.dotRadius + 2,
+                      r: showDots ? t.dotRadius + 2 : 4,
                       cursor: "pointer",
                       onClick: (dotProps) => {
                         const d = /** @type {{ payload?: object }} */ (dotProps);
@@ -129,7 +171,9 @@ export function FlexibleDataChart({
                         if (row) onSeriesClick(row, s.key);
                       },
                     }
-                  : { r: t.dotRadius + 2 }
+                  : showDots
+                    ? { r: t.dotRadius + 2 }
+                    : { r: 4 }
               }
             />
           ) : (

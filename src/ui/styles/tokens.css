@@ -1,5 +1,5 @@
 /**
- * CommitTrack — Cyber Glass Fintech OS
+ * Perovo — Cyber Glass Fintech OS
  * Obsidian + neon violet glassmorphism · Inter typography
  */
 @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap");
@@ -23,7 +23,7 @@ html[data-ui="ct"] {
   --ct-life-inset-border: rgba(155, 109, 255, 0.06);
   --ct-life-shadow: var(--ct-shadow-card), 0 0 40px rgba(124, 92, 255, 0.12);
   --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(124, 77, 255, 0.08));
-  --ct-life-nav-bg: rgba(12, 12, 22, 0.78);
+  --ct-life-nav-bg: rgba(12, 12, 22, 0.94);
   --ct-life-grad-hero: linear-gradient(165deg, rgba(91, 77, 255, 0.22) 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
   --ct-life-glass: rgba(18, 18, 37, 0.58);
   --ct-life-btn-grad: linear-gradient(135deg, #9b6dff 0%, var(--ct-life-violet) 52%, var(--ct-life-violet-deep) 100%);

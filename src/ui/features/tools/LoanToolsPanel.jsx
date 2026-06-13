@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   simulatePrepayment,
-  buildPrepaymentBalanceSeries,
+  buildCumulativePaidSeries,
+  payoffLabelFromMonths,
+  sampleLoanChartRows,
   estimateLoanPayoffStressDelta,
 } from "../../../engines/prepayment.js";
 import { totalMonthlyBurden } from "../../../engines/burden.js";
@@ -118,18 +120,18 @@ export default function LoanToolsPanel() {
     });
   }, [principal, rate, emi, extra]);
 
-  const balanceSeries = useMemo(() => {
+  const paidSeries = useMemo(() => {
     const P = Number(principal) || 0;
     const r = Number(rate) || 0;
     const e = Number(emi) || 0;
     const x = Number(extra) || 0;
-    if (P <= 0 || e <= 0) return [];
-    return buildPrepaymentBalanceSeries({
+    if (P <= 0 || e <= 0) return null;
+    return buildCumulativePaidSeries({
       principalOutstanding: P,
       annualRatePercent: r,
       scheduledEmi: e,
       extraMonthly: x,
-    }).rows;
+    });
   }, [principal, rate, emi, extra]);
 
   const stressDelta = useMemo(() => {
@@ -188,13 +190,33 @@ export default function LoanToolsPanel() {
                   </Caption>
                 )}
                 {Number(extra) > 0 && <Caption className="block opacity-80">{t("charts.stressDuringExtra")}</Caption>}
+                {paidSeries && (
+                  <>
+                    <Caption className="block">
+                      {t("charts.loanPayoffBaseline", {
+                        month: payoffLabelFromMonths(paidSeries.baselineMonths, todayStr),
+                        total: formatInr(paidSeries.baselineTotalPaid),
+                      })}
+                    </Caption>
+                    {Number(extra) > 0 && (
+                      <Caption className="block">
+                        {t("charts.loanPayoffWithExtra", {
+                          month: payoffLabelFromMonths(paidSeries.acceleratedMonths, todayStr),
+                          total: formatInr(paidSeries.acceleratedTotalPaid),
+                        })}
+                      </Caption>
+                    )}
+                  </>
+                )}
               </div>
+              {paidSeries && paidSeries.rows.length > 0 && (
               <ToolComparisonChart
-                data={balanceSeries}
-                titleKey="charts.loanBalanceTitle"
-                baselineLabelKey="tools.loan.seriesBalanceBaseline"
-                whatIfLabelKey="tools.loan.seriesBalanceExtra"
+                data={sampleLoanChartRows(paidSeries.rows)}
+                titleKey="charts.loanPaidTitle"
+                baselineLabelKey="tools.loan.seriesPaidBaseline"
+                whatIfLabelKey="tools.loan.seriesPaidExtra"
               />
+              )}
             </>
           )}
         </>

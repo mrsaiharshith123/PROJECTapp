@@ -1,5 +1,5 @@
 ---
-description: Keep CommitTrack free of dead code, duplicate tools, and stale copy keys
+description: Keep Perovo free of dead code, duplicate tools, and stale copy keys
 globs:
   - src/**/*
   - scripts/audit*.mjs

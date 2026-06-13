@@ -38,7 +38,14 @@ export function buildMonthCumulativeSpendSeries(commitments, dailySpends, todayS
   return days.map((d) => {
     const key = format(d, "yyyy-MM-dd");
     cumulative += byDay.get(key) || 0;
-    return { day: getDate(d), value: Math.round(cumulative) };
+    const dayNum = getDate(d);
+    const isMonthEdge = dayNum === 1 || key === todayStr;
+    return {
+      day: dayNum,
+      dayKey: key,
+      label: isMonthEdge ? format(d, "d MMM") : String(dayNum),
+      value: Math.round(cumulative),
+    };
   });
 }
 

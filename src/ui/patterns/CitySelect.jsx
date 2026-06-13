@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider.js";
 import { INDIAN_CITIES, DEFAULT_CITY_ID } from "../../constants/cityLivingCosts.js";
 import { inputClassName } from "../primitives/Input.jsx";
 
@@ -7,6 +8,7 @@ import { inputClassName } from "../primitives/Input.jsx";
  * @param {{ value?: string, onChange: (cityId: string) => void, className?: string, required?: boolean }} props
  */
 export function CitySelect({ value = "", onChange, className = "", required = false }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const fieldClass = className || inputClassName();
 
@@ -34,7 +36,7 @@ export function CitySelect({ value = "", onChange, className = "", required = fa
         className={fieldClass}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search city or state…"
+        placeholder={t("citySelect.searchPlaceholder")}
         autoComplete="off"
       />
       <select

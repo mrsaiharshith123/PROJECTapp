@@ -61,6 +61,15 @@ html[data-ui="ct"][data-theme="light"] .ct-bottom-nav {
   box-shadow: var(--ct-shadow-dock);
   border-color: var(--ct-border);
 }
+html[data-ui="ct"][data-theme="light"] .ct-bottom-nav::before {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.72) 38%,
+    rgba(255, 255, 255, 0.94) 72%,
+    rgba(255, 255, 255, 0.98) 100%
+  );
+}
 
 html[data-ui="ct"][data-theme="light"] .ct-nav-fab {
   box-shadow:

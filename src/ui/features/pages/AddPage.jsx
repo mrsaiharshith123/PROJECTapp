@@ -40,6 +40,7 @@ const Add = () => {
   const { t } = useTranslation();
   const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = useCommitTrack();
   const navigate = useNavigate();
+  const [entryType, setEntryType] = useState("scheduled");
   const [form, setForm] = useState({
     name: "",
     amount: "",
@@ -47,7 +48,7 @@ const Add = () => {
     endDate: "",
     dueDate: "",
     category: "",
-    repeatType: "none",
+    repeatType: "monthly",
     priority: "medium",
     notes: "",
     householdPayer: "",
@@ -255,6 +256,9 @@ const Add = () => {
 
   return (
     <AddCommitmentForm
+      entryType={entryType}
+      onEntryTypeChange={setEntryType}
+      onVariableSaved={() => navigate("/commitments?tab=spend")}
       form={form}
       errors={errors}
       fieldClass={fieldClass}

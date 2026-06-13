@@ -112,7 +112,16 @@ export function HeroMonthCard({
         </div>
       ) : null}
 
-      <div className="px-1 mt-3 relative">
+      <div className="ct-hero-spend-footer relative mt-3">
+        <MonthlySpendSparkline
+          data={spendSeries}
+          salary={monthlyIncome}
+          spendPct={spendPct}
+          overBudget={overBudget}
+        />
+      </div>
+
+      <div className="px-1 mt-2 relative">
         <div className="ct-row-between ct-caption mb-1">
           <span>{t("home.salarySpendTitle")}</span>
           <span className={overBudget ? "ct-hero-metric-danger font-semibold" : ""}>
@@ -120,15 +129,6 @@ export function HeroMonthCard({
           </span>
         </div>
         <SalarySpendBar pct={privacyMode ? 0 : spendPct} overBudget={privacyMode ? false : overBudget} />
-      </div>
-
-      <div className="ct-hero-spend-footer relative">
-        <MonthlySpendSparkline
-          data={spendSeries}
-          salary={monthlyIncome}
-          spendPct={spendPct}
-          overBudget={overBudget}
-        />
       </div>
 
       <p className="ct-caption text-center pb-3 pt-1 relative opacity-80">{t("home.tapAnalytics")}</p>

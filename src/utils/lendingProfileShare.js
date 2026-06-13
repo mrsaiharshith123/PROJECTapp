@@ -23,7 +23,7 @@ function formatInr(n) {
  * }} data
  */
 export function lendingProfileSharePlainText(data) {
-  const name = data.displayName || "CommitTrack user";
+  const name = data.displayName || "Perovo user";
   const trust = data.trustScore != null ? `${data.trustScore}/100` : "—";
   return [
     `${name} — Lending profile`,
@@ -31,13 +31,13 @@ export function lendingProfileSharePlainText(data) {
     `Money borrowed (total): ${formatInr(data.borrowedTotal)} · outstanding ${formatInr(data.borrowedOutstanding)}`,
     `Trust score: ${trust}`,
     `Active deals: ${data.activeDeals ?? 0}`,
-    "— CommitTrack · private snapshot, no bank details",
+    "— Perovo · private snapshot, no bank details",
   ].join("\n");
 }
 
 /** @param {Parameters<typeof lendingProfileSharePlainText>[0]} data */
 export function generateLendingProfileShareCardHtml(data) {
-  const name = escapeHtml(data.displayName || "CommitTrack user");
+  const name = escapeHtml(data.displayName || "Perovo user");
   const trust = data.trustScore != null ? `${data.trustScore}/100` : "—";
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>Lending profile</title>
@@ -53,7 +53,7 @@ h1{font-size:1.1rem;margin:0 0 4px;opacity:.85} h2{font-size:1.5rem;margin:0 0 1
 <div class="row"><span>Still to repay</span><span class="val">${formatInr(data.borrowedOutstanding)}</span></div>
 <div class="row"><span>Trust score</span><span class="val">${trust}</span></div>
 <div class="row"><span>Active deals</span><span class="val">${data.activeDeals ?? 0}</span></div>
-<p class="footer">CommitTrack by Daloy Tech — share when asking for or offering a loan. No account numbers included.</p></div></body></html>`;
+<p class="footer">Perovo — share when asking for or offering a loan. No account numbers included.</p></div></body></html>`;
 }
 
 /** @param {Parameters<typeof lendingProfileSharePlainText>[0]} data */

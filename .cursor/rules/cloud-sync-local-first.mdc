@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Cloud sync & local-first backup
 
-CommitTrack is **local-first**. Supabase account backup is optional debounced sync — not a live database product.
+Perovo is **local-first**. Supabase account backup is optional debounced sync — not a live database product.
 
 ## Rules
 

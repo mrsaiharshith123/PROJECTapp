@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useCommitTrack } from "./CommitTrackContext.jsx";
 import {
@@ -7,6 +7,7 @@ import {
   filterWealthByProfile,
   normalizeWealthEntry,
 } from "../utils/netWorth/wealthStorage.js";
+import { appendDailyWealthSnapshot } from "../utils/netWorth/dailySnapshot.js";
 import { computeNetWorthCore, computeGrowthRates } from "../engines/netWorth/core.js";
 import { detectNewMilestones } from "../engines/netWorth/milestones.js";
 
@@ -15,6 +16,7 @@ import { detectNewMilestones } from "../engines/netWorth/milestones.js";
  * @property {import('../utils/netWorth/wealthStorage.js').WealthEntry[]} entries
  * @property {import('../utils/netWorth/wealthStorage.js').WealthEntry[]} allEntries
  * @property {import('../utils/netWorth/wealthStorage.js').WealthSnapshot[]} snapshots
+ * @property {import('../utils/netWorth/wealthStorage.js').WealthSnapshot[]} dailySnapshots
  * @property {import('../utils/netWorth/wealthStorage.js').WealthMilestone[]} milestones
  * @property {boolean} privacyMode
  * @property {number} savingsStreakMonths
@@ -24,15 +26,43 @@ import { detectNewMilestones } from "../engines/netWorth/milestones.js";
  * @property {(id: string, patch: object) => void} updateEntry
  * @property {(id: string) => void} deleteEntry
  * @property {() => void} togglePrivacyMode
- * @property {() => void} recordMonthlySnapshot
+ * @property {() => void} recordDailySnapshot
  */
 
 /** @type {import('react').Context<NetWorthStoreValue | null>} */
 const NetWorthContext = createContext(/** @type {NetWorthStoreValue | null} */ (null));
 
+function withSnapshots(prev, profileEntries) {
+  const core = computeNetWorthCore(profileEntries);
+  const monthKey = format(new Date(), "yyyy-MM");
+  let next = appendDailyWealthSnapshot(prev, core);
+  if (!next.snapshots.some((s) => s.month === monthKey)) {
+    const snap = {
+      month: monthKey,
+      netWorth: core.netWorth,
+      totalAssets: core.totalAssets,
+      totalLiabilities: core.totalLiabilities,
+      liquidNetWorth: core.liquidNetWorth,
+      recordedAt: Date.now(),
+    };
+    const snapshots = [...next.snapshots, snap].sort((a, b) => a.month.localeCompare(b.month)).slice(-48);
+    const newMilestones = detectNewMilestones(
+      { ...core, savingsStreakMonths: next.savingsStreakMonths },
+      next.milestones,
+    );
+    next = {
+      ...next,
+      snapshots,
+      milestones: [...next.milestones, ...newMilestones],
+    };
+  }
+  return next;
+}
+
 export function NetWorthProvider({ children }) {
   const { settings, activeProfileId } = useCommitTrack();
   const [state, setState] = useState(() => loadWealthState());
+  const profileId = activeProfileId || settings.activeProfileId || "default";
 
   const persist = useCallback((updater) => {
     setState((prev) => {
@@ -42,72 +72,60 @@ export function NetWorthProvider({ children }) {
   }, []);
 
   const profileEntries = useMemo(
-    () => filterWealthByProfile(state.entries, activeProfileId || settings.activeProfileId || "default"),
-    [state.entries, activeProfileId, settings.activeProfileId]
+    () => filterWealthByProfile(state.entries, profileId),
+    [state.entries, profileId],
   );
 
-  const recordMonthlySnapshot = useCallback(() => {
-    const core = computeNetWorthCore(profileEntries);
-    const monthKey = format(new Date(), "yyyy-MM");
-    persist((prev) => {
-      if (prev.snapshots.some((s) => s.month === monthKey)) return prev;
-      const snap = {
-        month: monthKey,
-        netWorth: core.netWorth,
-        totalAssets: core.totalAssets,
-        totalLiabilities: core.totalLiabilities,
-        liquidNetWorth: core.liquidNetWorth,
-        recordedAt: Date.now(),
-      };
-      const snapshots = [...prev.snapshots, snap].sort((a, b) => a.month.localeCompare(b.month)).slice(-48);
-      const newMilestones = detectNewMilestones(
-        { ...core, savingsStreakMonths: prev.savingsStreakMonths },
-        prev.milestones
-      );
-      return {
-        ...prev,
-        snapshots,
-        milestones: [...prev.milestones, ...newMilestones],
-      };
-    });
+  const recordDailySnapshot = useCallback(() => {
+    persist((prev) => withSnapshots(prev, profileEntries));
   }, [persist, profileEntries]);
+
+  useEffect(() => {
+    if (!profileEntries.length) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    if ((state.dailySnapshots || []).some((s) => s.day === today)) return;
+    queueMicrotask(() => recordDailySnapshot());
+  }, [profileEntries, state.dailySnapshots, recordDailySnapshot]);
 
   const addEntry = useCallback(
     (raw) => {
       const entry = normalizeWealthEntry({
         ...raw,
-        profileId: raw.profileId ?? activeProfileId ?? settings.activeProfileId ?? "default",
+        profileId: raw.profileId ?? profileId,
       });
-      persist((prev) => ({ ...prev, entries: [...prev.entries, entry] }));
-      recordMonthlySnapshot();
+      persist((prev) => {
+        const entries = [...prev.entries, entry];
+        const scoped = filterWealthByProfile(entries, profileId);
+        return withSnapshots({ ...prev, entries }, scoped);
+      });
     },
-    [persist, activeProfileId, settings.activeProfileId, recordMonthlySnapshot]
+    [persist, profileId],
   );
 
   const updateEntry = useCallback(
     (id, patch) => {
-      persist((prev) => ({
-        ...prev,
-        entries: prev.entries.map((e) =>
+      persist((prev) => {
+        const entries = prev.entries.map((e) =>
           String(e.id) !== String(id)
             ? e
-            : normalizeWealthEntry({ ...e, ...patch, id: e.id, updatedAt: Date.now() })
-        ),
-      }));
-      recordMonthlySnapshot();
+            : normalizeWealthEntry({ ...e, ...patch, id: e.id, updatedAt: Date.now() }),
+        );
+        const scoped = filterWealthByProfile(entries, profileId);
+        return withSnapshots({ ...prev, entries }, scoped);
+      });
     },
-    [persist, recordMonthlySnapshot]
+    [persist, profileId],
   );
 
   const deleteEntry = useCallback(
     (id) => {
-      persist((prev) => ({
-        ...prev,
-        entries: prev.entries.filter((e) => String(e.id) !== String(id)),
-      }));
-      recordMonthlySnapshot();
+      persist((prev) => {
+        const entries = prev.entries.filter((e) => String(e.id) !== String(id));
+        const scoped = filterWealthByProfile(entries, profileId);
+        return withSnapshots({ ...prev, entries }, scoped);
+      });
     },
-    [persist, recordMonthlySnapshot]
+    [persist, profileId],
   );
 
   const togglePrivacyMode = useCallback(() => {
@@ -117,7 +135,7 @@ export function NetWorthProvider({ children }) {
   const core = useMemo(() => computeNetWorthCore(profileEntries), [profileEntries]);
   const growth = useMemo(
     () => computeGrowthRates(state.snapshots, core.netWorth),
-    [state.snapshots, core.netWorth]
+    [state.snapshots, core.netWorth],
   );
 
   const value = useMemo(
@@ -125,6 +143,7 @@ export function NetWorthProvider({ children }) {
       entries: profileEntries,
       allEntries: state.entries,
       snapshots: state.snapshots,
+      dailySnapshots: state.dailySnapshots || [],
       milestones: state.milestones,
       privacyMode: state.privacyMode,
       savingsStreakMonths: state.savingsStreakMonths,
@@ -134,12 +153,13 @@ export function NetWorthProvider({ children }) {
       updateEntry,
       deleteEntry,
       togglePrivacyMode,
-      recordMonthlySnapshot,
+      recordDailySnapshot,
     }),
     [
       profileEntries,
       state.entries,
       state.snapshots,
+      state.dailySnapshots,
       state.milestones,
       state.privacyMode,
       state.savingsStreakMonths,
@@ -149,8 +169,8 @@ export function NetWorthProvider({ children }) {
       updateEntry,
       deleteEntry,
       togglePrivacyMode,
-      recordMonthlySnapshot,
-    ]
+      recordDailySnapshot,
+    ],
   );
 
   return <NetWorthContext.Provider value={value}>{children}</NetWorthContext.Provider>;

@@ -3,6 +3,82 @@ html[data-ui="ct"] .ct-nw-page {
   padding-bottom: 5rem;
 }
 
+html[data-ui="ct"] .ct-profile-life-card {
+  display: block;
+  width: 100%;
+  text-align: inherit;
+  padding: 1.125rem 1.125rem 0;
+  cursor: default;
+}
+
+html[data-ui="ct"] .ct-profile-life-card:hover {
+  filter: none;
+  transform: none;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-hero-chips-row {
+  margin-top: 0.35rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-chip {
+  padding: 0.45rem 0.55rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-chip-label {
+  font-size: 0.5625rem;
+  line-height: 1.25;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-chip-value {
+  font-size: 0.8125rem;
+  margin-top: 0.1rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-chip-sub {
+  display: none;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-chip-plus {
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-hero-chips {
+  gap: 0.45rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-card .ct-profile-hero-identity {
+  margin: 0.35rem 0.25rem 0;
+  padding: 0.35rem;
+}
+
+html[data-ui="ct"] .ct-profile-life-body {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  padding: 0.5rem 0 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  border-radius: var(--ct-radius-lg);
+  transition: background var(--ct-motion);
+}
+
+html[data-ui="ct"] .ct-profile-life-body:hover {
+  background: rgba(124, 92, 255, 0.06);
+}
+
+html[data-ui="ct"] .ct-profile-life-nw-value {
+  font-size: clamp(2rem, 8vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-top: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
 html[data-ui="ct"] .ct-profile-financial-hero {
   padding: 1rem 1.1rem 1.25rem;
 }

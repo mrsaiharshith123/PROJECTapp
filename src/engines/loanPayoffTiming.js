@@ -1,5 +1,5 @@
 import { addMonths, format } from "date-fns";
-import { isBillDueInMonth } from "../constants/repeatTypes.js";
+import { isBillDueInMonth, normalizeRepeatType } from "../constants/repeatTypes.js";
 import { freeMoneyAfterBurden } from "./pressureScore.js";
 import { simulatePrepayment } from "./prepayment.js";
 
@@ -80,6 +80,18 @@ function resolveTargetDebt(target) {
   };
 }
 
+function resolveMonthlyLoanDue(target, monthKey, getEffectiveStatus, todayStr, debt) {
+  const emi = Math.max(0, Number(debt?.emi) || 0);
+  const calendarDue = target ? targetPaymentDueInMonth(target, monthKey, getEffectiveStatus, todayStr) : 0;
+
+  if (target?.kind === "commitment" && isDebtCommitment(target.raw) && emi > 0) {
+    const rt = normalizeRepeatType(target.raw.repeatType);
+    if (rt !== "none") return Math.round(emi);
+  }
+
+  return Math.round(Math.max(emi, calendarDue));
+}
+
 /**
  * Which months are best to pay EXTRA on a loan (light dues) vs stick to minimum (heavy months).
  */
@@ -112,6 +124,7 @@ export function adviseLoanExtraPaymentMonths({
   }
 
   const bufferPct = income > 0 ? 0.12 : 0;
+  const buffer = income * bufferPct;
   const rows = [];
   const anchor = todayStr ? new Date(todayStr + "T12:00:00") : new Date();
 
@@ -126,25 +139,23 @@ export function adviseLoanExtraPaymentMonths({
       getEffectiveStatus,
       getEffectiveLendingStatus,
       todayStr,
-      exclude
+      exclude,
     );
-    const loanDue = target
-      ? targetPaymentDueInMonth(target, monthKey, getEffectiveStatus, todayStr)
-      : debt.emi;
+    const loanDue = resolveMonthlyLoanDue(target, monthKey, getEffectiveStatus, todayStr, debt);
     const totalOut = otherBills + loanDue;
     const freeAfter = income - totalOut;
-    const buffer = income * bufferPct;
-    const extraCapacity = Math.max(0, Math.round(freeAfter - buffer));
+    const roomAfterEmi = income > 0 ? income - otherBills - loanDue - buffer : 0;
     const pressure =
       freeAfter < 0 ? "high" : totalOut > income * 0.85 ? "high" : totalOut > income * 0.6 ? "medium" : "low";
 
     let interestSaved = 0;
-    if (debt.rate > 0 && extraCapacity > 0 && debt.balance > 0) {
+    const extraRoom = Math.max(0, Math.round(roomAfterEmi));
+    if (debt.rate > 0 && extraRoom > 0 && debt.balance > 0) {
       const sim = simulatePrepayment({
         principalOutstanding: debt.balance,
         annualRatePercent: debt.rate,
         scheduledEmi: debt.emi || loanDue,
-        extraMonthly: extraCapacity,
+        extraMonthly: extraRoom,
       });
       interestSaved = Math.round(sim?.interestSaved || 0);
     }
@@ -157,16 +168,34 @@ export function adviseLoanExtraPaymentMonths({
       loanDue: Math.round(loanDue),
       totalOut: Math.round(totalOut),
       freeAfter: Math.round(freeAfter),
-      extraCapacity,
+      extraCapacity: extraRoom,
+      recommendedExtra: 0,
+      totalPay: Math.round(loanDue),
       pressure,
       interestSaved,
-      goodForExtra: pressure === "low" && extraCapacity > 500,
+      goodForExtra: false,
       heavy: pressure === "high" || freeAfter < 0,
     });
   }
 
+  const otherBillAmounts = rows.map((r) => r.otherBills).sort((a, b) => a - b);
+  const lightCutoff =
+    otherBillAmounts[Math.max(0, Math.floor(otherBillAmounts.length * 0.4))] ?? otherBillAmounts[0] ?? 0;
+
+  for (const row of rows) {
+    const room = Math.max(0, Math.round(income - row.otherBills - row.loanDue - buffer));
+    const isLightOtherBills = row.otherBills <= lightCutoff;
+    row.goodForExtra = isLightOtherBills && room > 500;
+    row.recommendedExtra = row.goodForExtra
+      ? Math.min(room, Math.round(debt.balance * 0.15))
+      : 0;
+    row.extraCapacity = room;
+    row.totalPay = row.loanDue + row.recommendedExtra;
+    if (row.goodForExtra) row.heavy = false;
+  }
+
   const lightMonths = rows.filter((r) => r.goodForExtra);
-  const heavyMonths = rows.filter((r) => r.heavy);
+  const heavyMonths = rows.filter((r) => r.heavy && !r.goodForExtra);
   const byExtra = [...rows].sort((a, b) => b.extraCapacity - a.extraCapacity);
   const bestForExtra = byExtra[0] || null;
 
@@ -175,7 +204,18 @@ export function adviseLoanExtraPaymentMonths({
     : 0;
 
   let summary = "Add income in Profile for month-by-month guidance.";
-  if (income > 0 && bestForExtra) {
+  if (income > 0 && debt.emi > 0) {
+    summary = `Pay ${formatInr(debt.emi)} EMI every month on ${debt.name}.`;
+    if (lightMonths.length) {
+      summary += ` Add extra in ${lightMonths
+        .slice(0, 3)
+        .map((m) => `${m.label} (up to ${formatInr(m.recommendedExtra)})`)
+        .join(", ")}.`;
+    }
+    if (heavyMonths.length) {
+      summary += ` Stick to EMI only in ${heavyMonths.slice(0, 2).map((m) => m.label).join(", ")} when pressure is high.`;
+    }
+  } else if (income > 0 && bestForExtra) {
     if (bestForExtra.goodForExtra) {
       summary = `${bestForExtra.label} is a lighter month (about ${formatInr(bestForExtra.extraCapacity)} available for an additional payment). Other bills ~${formatInr(bestForExtra.otherBills)}.`;
       if (heavyMonths.length) {

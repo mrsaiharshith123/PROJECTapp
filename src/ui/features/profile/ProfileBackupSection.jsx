@@ -61,7 +61,7 @@ export default function ProfileBackupSection({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "committrack-annual-report.txt";
+    a.download = "perovo-annual-report.txt";
     a.click();
     URL.revokeObjectURL(url);
   }, [ctx]);
@@ -85,7 +85,7 @@ export default function ProfileBackupSection({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "committrack-ca-summary.json";
+    a.download = "perovo-ca-summary.json";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -110,7 +110,7 @@ export default function ProfileBackupSection({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "committrack-ca-summary.txt";
+    a.download = "perovo-ca-summary.txt";
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -128,7 +128,7 @@ export default function ProfileBackupSection({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "committrack-export.json";
+    a.download = "perovo-export.json";
     a.click();
     URL.revokeObjectURL(url);
   };

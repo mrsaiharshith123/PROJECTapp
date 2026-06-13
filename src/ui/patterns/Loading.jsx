@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { CtIcon } from "../icons/CtIcon.jsx";
+import { PerovoLogo } from "../brand/PerovoLogo.jsx";
+import { PerovoBrand } from "../brand/PerovoBrand.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { RouteSkeleton } from "./loadingSkeletons.jsx";
 
@@ -26,7 +27,7 @@ export function LoadingSpinner({ size = "md" }) {
     <div className={`ct-spin ct-spin-${size}`} role="presentation" aria-hidden>
       <span className="ct-spin-ring" />
       <span className="ct-spin-core">
-        <CtIcon name="wallet" size={size === "lg" ? 22 : size === "sm" ? 14 : 18} />
+        <PerovoLogo size={size === "lg" ? 22 : size === "sm" ? 14 : 18} />
       </span>
     </div>
   );
@@ -74,12 +75,7 @@ export function PageLoader({ message, hint = true }) {
       <LoadingAmbient />
       <div className="ct-load-center">
         <div className="ct-load-brand">
-          <div className="ct-load-logo-ring">
-            <span className="ct-load-logo-mark">
-              <CtIcon name="wallet" size={30} />
-            </span>
-          </div>
-          <p className="ct-load-brand-name">{t("brand.appName")}</p>
+          <PerovoBrand layout="column" iconSize="lg" wordmarkSize="md" className="ct-load-brand-lockup" />
         </div>
         <LoadingSpinner size="lg" />
         <p className="ct-load-message">{label}</p>

@@ -67,7 +67,7 @@ export function explainInsight(insight, ctx = {}) {
 
   const unique = [...new Set(reasons)].slice(0, 4);
   if (unique.length === 0) {
-    unique.push("CommitTrack noticed a change in your bills, income, or savings inputs.");
+    unique.push("Perovo noticed a change in your bills, income, or savings inputs.");
   }
 
   return {

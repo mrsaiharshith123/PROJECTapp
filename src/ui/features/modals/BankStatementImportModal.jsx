@@ -7,9 +7,11 @@ import {
 import { extractTextFromPdfFile } from "../../../utils/bankPdfExtract.js";
 import { bankRowsToDailySpendDrafts, filterDuplicateSpends } from "../../../utils/statementImport.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Modal, Stack, Button, Caption, Body } from "../../index.js";
 
 export default function BankStatementImportModal({ onClose }) {
+  const { t } = useTranslation();
   const { addDailySpend, addCommitment, allDailySpends, settings } = useCommitTrack();
   const [status, setStatus] = useState("");
   const [preview, setPreview] = useState(null);
@@ -68,7 +70,7 @@ export default function BankStatementImportModal({ onClose }) {
   };
 
   return (
-    <Modal title="Import bank statement" onClose={onClose}>
+    <Modal title={t("bills.importBankStatement")} onClose={onClose}>
       <Stack>
         <Caption>
           Upload bank PDF (text-based), CSV export, or plain text. Debits import as variable spend; recurring patterns can become bills.

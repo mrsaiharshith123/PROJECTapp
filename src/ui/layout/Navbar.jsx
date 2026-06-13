@@ -6,19 +6,13 @@ import { resolveUserMode } from "../../constants/modeExperience.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
+import { PerovoBrand } from "../brand/PerovoBrand.jsx";
 import LogSpendModal from "../features/modals/LogSpendModal.jsx";
 
 function Brand() {
-  const { t } = useTranslation();
   return (
     <div className="ct-brand">
-      <span className="ct-brand-mark" aria-hidden>
-        <CtIcon name="wallet" size={22} />
-      </span>
-      <span className="ct-brand-text">
-        <span className="ct-brand-name">{t("brand.appName")}</span>
-        <span className="ct-brand-byline">{t("brand.byDaloyTech")}</span>
-      </span>
+      <PerovoBrand layout="row" iconSize="sm" wordmarkSize="xs" />
     </div>
   );
 }

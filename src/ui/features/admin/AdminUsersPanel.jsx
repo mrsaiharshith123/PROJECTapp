@@ -281,9 +281,9 @@ export default function AdminUsersPanel() {
                 value={editForm.subscription_tier}
                 onChange={(e) => setEditForm((f) => ({ ...f, subscription_tier: e.target.value }))}
               >
-                <option value="free">free</option>
-                <option value="pro">pro</option>
-                <option value="power">power</option>
+                <option value="free">{t("plans.tier.free")}</option>
+                <option value="pro">{t("plans.tier.pro")}</option>
+                <option value="power">{t("plans.tier.power")}</option>
               </select>
             </div>
             <div>

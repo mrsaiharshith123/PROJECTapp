@@ -12,8 +12,6 @@ import { deriveWealthFromCommitments } from "../../../engines/netWorth/commitmen
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import ProfileMilestonesPanel from "./hub/ProfileMilestonesPanel.jsx";
-import NetWorthBenchmarkCard from "../netWorth/NetWorthBenchmarkCard.jsx";
-import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 
 /** Profile wealth ledger — journey patterns, assets, and liabilities. */
 export default function ProfileNetWorthSection() {
@@ -21,8 +19,7 @@ export default function ProfileNetWorthSection() {
   const { t } = useTranslation();
   const intel = useNetWorthIntel();
   const hub = useProfileHubIntel();
-  const { commitments, getEffectiveStatus, todayStr, settings } = useCommitTrack();
-  const monthlyIncome = combinedMonthlyIncome(settings);
+  const { commitments, getEffectiveStatus, todayStr } = useCommitTrack();
   const { addEntry, updateEntry, deleteEntry, privacyMode } = useNetWorth();
   const [tab, setTab] = useState("overview");
   const [modal, setModal] = useState(/** @type {{ kind: 'asset'|'liability', entry?: object } | null} */ (null));
@@ -59,16 +56,7 @@ export default function ProfileNetWorthSection() {
         onChange={setTab}
       />
 
-      {tab === "overview" && (
-        <>
-          <NetWorthBenchmarkCard
-            netWorth={intel.core.netWorth}
-            monthlyIncome={monthlyIncome}
-            age={Number(settings.epfAge) || 30}
-          />
-          <FinancialLifeOverviewPanel hub={hub} insights={intel.insights} />
-        </>
-      )}
+      {tab === "overview" && <FinancialLifeOverviewPanel hub={hub} insights={intel.insights} />}
 
       {tab === "milestones" && <ProfileMilestonesPanel />}
 

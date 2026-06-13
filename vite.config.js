@@ -27,17 +27,16 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "pwa-192.png", "pwa-512.png"],
+      includeAssets: ["favicon-32.png", "pwa-192.png", "pwa-512.png", "brand/**/*"],
       manifest: {
-        name: "CommitTrack",
-        short_name: "CommitTrack",
-        description:
-          "Local-first financial commitments OS — pressure, repayments, and lending clarity.",
+        name: "Perovo",
+        short_name: "Perovo",
+        description: "Finance simplified — bills, pressure, repayments, and lending on your device.",
         id: basePath,
         start_url: basePath,
         scope: basePath,
         display: "standalone",
-        theme_color: "#7C5CFF",
+        theme_color: "#4A6CF7",
         background_color: "#FFFFFF",
         orientation: "portrait-primary",
         icons: [
@@ -60,9 +59,9 @@ export default defineConfig({
             purpose: "maskable",
           },
           {
-            src: `${basePath}favicon.svg`,
-            sizes: "any",
-            type: "image/svg+xml",
+            src: `${basePath}favicon-32.png`,
+            sizes: "32x32",
+            type: "image/png",
             purpose: "any",
           },
         ],

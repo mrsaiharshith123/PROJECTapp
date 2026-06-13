@@ -37,7 +37,7 @@ function sanitizeMeta(meta) {
 function write(level, scope, message, meta) {
   if (LEVEL_RANK[level] < MIN_LEVEL) return;
 
-  const prefix = `[CommitTrack:${scope}]`;
+  const prefix = `[Perovo:${scope}]`;
   const line = meta != null ? [message, sanitizeMeta(meta)] : [message];
   if (level === "error") console.error(prefix, ...line);
   else if (level === "warn") console.warn(prefix, ...line);

@@ -15,7 +15,7 @@ export function billSplitSharePlainText(split, payerName = "You") {
   const lines = (split.participants || []).map(
     (p) => `${p.name}: ₹${p.amount.toLocaleString("en-IN")} (${p.share}%)`,
   );
-  return `Bill split — ${split.sourceLabel || "shared expense"}\nTotal: ₹${split.total.toLocaleString("en-IN")}\nPaid by: ${payerName}\n\n${lines.join("\n")}\n\nTrack on CommitTrack`;
+  return `Bill split — ${split.sourceLabel || "shared expense"}\nTotal: ₹${split.total.toLocaleString("en-IN")}\nPaid by: ${payerName}\n\n${lines.join("\n")}\n\nTrack on Perovo`;
 }
 
 export function generateBillSplitShareCardHtml(split, payerName = "You") {
@@ -33,7 +33,7 @@ h1{font-size:1.25rem;margin:0 0 8px} table{width:100%;border-collapse:collapse;m
 <h1>Bill split</h1><p>${escapeHtml(split.sourceLabel || "Shared expense")} · Total ₹${split.total.toLocaleString("en-IN")}</p>
 <p>Paid by <strong>${escapeHtml(payerName)}</strong></p>
 <table><thead><tr><th>Person</th><th>Share</th><th>Owes</th></tr></thead><tbody>${rows}</tbody></table>
-<p class="footer">CommitTrack — track repayments in one place.</p></div></body></html>`;
+<p class="footer">Perovo — track repayments in one place.</p></div></body></html>`;
 
   return html;
 }

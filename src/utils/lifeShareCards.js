@@ -17,7 +17,7 @@ export function generateLifeScoreShareCardHtml({
   pressureLabel,
   survivalMonths,
   survivalLabel,
-  displayName = "CommitTrack user",
+  displayName = "Perovo user",
 }) {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>Financial Life Score</title>
 <style>body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1a1033,#0d1f2d);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;margin:0}
@@ -29,11 +29,11 @@ h1{font-size:1.1rem;margin:0 0 4px;opacity:.85} h2{font-size:2rem;margin:0 0 20p
 <div class="row"><span>Health</span><span class="val">${healthScore ?? "—"}/100 · ${escapeHtml(healthLabel || "")}</span></div>
 <div class="row"><span>Pressure</span><span class="val">${pressureScore ?? "—"}/100 · ${escapeHtml(pressureLabel || "")}</span></div>
 <div class="row"><span>Survival runway</span><span class="val">${survivalMonths != null ? `${survivalMonths} mo` : "—"} · ${escapeHtml(survivalLabel || "")}</span></div>
-<p class="footer">CommitTrack by Daloy Tech — private snapshot, no account details shared.</p></div></body></html>`;
+<p class="footer">Perovo — private snapshot, no account details shared.</p></div></body></html>`;
 }
 
 export function lifeScoreSharePlainText(data) {
-  return `Financial Life snapshot\nHealth: ${data.healthScore}/100 (${data.healthLabel})\nPressure: ${data.pressureScore}/100 (${data.pressureLabel})\nRunway: ${data.survivalMonths ?? "—"} months\n— CommitTrack`;
+  return `Financial Life snapshot\nHealth: ${data.healthScore}/100 (${data.healthLabel})\nPressure: ${data.pressureScore}/100 (${data.pressureLabel})\nRunway: ${data.survivalMonths ?? "—"} months\n— Perovo`;
 }
 
 export function openLifeScoreShareCard(data) {

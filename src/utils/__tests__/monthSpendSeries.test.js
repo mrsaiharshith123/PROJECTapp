@@ -19,6 +19,8 @@ describe("monthSpendSeries", () => {
       "default",
     );
     expect(series.length).toBe(8);
+    expect(series[0].label).toBe("1 Jun");
+    expect(series[series.length - 1].label).toMatch(/8 Jun/);
     expect(series[series.length - 1].value).toBe(9000);
   });
 

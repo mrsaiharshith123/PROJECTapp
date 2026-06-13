@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CommitTrack — single full-project audit (only command you need).
+ * Perovo — single full-project audit (only command you need).
  *
  *   npm run audit
  *   npm run audit -- --strict   # warnings on UI/code/styles/tests/env also fail (not bundle size)
@@ -208,7 +208,7 @@ function checkBundleSize(buildOut) {
 }
 
 console.log(paint(C.bold + C.cyan, "\n╔══════════════════════════════════════════════════════════╗"));
-console.log(paint(C.bold + C.cyan, "║           COMMITTRACK — FULL PROJECT AUDIT               ║"));
+console.log(paint(C.bold + C.cyan, "║           PEROVO — FULL PROJECT AUDIT                    ║"));
 console.log(paint(C.bold + C.cyan, "╚══════════════════════════════════════════════════════════╝"));
 console.log(
   paint(

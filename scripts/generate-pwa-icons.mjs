@@ -4,10 +4,12 @@ import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = path.join(root, "public");
+const brandLight = path.join(publicDir, "brand", "icon-light.png");
 const svgPath = path.join(publicDir, "favicon.svg");
+const source = fs.existsSync(brandLight) ? brandLight : svgPath;
 
-if (!fs.existsSync(svgPath)) {
-  console.warn("Skip PWA icons: public/favicon.svg missing");
+if (!fs.existsSync(source)) {
+  console.warn("Skip PWA icons: no brand/icon-light-lg.png or favicon.svg");
   process.exit(0);
 }
 
@@ -19,9 +21,14 @@ try {
   process.exit(0);
 }
 
-const sizes = [192, 512];
-for (const size of sizes) {
-  const out = path.join(publicDir, `pwa-${size}.png`);
-  await sharp(svgPath).resize(size, size).png().toFile(out);
+const sizes = [
+  { name: "pwa-192.png", px: 192 },
+  { name: "pwa-512.png", px: 512 },
+  { name: "favicon-32.png", px: 32 },
+];
+
+for (const { name, px } of sizes) {
+  const out = path.join(publicDir, name);
+  await sharp(source).resize(px, px).png().toFile(out);
   console.log("Wrote", out);
 }

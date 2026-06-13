@@ -11,6 +11,7 @@ import AuthGatePage from "./ui/features/auth/AuthGatePage.jsx";
 import ModeRoute from "./app/ModeRoute.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
+import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
@@ -28,7 +29,7 @@ const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
-const NetWorth = lazy(() => import("./ui/features/pages/NetWorthPage.jsx"));
+const ProfileWealthAnalytics = lazy(() => import("./ui/features/pages/ProfileWealthAnalyticsPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
@@ -91,7 +92,8 @@ function MainShell() {
             />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/paycheck" element={<Paycheck />} />
-            <Route path="/net-worth" element={<NetWorth />} />
+            <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
+            <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
             <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/scores" element={<ProfileScoresDetail />} />
@@ -208,6 +210,7 @@ function App() {
         <CommitTrackProvider>
           <NetWorthProvider>
           <I18nProvider>
+            <BrandDocumentSync />
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <Routes>

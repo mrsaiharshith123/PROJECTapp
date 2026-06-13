@@ -162,7 +162,7 @@ export function buildPromissoryNoteText(lending, settings = {}) {
     "Note: This promissory note requires applicable stamp duty under the Indian Stamp Act 1899 for enforceability in court. Print on stamp paper of appropriate denomination for your state, or pay stamp duty + penalty at the Sub-Registrar's office if not stamped at execution.",
     "",
     "--- GENERATION METADATA ---",
-    `Generated via CommitTrack on ${new Date().toLocaleString("en-IN")}. CommitTrack is a financial tracking tool, not a legal service. For amounts above ₹1,00,000 or complex arrangements, consult a qualified advocate.`
+    `Generated via Perovo on ${new Date().toLocaleString("en-IN")}. Perovo is a financial tracking tool, not a legal service. For amounts above ₹1,00,000 or complex arrangements, consult a qualified advocate.`
   );
 
   return lines.join("\n");
@@ -214,7 +214,7 @@ export function borrowerTrustSnapshot(lendings, borrowerName) {
   if (total === 0) {
     return {
       score,
-      summary: "No past repayments recorded in CommitTrack yet. New borrower.",
+      summary: "No past repayments recorded in Perovo yet. New borrower.",
       onTime: 0,
       late: 0,
     };

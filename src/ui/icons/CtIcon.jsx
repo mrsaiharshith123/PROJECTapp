@@ -1,5 +1,5 @@
 /**
- * CommitTrack icon system — Phosphor Icons
+ * Perovo icon system — Phosphor Icons
  *
  * Weight guide:
  *   fill     → nav (active), primary action buttons
@@ -61,6 +61,7 @@ import {
   Scroll,
   Shield,
   ShoppingCart,
+  Target,
   Television,
   User,
   UserCircle,
@@ -120,6 +121,7 @@ const ICON_REGISTRY = {
   scroll: Scroll,
   shield: Shield,
   "shopping-cart": ShoppingCart,
+  target: Target,
   television: Television,
   user: User,
   "user-circle": UserCircle,

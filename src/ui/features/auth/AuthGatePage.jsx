@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, Button, inputClassName, FormField, Caption, Heading, Body } from "../../index.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
+import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import InstallAppBanner from "../InstallAppBanner.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
@@ -34,19 +34,9 @@ function AuthAmbient() {
 }
 
 function AuthBrandHero() {
-  const { t } = useTranslation();
   return (
     <header className="ct-auth-hero">
-      <div className="ct-auth-logo-ring">
-        <span className="ct-auth-logo-mark">
-          <CtIcon name="wallet" size={34} />
-        </span>
-      </div>
-      <div className="ct-auth-brand-text">
-        <h1 className="ct-auth-brand-name">{t("brand.appName")}</h1>
-        <p className="ct-auth-brand-byline">{t("brand.byDaloyTech")}</p>
-        <p className="ct-auth-brand-tagline">{t("auth.tagline")}</p>
-      </div>
+      <PerovoBrand layout="column" iconSize="lg" wordmarkSize="lg" className="ct-auth-brand-lockup" />
     </header>
   );
 }

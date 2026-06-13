@@ -226,17 +226,13 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
           </ProfileField>
         )}
 
-        <ProfileField label={t("profile.liquidSavings")} hint={t("profile.liquidSavingsHint")}>
-          <input
-            type="number"
-            min="0"
-            className={profileInputClass}
-            value={settings.liquidSavings === 0 ? "" : String(settings.liquidSavings)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({ liquidSavings: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-            }}
-          />
+        <ProfileField label={t("profile.liquidAssets")} hint={t("profile.liquidAssetsHint")}>
+          <Caption className="block">
+            {t("profile.liquidAssetsCta")}{" "}
+            <Link to="/profile" className="ct-link">
+              {t("netWorth.tab.assets")}
+            </Link>
+          </Caption>
         </ProfileField>
 
         <ProfileField label={t("profile.userMode")} hint={t("mode.salariedDesc")}>
@@ -298,7 +294,7 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
         )}
 
         {settings.householdScope === "family" && (
-          <ProfileField label="Household members" hint="Names and roles for shared household tracking.">
+          <ProfileField label={t("profile.householdMembers.label")} hint={t("profile.householdMembers.hint")}>
             <div className="ct-stack-sm">
               {normalizeHouseholdMembers(settings.householdMembers).map((m, i) => (
                 <div key={m.id} className="ct-row gap-2 flex-wrap">
@@ -310,7 +306,7 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
                       members[i] = { ...members[i], label: e.target.value.slice(0, 40) };
                       updateSettings({ householdMembers: members });
                     }}
-                    placeholder="Name"
+                    placeholder={t("profile.householdMembers.namePlaceholder")}
                   />
                   <select
                     className={profileInputClass}

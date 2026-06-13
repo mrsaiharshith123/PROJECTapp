@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { useNetWorth } from "../context/NetWorthContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { buildSurvivalContext, lendingMonthlyOutflow } from "../engines/survival.js";
 import { rankStressContributors } from "../engines/stressContributors.js";
 import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
+import { resolveEmergencyLiquidPool } from "../utils/emergencyLiquid.js";
 import { computeFamilyPressure } from "../engines/modeFamily.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { mergeExtendedInsights } from "../engines/insightsExtended.js";
@@ -18,6 +20,7 @@ import { householdPayerInsight } from "../engines/householdPayer.js";
 /** Mode-specific financial stability intelligence (salaried, family, etc.). */
 export function useStabilityIntel() {
   const ctx = useCommitTrack();
+  const { entries: wealthEntries } = useNetWorth();
   const intel = useCommitIntel();
   const baseMode = resolveUserMode(ctx.settings);
   const experienceMode = getExperienceMode(ctx.settings);
@@ -43,9 +46,10 @@ export function useStabilityIntel() {
     );
     const stress = rankStressContributors(ctx.commitments, ctx.getEffectiveStatus);
     const lifestyle = detectLifestyleInflation(ctx.commitments, ctx.getEffectiveStatus);
+    const liquidPool = resolveEmergencyLiquidPool(ctx.settings, wealthEntries);
     const emergency = computeEmergencyFundIntel({
       monthlyBurden: cash.monthlyBurden,
-      liquidSavings: ctx.settings.liquidSavings,
+      liquidSavings: liquidPool,
       dependents: ctx.settings.dependents,
       pressureScore: intel.stability.score,
     });
@@ -150,5 +154,6 @@ export function useStabilityIntel() {
     ctx.getEffectiveStatus,
     ctx.getEffectiveLendingStatus,
     intel,
+    wealthEntries,
   ]);
 }

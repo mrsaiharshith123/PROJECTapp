@@ -16,17 +16,16 @@ export function OnboardingModeStep({
   userId,
   onRecordConsent,
 }) {
+  const { t } = useTranslation();
   const titlePrefix = replay ? "Review" : "Welcome";
 
   return (
     <div className="ct-onboard-page">
       <div>
         <Eyebrow>{titlePrefix}</Eyebrow>
-        <h1 className="ct-onboard-title">{replay ? "Your CommitTrack mode" : "How do you manage money?"}</h1>
+        <h1 className="ct-onboard-title">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
         <Caption className="block mt-2">
-          {replay
-            ? "Update how we explain your dashboard. Your bills stay on this account."
-            : "Select the option that best matches your situation. Explanations can be updated in Profile."}
+          {replay ? t("onboarding.modeReplaySubtitle") : t("onboarding.subtitle")}
         </Caption>
       </div>
       <div className="ct-stack">
@@ -46,12 +45,8 @@ export function OnboardingModeStep({
         ))}
       </div>
       <ToneSurface tone="info">
-        <Caption className="font-semibold block">Before we begin</Caption>
-        <Body className="!text-sm mt-1">
-          CommitTrack stores your financial data locally on your device. If you enable cloud sync, an
-          encrypted copy is saved securely in Supabase. We never sell your data or use it for
-          advertising. Your PAN and phone number are used only for financial tracking.
-        </Body>
+        <Caption className="font-semibold block">{t("onboarding.beforeBegin")}</Caption>
+        <Body className="!text-sm mt-1">{t("onboarding.privacyNote")}</Body>
         <button
           type="button"
           className="ct-link !text-xs mt-2"
@@ -130,7 +125,7 @@ export function OnboardingBasicsStep({
       <div>
         <Eyebrow>{t("onboarding.setupEyebrow")}</Eyebrow>
         <h1 className="ct-onboard-title">{replay ? "Update basics" : "Confirm your details"}</h1>
-        <Caption className="block mt-2">Name, mobile, and salary are required to use CommitTrack.</Caption>
+        <Caption className="block mt-2">{t("onboarding.basicsRequired")}</Caption>
       </div>
       <Card className="ct-stack">
         <div>

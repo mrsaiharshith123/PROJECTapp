@@ -29,7 +29,6 @@ import {
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
-import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import SubscriptionsAuditPanel from "../analytics/SubscriptionsAuditPanel.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
@@ -247,8 +246,6 @@ const Analytics = () => {
           </Caption>
         </Card>
       </MonthlySpendAnalyticsSection>
-
-      <WealthAnalyticsSection />
 
       {isSalariedFamily(settings) && (
         <>

@@ -78,7 +78,7 @@ export function PressureWealthPanel({ pressure, cashFlow, privacyMode }) {
   );
 }
 
-export function AllocationCharts({ intel, privacyMode }) {
+export function AllocationCharts({ intel, privacyMode, variant = "all" }) {
   const { t } = useTranslation();
   const theme = useResolvedTheme();
   if (privacyMode) return null;
@@ -92,9 +92,12 @@ export function AllocationCharts({ intel, privacyMode }) {
     { name: t("netWorth.chart.debt"), value: intel.core.totalLiabilities },
   ];
 
+  const showAssets = variant === "all" || variant === "assets";
+  const showDebt = variant === "all" || variant === "liabilities";
+
   return (
     <div className="ct-stack">
-      {assetData.length > 0 && (
+      {showAssets && assetData.length > 0 && (
         <Card className="ct-nw-panel">
           <Heading level={3}>{t("netWorth.chart.allocation")}</Heading>
           <FlexibleDataChart
@@ -105,6 +108,7 @@ export function AllocationCharts({ intel, privacyMode }) {
           />
         </Card>
       )}
+      {showDebt && (
       <Card className="ct-nw-panel">
         <Heading level={3}>{t("netWorth.chart.debtRatio")}</Heading>
         <FlexibleDataChart
@@ -114,6 +118,7 @@ export function AllocationCharts({ intel, privacyMode }) {
           emptyMessage=""
         />
       </Card>
+      )}
     </div>
   );
 }

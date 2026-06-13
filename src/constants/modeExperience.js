@@ -8,18 +8,18 @@ export const MODE_CATEGORY_IDS = {
   power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
 };
 
-/** Quick calculator tool ids per mode. */
+/** Quick calculator tool ids per mode (Home dashboard). Safety lives under Profile. */
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
-  family: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
-  power: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "safety", "invest"],
+  salaried: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
+  family: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
+  power: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
 };
 
 export const MODE_TOOL_DEFS = {
   planner: {
     id: "planner",
     title: "Plan & decide",
-    subtitle: "Afford · scenarios · goals",
+    subtitle: "Afford · scenarios · analysis",
     accent: "indigo",
   },
   advisor: {
@@ -75,6 +75,12 @@ export const MODE_TOOL_DEFS = {
     title: "Invest & save",
     subtitle: "SIP · FD · RD",
     accent: "teal",
+  },
+  goals: {
+    id: "goals",
+    title: "Financial goals",
+    subtitle: "Save · debt · education",
+    accent: "yellow",
   },
 };
 

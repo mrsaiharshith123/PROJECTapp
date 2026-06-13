@@ -2,7 +2,7 @@
  * Share plain text via Web Share API when available; otherwise copy to clipboard.
  * @returns {Promise<{ ok: boolean, method: "share" | "clipboard" | "none" }>}
  */
-export async function shareOrCopyPlainText(text, { title = "CommitTrack" } = {}) {
+export async function shareOrCopyPlainText(text, { title = "Perovo" } = {}) {
   const body = String(text || "").trim();
   if (!body) return { ok: false, method: "none" };
 

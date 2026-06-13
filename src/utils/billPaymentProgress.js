@@ -66,7 +66,7 @@ function sumGrossForMonths(c, monthKeys, todayStr) {
 
 /**
  * Full contract ledger from start → end: installments and rupee totals from the start date,
- * including months paid before the user started recording payments in CommitTrack.
+ * including months paid before the user started recording payments in Perovo.
  */
 export function computeContractPaymentLedger(c, todayStr = todayYmd(), allCommitments = []) {
   const start = c.startDate || c.dueDate || "";

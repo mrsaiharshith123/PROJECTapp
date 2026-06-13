@@ -23,7 +23,7 @@ function dedupeById(items) {
  */
 export function mergeImportedAppState(current, payload, { mode = "merge" } = {}) {
   if (!isAppSnapshot(payload)) {
-    throw new Error("Invalid file — expected a CommitTrack export JSON object.");
+    throw new Error("Invalid file — expected a Perovo export JSON object.");
   }
 
   const incomingCommitments = Array.isArray(payload.commitments) ? payload.commitments : [];

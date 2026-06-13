@@ -23,6 +23,7 @@ export const TOOL_ICONS = {
   retirement: "bank",
   safety: "shield",
   advisor: "chat-dots",
+  goals: "target",
   logSpend: "note-pencil",
 };
 

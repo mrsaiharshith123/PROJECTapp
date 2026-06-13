@@ -1,5 +1,5 @@
 /*
- * CommitTrack UI — ct-* utilities include:
+ * Perovo UI — ct-* utilities include:
  * layout (ct-page, ct-stack), typography (ct-display, ct-numeral, ct-score-num),
  * surfaces (ct-card, ct-card-metric, ct-module-tile), motion (ct-animate-*).
  */
@@ -40,22 +40,59 @@ html[data-ui="ct"] .ct-screen-narrow .ct-main { max-width: 28rem; }
 html[data-ui="ct"] .ct-section { margin-top: 0.25rem; }
 
 /* ── Brand ── */
-html[data-ui="ct"] .ct-brand { display: flex; align-items: center; gap: 0.625rem; }
-html[data-ui="ct"] .ct-brand-mark {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--ct-radius-lg);
+html[data-ui="ct"] .ct-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.125rem;
-  background: linear-gradient(135deg, var(--ct-accent-muted), var(--ct-accent));
-  box-shadow: 0 0 28px -6px var(--ct-accent-glow);
-  border: 1px solid rgba(155, 109, 255, 0.35);
+  min-width: 0;
 }
-html[data-ui="ct"] .ct-brand-name { font-size: 1.125rem; font-weight: 700; color: var(--ct-text); line-height: 1.1; }
-html[data-ui="ct"] .ct-brand-text { display: flex; flex-direction: column; min-width: 0; }
-html[data-ui="ct"] .ct-brand-byline { font-size: 0.625rem; font-weight: 600; color: var(--ct-text-muted); letter-spacing: 0.02em; }
+html[data-ui="ct"] .ct-brand .ct-perovo-brand {
+  align-items: center;
+  gap: 0.4rem;
+}
+html[data-ui="ct"] .ct-brand .ct-perovo-logo {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  align-self: center;
+}
+html[data-ui="ct"] .ct-brand .ct-perovo-wordmark {
+  height: 13px !important;
+  max-width: 64px;
+  width: auto;
+  object-fit: cover;
+  object-position: top left;
+  align-self: center;
+}
+html[data-ui="ct"] .ct-perovo-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+html[data-ui="ct"] .ct-perovo-brand-column {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+html[data-ui="ct"] .ct-perovo-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+html[data-ui="ct"] .ct-perovo-wordmark {
+  display: block;
+  width: auto;
+  max-width: min(100%, 220px);
+  object-fit: contain;
+}
+html[data-ui="ct"] .ct-perovo-wordmark-xs { max-width: min(100%, 64px); height: 13px !important; width: auto; }
+html[data-ui="ct"] .ct-perovo-wordmark-sm { max-width: min(100%, 118px); height: 30px !important; width: auto; }
+html[data-ui="ct"] .ct-perovo-wordmark-md { max-width: min(100%, 190px); height: 40px !important; width: auto; }
+html[data-ui="ct"] .ct-perovo-wordmark-lg { max-width: min(100%, 260px); height: 56px !important; width: auto; }
+html[data-ui="ct"] .ct-auth-brand-lockup { margin-bottom: 0.25rem; }
+html[data-ui="ct"] .ct-load-brand-lockup { margin-bottom: 0.35rem; }
+html[data-ui="ct"] .ct-profile-brand-lockup { margin-inline: auto; }
 html[data-ui="ct"] .ct-checkbox {
   width: 1.25rem;
   height: 1.25rem;
@@ -711,9 +748,52 @@ html[data-ui="ct"] .ct-cashflow-free {
   color: var(--ct-text-muted);
 }
 html[data-ui="ct"] .ct-hero-spend-chart {
-  height: 3.5rem;
-  margin-top: 0.25rem;
+  height: 5.5rem;
+  margin-top: 0.15rem;
   padding: 0 0.25rem;
+}
+
+html[data-ui="ct"] .ct-wealth-sparkline {
+  height: 6.5rem;
+  margin-top: 0.35rem;
+  padding: 0 0.15rem 0.15rem;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip {
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--ct-radius-md, 0.65rem);
+  background: var(--ct-surface, #1a1b2e);
+  border: 1px solid var(--ct-border-subtle);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-label {
+  margin: 0 0 0.25rem;
+  color: var(--ct-text-muted, #94a3b8);
+  font-size: 0.6875rem;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-row {
+  margin: 0;
+  color: var(--ct-text-primary, #e2e8f0);
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-assets {
+  color: #34d399;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-liabilities {
+  color: #f87171;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+html[data-ui="ct"] .ct-chart-tooltip-strong {
+  font-weight: 600;
 }
 
 /* ── Hero snapshot ── */
@@ -1067,6 +1147,26 @@ html[data-ui="ct"] .ct-bottom-nav {
   backdrop-filter: blur(var(--ct-glass-blur));
   box-shadow: var(--ct-shadow-dock);
   padding-bottom: 0;
+  isolation: isolate;
+}
+html[data-ui="ct"] .ct-bottom-nav::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--ct-nav-h) + var(--ct-nav-dock-inset) + env(safe-area-inset-bottom, 0px) + 4rem);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(7, 7, 10, 0.72) 38%,
+    rgba(7, 7, 10, 0.94) 72%,
+    rgba(7, 7, 10, 0.98) 100%
+  );
+  -webkit-backdrop-filter: blur(32px) saturate(1.15);
+  backdrop-filter: blur(32px) saturate(1.15);
 }
 html[data-ui="ct"] .ct-bottom-nav-inner {
   max-width: 32rem;
@@ -1074,22 +1174,22 @@ html[data-ui="ct"] .ct-bottom-nav-inner {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   height: var(--ct-nav-h);
-  align-items: end;
+  align-items: center;
   padding: 0 0.35rem;
 }
 html[data-ui="ct"] .ct-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.15rem;
+  justify-content: center;
+  gap: 0.2rem;
   color: var(--ct-text-muted);
   font-size: 0.625rem;
   font-weight: 600;
   text-decoration: none;
   position: relative;
   height: 100%;
-  padding-bottom: 0.4rem;
+  padding-bottom: 0;
   transition: color var(--ct-motion);
 }
 html[data-ui="ct"] .ct-nav-item-active {
@@ -1101,7 +1201,7 @@ html[data-ui="ct"] .ct-nav-item-active .ct-nav-icon {
 html[data-ui="ct"] .ct-nav-item-active::after {
   content: "";
   position: absolute;
-  bottom: 0.35rem;
+  bottom: 0.5rem;
   left: 50%;
   transform: translateX(-50%);
   width: 1.25rem;
@@ -1167,6 +1267,7 @@ html[data-ui="ct"] .ct-top-nav {
 }
 @media (min-width: 768px) {
   html[data-ui="ct"] .ct-bottom-nav { display: none; }
+  html[data-ui="ct"] .ct-bottom-nav::before { display: none; }
   html[data-ui="ct"] .ct-top-nav {
     display: flex;
     position: fixed;
@@ -1782,12 +1883,11 @@ html[data-ui="ct"] .ct-load-logo-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.75rem;
-  height: 3.75rem;
+  width: 4.5rem;
+  height: 4.5rem;
   border-radius: 1rem;
-  background: linear-gradient(145deg, rgba(91, 77, 255, 0.32), rgba(18, 18, 37, 0.9));
-  border: 1px solid rgba(155, 109, 255, 0.3);
-  color: var(--ct-accent-muted);
+  background: transparent;
+  border: none;
 }
 html[data-ui="ct"] .ct-load-brand-name {
   font-size: 1.35rem;
@@ -2141,12 +2241,11 @@ html[data-ui="ct"] .ct-auth-logo-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 4.25rem;
-  height: 4.25rem;
+  width: 5rem;
+  height: 5rem;
   border-radius: 1.1rem;
-  background: linear-gradient(145deg, rgba(91, 77, 255, 0.35), rgba(18, 18, 37, 0.92));
-  border: 1px solid rgba(155, 109, 255, 0.35);
-  color: var(--ct-accent-muted);
+  background: transparent;
+  border: none;
 }
 html[data-ui="ct"] .ct-auth-brand-name {
   font-size: clamp(1.75rem, 6vw, 2.15rem);

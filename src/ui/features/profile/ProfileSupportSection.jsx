@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Body, Caption, Heading } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
 
@@ -35,10 +36,9 @@ export default function ProfileSupportSection({ onOpenGuide }) {
         <Body className="font-semibold">{t("support.about")}</Body>
         <Caption className="block">{t("support.aboutBody")}</Caption>
         <Caption className="block opacity-80">{t("support.version", { version: APP_VERSION })}</Caption>
-        <Caption className="block font-semibold ct-text-accent">
-          {t("brand.appName")} {t("brand.byDaloyTech")}
-        </Caption>
-        <Caption className="block opacity-70">{t("brand.tadsayaNote")}</Caption>
+        <div className="flex justify-center pt-1">
+          <PerovoBrand layout="column" iconSize="sm" wordmarkSize="sm" />
+        </div>
       </div>
     </Card>
   );

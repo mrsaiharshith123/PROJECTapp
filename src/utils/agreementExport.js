@@ -77,7 +77,7 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
 ${banner}
 ${hashBanner}
 ${textToHtml(bodyText)}
-<div class="footer">CommitTrack — Private Record — ${new Date().toLocaleDateString("en-IN")}</div>
+<div class="footer">Perovo — Private Record — ${new Date().toLocaleDateString("en-IN")}</div>
 </body>
 </html>`;
 }
@@ -89,7 +89,7 @@ export function downloadLendingAgreementHtml(lending, settings = {}) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `committrack-promissory-note-${lending.id}.html`;
+  a.download = `perovo-promissory-note-${lending.id}.html`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -118,7 +118,7 @@ export async function sealAndDownloadAgreement(lending, settings = {}, userId = 
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `committrack-agreement-${lending.id}.html`;
+  a.download = `perovo-agreement-${lending.id}.html`;
   a.click();
   URL.revokeObjectURL(url);
   return { hash, sealedAt };

@@ -28,7 +28,7 @@ Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engine
 | Subscription audit page | ✅ | `SubscriptionsAuditPanel.jsx` on Analytics (Pro `subscription_leak`) |
 | Lending recovery UI | ✅ | `LendingOverduePanel.jsx` on `/lending` — overdue installments, mark paid, share notice |
 | Recurring spend detection | ✅ | `recurringSpendDetect.js`, inline banner in `DailySpendPanel.jsx` |
-| Net worth benchmark | ✅ | `netWorthBenchmark.js`, `NetWorthBenchmarkCard.jsx` |
+| Net worth benchmark engine | ✅ | `netWorthBenchmark.js` (engine + tests; UI card removed — wealth analytics on Profile) |
 | Bond advisor v2 | ✅ | `bondAnalyzer.js` — YTM, credit rating, SGB/tax, compare alternatives |
 | CA export (Power) | ✅ | `caExport.js` — `.txt` + structured `.json` in `ProfileBackupSection.jsx` |
 | Multiple profiles gate | ✅ | `ProfileManager.jsx` gated with `multiple_profiles`; `filterByProfile` in context |
