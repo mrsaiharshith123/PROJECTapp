@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getUserModeConfig } from "../../../../constants/userModes.js";
-import { resolveUserMode, hasPowerFeatures, isSalariedFamily } from "../../../../constants/modeExperience.js";
+import { hasPowerFeatures, isSalariedFamily, getHouseholdModeDisplay, resolveDataProfileScope } from "../../../../constants/modeExperience.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import { useNetWorthIntel } from "../../../../hooks/useNetWorthIntel.js";
@@ -35,27 +34,24 @@ export default function ProfileFinancialHero({
   const { notificationUnread } = useCommitIntel();
   const { heroChips } = useProfileScoreGuide();
   const [showNotifications, setShowNotifications] = useState(false);
-  const modeCfg = getUserModeConfig(resolveUserMode(settings));
+  const modeDisplay = getHouseholdModeDisplay(settings);
   const salariedFamily = isSalariedFamily(settings);
   const name = settings.displayName?.trim() || t("brand.defaultUser");
 
-  const suffix = [
-    salariedFamily ? t("brand.familySuffix") : null,
-    hasPowerFeatures(settings) ? t("brand.proSuffix") : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const suffix = hasPowerFeatures(settings) && !salariedFamily ? t("brand.proSuffix") : "";
 
   const animated = useCountUp(intel.core.netWorth);
   const display = privacyMode ? "••••••" : formatInr(animated);
   const monthly = intel.growth.monthlyPct;
+
+  const profileScope = resolveDataProfileScope(settings);
 
   const sparkSeries = useMemo(
     () =>
       buildWealthDailySeries(
         dailySnapshots,
         entries,
-        settings.activeProfileId || "default",
+        profileScope,
         intel.core.totalAssets,
         intel.core.totalLiabilities,
         settings.accountCreatedAt || 0,
@@ -63,7 +59,7 @@ export default function ProfileFinancialHero({
     [
       dailySnapshots,
       entries,
-      settings.activeProfileId,
+      profileScope,
       settings.accountCreatedAt,
       intel.core.totalAssets,
       intel.core.totalLiabilities,
@@ -92,7 +88,7 @@ export default function ProfileFinancialHero({
       <div className="ct-hero-month-glow" aria-hidden />
 
       <div className="ct-row-between px-1 pt-1 pb-2 relative">
-        <Eyebrow>{t("netWorth.pageTitle")}</Eyebrow>
+        <Eyebrow>{salariedFamily ? t("netWorth.pageTitleHousehold") : t("netWorth.pageTitle")}</Eyebrow>
         <div className="ct-row gap-1.5 shrink-0">
           <button
             type="button"
@@ -123,8 +119,8 @@ export default function ProfileFinancialHero({
           </Heading>
           <Caption className="block truncate">
             <span className="inline-flex items-center gap-1">
-              <CtIcon name={modeCfg.icon} size={14} />
-              {t("mode.salaried")}
+              <CtIcon name={modeDisplay.icon} size={14} />
+              {t(modeDisplay.labelKey)}
             </span>
             {suffix ? ` · ${suffix}` : ""}
           </Caption>
@@ -138,7 +134,9 @@ export default function ProfileFinancialHero({
         aria-label={t("profile.openWealthAnalytics")}
       >
         <div className="ct-row-between px-1 mt-1 relative">
-          <p className="ct-eyebrow">{t("netWorth.hero.eyebrow")}</p>
+          <p className="ct-eyebrow">
+            {salariedFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+          </p>
           {!privacyMode ? (
             <span className={`ct-nw-status ct-nw-status-${intel.emotionalStatus}`}>
               {t(intel.emotionalStatusKey)}
@@ -150,7 +148,7 @@ export default function ProfileFinancialHero({
 
         <div className="px-1 mt-3 relative">
           <div className="ct-row-between ct-caption mb-1">
-            <span>{t("profile.netWorthGrowthTitle")}</span>
+            <span>{salariedFamily ? t("profile.netWorthGrowthTitleHousehold") : t("profile.netWorthGrowthTitle")}</span>
             <span className={sparkRising ? "ct-hero-metric-success" : "ct-hero-metric-warn"}>{growthLabel}</span>
           </div>
         </div>

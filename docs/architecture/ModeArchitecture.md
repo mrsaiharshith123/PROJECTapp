@@ -9,7 +9,18 @@ Registry: `src/governance/registries/modes.js`
 | Pick | Experience | Dashboard |
 |------|------------|-----------|
 | Salaried | Personal salary & bills | `ModeIntelligenceSection.jsx` (survival panel) |
-| Salaried + household scope **family** | Household | `FamilyModeDashboard.jsx` |
+| Salaried + household scope **family** | Household (combined income, shared bills, household net worth) | `FamilyModeDashboard.jsx`, `HouseholdHubSection.jsx` |
+
+## Family data scope
+
+When `isSalariedFamily(settings)`:
+
+- **`resolveDataProfileScope(settings)`** returns `null` — month summaries, analytics, and net worth include **all profiles** (household combined).
+- **`combinedMonthlyIncome(settings)`** — primary + spouse income fields.
+- **`householdMemberLimit(settings)`** — you + partner + dependents, capped at 6.
+- **Household rooms** — local-first registry (`householdRoomLocal.js`) with cloud fallback (`householdRoomService.js`); migration `supabase/migrations/20260614000000_household_rooms.sql`.
+
+Copy rules: `.cursor/rules/family-mode-copy.mdc`. Audit: `npm run audit:household`.
 
 ## Legacy saves (migrated on load)
 

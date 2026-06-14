@@ -4,7 +4,7 @@ import { formatInr } from "../../constants/symbols.js";
 import { salarySpendBarColor } from "../../utils/salarySpendBar.js";
 
 /** @param {any} props */
-function SpendTooltip({ active, payload }) {
+function SpendTooltip({ active, payload, household = false }) {
   const { t } = useTranslation();
   if (!active || !payload?.[0]) return null;
 
@@ -15,7 +15,7 @@ function SpendTooltip({ active, payload }) {
     <div className="ct-chart-tooltip">
       <p className="ct-chart-tooltip-label">{label}</p>
       <p className="ct-chart-tooltip-row">
-        {t("home.sparklineUsed")}: {formatInr(payload[0].value ?? 0)}
+        {t(household ? "home.sparklineUsedHousehold" : "home.sparklineUsed")}: {formatInr(payload[0].value ?? 0)}
       </p>
     </div>
   );
@@ -30,9 +30,9 @@ function spendYMax(data) {
 
 /**
  * Small bottom sparkline — cumulative spend through the month (tight scale for visible movement).
- * @param {{ data: { day: number, label?: string, value: number }[], salary: number, spendPct: number, overBudget?: boolean }} props
+ * @param {{ data: { day: number, label?: string, value: number }[], salary: number, spendPct: number, overBudget?: boolean, household?: boolean }} props
  */
-export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBudget = false }) {
+export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBudget = false, household = false }) {
   const color =
     overBudget || spendPct >= 100 ? "#ef4444" : salarySpendBarColor(spendPct);
   if (!data?.length) return null;
@@ -52,7 +52,7 @@ export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBud
             minTickGap={20}
           />
           <YAxis domain={[0, yMax]} hide />
-          <Tooltip content={SpendTooltip} cursor={false} />
+          <Tooltip content={(props) => <SpendTooltip {...props} household={household} />} cursor={false} />
           <Line
             type="monotone"
             dataKey="value"

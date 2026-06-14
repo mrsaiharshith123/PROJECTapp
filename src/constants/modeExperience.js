@@ -9,11 +9,81 @@ export const MODE_CATEGORY_IDS = {
 };
 
 /** Quick calculator tool ids per mode (Home dashboard). Safety lives under Profile. */
+const TOOL_ORDER = [
+  "planner",
+  "advisor",
+  "incomeTax",
+  "retirement",
+  "loan",
+  "goals",
+  "invest",
+  "chit",
+  "insurance",
+  "bond",
+];
+
 export const MODE_TOOL_IDS = {
-  salaried: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
-  family: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
-  power: ["planner", "advisor", "loan", "insurance", "chit", "bond", "incomeTax", "retirement", "invest", "goals"],
+  salaried: TOOL_ORDER,
+  family: TOOL_ORDER,
+  power: TOOL_ORDER,
 };
+
+/** Scope-gated product features (single vs household vs both). */
+export const SCOPE_FEATURES = {
+  single: [
+    "paycheck_autopsy",
+    "personal_cibil_sim",
+    "salary_day_mode",
+    "individual_survival",
+    "personal_goals",
+  ],
+  household: [
+    "combined_income_display",
+    "spouse_income_field",
+    "school_fees_banner",
+    "family_emergency_target",
+    "household_pressure_score",
+    "family_cashflow_calendar",
+    "festival_planner",
+    "dependent_tracker",
+    "per_member_expense",
+    "household_runway",
+    "shared_goals",
+    "renewal_alerts",
+    "household_entity_card",
+  ],
+  both: [
+    "commitments",
+    "lending",
+    "chit_fund",
+    "income_tax",
+    "retirement_suite",
+    "net_worth",
+    "daily_spends",
+    "bill_split",
+    "analytics",
+    "ai_advisor",
+    "goals",
+    "survival_basic",
+    "pressure_score",
+    "bank_import",
+    "notification_smart",
+    "annual_report",
+  ],
+};
+
+/** @param {string} featureId @param {"single" | "family"} householdScope */
+export function isFeatureForScope(featureId, householdScope) {
+  if (SCOPE_FEATURES.both.includes(featureId)) return true;
+  if (householdScope === "family") return SCOPE_FEATURES.household.includes(featureId);
+  return SCOPE_FEATURES.single.includes(featureId);
+}
+
+/** @param {"single" | "family"} householdScope */
+export function getScopeOnlyFeatures(householdScope) {
+  if (householdScope === "family") return SCOPE_FEATURES.household;
+  return SCOPE_FEATURES.single;
+}
 
 export const MODE_TOOL_DEFS = {
   planner: {
@@ -151,6 +221,23 @@ export function getIncomeLabelKey(settingsOrMode) {
   return "income.monthlySalary";
 }
 
+/**
+ * Profile scope for spends / wealth. `null` = entire household (family mode).
+ * @param {object | null | undefined} settings
+ * @returns {string | null}
+ */
+export function resolveDataProfileScope(settings) {
+  if (isSalariedFamily(settings)) return null;
+  return settings?.activeProfileId || "default";
+}
+
+/** Icon + label key for mode badge in profile / home. */
+export function getHouseholdModeDisplay(settings) {
+  if (isSalariedFamily(settings)) return { icon: "users-three", labelKey: "mode.family" };
+  if (hasPowerFeatures(settings)) return { icon: "lightning", labelKey: "brand.proSuffix" };
+  return { icon: "briefcase", labelKey: "mode.salaried" };
+}
+
 export function getAnalyticsCopy(settingsOrMode) {
   const mode =
     typeof settingsOrMode === "object" && settingsOrMode !== null
@@ -209,6 +296,24 @@ export function getToolTileKeys(toolId, settingsOrMode) {
     return { titleKey: "tools.householdPlanner.title", subtitleKey: "tools.householdPlanner.subtitle" };
   }
   return { titleKey: `tools.${toolId}.title`, subtitleKey: `tools.${toolId}.subtitle` };
+}
+
+/** @param {object | null | undefined} settings @param {string} singleKey @param {string} familyKey */
+export function familyTextKey(settings, singleKey, familyKey) {
+  return isSalariedFamily(settings) ? familyKey : singleKey;
+}
+
+/**
+ * Resolve i18n key for single vs family household copy.
+ * @param {Function} t
+ * @param {object} settings
+ * @param {string} singleKey
+ * @param {string} familyKey
+ * @param {Record<string, unknown>} [params]
+ */
+export function tFamily(t, settings, singleKey, familyKey, params = undefined) {
+  const key = familyTextKey(settings, singleKey, familyKey);
+  return params ? t(key, params) : t(key);
 }
 
 export function showSalariedStabilityCards(settings) {

@@ -33,7 +33,7 @@ import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import SubscriptionsAuditPanel from "../analytics/SubscriptionsAuditPanel.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily, resolveDataProfileScope } from "../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 
 const Analytics = () => {
@@ -59,6 +59,8 @@ const Analytics = () => {
   const analyticsCopy = getAnalyticsCopy(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
+  const profileScope = resolveDataProfileScope(settings);
+  const isFamily = isSalariedFamily(settings);
   const today = todayStr || todayYmd();
 
   const paycheckFlow = useMemo(
@@ -67,7 +69,7 @@ const Analytics = () => {
         ? computeSalaryBreakdown(commitments, income, getEffectiveStatus, {
             dailySpends,
             todayStr: today,
-            profileId: settings.activeProfileId || "default",
+            profileId: profileScope,
           })
         : null,
     [
@@ -77,7 +79,7 @@ const Analytics = () => {
       income,
       getEffectiveStatus,
       today,
-      settings.activeProfileId,
+      profileScope,
     ],
   );
 
@@ -111,7 +113,7 @@ const Analytics = () => {
         dailySpends,
         lendings,
         getEffectiveLendingStatus,
-        profileId: settings.activeProfileId || "default",
+        profileId: profileScope,
       }),
     [
       commitments,
@@ -121,7 +123,7 @@ const Analytics = () => {
       getEffectiveLendingStatus,
       today,
       income,
-      settings.activeProfileId,
+      profileScope,
     ],
   );
 
@@ -154,14 +156,12 @@ const Analytics = () => {
     <div className="ct-page">
       <PageHeader
         title={t("analytics.title")}
-        eyebrow={t("home.insight")}
-        subtitle={t("analytics.homeSnapshotHint")}
+        eyebrow={isFamily ? t("analytics.eyebrowHousehold") : t("home.insight")}
+        subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
       />
-      {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
-        <Caption className="ct-text-accent">
-          {t("analytics.profileLabel", { id: settings.activeProfileId })}
-        </Caption>
-      )}
+      {isFamily ? (
+        <Caption className="ct-text-accent">{t("analytics.householdCombinedView")}</Caption>
+      ) : null}
 
       <FinancialPulseCard microTipSeed={microTipSeed} />
 
@@ -174,8 +174,12 @@ const Analytics = () => {
 
         <Card className="ct-stack" id="paycheck-flow">
           <div>
-            <Heading level={3}>{t("analytics.paycheckBurden")}</Heading>
-            <Caption className="block mt-1">{t("analytics.paycheckSubtitle")}</Caption>
+            <Heading level={3}>
+              {isFamily ? t("analytics.paycheckBurdenHousehold") : t("analytics.paycheckBurden")}
+            </Heading>
+            <Caption className="block mt-1">
+              {isFamily ? t("analytics.paycheckSubtitleHousehold") : t("analytics.paycheckSubtitle")}
+            </Caption>
           </div>
           <PaycheckBreakdown
             breakdown={paycheckFlow}

@@ -12,15 +12,19 @@ import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
 import { buildIncomeSensitivityRows } from "../../../engines/pressureScore.js";
 import { summarizeHouseholdPayerBurden } from "../../../engines/householdPayer.js";
 import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
-import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily, resolveDataProfileScope } from "../../../constants/modeExperience.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { formatInr } from "../../../constants/symbols.js";
 
 export default function PaycheckPage() {
   const { t } = useTranslation();
   const { commitments, settings, getEffectiveStatus, dailySpends, todayStr } = useCommitTrack();
+  const isFamily = isSalariedFamily(settings);
   const income = combinedMonthlyIncome(settings);
   const analyticsCopy = getAnalyticsCopy(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
+
+  const profileScope = resolveDataProfileScope(settings);
 
   const paycheckFlow = useMemo(
     () =>
@@ -28,10 +32,10 @@ export default function PaycheckPage() {
         ? computeSalaryBreakdown(commitments, income, getEffectiveStatus, {
             dailySpends,
             todayStr,
-            profileId: settings.activeProfileId || "default",
+            profileId: profileScope,
           })
         : null,
-    [analyticsCopy.showPaycheckFlow, commitments, dailySpends, income, getEffectiveStatus, todayStr, settings.activeProfileId],
+    [analyticsCopy.showPaycheckFlow, commitments, dailySpends, income, getEffectiveStatus, todayStr, profileScope],
   );
 
   const timeline = useMemo(
@@ -69,9 +73,13 @@ export default function PaycheckPage() {
   return (
     <div className="ct-page">
       <PageHeader
-        title={t("paycheck.title")}
-        eyebrow={t("nav.paycheck")}
-        subtitle={t("paycheck.subtitle")}
+        title={isFamily ? t("paycheck.titleHousehold") : t("paycheck.title")}
+        eyebrow={isFamily ? t("nav.incomeBreakdown") : t("nav.paycheck")}
+        subtitle={
+          isFamily
+            ? t("paycheck.subtitleHousehold", { income: formatInr(income) })
+            : t("paycheck.subtitle")
+        }
       />
 
       {!settings.salaryCreditDay && (
@@ -92,6 +100,7 @@ export default function PaycheckPage() {
         bufferAfterBills={timeline.bufferAfterBills}
         salaryCreditDay={settings.salaryCreditDay}
         todayStr={todayStr}
+        scope={isFamily ? "household" : "personal"}
       />
 
       <Card className="ct-stack">

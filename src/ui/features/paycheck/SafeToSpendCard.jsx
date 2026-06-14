@@ -6,8 +6,18 @@ import { computeSafeToSpendDaily } from "../../../engines/safeToSpend.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** Daily safe-to-spend until next salary credit. */
-export default function SafeToSpendCard({ bufferAfterBills, salaryCreditDay, todayStr, compact = false }) {
+export default function SafeToSpendCard({
+  bufferAfterBills,
+  salaryCreditDay,
+  todayStr,
+  compact = false,
+  scope = "personal",
+}) {
   const { t } = useTranslation();
+  const titleKey =
+    scope === "household" ? "paycheck.safeToSpendTitleHousehold" : "paycheck.safeToSpendTitle";
+  const hintKey =
+    scope === "household" ? "paycheck.safeToSpendHintHousehold" : "paycheck.safeToSpendHint";
   const safe = useMemo(
     () =>
       computeSafeToSpendDaily({
@@ -25,7 +35,7 @@ export default function SafeToSpendCard({ bufferAfterBills, salaryCreditDay, tod
       <Card className="ct-stack-sm !p-3">
         <div className="ct-row-between gap-2">
           <div>
-            <Caption className="block font-semibold">{t("paycheck.safeToSpendTitle")}</Caption>
+            <Caption className="block font-semibold">{t(titleKey)}</Caption>
             <Body className="font-bold text-[var(--ct-accent)]">
               {formatInr(safe.daily)}
               <span className="text-xs font-normal text-[var(--ct-text-muted)]"> /{t("paycheck.perDay")}</span>
@@ -41,8 +51,8 @@ export default function SafeToSpendCard({ bufferAfterBills, salaryCreditDay, tod
 
   return (
     <Card className="ct-stack-sm">
-      <Heading level={3}>{t("paycheck.safeToSpendTitle")}</Heading>
-      <Caption className="block">{t("paycheck.safeToSpendHint", { days: safe.daysUntilSalary ?? 0 })}</Caption>
+      <Heading level={3}>{t(titleKey)}</Heading>
+      <Caption className="block">{t(hintKey, { days: safe.daysUntilSalary ?? 0 })}</Caption>
       <p className="text-2xl font-bold text-[var(--ct-accent)] ct-numeral">
         {formatInr(safe.daily)}
         <span className="text-sm font-normal text-[var(--ct-text-muted)]"> /{t("paycheck.perDay")}</span>

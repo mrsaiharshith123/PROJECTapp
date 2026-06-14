@@ -13,9 +13,20 @@ export const MODE_CAPABILITIES = {
   },
   family: {
     label: "Household (salaried + family scope)",
-    engines: ["engines/modeFamily.js", "engines/familyCalendar.js", "engines/householdPayer.js"],
+    engines: [
+      "engines/modeFamily.js",
+      "engines/familyCalendar.js",
+      "engines/householdPayer.js",
+      "engines/householdRoom.js",
+      "engines/householdRoomLocal.js",
+      "engines/householdSpendBreakdown.js",
+    ],
     sharedEngines: ["engines/burden.js", "engines/survival.js"],
-    isolatedUi: ["ui/features/dashboard/FamilyModeDashboard.jsx"],
+    isolatedUi: [
+      "ui/features/dashboard/FamilyModeDashboard.jsx",
+      "ui/features/profile/HouseholdHubSection.jsx",
+      "ui/features/modals/HouseholdSetupModal.jsx",
+    ],
   },
   power: {
     label: "Power user (legacy)",
@@ -38,4 +49,9 @@ export const MODE_LOGIC_ALLOWLIST = [
   "hooks/useStabilityIntel.js",
   "hooks/useCommitIntel.js",
   "engines/modeFamily.js",
+  "services/household/householdRoomService.js",
+  "ui/features/profile/HouseholdHubSection.jsx",
+  "ui/features/modals/HouseholdSetupModal.jsx",
+  "ui/features/dashboard/HomeOverviewCard.jsx",
+  "ui/features/profile/hub/ProfileFinancialHero.jsx",
 ];

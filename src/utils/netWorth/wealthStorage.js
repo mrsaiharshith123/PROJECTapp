@@ -171,7 +171,8 @@ export function saveWealthState(state) {
   return normalized;
 }
 
-/** @param {string} [profileId] */
+/** @param {string | null} [profileId] null = all profiles (household) */
 export function filterWealthByProfile(entries, profileId = "default") {
-  return entries.filter((e) => !e.profileId || e.profileId === profileId);
+  if (profileId == null) return entries || [];
+  return (entries || []).filter((e) => !e.profileId || e.profileId === profileId);
 }

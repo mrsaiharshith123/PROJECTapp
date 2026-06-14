@@ -5,7 +5,7 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
 import { getUserModeConfig } from "../../../constants/userModes.js";
-import { getExperienceMode } from "../../../constants/modeExperience.js";
+import { getExperienceMode, isSalariedFamily, resolveDataProfileScope } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import {
   computeOverallMonthlySpend,
@@ -35,9 +35,12 @@ export default function HomeOverviewCard() {
   const intel = useCommitIntel();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const experienceMode = getExperienceMode(settings);
-  const modeCfg = getUserModeConfig(settings.userMode || "salaried");
+  const isFamily = isSalariedFamily(settings);
+  const modeCfg = isFamily
+    ? { icon: "users-three", label: "family" }
+    : getUserModeConfig(settings.userMode || "salaried");
   const income = combinedMonthlyIncome(settings);
-  const profileId = settings.activeProfileId || "default";
+  const profileScope = resolveDataProfileScope(settings);
 
   const monthSummary = useMemo(
     () =>
@@ -45,7 +48,7 @@ export default function HomeOverviewCard() {
         dailySpends,
         lendings,
         getEffectiveLendingStatus,
-        profileId,
+        profileId: profileScope,
       }),
     [
       commitments,
@@ -55,13 +58,13 @@ export default function HomeOverviewCard() {
       getEffectiveLendingStatus,
       todayStr,
       income,
-      profileId,
+      profileScope,
     ],
   );
 
   const spendSeries = useMemo(
-    () => buildMonthCumulativeSpendSeries(commitments, dailySpends, todayStr, profileId),
-    [commitments, dailySpends, todayStr, profileId],
+    () => buildMonthCumulativeSpendSeries(commitments, dailySpends, todayStr, profileScope),
+    [commitments, dailySpends, todayStr, profileScope],
   );
 
   const overdueCount = useMemo(
@@ -79,18 +82,27 @@ export default function HomeOverviewCard() {
   const guidance = monthSummary.spendGuidance;
   const spendTip =
     guidance?.isTight && guidance.dailyLifestyleCap > 0
-      ? t("home.statusSpendTight", { amount: formatInr(guidance.dailyLifestyleCap) })
+      ? t(
+          isFamily ? "home.statusSpendTightHousehold" : "home.statusSpendTight",
+          { amount: formatInr(guidance.dailyLifestyleCap) },
+        )
       : guidance?.dailyTotalCap > 0
-        ? t("home.statusSpendFlexible", { amount: formatInr(guidance.dailyTotalCap) })
+        ? t(
+            isFamily ? "home.statusSpendFlexibleHousehold" : "home.statusSpendFlexible",
+            { amount: formatInr(guidance.dailyTotalCap) },
+          )
         : null;
 
   const statusLine = pressure?.score != null ? (
     <div className="ct-stack-sm !gap-1.5">
       <p className="ct-body !text-xs leading-snug">
-        {t("home.statusStress", {
-          score: pressure.score,
-          label: translatePressureLabel(t, pressure.label),
-        })}{" "}
+        {t(
+          isFamily ? "home.statusStressHousehold" : "home.statusStress",
+          {
+            score: pressure.score,
+            label: translatePressureLabel(t, pressure.label),
+          },
+        )}{" "}
         <span className={overdueCount === 0 ? "ct-text-success" : "ct-text-warning"}>
           {overdueCount === 0
             ? t("home.statusOverdueNone")
@@ -106,27 +118,34 @@ export default function HomeOverviewCard() {
   ) : null;
 
   const title =
-    experienceMode === "salaried"
-      ? t("home.thisMonth")
-      : experienceMode === "family"
-        ? t("home.householdMonth")
-        : t("mode.salaried");
+    experienceMode === "family"
+      ? t("home.householdMonth")
+      : experienceMode === "salaried"
+        ? t("home.thisMonth")
+        : t("home.thisMonth");
+
+  const scopeBadge = isFamily ? t("mode.family") : null;
 
   const freeCashLabel = experienceMode === "family" ? t("home.householdCash") : t("home.freeCash");
 
   const salaryLabel =
     income > 0
-      ? t("home.salarySpendOf", {
+      ? t(isFamily ? "home.salarySpendOfHousehold" : "home.salarySpendOf", {
           spent: formatInr(overallSpend),
           salary: formatInr(income),
         })
-      : t("home.salarySpendNoIncome", { spent: formatInr(overallSpend) });
+      : t(isFamily ? "home.salarySpendNoIncomeHousehold" : "home.salarySpendNoIncome", {
+          spent: formatInr(overallSpend),
+        });
+
+  const spendTitleKey = isFamily ? "home.salarySpendTitleHousehold" : "home.salarySpendTitle";
 
   return (
     <HeroMonthCard
       title={title}
       monthLabel={monthLabel}
       icon={modeCfg.icon}
+      scopeBadge={scopeBadge}
       scheduled={formatInr(monthSummary.scheduledThisMonth)}
       paid={formatInr(monthSummary.paidThisMonth)}
       unpaid={formatInr(monthSummary.dueThisMonth)}
@@ -135,10 +154,12 @@ export default function HomeOverviewCard() {
       freeCashValue={monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
       freeCashWarn={monthSummary.freeCash != null && monthSummary.freeCash < 0}
       spendPct={spendPct}
+      spendTitleKey={spendTitleKey}
       salaryLabel={salaryLabel}
       spendSeries={spendSeries}
       monthlyIncome={income}
       overBudget={overBudget}
+      sparklineHousehold={isFamily}
       statusLine={statusLine}
       privacyMode={privacyMode}
       onTogglePrivacy={togglePrivacyMode}

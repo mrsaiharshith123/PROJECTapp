@@ -18,6 +18,8 @@ import ProfileSettingsSheet from "../profile/hub/ProfileSettingsSheet.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
 import ProfileSecuritySection from "../profile/ProfileSecuritySection.jsx";
+import HouseholdHubSection from "../profile/HouseholdHubSection.jsx";
+import HouseholdSetupModal from "../modals/HouseholdSetupModal.jsx";
 
 /** @param {string | undefined} fromNav @returns {string | null} */
 function resolveSettingsSection(fromNav) {
@@ -55,6 +57,7 @@ const Profile = () => {
   const initialSettingsSection = resolveSettingsSection(location.state?.openSection);
   const [settingsOpen, setSettingsOpen] = useState(Boolean(initialSettingsSection));
   const [openSection, setOpenSection] = useState(initialSettingsSection);
+  const [householdSetupOpen, setHouseholdSetupOpen] = useState(false);
 
   useEffect(() => {
     if (!location.state?.openSection) return;
@@ -94,7 +97,14 @@ const Profile = () => {
         case "personal-identity":
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="identity" />;
         case "personal-money":
-          return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="money" />;
+          return (
+            <ProfilePersonalSection
+              settings={settings}
+              updateSettings={updateSettings}
+              part="money"
+              onRequestHouseholdSetup={() => setHouseholdSetupOpen(true)}
+            />
+          );
         case "personal-appearance":
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="appearance" />;
         case "personal-account":
@@ -163,6 +173,8 @@ const Profile = () => {
         onOpenSettings={() => openSettings(null)}
       />
 
+      <HouseholdHubSection />
+
       {(secondaryOnly || incomeMissing) && (
         <div className="ct-reveal ct-reveal-delay-1">
           {secondaryOnly && (
@@ -221,6 +233,7 @@ const Profile = () => {
 
       <Caption className="text-center block pb-2">{t("profile.savedLocally")}</Caption>
       <ProfileBrandFooter />
+      <HouseholdSetupModal open={householdSetupOpen} onClose={() => setHouseholdSetupOpen(false)} />
     </div>
   );
 };

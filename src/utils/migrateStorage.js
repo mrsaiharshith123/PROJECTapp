@@ -19,6 +19,7 @@ import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "./dailySpends.js";
 import { normalizeHouseholdMembers } from "../engines/householdEntity.js";
+import { householdMemberLimit } from "../engines/householdRoom.js";
 import { loadWealthState } from "./netWorth/wealthStorage.js";
 import { resolveAccountCreatedAt } from "./accountOrigin.js";
 
@@ -166,6 +167,9 @@ export function normalizeCommitment(raw) {
     householdPayer: ["primary", "secondary", "shared"].includes(String(raw.householdPayer || "").toLowerCase())
       ? String(raw.householdPayer).toLowerCase()
       : "",
+    forMember: ["self", "spouse", "shared"].includes(String(raw.forMember || "").toLowerCase())
+      ? String(raw.forMember).toLowerCase()
+      : "shared",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
   };
@@ -538,6 +542,15 @@ const DEFAULT_SETTINGS = {
   appLanguage: "en",
   /** Household entity model — members with roles and permissions */
   householdMembers: [{ id: "owner", label: "You", role: "owner", incomeShare: 1, permission: "shared_edit" }],
+  householdRoomId: "",
+  householdInviteCode: "",
+  householdRoomRole: "",
+  householdRoomName: "",
+  householdShareSpends: true,
+  householdShareBillDetail: false,
+  householdRoomMembers: [],
+  householdRoomLocal: false,
+  householdMemberLimit: 2,
   epfBasicSalary: 0,
   epfCorpus: 0,
   epfAge: 30,
@@ -624,6 +637,30 @@ export function loadSettingsFromStorage() {
           typeof o.goalAutoSaveLastRun === "string" ? o.goalAutoSaveLastRun.slice(0, 10) : null,
         appLanguage: normalizeAppLanguage(o.appLanguage),
         householdMembers: normalizeHouseholdMembers(o.householdMembers),
+        householdRoomId: String(o.householdRoomId || ""),
+        householdInviteCode: String(o.householdInviteCode || "").toUpperCase().slice(0, 6),
+        householdRoomRole: ["owner", "member"].includes(o.householdRoomRole) ? o.householdRoomRole : "",
+        householdRoomName: String(o.householdRoomName || ""),
+        householdShareSpends: "householdShareSpends" in o ? Boolean(o.householdShareSpends) : true,
+        householdShareBillDetail: Boolean(o.householdShareBillDetail),
+        householdRoomMembers: Array.isArray(o.householdRoomMembers)
+          ? o.householdRoomMembers.map((m) => ({
+              userId: String(m?.userId || ""),
+              displayName: String(m?.displayName || "Member").slice(0, 40),
+              role: m?.role === "owner" ? "owner" : "member",
+              shareSpends: m?.shareSpends !== false,
+              shareBillDetail: Boolean(m?.shareBillDetail),
+            }))
+          : [],
+        householdRoomLocal: Boolean(o.householdRoomLocal),
+        householdMemberLimit: Math.min(
+          6,
+          Math.max(
+            2,
+            Math.floor(Number(o.householdMemberLimit) || 0) ||
+              householdMemberLimit({ dependents: Math.min(6, Math.floor(Number(o.dependents) || 0)) }),
+          ),
+        ),
         epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),
         epfCorpus: Math.max(0, Number(o.epfCorpus) || 0),
         epfAge: Math.min(70, Math.max(18, Math.floor(Number(o.epfAge) || 30))),

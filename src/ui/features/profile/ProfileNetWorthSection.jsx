@@ -7,6 +7,7 @@ import { useProfileHubIntel } from "../../../hooks/useProfileHubIntel.js";
 import FinancialLifeOverviewPanel from "./hub/FinancialLifeOverviewPanel.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { partitionWealth } from "../../../engines/netWorth/core.js";
 import { deriveWealthFromCommitments } from "../../../engines/netWorth/commitmentWealth.js";
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
@@ -19,7 +20,8 @@ export default function ProfileNetWorthSection() {
   const { t } = useTranslation();
   const intel = useNetWorthIntel();
   const hub = useProfileHubIntel();
-  const { commitments, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { commitments, getEffectiveStatus, todayStr, settings } = useCommitTrack();
+  const isFamily = isSalariedFamily(settings);
   const { addEntry, updateEntry, deleteEntry, privacyMode } = useNetWorth();
   const [tab, setTab] = useState("overview");
   const [modal, setModal] = useState(/** @type {{ kind: 'asset'|'liability', entry?: object } | null} */ (null));
@@ -34,7 +36,7 @@ export default function ProfileNetWorthSection() {
     [commitments, getEffectiveStatus, todayStr]
   );
 
-  const billSourceLabel = t("netWorth.fromBills");
+  const billSourceLabel = isFamily ? t("netWorth.fromBillsHousehold") : t("netWorth.fromBills");
   const openBill = (commitmentId) => navigate("/commitments", { state: { openBillId: commitmentId } });
 
   const openAdd = (kind) => setModal({ kind });
@@ -47,23 +49,25 @@ export default function ProfileNetWorthSection() {
     <div className="ct-stack ct-nw-embedded">
       <SegmentedControl
         options={[
-          { id: "overview", label: t("netWorth.tab.overview") },
-          { id: "milestones", label: t("netWorth.tab.milestones") },
-          { id: "assets", label: t("netWorth.tab.assets") },
-          { id: "liabilities", label: t("netWorth.tab.liabilities") },
+          { id: "overview", label: isFamily ? t("netWorth.tab.overviewHousehold") : t("netWorth.tab.overview") },
+          { id: "milestones", label: isFamily ? t("netWorth.tab.milestonesHousehold") : t("netWorth.tab.milestones") },
+          { id: "assets", label: isFamily ? t("netWorth.tab.assetsHousehold") : t("netWorth.tab.assets") },
+          { id: "liabilities", label: isFamily ? t("netWorth.tab.liabilitiesHousehold") : t("netWorth.tab.liabilities") },
         ]}
         value={tab}
         onChange={setTab}
       />
 
-      {tab === "overview" && <FinancialLifeOverviewPanel hub={hub} insights={intel.insights} />}
+      {tab === "overview" && (
+        <FinancialLifeOverviewPanel hub={hub} insights={intel.insights} household={isFamily} />
+      )}
 
-      {tab === "milestones" && <ProfileMilestonesPanel />}
+      {tab === "milestones" && <ProfileMilestonesPanel household={isFamily} />}
 
       {tab === "assets" && (
         <div className="ct-stack ct-list-animate">
           {!hasAssets ? (
-            <EmptyState icon="bank" title={t("netWorth.empty.assets")} hint="" />
+            <EmptyState icon="bank" title={isFamily ? t("netWorth.empty.assetsHousehold") : t("netWorth.empty.assets")} hint="" />
           ) : (
             <>
               {fromBills.assets.map((a) => (
@@ -100,7 +104,7 @@ export default function ProfileNetWorthSection() {
       {tab === "liabilities" && (
         <div className="ct-stack ct-list-animate">
           {!hasLiabilities ? (
-            <EmptyState icon="credit-card" title={t("netWorth.empty.liabilities")} hint="" />
+            <EmptyState icon="credit-card" title={isFamily ? t("netWorth.empty.liabilitiesHousehold") : t("netWorth.empty.liabilities")} hint="" />
           ) : (
             <>
               {fromBills.liabilities.map((l) => (

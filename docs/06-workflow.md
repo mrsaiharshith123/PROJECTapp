@@ -28,6 +28,14 @@ See [10-i18n.md](./10-i18n.md).
 4. Test in `utils/__tests__/` or `engines/__tests__/`
 5. `npm run audit`
 
+### Family household mode
+
+1. Set `householdScope: "family"` in settings (Profile → Household)
+2. Use `isSalariedFamily`, `resolveDataProfileScope`, `tFamily` / `familyTextKey` — see `.cursor/rules/family-mode-copy.mdc`
+3. Household rooms: `HouseholdHubSection`, `householdRoomService.js` (local-first fallback)
+4. `npm run audit:household` after UI changes
+5. `npm run audit` before merge
+
 ### New dashboard calculator
 
 1. Add tool id in `constants/modeExperience.js` (`MODE_TOOL_DEFS`, mode lists)
@@ -79,7 +87,7 @@ See [10-i18n.md](./10-i18n.md).
 
 Reviewers should see:
 
-- [ ] `npm run audit` passes (CI: `npm run audit -- --strict` recommended before release)
+- [ ] `npm run audit` passes (release: `npm run audit:pre-release` or `npm run audit -- --strict`)
 - [ ] No UI outside `src/ui/` (except `ct-*` layout)
 - [ ] Engine changes have tests when behavior is non-trivial
 - [ ] New exports from `ui/index.js` are actually used

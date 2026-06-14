@@ -8,14 +8,17 @@ export function HeroMonthCard({
   title,
   monthLabel,
   icon,
+  scopeBadge,
   scheduled,
   paid,
   unpaid,
   spendPct,
   salaryLabel,
+  spendTitleKey = "home.salarySpendTitle",
   overBudget = false,
   spendSeries = [],
   monthlyIncome = 0,
+  sparklineHousehold = false,
   variableSpent,
   freeCashLabel,
   freeCashValue,
@@ -46,6 +49,9 @@ export function HeroMonthCard({
         <div className="text-left">
           <p className="ct-eyebrow">{title}</p>
           <p className="ct-caption mt-0.5">{monthLabel}</p>
+          {scopeBadge ? (
+            <span className="ct-hero-scope-badge">{scopeBadge}</span>
+          ) : null}
         </div>
         <div className="ct-row gap-1.5 shrink-0">
           {onTogglePrivacy ? (
@@ -118,12 +124,13 @@ export function HeroMonthCard({
           salary={monthlyIncome}
           spendPct={spendPct}
           overBudget={overBudget}
+          household={sparklineHousehold}
         />
       </div>
 
       <div className="px-1 mt-2 relative">
         <div className="ct-row-between ct-caption mb-1">
-          <span>{t("home.salarySpendTitle")}</span>
+          <span>{t(spendTitleKey)}</span>
           <span className={overBudget ? "ct-hero-metric-danger font-semibold" : ""}>
             {privacyMode ? "••••" : salaryLabel}
           </span>

@@ -1,0 +1,40 @@
+---
+description: Family household mode — copy and combined data scope
+globs:
+  - src/ui/**/*
+  - src/constants/modeExperience.js
+  - src/context/NetWorthContext.jsx
+  - src/i18n/messages/en.js
+---
+
+# Family mode (householdScope === "family")
+
+When `isSalariedFamily(settings)` is true, **never** show single/salaried-only wording in UI and **never** filter analytics to one profile alone.
+
+## Copy rules
+
+1. Use `familyTextKey(settings, singleKey, familyKey)` or `tFamily(t, settings, singleKey, familyKey, params)` from `constants/modeExperience.js`.
+2. Pair keys in `en.js`: e.g. `home.freeCash` / `home.householdCash`, `netWorth.hero.eyebrow` / `netWorth.hero.eyebrowHousehold`.
+3. Do **not** show "Salaried", "salary", "my income", or "personal" framing — use household / combined / family equivalents.
+4. Use `getHouseholdModeDisplay(settings)` for mode badges (icon `users-three`, label `mode.family`).
+5. Icons: prefer `users-three` over `briefcase` / `currency-inr` for family-scoped income and paycheck actions.
+
+## Data rules
+
+1. Use `resolveDataProfileScope(settings)` for spends, month summaries, paycheck breakdown, and wealth series:
+   - **Family:** `null` = all profiles (household combined).
+   - **Single:** `activeProfileId || "default"`.
+2. `NetWorthContext` already scopes to `null` (all entries) when family — do not re-filter to one profile in UI.
+3. Income math: `combinedMonthlyIncome(settings)` (primary + secondary).
+4. Seat limit: `householdMemberLimit(settings)` from dependents (max 6).
+
+## Profiles vs household rooms
+
+- **Profiles** (`ProfileManager`, multi-profile picker) are **single mode only**.
+- Family mode uses **household rooms** (`HouseholdHubSection`, `HouseholdSetupModal`) with invite codes — not settings profile lists.
+
+## Checks
+
+- `npm run audit:household` — mode isolation + profile-scope CRUD
+- `npm run audit:i18n:hardcoded` after new UI
+- Grep for hardcoded "salary", "Salaried", "personal" in JSX when touching home/profile/paycheck/analytics

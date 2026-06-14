@@ -34,6 +34,8 @@ import {
   ProgressBar,
 } from "../../index.js";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
+import StickyStatusStrip from "../home/StickyStatusStrip.jsx";
+import AttentionSection from "../home/AttentionSection.jsx";
 import SafeToSpendCard from "../paycheck/SafeToSpendCard.jsx";
 import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -55,6 +57,7 @@ const Home = () => {
   const tourOpen = !tourDismissed && (navWantsTour || !settings.appGuideComplete);
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
+  const isFamily = isSalariedFamily(settings);
   const scrollToTools = useCallback(() => {
     document.getElementById("dashboard-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
@@ -106,24 +109,30 @@ const Home = () => {
 
   return (
     <div className="ct-page">
+      <InstallAppBanner />
+
       <AppTourModal
         settings={settings}
         open={tourOpen}
         onComplete={completeTour}
         onDismiss={completeTour}
       />
+
       <PageHeaderWithNotifications greeting={greeting} headerActions={<PlansButton />} showBrand={false} />
 
-      {isSalariedFamily(settings) && settings.activeProfileId && settings.activeProfileId !== "default" && (
+      {isFamily && settings.householdRoomName && (
         <Caption className="text-[var(--ct-accent)] font-semibold">
-          Profile: {settings.activeProfileId}
+          {settings.householdRoomName}
         </Caption>
       )}
 
-      <InstallAppBanner />
       <HomeOverviewCard />
 
+      <StickyStatusStrip />
+
       <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
+
+      <AttentionSection />
 
       {settings.salaryCreditDay && (
         <SafeToSpendCard
@@ -131,6 +140,7 @@ const Home = () => {
           bufferAfterBills={paycheckBuffer}
           salaryCreditDay={settings.salaryCreditDay}
           todayStr={todayStr}
+          scope={isFamily ? "household" : "personal"}
         />
       )}
 

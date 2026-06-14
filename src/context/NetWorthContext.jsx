@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useCommitTrack } from "./CommitTrackContext.jsx";
+import { isSalariedFamily } from "../constants/modeExperience.js";
 import {
   loadWealthState,
   saveWealthState,
@@ -62,7 +63,9 @@ function withSnapshots(prev, profileEntries) {
 export function NetWorthProvider({ children }) {
   const { settings, activeProfileId } = useCommitTrack();
   const [state, setState] = useState(() => loadWealthState());
-  const profileId = activeProfileId || settings.activeProfileId || "default";
+  const profileId = isSalariedFamily(settings)
+    ? null
+    : activeProfileId || settings.activeProfileId || "default";
 
   const persist = useCallback((updater) => {
     setState((prev) => {

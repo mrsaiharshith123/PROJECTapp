@@ -57,3 +57,20 @@ export function computeHouseholdMetrics({
       freeCash >= income * 0.15 ? "stable" : freeCash >= 0 ? "tight" : "strained",
   };
 }
+
+/**
+ * Household emergency reserve target: 6 months of bills + 1 month per dependent.
+ */
+export function computeFamilyEmergencyTarget(settings, commitments, getEffectiveStatus) {
+  const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
+  const dependents = Math.max(0, Number(settings?.dependents) || 0);
+  const targetMonths = 6 + dependents;
+  const targetAmount = Math.round(burden * targetMonths);
+  const depLabel = dependents === 1 ? "1 dependent" : `${dependents} dependents`;
+  const reasoning =
+    dependents > 0
+      ? `Target covers ${targetMonths} months of household bills (6 base + ${depLabel}).`
+      : `Target covers ${targetMonths} months of household bills.`;
+
+  return { targetMonths, targetAmount, reasoning };
+}

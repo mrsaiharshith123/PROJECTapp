@@ -60,6 +60,8 @@
     "audit:pro-features-built": "node scripts/audit-pro-features-built.mjs",
     "audit:insight-registry": "node scripts/audit-insight-registry.mjs",
     "audit:code": "node scripts/audit-code.mjs",
+    "audit:household": "node scripts/audit-runner.mjs modes && node scripts/audit-profile-scope.mjs",
+    "audit:pre-release": "node scripts/audit-all.mjs && node scripts/audit-runner.mjs --gov --with-legacy && node scripts/audit-docs-sync.mjs && node scripts/audit-engine-tests.mjs",
     "audit:dependencies": "node scripts/audit-runner.mjs features architecture",
     "audit:architecture": "node scripts/audit-runner.mjs architecture",
     "audit:ui-depth": "node scripts/audit-ui-depth.mjs --list",

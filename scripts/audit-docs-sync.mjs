@@ -17,12 +17,18 @@ const MUST_NOT_SAY_DEFERRED = [
   { pattern: /salaryCreditDay.*no Profile UI/i, note: "salaryCreditDay has Profile UI — update doc" },
   { pattern: /\b264\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b322\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b336\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b352\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b358\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b77\/77\b engine modules/i, note: "Engine test count stale — run audit:engine-tests" },
 ];
 
 const MUST_EXIST = [
   { pattern: /\/paycheck/, note: "Document /paycheck route" },
   { pattern: /billHealth|bill health/i, note: "Document bill health feature" },
   { pattern: /caExport|CA export/i, note: "Document CA export" },
+  { pattern: /householdRoom|HouseholdHub|household rooms/i, note: "Document household rooms feature" },
+  { pattern: /resolveDataProfileScope|household combined/i, note: "Document family household data scope" },
 ];
 
 function main() {

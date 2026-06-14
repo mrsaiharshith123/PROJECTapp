@@ -52,6 +52,7 @@ const Add = () => {
     priority: "medium",
     notes: "",
     householdPayer: "",
+    forMember: "shared",
     annualInterestRate: "",
     ...emptyInsuranceFields(),
     ...emptyChitFundFields(),
@@ -239,6 +240,7 @@ const Add = () => {
         : {}),
       ...(showChit ? chitPayload : {}),
       householdPayer: salariedFamily ? (form.householdPayer || "").trim() : "",
+      forMember: salariedFamily ? form.forMember || "shared" : "shared",
     };
     const effective = getEffectiveStatus({
       ...draft,

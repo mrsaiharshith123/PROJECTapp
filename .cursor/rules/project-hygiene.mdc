@@ -26,6 +26,8 @@ globs:
 - `npm run audit:notification-i18n` — `notifications.js` feed builders must use `titleKey` / `messageKey`, not hardcoded English
 - `npm run audit:pro-features-built` — Pro/Power features in registry have UI wiring
 - `npm run audit:docs-sync` — docs match shipped paths and test counts
+- `npm run audit:household` — family mode isolation + profile-scope (after household UI)
+- `npm run audit:pre-release` — gate + governance + docs-sync + engine tests before release
 
 ## Tool layout (Home)
 

@@ -39,6 +39,7 @@ export function normalizeDailySpend(raw) {
 }
 
 export function filterDailySpendsByProfile(spends, profileId = "default") {
+  if (profileId == null) return spends || [];
   return (spends || []).filter((s) => (s.profileId || "default") === profileId);
 }
 

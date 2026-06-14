@@ -11,7 +11,7 @@ export function MetricTile({
 }) {
   return (
     <div className={`ct-metric ${className}`.trim()}>
-      <span className={`ct-metric-value ct-numeral ${valueClassName}`.trim()}>{value}</span>
+      <span className={`ct-metric-value ct-amount-lg ct-numeral ${valueClassName}`.trim()}>{value}</span>
       <span className="ct-metric-label">
         {label}
         {conceptId ? <ConceptHelp conceptId={conceptId} /> : null}

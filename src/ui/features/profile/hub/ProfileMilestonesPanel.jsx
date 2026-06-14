@@ -8,7 +8,7 @@ import { commitmentToIncomeRatio } from "../../../../engines/pressureAdvanced.js
 import { combinedMonthlyIncome } from "../../../../utils/combinedIncome.js";
 import { formatAchievementDate } from "../../../../i18n/formatLocale.js";
 
-export default function ProfileMilestonesPanel() {
+export default function ProfileMilestonesPanel({ household = false }) {
   const { t, locale } = useTranslation();
   const { milestones } = useNetWorth();
   const {
@@ -43,14 +43,18 @@ export default function ProfileMilestonesPanel() {
 
   return (
     <Card className="ct-nw-panel ct-stack">
-      <Heading level={3}>{t("profileHub.milestonesTitle")}</Heading>
-      <Caption className="block mt-1">{t("profileHub.milestonesSubtitle")}</Caption>
+      <Heading level={3}>
+        {household ? t("profileHub.milestonesTitleHousehold") : t("profileHub.milestonesTitle")}
+      </Heading>
+      <Caption className="block mt-1">
+        {household ? t("profileHub.milestonesSubtitleHousehold") : t("profileHub.milestonesSubtitle")}
+      </Caption>
 
       {achievements.length === 0 ? (
         <EmptyState
           icon="trophy"
-          title={t("profileHub.milestonesEmpty")}
-          hint={t("profileHub.milestonesEmptyHint")}
+          title={household ? t("profileHub.milestonesEmptyHousehold") : t("profileHub.milestonesEmpty")}
+          hint={household ? t("profileHub.milestonesEmptyHintHousehold") : t("profileHub.milestonesEmptyHint")}
         />
       ) : (
         <ul className="ct-stack-sm mt-3">

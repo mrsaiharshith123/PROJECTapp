@@ -236,6 +236,22 @@ export default function AddCommitmentForm({
 
         {salariedFamily && (
           <div>
+            <label className="ct-field-label">{t("add.forMember.label")}</label>
+            <Caption className="block mb-2">{t("add.forMember.hint")}</Caption>
+            <SegmentedControl
+              options={[
+                { id: "self", label: t("add.forMember.self") },
+                { id: "spouse", label: t("add.forMember.spouse") },
+                { id: "shared", label: t("add.forMember.shared") },
+              ]}
+              value={form.forMember || "shared"}
+              onChange={(id) => onChange({ target: { name: "forMember", value: id } })}
+            />
+          </div>
+        )}
+
+        {salariedFamily && (
+          <div>
             <label className="ct-field-label">
               Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>
               <InfoTip text={CALC_HELP.householdPayerBillTag} />

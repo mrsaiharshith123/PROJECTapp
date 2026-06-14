@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engines deepened).
+Last reviewed: 14 June 2026 (household rooms, family-mode UI pass, 366 tests / 81 engines).
 
 ## V1 product scope
 
@@ -10,6 +10,7 @@ Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engine
 |----------|-------------------------|
 | Salaried **single** household | Freelancer, student, business modes (removed; migrated to salaried on load) |
 | Salaried **family** household (`householdScope: family`) | Full accounting / ERP / banking |
+| **Household rooms** (invite code, local-first + optional Supabase) | Live multi-device join without migration |
 | Local-first commitments + pressure + lending | Mass-market spend tracking (Walnut-style) |
 
 **Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` / `tierAccess.js` — they are not separate user-facing “modes”. Free caps: 5 lending, 2 chits, 3 goals, 50 spends/mo, 5 splits/mo (3 people), 30-day cashflow; plain-text annual report.
@@ -19,6 +20,9 @@ Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engine
 | Area | Status | Key paths |
 |------|--------|-----------|
 | Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` |
+| Family household UX (combined data + copy) | ✅ | `resolveDataProfileScope()` in `modeExperience.js`; Home, Profile, Analytics |
+| Household rooms (create/join, invite code) | ✅ Local-first | `householdRoom*.js`, `HouseholdSetupModal.jsx`, `HouseholdHubSection.jsx` |
+| Household member limit from dependents (max 6) | ✅ | `householdMemberLimit()`, Profile dependents field |
 | Home safe-to-spend widget | ✅ | `SafeToSpendCard.jsx` on Home when `salaryCreditDay` set |
 | Paycheck page `/paycheck` | ✅ | `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` |
 | Salary-day bridge | ✅ | `SalaryDayBridge.jsx` — auto-navigate + goal auto-save on credit day |
@@ -31,7 +35,7 @@ Last reviewed: 10 June 2026 (engine depth pass — 77/77 tested, skeleton engine
 | Net worth benchmark engine | ✅ | `netWorthBenchmark.js` (engine + tests; UI card removed — wealth analytics on Profile) |
 | Bond advisor v2 | ✅ | `bondAnalyzer.js` — YTM, credit rating, SGB/tax, compare alternatives |
 | CA export (Power) | ✅ | `caExport.js` — `.txt` + structured `.json` in `ProfileBackupSection.jsx` |
-| Multiple profiles gate | ✅ | `ProfileManager.jsx` gated with `multiple_profiles`; `filterByProfile` in context |
+| Multiple profiles gate | ✅ | `ProfileManager.jsx` gated with `multiple_profiles`; **single mode only** — family uses household rooms |
 | AI financial advisor (Pro) | ✅ | `financialAdvisor.js` → `supabase/functions/financial-advisor` (deploy + `ANTHROPIC_API_KEY` on you) |
 | Financial pulse + forecast i18n | ✅ | `forecast.js`, `subscriptionLeak.js` return `{ id, tone, params }` |
 | Smart pressure notifications | ✅ | `notifications.js` — `{ titleKey, messageKey, params }`; UI via `notificationLabels.js` |
@@ -86,12 +90,14 @@ Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZO
 
 ## Tests & quality
 
-- **336** unit tests (`npm test`) — **77/77** engine modules have dedicated tests (`npm run audit:engine-tests`)
+- **366** unit tests (`npm test`) — **81/81** engine modules have dedicated tests (`npm run audit:engine-tests`)
 - Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
 - Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, tier gates, insight i18n, code+depth, tests, types, build
+- Pre-release bundle: `npm run audit:pre-release` — full gate + governance + docs-sync + engine-test count
 - Strict: `npm run audit -- --strict` — also fails on i18n hardcoded + English fallback threshold
-- New advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
-- Engine coverage: `npm run audit:engine-tests` (77/77) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
+- Family/household: `npm run audit:household` — mode isolation + profile-scope wiring
+- Advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
+- Engine coverage: `npm run audit:engine-tests` (81/81) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
 
 ## Related docs
 

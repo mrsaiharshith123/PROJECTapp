@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { PerovoLogo } from "../brand/PerovoLogo.jsx";
-import { PerovoBrand } from "../brand/PerovoBrand.jsx";
+import { PerovoWordmark } from "../brand/PerovoWordmark.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { RouteSkeleton } from "./loadingSkeletons.jsx";
 
@@ -20,15 +20,17 @@ export function Skeleton({ className = "", style }) {
 }
 
 /**
- * @param {{ size?: 'sm' | 'md' | 'lg' }} props
+ * @param {{ size?: 'sm' | 'md' | 'lg', showLogo?: boolean }} props
  */
-export function LoadingSpinner({ size = "md" }) {
+export function LoadingSpinner({ size = "md", showLogo = true }) {
   return (
     <div className={`ct-spin ct-spin-${size}`} role="presentation" aria-hidden>
       <span className="ct-spin-ring" />
-      <span className="ct-spin-core">
-        <PerovoLogo size={size === "lg" ? 22 : size === "sm" ? 14 : 18} />
-      </span>
+      {showLogo ? (
+        <span className="ct-spin-core">
+          <PerovoLogo size={size === "lg" ? 36 : size === "sm" ? 16 : 24} />
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -67,18 +69,26 @@ function useRotatingHint(enabled = true) {
 export function PageLoader({ message, hint = true }) {
   const { t } = useTranslation();
   const rotatingHint = useRotatingHint(hint && !message);
-  const label = message || t("common.loadingApp");
   const sub = hint ? rotatingHint : null;
 
   return (
     <div className="ct-load-scene ct-load-scene-full" role="status" aria-live="polite" aria-busy="true">
       <LoadingAmbient />
       <div className="ct-load-center">
-        <div className="ct-load-brand">
-          <PerovoBrand layout="column" iconSize="lg" wordmarkSize="md" className="ct-load-brand-lockup" />
+        <LoadingSpinner size="lg" showLogo />
+        <div className="ct-load-message-row">
+          {message ? (
+            <p className="ct-load-message">{message}</p>
+          ) : (
+            <>
+              <span className="ct-load-message-prefix">{t("common.loadingAppPrefix")}</span>
+              <PerovoWordmark variant="nameOnly" size="sm" alt={t("brand.appName")} />
+              <span className="ct-load-message-suffix" aria-hidden>
+                …
+              </span>
+            </>
+          )}
         </div>
-        <LoadingSpinner size="lg" />
-        <p className="ct-load-message">{label}</p>
         {sub && (
           <p key={sub} className="ct-load-hint">
             {sub}

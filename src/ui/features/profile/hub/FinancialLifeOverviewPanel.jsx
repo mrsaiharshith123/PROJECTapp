@@ -8,9 +8,10 @@ import { Card, Caption, Heading } from "../../../index.js";
  * @param {{
  *   hub: ReturnType<import('../../../../hooks/useProfileHubIntel.js').useProfileHubIntel>,
  *   insights: { id: string, key: string, params?: object, tone: string }[],
+ *   household?: boolean,
  * }} props
  */
-export default function FinancialLifeOverviewPanel({ hub, insights }) {
+export default function FinancialLifeOverviewPanel({ hub, insights, household = false }) {
   const { t } = useTranslation();
   const items = useMemo(
     () => mergeFinancialLifeItems(hub.journey, insights),
@@ -27,8 +28,12 @@ export default function FinancialLifeOverviewPanel({ hub, insights }) {
 
   return (
     <Card className="ct-nw-panel ct-animate-fade-up">
-      <Heading level={3}>{t("profileHub.journeyTitle")}</Heading>
-      <Caption className="block mt-1">{t("profileHub.journeySubtitle")}</Caption>
+      <Heading level={3}>
+        {household ? t("profileHub.journeyTitleHousehold") : t("profileHub.journeyTitle")}
+      </Heading>
+      <Caption className="block mt-1">
+        {household ? t("profileHub.journeySubtitleHousehold") : t("profileHub.journeySubtitle")}
+      </Caption>
       <ul className="ct-stack-sm mt-3">
         {items.map((item) => (
           <li

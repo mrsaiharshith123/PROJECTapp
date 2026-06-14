@@ -24,6 +24,52 @@ function NavIcon({ item, active = false }) {
   return <CtIcon name={item.icon} size={22} context={active ? "nav" : "nav-off"} />;
 }
 
+function FabRadialMenu({ open, onClose, navigate }) {
+  const { t } = useTranslation();
+  if (!open) return null;
+
+  return (
+    <>
+      <div className="ct-fab-overlay" onClick={onClose} aria-hidden />
+      <div className="ct-fab-menu open">
+        <button
+          type="button"
+          className="ct-fab-item"
+          onClick={() => {
+            navigate("/add");
+            onClose();
+          }}
+        >
+          <CtIcon name="clipboard-text" size={16} />
+          {t("nav.fabAddCommitment")}
+        </button>
+        <button
+          type="button"
+          className="ct-fab-item"
+          onClick={() => {
+            navigate("/commitments?tab=spend");
+            onClose();
+          }}
+        >
+          <CtIcon name="fork-knife" size={16} />
+          {t("nav.fabLogSpend")}
+        </button>
+        <button
+          type="button"
+          className="ct-fab-item"
+          onClick={() => {
+            navigate("/lending");
+            onClose();
+          }}
+        >
+          <CtIcon name="handshake" size={16} />
+          {t("nav.fabRecordLending")}
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function Navbar() {
   const navigate = useNavigate();
   const { settings } = useCommitTrack();
@@ -33,6 +79,7 @@ export function Navbar() {
   const fabItem = navItems.find((item) => item.fab);
   const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
   const [logSpendOpen, setLogSpendOpen] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
   const longPressTimerRef = useRef(/** @type {number | null} */ (null));
   const didLongPressRef = useRef(false);
 
@@ -43,11 +90,42 @@ export function Navbar() {
 
   const openLogSpend = () => {
     didLongPressRef.current = true;
+    setFabOpen(false);
     setLogSpendOpen(true);
+  };
+
+  const toggleFab = () => setFabOpen((v) => !v);
+  const closeFab = () => setFabOpen(false);
+
+  const fabPointerHandlers = {
+    onPointerDown: () => {
+      didLongPressRef.current = false;
+      clearLongPressTimer();
+      longPressTimerRef.current = window.setTimeout(() => {
+        openLogSpend();
+      }, 550);
+    },
+    onPointerUp: () => clearLongPressTimer(),
+    onPointerCancel: () => clearLongPressTimer(),
+    onPointerLeave: () => clearLongPressTimer(),
+    onContextMenu: (e) => {
+      e.preventDefault();
+      clearLongPressTimer();
+      openLogSpend();
+    },
+    onClick: () => {
+      if (didLongPressRef.current) {
+        didLongPressRef.current = false;
+        return;
+      }
+      toggleFab();
+    },
   };
 
   return (
     <>
+      <FabRadialMenu open={fabOpen} onClose={closeFab} navigate={navigate} />
+
       <header className="ct-top-nav">
         <div className="ct-top-nav-inner">
           <Brand />
@@ -63,7 +141,7 @@ export function Navbar() {
               </NavLink>
             ))}
             {fabItem && (
-              <button type="button" className="ct-top-link ct-top-link-fab" onClick={() => navigate(fabItem.to)}>
+              <button type="button" className="ct-top-link ct-top-link-fab" {...fabPointerHandlers}>
                 {navLabel(fabItem)}
               </button>
             )}
@@ -77,33 +155,7 @@ export function Navbar() {
             if (item.fab) {
               return (
                 <div key={item.to} className="ct-nav-fab-slot">
-                  <button
-                    type="button"
-                    className="ct-nav-fab"
-                    aria-label={t("nav.fabAria")}
-                    onPointerDown={() => {
-                      didLongPressRef.current = false;
-                      clearLongPressTimer();
-                      longPressTimerRef.current = window.setTimeout(() => {
-                        openLogSpend();
-                      }, 550);
-                    }}
-                    onPointerUp={() => clearLongPressTimer()}
-                    onPointerCancel={() => clearLongPressTimer()}
-                    onPointerLeave={() => clearLongPressTimer()}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      clearLongPressTimer();
-                      openLogSpend();
-                    }}
-                    onClick={() => {
-                      if (didLongPressRef.current) {
-                        didLongPressRef.current = false;
-                        return;
-                      }
-                      navigate(item.to);
-                    }}
-                  >
+                  <button type="button" className="ct-nav-fab" aria-label={t("nav.fabAria")} {...fabPointerHandlers}>
                     <span className="ct-nav-fab-icon">
                       <NavIcon item={item} active />
                     </span>

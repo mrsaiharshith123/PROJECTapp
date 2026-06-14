@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { isSalariedFamily, familyTextKey } from "../../../constants/modeExperience.js";
 import {
   hiddenHomeQuickActions,
   HOME_QUICK_ACTION_IDS,
@@ -10,8 +11,9 @@ import {
 import { useDragReorder } from "../../hooks/useDragReorder.js";
 import { QuickAction, QuickActionRow } from "../QuickAction.jsx";
 import { ScreenSection } from "../../layout/Screen.jsx";
+import MathCalculatorModal from "../modals/MathCalculatorModal.jsx";
 
-/** @typedef {{ icon: string, labelKey: string, run: (ctx: { navigate: Function, scrollToTools: () => void }) => void }} QuickActionDef */
+/** @typedef {{ icon: string, labelKey: string, run: (ctx: { navigate: Function, scrollToTools: () => void, openMathCalc: () => void }) => void }} QuickActionDef */
 
 /** @type {Record<string, QuickActionDef>} */
 const HOME_QUICK_ACTION_DEFS = {
@@ -99,7 +101,9 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
   const navigate = useNavigate();
   const { settings, updateSettings } = useCommitTrack();
   const { t } = useTranslation();
+  const isFamily = isSalariedFamily(settings);
   const [reorderMode, setReorderMode] = useState(false);
+  const [mathCalcOpen, setMathCalcOpen] = useState(false);
 
   const orderedIds = useMemo(
     () => orderHomeQuickActions(settings.homeQuickActionOrder),
@@ -126,7 +130,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
 
   const { getDragProps } = useDragReorder(orderedIds, persistOrder);
 
-  const runCtx = { navigate, scrollToTools };
+  const runCtx = { navigate, scrollToTools, openMathCalc: () => setMathCalcOpen(true) };
 
   const sectionAction = (
     <div className="ct-row shrink-0">
@@ -146,6 +150,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
   );
 
   return (
+    <>
     <ScreenSection title={t("home.quickActions")} action={sectionAction}>
       {reorderMode && <p className="ct-caption mb-2">{t("home.reorderHintExpanded")}</p>}
       <QuickActionRow>
@@ -155,9 +160,22 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
           onClick={onOpenCalendar}
           disabled={reorderMode}
         />
+        <QuickAction
+          icon="calculator"
+          label={t("tools.mathCalc.short")}
+          onClick={() => setMathCalcOpen(true)}
+          disabled={reorderMode}
+        />
         {orderedIds.map((id) => {
           const def = HOME_QUICK_ACTION_DEFS[id];
           if (!def) return null;
+          const icon = id === "paycheck" && isFamily ? "users-three" : def.icon;
+          const labelKey =
+            id === "paycheck" && isFamily
+              ? "nav.incomeBreakdown"
+              : id === "income"
+                ? familyTextKey(settings, "home.actionAddIncome", "home.actionAddIncomeHousehold")
+                : def.labelKey;
           const dragProps = getDragProps(id, { enabled: reorderMode });
           return (
             <div
@@ -176,8 +194,8 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
                 </button>
               )}
               <QuickAction
-                icon={def.icon}
-                label={t(def.labelKey)}
+                icon={icon}
+                label={t(labelKey)}
                 onClick={reorderMode ? undefined : () => def.run(runCtx)}
                 disabled={reorderMode}
               />
@@ -207,5 +225,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
         </div>
       )}
     </ScreenSection>
+    {mathCalcOpen && <MathCalculatorModal onClose={() => setMathCalcOpen(false)} />}
+    </>
   );
 }

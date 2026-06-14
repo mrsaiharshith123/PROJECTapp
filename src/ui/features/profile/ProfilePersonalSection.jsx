@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, Caption, Heading, inputClassName } from "../../index.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
-import ProfileManager from "./ProfileManager.jsx";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
 import { isSalariedFamily, resolveUserMode } from "../../../constants/modeExperience.js";
-import { normalizeHouseholdMembers } from "../../../engines/householdEntity.js";
+import { householdMemberLimit } from "../../../engines/householdRoom.js";
+import { updateLocalHouseholdMemberLimit } from "../../../engines/householdRoomLocal.js";
 import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
+import ProfileManager from "./ProfileManager.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { applyColorScheme } from "../../../utils/theme.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -32,7 +34,7 @@ function ProfileField({ label, hint, required, children }) {
 }
 
 /**
- * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
+ * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account', onRequestHouseholdSetup?: () => void }} props
  */
 /** @param {{ updateSettings: (p: object) => void }} props */
 function LanguagePickerBlock({ updateSettings }) {
@@ -76,7 +78,12 @@ function LanguagePickerBlock({ updateSettings }) {
   );
 }
 
-export default function ProfilePersonalSection({ settings, updateSettings, part = "full" }) {
+export default function ProfilePersonalSection({
+  settings,
+  updateSettings,
+  part = "full",
+  onRequestHouseholdSetup = undefined,
+}) {
   const { t } = useTranslation();
   const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
@@ -144,10 +151,9 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
             />
           </ProfileField>
 
-          {salariedFamily && (
+          {!salariedFamily && tierHasFeature("multiple_profiles", settings) && (
             <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
-              <Caption className="font-semibold block">{t("profile.familyProfiles.title")}</Caption>
-              <Caption className="block">{t("profile.familyProfiles.subtitle")}</Caption>
+              <Caption className="font-semibold block">{t("profile.profilesTitle")}</Caption>
               <ProfileManager />
             </div>
           )}
@@ -264,9 +270,10 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
                 const family = e.target.value === "family";
                 updateSettings({
                   householdScope: family ? "family" : "single",
-                  activeProfileId: family ? settings.activeProfileId : "default",
+                  activeProfileId: "default",
                   dependents: family ? settings.dependents : 0,
                 });
+                if (family && !settings.householdRoomId) onRequestHouseholdSetup?.();
               }}
             >
               <option value="single">{t("profile.householdSingle")}</option>
@@ -276,75 +283,36 @@ export default function ProfilePersonalSection({ settings, updateSettings, part 
         )}
 
         {settings.householdScope === "family" && (
-          <ProfileField label={t("profile.dependents")} hint={t("profile.dependentsHint")}>
+          <ProfileField label={t("profile.dependents")} hint={t("profile.dependentsHouseholdHint")}>
             <input
               type="number"
               min="0"
-              max="12"
+              max="6"
               className={profileInputClass}
               value={settings.dependents === 0 ? "" : String(settings.dependents)}
               onChange={(e) => {
                 const raw = e.target.value;
-                updateSettings({
-                  dependents: raw === "" ? 0 : Math.min(12, Math.max(0, Math.floor(Number(raw) || 0))),
-                });
+                const deps = raw === "" ? 0 : Math.min(6, Math.max(0, Math.floor(Number(raw) || 0)));
+                const limit = householdMemberLimit({ ...settings, dependents: deps });
+                const patch = { dependents: deps, householdMemberLimit: limit };
+                if (
+                  settings.householdRoomRole === "owner" &&
+                  settings.householdRoomId &&
+                  (settings.householdRoomLocal || String(settings.householdRoomId).startsWith("local-"))
+                ) {
+                  updateLocalHouseholdMemberLimit(settings.householdRoomId, limit);
+                }
+                updateSettings(patch);
               }}
             />
+            <Caption className="block mt-1">
+              {t("household.hub.seatLimit", {
+                count: householdMemberLimit(settings),
+              })}
+            </Caption>
           </ProfileField>
         )}
 
-        {settings.householdScope === "family" && (
-          <ProfileField label={t("profile.householdMembers.label")} hint={t("profile.householdMembers.hint")}>
-            <div className="ct-stack-sm">
-              {normalizeHouseholdMembers(settings.householdMembers).map((m, i) => (
-                <div key={m.id} className="ct-row gap-2 flex-wrap">
-                  <input
-                    className={profileInputClass}
-                    value={m.label}
-                    onChange={(e) => {
-                      const members = normalizeHouseholdMembers(settings.householdMembers);
-                      members[i] = { ...members[i], label: e.target.value.slice(0, 40) };
-                      updateSettings({ householdMembers: members });
-                    }}
-                    placeholder={t("profile.householdMembers.namePlaceholder")}
-                  />
-                  <select
-                    className={profileInputClass}
-                    value={m.role}
-                    onChange={(e) => {
-                      const members = normalizeHouseholdMembers(settings.householdMembers);
-                      members[i] = { ...members[i], role: e.target.value };
-                      updateSettings({ householdMembers: members });
-                    }}
-                  >
-                    <option value="owner">Owner</option>
-                    <option value="spouse">Spouse</option>
-                    <option value="dependent">Dependent</option>
-                    <option value="parent">Parent</option>
-                    <option value="contributor">Contributor</option>
-                  </select>
-                </div>
-              ))}
-              <button
-                type="button"
-                className="ct-btn ct-btn-ghost !text-sm self-start"
-                onClick={() => {
-                  const members = normalizeHouseholdMembers(settings.householdMembers);
-                  members.push({
-                    id: `member-${Date.now()}`,
-                    label: "Member",
-                    role: "contributor",
-                    incomeShare: 0,
-                    permission: "shared_edit",
-                  });
-                  updateSettings({ householdMembers: members });
-                }}
-              >
-                Add member
-              </button>
-            </div>
-          </ProfileField>
-        )}
         </div>
       )}
 
