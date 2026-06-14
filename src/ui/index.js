@@ -5,6 +5,7 @@ export { Text, Heading, Eyebrow, Body, Caption } from "./primitives/Text.jsx";
 export { Card } from "./primitives/Card.jsx";
 export { Button, Fab } from "./primitives/Button.jsx";
 export { Input, inputClassName, fieldInputClass } from "./primitives/Input.jsx";
+export { PasswordInput } from "./primitives/PasswordInput.jsx";
 export { Badge } from "./primitives/Badge.jsx";
 export { Surface } from "./primitives/Surface.jsx";
 export { Modal } from "./primitives/Modal.jsx";
@@ -12,16 +13,20 @@ export { Stack, Row, Grid } from "./primitives/Stack.jsx";
 export { InfoTip } from "./primitives/InfoTip.jsx";
 
 export { PageHeader, AppHeader } from "./patterns/PageHeader.jsx";
+export { PageShell } from "./patterns/PageShell.jsx";
 export { PageHeaderWithNotifications } from "./patterns/PageHeaderWithNotifications.jsx";
 export { FormField } from "./patterns/FormField.jsx";
 export { MetricTile } from "./patterns/MetricTile.jsx";
 export { SegmentedControl } from "./patterns/SegmentedControl.jsx";
+export { TabContent } from "./patterns/TabContent.jsx";
+export { GuideButton } from "./patterns/GuideButton.jsx";
+export { PressureRing } from "./patterns/PressureRing.jsx";
 export { FilterChips } from "./patterns/FilterChips.jsx";
 export { FilterChipsWithSearch } from "./patterns/FilterChipsWithSearch.jsx";
 export { ListRow } from "./patterns/ListRow.jsx";
 export { InsightBanner } from "./patterns/InsightBanner.jsx";
 export { EmptyState } from "./patterns/EmptyState.jsx";
-export { PageLoader, RouteFallback, SectionLoader, InlineLoader, LoadingSpinner, Skeleton } from "./patterns/Loading.jsx";
+export { PageLoader, RouteFallback, SectionLoader, InlineLoader, LoadingSpinner, Skeleton, SkeletonCard } from "./patterns/Loading.jsx";
 export { AdminSkeleton } from "./patterns/loadingSkeletons.jsx";
 export { ProgressBar } from "./patterns/ProgressBar.jsx";
 export { ChartShell } from "./patterns/ChartShell.jsx";
@@ -33,7 +38,7 @@ export { CategoryChip } from "./patterns/CategoryChip.jsx";
 export { PriorityBadge } from "./patterns/PriorityBadge.jsx";
 export { ProfileSectionPicker } from "./patterns/ProfileSectionPicker.jsx";
 export { PlansButton } from "./patterns/PlansButton.jsx";
-export { SettingsRow } from "./patterns/SettingsRow.jsx";
+export { SettingsRow, SettingsSection } from "./patterns/SettingsRow.jsx";
 export { BillCard } from "./patterns/BillCard.jsx";
 export { ProGate } from "./patterns/ProGate.jsx";
 export { TierLimitBanner } from "./patterns/TierLimitBanner.jsx";
@@ -54,6 +59,9 @@ export { Screen, ScreenSection, MainContent } from "./layout/Screen.jsx";
 export { Navbar } from "./layout/Navbar.jsx";
 
 export { insightToneClass } from "./tokens/severity.js";
+export { statusTone, pressureTone } from "./utils/statusColor.js";
+
+export { SettingsGroup, SettingsGroupRow } from "./features/profile/SettingsGroup.jsx";
 
 export { ConceptHelp } from "./guidance/ConceptHelp.jsx";
 export { WhyInsightPanel } from "./guidance/WhyInsightPanel.jsx";

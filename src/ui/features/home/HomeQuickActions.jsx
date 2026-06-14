@@ -196,6 +196,7 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
               <QuickAction
                 icon={icon}
                 label={t(labelKey)}
+                primary={id === "add_bill"}
                 onClick={reorderMode ? undefined : () => def.run(runCtx)}
                 disabled={reorderMode}
               />

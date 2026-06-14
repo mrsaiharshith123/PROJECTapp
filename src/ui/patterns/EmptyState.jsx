@@ -1,15 +1,24 @@
-import { Card } from "../primitives/Card.jsx";
-import { Body, Caption } from "../primitives/Text.jsx";
-import { CtIcon } from "../icons/CtIcon.jsx";
+import { Heading, Body, CtIcon } from "../index.js";
 
-export function EmptyState({ icon = "clipboard-text", title, hint }) {
+/**
+ * @param {{ icon?: string, title: string, message?: string, hint?: string, action?: import('react').ReactNode }} props
+ */
+export function EmptyState({ icon = "clipboard-text", title, message, hint, action }) {
+  const body = message || hint;
   return (
-    <Card variant="flat" className="text-center py-8">
-      <p className="mb-2 flex justify-center" aria-hidden>
-        <CtIcon name={icon} size={36} context="empty" className="ct-icon-muted" />
-      </p>
-      <Body className="font-medium">{title}</Body>
-      {hint && <Caption className="mt-1 block">{hint}</Caption>}
-    </Card>
+    <div className="ct-empty-state">
+      {icon ? (
+        <div className="ct-empty-icon">
+          <CtIcon name={icon} size={32} context="empty" />
+        </div>
+      ) : null}
+      <Heading level={4} className="ct-empty-title">
+        {title}
+      </Heading>
+      {body ? <Body className="ct-empty-message">{body}</Body> : null}
+      {action ? <div className="ct-empty-action">{action}</div> : null}
+    </div>
   );
 }
+
+export default EmptyState;

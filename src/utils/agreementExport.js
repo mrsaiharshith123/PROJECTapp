@@ -123,3 +123,17 @@ export async function sealAndDownloadAgreement(lending, settings = {}, userId = 
   URL.revokeObjectURL(url);
   return { hash, sealedAt };
 }
+
+/** HTML-as-base64 for Leegality MVP upload (replace with Edge Function PDF in production). */
+export async function generateAgreementPdfBase64(lending, settings = {}) {
+  const html = generateLegalAgreementHtml(lending, settings);
+  const blob = new Blob([html], { type: "text/html" });
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",")[1] : "");
+    };
+    reader.readAsDataURL(blob);
+  });
+}

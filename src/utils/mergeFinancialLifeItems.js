@@ -7,15 +7,18 @@ const TONE_RANK = { action: 4, caution: 3, neutral: 2, positive: 1, calm: 1 };
  * @param {LifeItem[]} journey
  * @param {LifeItem[]} insights
  * @param {number} [max]
+ * @param {string[]} [excludeTopics] topic ids to skip (e.g. already shown in hero chips)
  */
-export function mergeFinancialLifeItems(journey, insights, max = 5) {
+export function mergeFinancialLifeItems(journey, insights, max = 5, excludeTopics = []) {
   /** @type {LifeItem[]} */
   const combined = [...(journey || []), ...(insights || [])];
   /** @type {Map<string, LifeItem>} */
   const byTopic = new Map();
+  const skip = new Set(excludeTopics);
 
   for (const item of combined) {
     const topic = topicForItem(item);
+    if (skip.has(topic)) continue;
     const prev = byTopic.get(topic);
     if (!prev || toneRank(item.tone) > toneRank(prev.tone)) {
       byTopic.set(topic, item);
@@ -24,6 +27,8 @@ export function mergeFinancialLifeItems(journey, insights, max = 5) {
 
   return Array.from(byTopic.values()).slice(0, max);
 }
+
+export { topicForItem };
 
 /** @param {LifeItem} item */
 function topicForItem(item) {

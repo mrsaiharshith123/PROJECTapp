@@ -16,7 +16,8 @@ Registry: `src/governance/registries/modes.js`
 When `isSalariedFamily(settings)`:
 
 - **`resolveDataProfileScope(settings)`** returns `null` — month summaries, analytics, and net worth include **all profiles** (household combined).
-- **`combinedMonthlyIncome(settings)`** — primary + spouse income fields.
+- **`combinedMonthlyIncome(settings)`** — primary + spouse (`secondaryMonthlyIncome`) **in family only** + side incomes (`utils/combinedIncome.js`).
+- **Profile income UI** — family: second income field; single: side income list (`ProfilePersonalSection.jsx`).
 - **`householdMemberLimit(settings)`** — reads `settings.householdMemberLimit` (2–20 seats, set at room create).
 - **`settings.dependents`** — household dependents (0–99); edit via `HouseholdDependentsEditorModal`.
 - **Household rooms** — local-first registry (`householdRoomLocal.js`) with cloud fallback (`householdRoomService.js`); migration `supabase/migrations/20260614000000_household_rooms.sql`.
@@ -37,10 +38,11 @@ Copy rules: `.cursor/rules/family-mode-copy.mdc`. Audit: `npm run audit:househol
 
 ## Home composition
 
-1. `HomeOverviewCard` → `HeroMonthCard` — month hero: scheduled / paid / unpaid, **HouseholdFamilyBadge** (dependents + pencil) in family mode, free cash + stress copy, salary bar, sparkline → `/analytics`
-2. KPI row — `getHomeKpiTiles()` in `config/modeDashboardMetrics.js`
-3. `ModeIntelligenceSection` — one mode dashboard (Analytics; family uses `FamilyModeDashboard` + `HouseholdCommandPanel`)
-4. `FinancialPulseCard` — Analytics (Self = personal; Full house = household pulse)
+1. `HomeOverviewCard` → `HeroMonthCard` — month hero: scheduled / paid / unpaid, **HouseholdFamilyBadge** (dependents + pencil) in family mode, Insights status block, salary bar, sparkline → `/analytics`
+2. `HomeInsightsSection` — titled Insights card below hero (tips + overdue chips)
+3. KPI row — `getHomeKpiTiles()` in `config/modeDashboardMetrics.js`
+4. `ModeIntelligenceSection` — one mode dashboard (Analytics; family uses `FamilyModeDashboard` + `HouseholdCommandPanel`)
+5. `FinancialPulseCard` — Analytics (Self = personal; Full house = household pulse)
 
 ## Isolation rules
 

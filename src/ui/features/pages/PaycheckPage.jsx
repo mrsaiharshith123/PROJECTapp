@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Card, PageHeader, Heading, Caption, Body } from "../../index.js";
+import { Card, PageShell, Heading, Caption, Body } from "../../index.js";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import PaycheckTimelinePanel from "../paycheck/PaycheckTimelinePanel.jsx";
@@ -71,16 +71,10 @@ export default function PaycheckPage() {
   );
 
   return (
-    <div className="ct-page">
-      <PageHeader
-        title={isFamily ? t("paycheck.titleHousehold") : t("paycheck.title")}
-        eyebrow={isFamily ? t("nav.incomeBreakdown") : t("nav.paycheck")}
-        subtitle={
-          isFamily
-            ? t("paycheck.subtitleHousehold", { income: formatInr(income) })
-            : t("paycheck.subtitle")
-        }
-      />
+    <PageShell
+      title={isFamily ? t("paycheck.titleHousehold") : t("paycheck.title")}
+      subtitle={isFamily ? t("paycheck.subtitleHousehold", { income: formatInr(income) }) : t("paycheck.subtitle")}
+    >
 
       {!settings.salaryCreditDay && (
         <Card className="ct-stack-sm">
@@ -116,6 +110,6 @@ export default function PaycheckPage() {
           sensitivityRows={sensitivityRows}
         />
       </Card>
-    </div>
+    </PageShell>
   );
 }

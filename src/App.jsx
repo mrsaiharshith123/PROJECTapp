@@ -36,6 +36,7 @@ const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferRe
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
+const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 
 function AuthGateShell() {
   return (
@@ -94,6 +95,7 @@ function MainShell() {
             />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/paycheck" element={<Paycheck />} />
+            <Route path="/family-room" element={<HouseholdRoom />} />
             <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
             <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
             <Route path="/tools" element={<Tools />} />

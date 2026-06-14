@@ -15,7 +15,6 @@ import {
 } from "../../";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { GuidedEmptyState } from "../../guidance/GuidedEmptyState.jsx";
-import { MicroTipCard } from "../../guidance/MicroTipCard.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import PaymentDeadlineCalendarModal from "../dashboard/PaymentDeadlineCalendarModal.jsx";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
@@ -34,7 +33,7 @@ import {
   ProgressBar,
 } from "../../index.js";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
-import AttentionSection from "../home/AttentionSection.jsx";
+import HomeInsightsSection from "../home/HomeInsightsSection.jsx";
 import SafeToSpendCard from "../paycheck/SafeToSpendCard.jsx";
 import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
@@ -85,8 +84,6 @@ const Home = () => {
     .filter((c) => isActiveBill(c, getEffectiveStatus, todayStr) && getEffectiveStatus(c) === "pending")
     .slice(0, 3);
 
-  const overdue = sortedCommitments.filter((c) => getEffectiveStatus(c) === "overdue");
-
   const income = combinedMonthlyIncome(settings);
   const paycheckBuffer = useMemo(
     () =>
@@ -119,17 +116,11 @@ const Home = () => {
 
       <PageHeaderWithNotifications greeting={greeting} headerActions={<PlansButton />} showBrand={false} />
 
-      {isFamily && settings.householdRoomName && (
-        <Caption className="text-[var(--ct-accent)] font-semibold">
-          {settings.householdRoomName}
-        </Caption>
-      )}
-
       <HomeOverviewCard />
 
-      <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
+      <HomeInsightsSection seed={commitments.length + goals.length} />
 
-      <AttentionSection />
+      <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
 
       {settings.salaryCreditDay && (
         <SafeToSpendCard
@@ -140,8 +131,6 @@ const Home = () => {
           scope={isFamily ? "household" : "personal"}
         />
       )}
-
-      <MicroTipCard seed={commitments.length + goals.length} />
 
       <PaymentDeadlineCalendarModal
         key={calendarOpen ? `cal-${todayStr}` : "closed"}
@@ -175,25 +164,6 @@ const Home = () => {
           </Stack>
         )}
       </ScreenSection>
-
-      {overdue.length > 0 && (
-        <ScreenSection title={t("home.overdue")}>
-          <Stack gap="sm">
-            {overdue.map((item) => (
-              <Card key={item.id} variant="flat" className="ct-card-danger !p-0 overflow-hidden">
-                <ListRow
-                  icon={STATUS_ICONS.overdue}
-                  title={item.name}
-                  subtitle={t("home.wasDue", { date: formatDate(item.dueDate) })}
-                  amount={formatInr(Number(item.amount ?? 0))}
-                  status={t("bills.overdue")}
-                  statusTone="danger"
-                />
-              </Card>
-            ))}
-          </Stack>
-        </ScreenSection>
-      )}
 
       {goals.length > 0 && (
         <Card>

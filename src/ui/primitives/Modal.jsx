@@ -8,13 +8,12 @@ import { Heading } from "./Text.jsx";
  */
 export function Modal({ title, children, onClose, footer, fullScreen = false }) {
   useEffect(() => {
-    if (!fullScreen) return undefined;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [fullScreen]);
+  }, []);
 
   const panel = (
     <div
@@ -23,7 +22,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false }) 
       aria-modal="true"
     >
       <button type="button" className="ct-modal-backdrop" aria-label="Close" onClick={onClose} />
-      <div className={cn("ct-modal-panel", fullScreen && "ct-modal-panel--fullscreen")}>
+      <div className={cn("ct-modal-panel ct-animate-scale-in", fullScreen && "ct-modal-panel--fullscreen")}>
         {title && (
           <div className="ct-row-between px-5 py-4 border-b border-white/10 shrink-0">
             <Heading level={2}>{title}</Heading>
@@ -40,7 +39,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false }) 
     </div>
   );
 
-  if (fullScreen && typeof document !== "undefined") {
+  if (typeof document !== "undefined") {
     return createPortal(panel, document.body);
   }
 

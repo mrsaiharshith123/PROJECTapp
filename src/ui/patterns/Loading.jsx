@@ -13,10 +13,26 @@ const LOADING_HINT_KEYS = [
 ];
 
 /**
- * @param {{ className?: string, style?: import('react').CSSProperties }} props
+ * @param {{ className?: string, style?: import('react').CSSProperties, width?: string, height?: string, rounded?: string }} props
  */
-export function Skeleton({ className = "", style }) {
-  return <div className={`ct-skeleton ${className}`.trim()} style={style} aria-hidden />;
+export function Skeleton({ className = "", style, width, height = "1rem", rounded = "8px" }) {
+  const merged = {
+    width: width || style?.width || "100%",
+    height: height || style?.height,
+    borderRadius: rounded || style?.borderRadius,
+    ...style,
+  };
+  return <div className={`ct-skeleton ${className}`.trim()} style={merged} aria-hidden />;
+}
+
+export function SkeletonCard() {
+  return (
+    <div className="ct-card ct-stack" style={{ gap: "0.75rem" }}>
+      <Skeleton width="40%" height="0.875rem" />
+      <Skeleton width="70%" height="1.75rem" />
+      <Skeleton width="100%" height="0.75rem" />
+    </div>
+  );
 }
 
 /**

@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { mergeFinancialLifeItems } from "../../../../utils/mergeFinancialLifeItems.js";
-import { Card, Caption, Heading } from "../../../index.js";
+import { Eyebrow } from "../../../primitives/Text.jsx";
 
 /**
- * Single financial-life patterns card — commitment journey + net worth insights.
+ * Compact journey patterns — avoids duplicating hero chip metrics (emergency, pressure).
  * @param {{
  *   hub: ReturnType<import('../../../../hooks/useProfileHubIntel.js').useProfileHubIntel>,
  *   insights: { id: string, key: string, params?: object, tone: string }[],
@@ -14,7 +14,7 @@ import { Card, Caption, Heading } from "../../../index.js";
 export default function FinancialLifeOverviewPanel({ hub, insights, household = false }) {
   const { t } = useTranslation();
   const items = useMemo(
-    () => mergeFinancialLifeItems(hub.journey, insights),
+    () => mergeFinancialLifeItems(hub.journey, insights, 3, ["emergency", "pressure"]),
     [hub.journey, insights],
   );
   if (items.length === 0) return null;
@@ -27,23 +27,20 @@ export default function FinancialLifeOverviewPanel({ hub, insights, household = 
   };
 
   return (
-    <Card className="ct-nw-panel ct-animate-fade-up">
-      <Heading level={3}>
+    <div className="ct-nw-journey-compact">
+      <Eyebrow className="mb-1.5">
         {household ? t("profileHub.journeyTitleHousehold") : t("profileHub.journeyTitle")}
-      </Heading>
-      <Caption className="block mt-1">
-        {household ? t("profileHub.journeySubtitleHousehold") : t("profileHub.journeySubtitle")}
-      </Caption>
-      <ul className="ct-stack-sm mt-3">
+      </Eyebrow>
+      <ul className="ct-nw-journey-list">
         {items.map((item) => (
           <li
             key={item.id || item.key}
-            className={`ct-nw-insight ct-nw-insight-${toneClass(item.tone)}`}
+            className={`ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
           >
             {t(item.key, item.params || {})}
           </li>
         ))}
       </ul>
-    </Card>
+    </div>
   );
 }

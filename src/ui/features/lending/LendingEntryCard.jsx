@@ -3,14 +3,16 @@ import { formatInr } from "../../../constants/symbols.js";
 import { getEffectiveLendingStatus } from "../../../utils/lendingStatus.js";
 import { trustScoreForLendingEntry, trustScoreToTone } from "../../../engines/lendingTrust.js";
 import { semanticToneToClass } from "../../tokens/semanticBadge.js";
+import { statusTone } from "../../utils/statusColor.js";
+import { cn } from "../../utils/cn.js";
 import { canDeleteLending, canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateLendingStatus, translateRepaymentMode } from "../../../i18n/domainLabels.js";
 
-const lendingStatusClasses = {
-  pending: "bg-amber-100 text-amber-700 border-amber-200",
-  overdue: "bg-red-100 text-red-700 border-red-200",
-  complete: "bg-emerald-100 text-emerald-700 border-emerald-200",
+const lendingStatusTone = {
+  pending: "warning",
+  overdue: "danger",
+  complete: "success",
 };
 
 function formatDate(dateStr) {
@@ -37,14 +39,18 @@ export default function LendingEntryCard({
 }) {
   const { t } = useTranslation();
   const eff = getEffectiveLendingStatus(item, todayStr);
-  const statusClasses = lendingStatusClasses[eff] || lendingStatusClasses.pending;
+  const statusToneKey = lendingStatusTone[eff] || statusTone(eff);
   const trust = trustScoreForLendingEntry(item);
 
   return (
-    <Card key={item.id} className={eff === "overdue" ? "border-red-100 bg-red-50/50" : ""}>
+    <Card
+      key={item.id}
+      variant={eff === "overdue" ? "status-overdue" : "default"}
+      className={cn("ct-pressable", eff === "overdue" && "ct-card-status-overdue")}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold bg-indigo-100 text-indigo-700 shrink-0">
+          <div className="ct-icon-box ct-body-strong shrink-0">
             {avatarFor(item.personName)}
           </div>
           <div className="min-w-0">
@@ -71,7 +77,7 @@ export default function LendingEntryCard({
           <p className="text-xs text-gray-500 mt-0.5">
             {t("lending.left", { amount: formatInr(item.remainingAmount) })}
           </p>
-          <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-semibold border ${statusClasses}`}>
+          <span className={cn("ct-status mt-1 inline-block", semanticToneToClass(statusToneKey))}>
             {translateLendingStatus(t, eff)}
           </span>
         </div>

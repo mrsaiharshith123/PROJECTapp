@@ -183,6 +183,7 @@ export function CommitTrackProvider({ children }) {
     commitments,
     settings,
     todayStr,
+    userId: user?.id,
     persistCommitments,
     persistLendings,
     persistSettings,

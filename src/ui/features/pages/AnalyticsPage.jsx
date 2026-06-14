@@ -1,11 +1,14 @@
-import { useMemo, useState } from "react";
-import { Card, InfoTip, PageHeader, Body, Caption, Heading } from "../../";
+import { useMemo, useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Card, InfoTip, PageShell, Body, Caption, Heading } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
 import HouseholdCommandPanel from "../analytics/HouseholdCommandPanel.jsx";
 import HouseholdSpendPanel from "../analytics/HouseholdSpendPanel.jsx";
-import FamilyModeDashboard from "../dashboard/FamilyModeDashboard.jsx";
+import SchoolFeeCard from "../dashboard/SchoolFeeCard.jsx";
+import FestivalPlannerCard from "../dashboard/FestivalPlannerCard.jsx";
+import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
 import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
 import { FinancialPulseCard } from "../../";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
@@ -27,6 +30,7 @@ import {
   buildPaymentsOutlookSeries,
   attachVariableSpendToForecast,
 } from "../../../utils/analyticsSpendSeries.js";
+import { buildEmiConsolidationPlan } from "../../../engines/emiConsolidation.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
@@ -36,9 +40,12 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily, resolveAnalyticsProfileScope } from "../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { TabContent } from "../../patterns/TabContent.jsx";
 
 const Analytics = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     commitments,
     lendings,
@@ -61,11 +68,23 @@ const Analytics = () => {
   const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
   const isFamily = isSalariedFamily(settings);
-  const [householdView, setHouseholdView] = useState("self");
+  const [householdView, setHouseholdView] = useState(() =>
+    location.state?.openHousehold ? "household" : "self",
+  );
   const analyticsView = householdView === "household" ? "household" : "self";
+
+  useEffect(() => {
+    if (!location.state?.openHousehold) return;
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.openHousehold, location.pathname, navigate]);
   const profileScope = resolveAnalyticsProfileScope(settings, isFamily ? analyticsView : "self");
   const today = todayStr || todayYmd();
   const microTipSeed = commitments.length;
+
+  const emiPlan = useMemo(() => {
+    if (isFamily) return null;
+    return buildEmiConsolidationPlan(commitments, getEffectiveStatus);
+  }, [isFamily, commitments, getEffectiveStatus]);
 
   const paycheckFlow = useMemo(
     () =>
@@ -250,12 +269,10 @@ const Analytics = () => {
   const showSelfView = !isFamily || analyticsView === "self";
 
   return (
-    <div className="ct-page">
-      <PageHeader
-        title={t("analytics.title")}
-        eyebrow={isFamily ? t("analytics.eyebrowHousehold") : t("home.insight")}
-        subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
-      />
+    <PageShell
+      title={t("analytics.title")}
+      subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
+    >
 
       {isFamily ? (
         <div>
@@ -264,30 +281,76 @@ const Analytics = () => {
             value={analyticsView}
             onChange={(id) => setHouseholdView(id === "household" ? "household" : "self")}
           />
-          <Caption className="block mt-2">
-            {showSelfView ? t("analytics.household.selfHint") : t("analytics.household.houseHint")}
-          </Caption>
         </div>
       ) : null}
 
-      {showSelfView ? (
+      <TabContent tabId="self" activeTab={analyticsView}>
+        {showSelfView ? (
         <div className="ct-stack">
-          <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="personal" />
-          <CashflowCalendarStrip />
-          {monthlySection}
+          <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
+            <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="personal" />
+          </div>
+          {emiPlan ? (
+            <Card className="ct-stack-sm ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
+              <Heading level={3}>
+                {t("analytics.emiConsolidation.title")}
+                <InfoTip textKey="analytics.emiConsolidation.subtitle" />
+              </Heading>
+              <ol className="ct-stack-sm mt-2">
+                {emiPlan.plan.map((row) => (
+                  <li key={`${row.name}-${row.endDate}`} className="ct-caption">
+                    {t("analytics.emiConsolidation.row", {
+                      months: row.monthsRemaining,
+                      name: row.name,
+                      amount: formatInr(row.amount),
+                    })}
+                  </li>
+                ))}
+              </ol>
+              <Body className="font-semibold">
+                {t("analytics.emiConsolidation.totalRelief", { amount: formatInr(emiPlan.totalRelief) })}
+              </Body>
+              <Caption className="block">
+                {t(emiPlan.insightKey, emiPlan.insightParams)}
+              </Caption>
+            </Card>
+          ) : null}
+          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
+            <CashflowCalendarStrip />
+          </div>
+          <div className="ct-animate-fade-up ct-list-animate" style={{ animationDelay: "180ms" }}>
+            {monthlySection}
+          </div>
         </div>
-      ) : (
-        <div className="ct-stack">
-          <HouseholdCommandPanel />
-          <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="household" />
-          <HouseholdSpendPanel />
-          <FamilyModeDashboard />
+        ) : null}
+      </TabContent>
+
+      <TabContent tabId="household" activeTab={analyticsView}>
+        {!showSelfView ? (
+        <div className="ct-stack ct-list-animate">
+          <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
+            <HouseholdCommandPanel />
+          </div>
+          <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
+            <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="household" />
+          </div>
+          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
+            <HouseholdSpendPanel />
+          </div>
+          <div className="ct-animate-fade-up" style={{ animationDelay: "180ms" }}>
+            <SchoolFeeCard />
+          </div>
+          <div className="ct-animate-fade-up" style={{ animationDelay: "240ms" }}>
+            <FestivalPlannerCard />
+          </div>
+          <FamilyMonthlyReportCard />
           <FamilyCalendarWidget />
         </div>
-      )}
+        ) : null}
+      </TabContent>
 
       <ToolsDiscoveryToast variant="analytics" />
-    </div>
+    </PageShell>
   );
 };
 

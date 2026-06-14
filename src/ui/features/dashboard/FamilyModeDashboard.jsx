@@ -3,8 +3,6 @@ import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { computeHouseholdMetrics, computeFamilyEmergencyTarget } from "../../../engines/householdEntity.js";
-import { computeFamilyPressure } from "../../../engines/modeFamily.js";
-import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { Card } from "../../primitives/Card.jsx";
@@ -19,6 +17,10 @@ import ModeInsightStrip from "./shared/ModeInsightStrip.jsx";
 import FestivalPlannerCard from "./FestivalPlannerCard.jsx";
 import SchoolFeeCard from "./SchoolFeeCard.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import RoomActivityFeed from "../household/RoomActivityFeed.jsx";
+import SharedGoalCard from "../household/SharedGoalCard.jsx";
+import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
+import { useCountUp } from "../../hooks/useCountUp.js";
 
 function HouseholdRunwayCard({ survival }) {
   const { t } = useTranslation();
@@ -47,7 +49,7 @@ function HouseholdRunwayCard({ survival }) {
 /** Household / family experience — shared expenses, education, renewals. */
 export default function FamilyModeDashboard() {
   const { t } = useTranslation();
-  const { settings, commitments, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { settings, commitments, getEffectiveStatus, todayStr, allGoals } = useCommitTrack();
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
   const family = stable.family;
@@ -58,15 +60,13 @@ export default function FamilyModeDashboard() {
     todayStr,
   });
 
+  const free = intel.stability?.freeMoney ?? 0;
+  const countedFree = useCountUp(Math.max(0, Math.round(free)), 900);
+  const countedBurden = useCountUp(Math.max(0, Math.round(family?.householdBurden ?? 0)), 900);
+  const countedIncome = useCountUp(Math.max(0, Math.round(household.combinedIncome ?? 0)), 900);
+
   if (!family) return <HouseholdRunwayCard survival={stable.survival} />;
 
-  const income = combinedMonthlyIncome(settings);
-  const familyPressure = computeFamilyPressure(
-    commitments,
-    income,
-    getEffectiveStatus,
-    Number(settings.dependents || 0),
-  );
   const emergencyTarget = computeFamilyEmergencyTarget(settings, commitments, getEffectiveStatus);
   const liquidSavings = Math.max(0, Number(settings.liquidSavings) || 0);
   const emergencyPct =
@@ -74,13 +74,15 @@ export default function FamilyModeDashboard() {
       ? Math.min(100, Math.round((liquidSavings / emergencyTarget.targetAmount) * 100))
       : 0;
 
-  const free = intel.stability?.freeMoney ?? 0;
-  const pressureScore = familyPressure.familyPressureScore ?? 0;
-
   const heroMetrics = [
     {
+      label: t("family.dashboard.sharedFreeCash"),
+      value: formatInr(countedFree),
+      tone: free >= 0 ? "good" : "warn",
+    },
+    {
       label: t("family.dashboard.householdBurden"),
-      value: formatInr(family.householdBurden),
+      value: formatInr(countedBurden),
       sub:
         family.committedPercent != null
           ? t("family.dashboard.percentIncome", { percent: family.committedPercent })
@@ -88,25 +90,9 @@ export default function FamilyModeDashboard() {
       tone: family.committedPercent > 65 ? "warn" : "default",
     },
     {
-      label: t("family.dashboard.householdPressure"),
-      value: `${Math.round(pressureScore)}/100`,
-      sub:
-        pressureScore > 70
-          ? t("family.dashboard.pressureHigh")
-          : pressureScore > 45
-            ? t("family.dashboard.pressureModerate")
-            : t("family.dashboard.pressureHealthy"),
-      tone: pressureScore > 70 ? "warn" : pressureScore > 45 ? "default" : "good",
-    },
-    {
       label: t("family.dashboard.schoolFeesOpen"),
       value: formatInr(family.schoolOpen),
       tone: family.schoolOpen > 0 ? "warn" : "good",
-    },
-    {
-      label: t("family.dashboard.sharedFreeCash"),
-      value: formatInr(free),
-      tone: free >= 0 ? "good" : "warn",
     },
   ];
 
@@ -115,10 +101,12 @@ export default function FamilyModeDashboard() {
     .slice(0, 4);
 
   const renewalsTotal = (family.heavyRenewals || []).reduce((s, r) => s + Number(r.amount || 0), 0);
+  const sharedGoals = (allGoals || []).filter((g) => !g.archived && g.forMember === "shared");
 
   return (
     <Stack gap="md">
-      <ModeHeroCard
+      <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
+        <ModeHeroCard
         icon="users-three"
         title={t("family.dashboard.title")}
         subtitle={
@@ -128,12 +116,17 @@ export default function FamilyModeDashboard() {
         }
         metrics={heroMetrics}
         tip={t("family.dashboard.tip")}
-      />
+        />
+      </div>
 
-      <SchoolFeeCard />
-      <FestivalPlannerCard />
+      <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
+        <SchoolFeeCard />
+      </div>
+      <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
+        <FestivalPlannerCard />
+      </div>
 
-      <Card variant="flat" className="ct-stack">
+      <Card variant="flat" className="ct-stack ct-animate-fade-up" style={{ animationDelay: "180ms" }}>
         <div className="ct-row-between">
           <Caption>{t("family.emergency.fundTitle")}</Caption>
           <Badge tone={emergencyPct >= 100 ? "success" : emergencyPct >= 50 ? "warning" : "danger"}>
@@ -148,27 +141,31 @@ export default function FamilyModeDashboard() {
             saved: formatInr(liquidSavings),
           })}
         </Caption>
-        <Caption className="block ct-text-muted">{emergencyTarget.reasoning}</Caption>
+        <Caption className="block ct-text-muted">
+          {emergencyTarget.reasoning}
+        </Caption>
       </Card>
 
-      <Grid cols={2}>
+      <div className="ct-animate-fade-up" style={{ animationDelay: "240ms" }}>
+        <Grid cols={2}>
         <MetricTile label={t("family.dashboard.educationPressure")} value={formatInr(family.schoolOpen)} />
         <MetricTile label={t("family.dashboard.renewalsTracked")} value={String((family.heavyRenewals || []).length)} />
         <MetricTile label={t("family.dashboard.dependents")} value={String(settings.dependents || 0)} />
-      </Grid>
+        </Grid>
+      </div>
 
       <Card variant="flat" className="ct-stack">
         <Heading level={3}>{t("family.dashboard.householdEntity")}</Heading>
         <Caption className="block">
           {t("family.dashboard.entitySummary", {
             count: household.memberCount,
-            income: formatInr(household.combinedIncome),
+            income: formatInr(countedIncome),
             burden: household.burdenRatio != null ? `${household.burdenRatio}%` : "—",
           })}
         </Caption>
         <div className="ct-row-between">
           <Caption>{t("family.dashboard.sharedFreeCash")}</Caption>
-          <Body className="font-semibold ct-numeral">{formatInr(household.combinedFreeCash)}</Body>
+          <Body className="font-semibold ct-numeral">{formatInr(countedFree)}</Body>
         </div>
         <Badge tone={household.stabilityLabel === "stable" ? "success" : household.stabilityLabel === "tight" ? "warning" : "danger"}>
           {household.stabilityLabel}
@@ -228,6 +225,20 @@ export default function FamilyModeDashboard() {
 
       <ModeInsightStrip insights={family.insights} />
       <HouseholdRunwayCard survival={stable.survival} />
+      {sharedGoals.length > 0 ? (
+        <Card variant="flat" className="ct-stack">
+          <Heading level={3}>{t("goals.shared.sectionTitle")}</Heading>
+          {sharedGoals.map((g) => (
+            <SharedGoalCard key={g.id} goal={g} settings={settings} />
+          ))}
+        </Card>
+      ) : null}
+      {settings.householdRoomId ? (
+        <div className="ct-animate-fade-up" style={{ animationDelay: "240ms" }}>
+          <RoomActivityFeed roomId={settings.householdRoomId} />
+        </div>
+      ) : null}
+      <FamilyMonthlyReportCard />
     </Stack>
   );
 }

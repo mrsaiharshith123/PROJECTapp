@@ -262,6 +262,29 @@ export function normalizeLending(raw) {
     ...base,
     ...financials,
     trustScoreSnapshot,
+    borrowerFullName: String(raw.borrowerFullName ?? ""),
+    borrowerAddress: String(raw.borrowerAddress ?? ""),
+    borrowerPhone: String(raw.borrowerPhone ?? ""),
+    borrowerEmail: String(raw.borrowerEmail ?? ""),
+    idProofType: String(raw.idProofType ?? ""),
+    idProofLast4: String(raw.idProofLast4 ?? "").slice(0, 4),
+    loanPurpose: String(raw.loanPurpose ?? ""),
+    agreementCity: String(raw.agreementCity ?? ""),
+    penaltyRatePerMonth: Number(raw.penaltyRatePerMonth) || 2,
+    arbitrationClause: raw.arbitrationClause !== false,
+    lenderFullName: String(raw.lenderFullName ?? ""),
+    lenderAddress: String(raw.lenderAddress ?? ""),
+    lenderPhone: String(raw.lenderPhone ?? ""),
+    witness1Name: String(raw.witness1Name ?? ""),
+    witness1Phone: String(raw.witness1Phone ?? ""),
+    esignStatus: ["pending", "completed", "declined"].includes(raw.esignStatus) ? raw.esignStatus : "",
+    esignDocumentId: String(raw.esignDocumentId ?? ""),
+    esignProvider: String(raw.esignProvider ?? ""),
+    esignCompletedAt: raw.esignCompletedAt ? String(raw.esignCompletedAt) : "",
+    lenderOtpVerifiedAt: raw.lenderOtpVerifiedAt ? String(raw.lenderOtpVerifiedAt) : "",
+    lenderConfirmedAt: raw.lenderConfirmedAt ? String(raw.lenderConfirmedAt) : "",
+    borrowerConfirmedAt: raw.borrowerConfirmedAt ? String(raw.borrowerConfirmedAt) : "",
+    lastReminderLevel: Math.max(0, Math.min(3, Math.floor(Number(raw.lastReminderLevel) || 0))),
     status: financials.remainingBalance <= 0 ? "complete" : status === "complete" && financials.remainingBalance > 0 ? "pending" : status,
     remainingAmount: financials.remainingBalance,
   };
@@ -356,11 +379,17 @@ export function normalizeGoal(raw) {
     profileId: String(raw.profileId || "default"),
     active: raw.active !== false,
     archived: Boolean(raw.archived),
+    forMember: ["shared", "self", "spouse"].includes(raw.forMember) ? raw.forMember : "shared",
+    memberContributions: {
+      self: Math.max(0, Number(raw.memberContributions?.self) || 0),
+      spouse: Math.max(0, Number(raw.memberContributions?.spouse) || 0),
+    },
     baselineOpenRemaining: Number(raw.baselineOpenRemaining) || 0,
     targetReduction: Math.max(1, Number(raw.targetReduction) || 1),
     targetRatio: Math.min(0.95, Math.max(0.05, Number(raw.targetRatio) || 0.5)),
     targetAmount: Math.max(0, Number(raw.targetAmount) || 0),
     savedAmount: Math.max(0, Number(raw.savedAmount) || 0),
+    targetDate: raw.targetDate ? String(raw.targetDate).slice(0, 10) : undefined,
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
   };
@@ -559,6 +588,9 @@ const DEFAULT_SETTINGS = {
   billSplitsThisMonth: 0,
   /** ms epoch — when this device account was first created */
   accountCreatedAt: 0,
+  sideIncomes: [],
+  spouseName: "",
+  familyName: "",
 };
 
 export function loadSettingsFromStorage() {
@@ -663,6 +695,16 @@ export function loadSettingsFromStorage() {
         usageMonthKey: String(o.usageMonthKey || ""),
         billSplitsThisMonth: Math.max(0, Number(o.billSplitsThisMonth) || 0),
         accountCreatedAt: Math.max(0, Number(o.accountCreatedAt) || 0),
+        sideIncomes: Array.isArray(o.sideIncomes)
+          ? o.sideIncomes.map((inc, idx) => ({
+              id: String(inc?.id || `side-${idx}-${Date.now()}`),
+              label: String(inc?.label || "").slice(0, 40),
+              monthlyAmount: Math.max(0, Number(inc?.monthlyAmount) || 0),
+              type: ["rental", "freelance", "tuition", "other"].includes(inc?.type) ? inc.type : "other",
+            }))
+          : [],
+        spouseName: String(o.spouseName || ""),
+        familyName: String(o.familyName || ""),
       };
     }
   } catch {

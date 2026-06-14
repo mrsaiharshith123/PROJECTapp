@@ -153,7 +153,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
               className="ct-input w-full ct-numeral"
               value={inviteCode}
               onChange={(e) => setInviteCode(normalizeInviteCode(e.target.value))}
-              placeholder="ABC123"
+              placeholder={t("household.room.codePlaceholder")}
               maxLength={6}
             />
           </div>

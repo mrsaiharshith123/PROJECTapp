@@ -92,3 +92,27 @@ export function buildDefaultNoticeText(lending, settings = {}) {
     "Date: _________________",
   ].join("\n");
 }
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** @param {object} lending @param {object} [settings] */
+export function generateDefaultNoticeHtml(lending, settings = {}) {
+  const body = buildDefaultNoticeText(lending, settings);
+  const lines = body
+    .split("\n")
+    .map((line) => (line.trim() ? `<p>${escapeHtml(line)}</p>` : "<br/>"))
+    .join("\n");
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>Legal Notice — ${escapeHtml(lending.personName || "Loan")}</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 18cm; margin: 2cm auto; line-height: 1.55; font-size: 12pt; }
+  p { margin: 0.35em 0; }
+</style></head><body>${lines}</body></html>`;
+}

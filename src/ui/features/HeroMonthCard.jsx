@@ -123,7 +123,8 @@ export function HeroMonthCard({
       ) : null}
 
       {statusLine && !privacyMode ? (
-        <div className="ct-hero-inset ct-hero-inset-financial ct-hero-status-copy mt-2 mx-1 relative text-left">
+        <div className="ct-hero-insight-block mt-2 mx-1 relative text-left">
+          <p className="ct-eyebrow ct-home-insight-heading mb-1.5">{t("home.insight")}</p>
           {statusLine}
         </div>
       ) : null}

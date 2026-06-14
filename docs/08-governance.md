@@ -54,6 +54,9 @@ npm run audit:platform   # architecture, features
 | Scan | Item | Action |
 |------|------|--------|
 | `audit:charts` (duplicates) | Resolved: net worth categories → `wealthCategories.js` | Bill categories stay in `constants/categories.js` |
+| `audit:governance` | Large page files (AuthGate, HouseholdRoom, Analytics) | Extract sections when touching those files |
+| `audit:performance` | Main JS chunk ~510 kB | Code-split when adding heavy routes |
+| Baseline | **386** tests / **141** files / **90** engine test modules | Update docs when counts change |
 
 ### Flags
 

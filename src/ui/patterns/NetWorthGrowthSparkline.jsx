@@ -69,7 +69,8 @@ export function NetWorthGrowthSparkline({ data }) {
             strokeWidth={2.5}
             dot={showDots ? { r: 3, fill: "#34d399" } : false}
             activeDot={{ r: 5, stroke: "#34d399", fill: "#0f172a" }}
-            isAnimationActive={false}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
           <Line
             type="linear"
@@ -80,7 +81,8 @@ export function NetWorthGrowthSparkline({ data }) {
             strokeDasharray="4 3"
             dot={showDots ? { r: 3, fill: "#f87171" } : false}
             activeDot={{ r: 5, stroke: "#f87171", fill: "#0f172a" }}
-            isAnimationActive={false}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </LineChart>
       </ResponsiveContainer>

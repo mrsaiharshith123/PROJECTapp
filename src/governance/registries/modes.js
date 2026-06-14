@@ -7,7 +7,7 @@
 export const MODE_CAPABILITIES = {
   salaried: {
     label: "Salaried",
-    engines: ["engines/survival.js", "engines/salaryBreakdown.js"],
+    engines: ["engines/survival.js", "engines/salaryBreakdown.js", "engines/momentumScore.js", "engines/emiConsolidation.js"],
     sharedEngines: ["engines/burden.js", "engines/forecast.js", "engines/pressureScore.js", "engines/intelligence.js"],
     isolatedUi: ["ui/features/dashboard/ModeIntelligenceSection.jsx"],
   },
@@ -26,11 +26,17 @@ export const MODE_CAPABILITIES = {
       "engines/familyDependency.js",
       "engines/familyContribution.js",
       "engines/familyPressureForecast.js",
+      "engines/familyMonthlyReport.js",
+      "engines/sharedGoalContribution.js",
     ],
     sharedEngines: ["engines/burden.js", "engines/survival.js"],
     isolatedUi: [
       "ui/features/dashboard/FamilyModeDashboard.jsx",
       "ui/features/modals/HouseholdSetupModal.jsx",
+      "ui/features/household/HouseholdRoomPage.jsx",
+      "ui/features/household/RoomActivityFeed.jsx",
+      "ui/features/household/SharedGoalCard.jsx",
+      "ui/features/household/FamilyMonthlyReportCard.jsx",
       "ui/features/modals/HouseholdDependentsEditorModal.jsx",
       "ui/features/analytics/HouseholdCommandPanel.jsx",
       "ui/features/analytics/HouseholdSpendPanel.jsx",

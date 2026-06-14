@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Button, inputClassName, FormField, Caption, Heading, Body } from "../../index.js";
+import { Card, Button, inputClassName, FormField, Caption, Heading, Body, PasswordInput } from "../../index.js";
 import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import InstallAppBanner from "../InstallAppBanner.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
@@ -66,15 +66,16 @@ export default function AuthGatePage() {
     setNote("");
     setNoteTone("neutral");
     clearAuthNotice();
+    setConfirmPassword("");
     if (next !== "reset") {
       setNewPassword("");
-      setConfirmPassword("");
     }
   };
 
   const validateSignup = () => {
     if (!email.trim() || !password) return t("auth.errEmailPassword");
     if (password.length < 6) return t("auth.errPasswordLength");
+    if (password !== confirmPassword) return t("auth.passwordMismatch");
     if (!name.trim()) return t("auth.errNameRequired");
     if (!isValidIndianPhone(phone)) return t("auth.errPhoneInvalid");
     const incomeNum = Number(income);
@@ -308,14 +309,13 @@ export default function AuthGatePage() {
           {mode === "signin" && (
             <>
               <FormField label={t("auth.password")}>
-                <input
-                  type="password"
-                  className={fieldClass}
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   required
                   minLength={6}
+                  className={fieldClass}
                 />
               </FormField>
               <div className="ct-row-between -mt-1">
@@ -330,14 +330,23 @@ export default function AuthGatePage() {
           {mode === "signup" && (
             <>
               <FormField label={t("auth.password")}>
-                <input
-                  type="password"
-                  className={fieldClass}
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="new-password"
                   required
                   minLength={6}
+                  className={fieldClass}
+                />
+              </FormField>
+              <FormField label={t("auth.confirmPassword")}>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                  className={fieldClass}
                 />
               </FormField>
               <FormField label={t("auth.yourName")}>
@@ -383,25 +392,23 @@ export default function AuthGatePage() {
           {mode === "reset" && (
             <>
               <FormField label={t("auth.newPassword")}>
-                <input
-                  type="password"
-                  className={fieldClass}
+                <PasswordInput
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   required
                   minLength={6}
+                  className={fieldClass}
                 />
               </FormField>
               <FormField label={t("auth.confirmPassword")}>
-                <input
-                  type="password"
-                  className={fieldClass}
+                <PasswordInput
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   required
                   minLength={6}
+                  className={fieldClass}
                 />
               </FormField>
             </>

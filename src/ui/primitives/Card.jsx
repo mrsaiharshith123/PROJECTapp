@@ -3,9 +3,10 @@ import { cn } from "../utils/cn.js";
 
 const VARIANT_CLASS = {
   default: "ct-card",
+  glass: "ct-card-glass",
   hero: "ct-card-hero",
   glow: "ct-card ct-card-glow",
-  flat: "ct-card ct-card-flat",
+  flat: "ct-card-flat",
   metric: "ct-card-metric",
   "module-tile": "ct-module-tile",
   "status-overdue": "ct-card ct-card-status ct-card-status-overdue",

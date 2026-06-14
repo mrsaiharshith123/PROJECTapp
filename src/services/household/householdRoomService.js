@@ -6,7 +6,12 @@ import {
   mapHouseholdCloudError,
   householdMemberLimit,
 } from "../../engines/householdRoom.js";
-import { createLocalHouseholdRoom, joinLocalHouseholdRoom } from "../../engines/householdRoomLocal.js";
+import {
+  createLocalHouseholdRoom,
+  joinLocalHouseholdRoom,
+  getLocalHouseholdRoomById,
+  leaveLocalHouseholdRoom,
+} from "../../engines/householdRoomLocal.js";
 
 async function createHouseholdRoomCloud({ userId, displayName, roomName, memberLimit }) {
   const supabase = getSupabaseClient();
@@ -166,6 +171,53 @@ export async function fetchHouseholdRoomMembers(roomId) {
   }));
 }
 
+/**
+ * Load cloud or local household room for the signed-in user.
+ * @param {string} userId
+ * @param {{ localRoomId?: string }} [opts]
+ */
+export async function loadMyHouseholdRoom(userId, opts = {}) {
+  const remote = await fetchUserHouseholdRoom(userId);
+  if (remote) return remote;
+
+  const localRoomId = opts.localRoomId || "";
+  if (!localRoomId || !String(localRoomId).startsWith("local-")) return null;
+
+  const local = getLocalHouseholdRoomById(localRoomId);
+  if (!local) return null;
+
+  const myMember = (local.members || []).find((m) => m.userId === userId);
+  return {
+    roomId: local.roomId,
+    inviteCode: local.inviteCode,
+    roomName: local.roomName,
+    role: myMember?.role || (local.ownerId === userId ? "owner" : "member"),
+    memberLimit: Number(local.memberLimit) || 2,
+    shareSpends: myMember?.shareSpends !== false,
+    shareBillDetail: Boolean(myMember?.shareBillDetail),
+    members: local.members || [],
+    local: true,
+  };
+}
+
+/**
+ * @param {{ userId: string, roomId: string }} params
+ */
+export async function leaveHouseholdRoom({ userId, roomId }) {
+  if (!userId || !roomId) return;
+  if (String(roomId).startsWith("local-")) {
+    leaveLocalHouseholdRoom({ userId, roomId });
+    return;
+  }
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  await supabase
+    .from("household_room_members")
+    .delete()
+    .eq("room_id", roomId)
+    .eq("user_id", userId);
+}
+
 /** @param {string} userId */
 export async function fetchUserHouseholdRoom(userId) {
   const supabase = getSupabaseClient();
@@ -191,4 +243,37 @@ export async function fetchUserHouseholdRoom(userId) {
     members,
     local: false,
   };
+}
+
+/**
+ * Fire-and-forget room activity event (cloud only).
+ * @param {{ roomId: string, userId: string, displayName: string, eventType: string, eventData?: object }} params
+ */
+export async function postRoomEvent({ roomId, userId, displayName, eventType, eventData }) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !roomId || String(roomId).startsWith("local-")) return;
+  await supabase
+    .from("household_room_events")
+    .insert({
+      room_id: roomId,
+      user_id: userId,
+      display_name: String(displayName || "Member").slice(0, 40),
+      event_type: eventType,
+      event_data: eventData || {},
+    })
+    .then(() => {})
+    .catch(() => {});
+}
+
+/** @param {string} roomId @param {number} [limit] */
+export async function loadRoomEvents(roomId, limit = 20) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !roomId || String(roomId).startsWith("local-")) return [];
+  const { data } = await supabase
+    .from("household_room_events")
+    .select("*")
+    .eq("room_id", roomId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data || [];
 }

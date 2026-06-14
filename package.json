@@ -22,6 +22,7 @@
     "audit:summary": "node scripts/audit-summary.mjs",
     "audit:fix-deps": "npm audit fix --omit=dev",
     "audit:ui": "node scripts/audit-ui.mjs",
+    "audit:ui-consistency": "node scripts/audit-ui-consistency.mjs",
     "audit:design": "node scripts/audit-runner.mjs design",
     "audit:styles": "node scripts/audit-styles.mjs",
     "audit:copy": "node scripts/audit-copy-tone.mjs",

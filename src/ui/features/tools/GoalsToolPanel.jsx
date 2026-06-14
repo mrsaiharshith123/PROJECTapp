@@ -11,6 +11,8 @@ import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { canAddGoal } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
+import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { isSalariedFamily } from "../../../constants/modeExperience.js";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
 
@@ -45,6 +47,8 @@ export default function GoalsToolPanel() {
   const [gTitle, setGTitle] = useState("");
   const [gTarget, setGTarget] = useState("");
   const [gTargetDate, setGTargetDate] = useState("");
+  const [gForMember, setGForMember] = useState("shared");
+  const salariedFamily = isSalariedFamily(settings);
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
@@ -58,7 +62,7 @@ export default function GoalsToolPanel() {
   const submitGoal = () => {
     if (!gTitle.trim()) return;
     if (!goalGate.ok) return;
-    const base = { type: gType, title: gTitle.trim() };
+    const base = { type: gType, title: gTitle.trim(), forMember: salariedFamily ? gForMember : "self" };
     if (gType === "reduce_open_debt") {
       addGoal({ ...base, targetReduction: Math.max(1, Number(gTarget) || 25000) });
     } else if (gType === "income_ratio_cap") {
@@ -121,6 +125,20 @@ export default function GoalsToolPanel() {
           ))}
         </select>
       </div>
+      {salariedFamily ? (
+        <div>
+          <label className="ct-metric-label block">{t("goals.forMemberLabel")}</label>
+          <SegmentedControl
+            options={[
+              { id: "shared", label: t("goals.forMember.shared") },
+              { id: "self", label: t("goals.forMember.self") },
+              { id: "spouse", label: t("goals.forMember.spouse") },
+            ]}
+            value={gForMember}
+            onChange={setGForMember}
+          />
+        </div>
+      ) : null}
       <div>
         <label className="ct-metric-label block">{t("goals.nameLabel")}</label>
         <input

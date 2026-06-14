@@ -7,6 +7,7 @@ import {
   Body,
   EmptyState,
   StatCard,
+  Button,
 } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { suggestedCyclePaymentAmount } from "../../../utils/commitmentPayments.js";
@@ -54,6 +55,7 @@ export default function CommitmentsBillsTab({
   onEdit,
   onDelete,
   dailySpends = [],
+  onAddCommitment,
 }) {
   const { t } = useTranslation();
   const stable = useStabilityIntel();
@@ -108,9 +110,11 @@ export default function CommitmentsBillsTab({
   return (
     <div className="ct-stack">
       <div>
-        <Body className="ct-body-strong">{t("bills.recurringBills.title")}</Body>
+        <Body className="ct-body-strong inline-flex items-center">
+          {t("bills.recurringBills.title")}
+          <InfoTip textKey="bills.recurringBills.hint" />
+        </Body>
         <Caption className="block mt-0.5">{t("bills.recurringBills.subtitle")}</Caption>
-        <Caption className="block mt-1 opacity-80">{t("bills.recurringBills.hint")}</Caption>
       </div>
 
       {activeBills.length > 0 && (
@@ -186,14 +190,25 @@ export default function CommitmentsBillsTab({
         <Body className="ct-body-strong mb-2">{t("bills.recurringBills.activeList")}</Body>
 
         {sortedCommitments.length === 0 && (
-          <EmptyState icon="clipboard-text" title={copy.noBills} hint={t("bills.emptyHint", { action: copy.addBill })} />
+          <EmptyState
+            icon="clipboard-text"
+            title={copy.noBills}
+            message={t("bills.emptyHint", { action: copy.addBill })}
+            action={
+              onAddCommitment ? (
+                <Button type="button" onClick={onAddCommitment}>
+                  {t("bills.emptyAction")}
+                </Button>
+              ) : null
+            }
+          />
         )}
 
         {sortedCommitments.length > 0 && activeBills.length === 0 && (
           <EmptyState icon="clipboard-text" title={t("bills.noMatchFilters")} hint={t("bills.recurringBills.clearFiltersHint")} />
         )}
 
-        <div className="ct-stack">
+        <div className="ct-stack ct-list-animate">
           {activeBills.map((item) => {
             const eff = item.effectiveStatus;
             const total = Number(item.amount ?? 0);

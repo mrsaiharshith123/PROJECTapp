@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { differenceInMonths, format, parseISO } from "date-fns";
 import { Card } from "../primitives/Card.jsx";
 import { Button } from "../primitives/Button.jsx";
@@ -96,6 +97,20 @@ export function BillCard({
   health = null,
 }) {
   const { t, locale } = useTranslation();
+  const statusIconRef = useRef(null);
+  const prevMonthPaid = useRef(monthPaid);
+
+  useEffect(() => {
+    if (monthPaid && !prevMonthPaid.current) {
+      statusIconRef.current?.classList.add("ct-celebrate");
+      const timer = setTimeout(() => statusIconRef.current?.classList.remove("ct-celebrate"), 600);
+      prevMonthPaid.current = monthPaid;
+      return () => clearTimeout(timer);
+    }
+    prevMonthPaid.current = monthPaid;
+    return undefined;
+  }, [monthPaid]);
+
   const { classes } = BILL_STATUS_UI[eff] || BILL_STATUS_UI.pending;
   const statusLabel = translateBillStatus(t, eff);
   const total = Number(item.amount ?? 0);
@@ -105,7 +120,7 @@ export function BillCard({
 
   if (isHistory) {
     return (
-      <Card variant={cardVariant} className={cn("ct-bill-card ct-bill-card-history", "ct-stack-sm")}>
+      <Card variant={cardVariant} className={cn("ct-bill-card ct-bill-card-history", "ct-stack-sm", "ct-pressable")}>
         <button type="button" onClick={onOpen} className="ct-bill-card-head">
           <div className="min-w-0">
             <p className="ct-body-strong truncate">{getBillDisplayName(item)}</p>
@@ -135,7 +150,7 @@ export function BillCard({
   dateParts.push(t("bill.dueOn", { date: fmt(item.dueDate) }));
 
   return (
-    <Card variant={cardVariant} className="ct-bill-card ct-stack">
+    <Card variant={cardVariant} className="ct-bill-card ct-stack ct-pressable">
       <button type="button" onClick={onOpen} className="ct-bill-card-head">
         <div className="ct-stack-sm min-w-0">
           <p className="ct-body-strong">{getBillDisplayName(item)}</p>
@@ -184,7 +199,7 @@ export function BillCard({
 
       <CommitmentProgress commitment={item} effectiveStatus={eff} />
 
-      {monthPaid && <p className="ct-bill-paid-banner">{t("bill.paidBanner")}</p>}
+      {monthPaid && <p ref={statusIconRef} className="ct-bill-paid-banner ct-celebrate">{t("bill.paidBanner")}</p>}
 
       {(eff === "pending" || eff === "overdue") && (
         <div className="ct-bill-card-actions">

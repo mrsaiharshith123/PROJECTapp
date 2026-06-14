@@ -3,7 +3,7 @@
  * Engines return tone tokens only — map score/tier → tone in engines (e.g. affordabilityTierTone).
  */
 
-/** @typedef {'success'|'info'|'warning'|'coral'|'danger'|'teal'|'neutral'|'premium'} SemanticTone */
+/** @typedef {'success'|'info'|'warning'|'coral'|'danger'|'teal'|'neutral'|'gold'|'premium'} SemanticTone */
 
 const TONE_CLASS = {
   success: "ct-status ct-status-success",
@@ -13,7 +13,8 @@ const TONE_CLASS = {
   teal: "ct-badge ct-badge-teal",
   coral: "ct-badge ct-badge-coral",
   neutral: "ct-status ct-status-neutral",
-  premium: "ct-badge ct-badge-teal",
+  gold: "ct-badge ct-badge-gold",
+  premium: "ct-badge ct-badge-gold",
 };
 
 /**

@@ -14,12 +14,26 @@ import { canEditLending } from "../engines/lendingAgreement.js";
 import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "../utils/dailySpends.js";
+import { postRoomEvent } from "../services/household/householdRoomService.js";
+
+function emitRoomEvent(settings, userId, eventType, eventData) {
+  const roomId = settings?.householdRoomId;
+  if (!roomId || !userId) return;
+  postRoomEvent({
+    roomId,
+    userId,
+    displayName: settings.displayName || "Member",
+    eventType,
+    eventData,
+  });
+}
 
 /** @param {object} deps */
 export function useCommitTrackCrud({
   commitments,
   settings,
   todayStr,
+  userId,
   persistCommitments,
   persistLendings,
   persistSettings,
@@ -38,8 +52,13 @@ export function useCommitTrackCrud({
         updatedAt: now,
       });
       persistCommitments((prev) => [...prev, c]);
+      emitRoomEvent(settings, userId, "bill_added", {
+        name: c.name,
+        amount: c.amount,
+        category: c.category,
+      });
     },
-    [persistCommitments, settings.activeProfileId]
+    [persistCommitments, settings, userId]
   );
 
   const updateCommitment = useCallback(
@@ -80,6 +99,12 @@ export function useCommitTrackCrud({
           if (applied > 0 && updated.goalId && updated.category === "SIP") {
             goalCredit = { goalId: updated.goalId, amount: applied };
           }
+          if (applied > 0) {
+            emitRoomEvent(settings, userId, "bill_paid", {
+              name: updated.name,
+              amount: applied,
+            });
+          }
           updated = normalizeCommitmentStatusForSave(normalizeCommitment(updated), todayStr, prev);
           if (Number(updated.remainingAmount) > 0) return [updated];
           const nextId = Date.now() + Math.floor(Math.random() * 1000);
@@ -101,7 +126,7 @@ export function useCommitTrackCrud({
         );
       }
     },
-    [persistCommitments, persistGoals, todayStr]
+    [persistCommitments, persistGoals, todayStr, settings, userId]
   );
 
   const removeCommitmentPayment = useCallback(
@@ -195,7 +220,7 @@ export function useCommitTrackCrud({
         }
         if (patch.householdScope != null && patch.householdScope !== "family") {
           next.householdScope = "single";
-          next.dependents = 0;
+          next.secondaryMonthlyIncome = 0;
         }
         if (patch.subscriptionTier != null) {
           const t = patch.subscriptionTier;

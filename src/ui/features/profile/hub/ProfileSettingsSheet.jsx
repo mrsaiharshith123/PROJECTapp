@@ -1,75 +1,66 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal } from "../../../primitives/Modal.jsx";
+import { Modal, Caption } from "../../../index.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { Caption } from "../../../primitives/Text.jsx";
-import { ToolTile } from "../../ToolTile.jsx";
+import { isSalariedFamily } from "../../../../constants/modeExperience.js";
+import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
+import PlansModal from "../PlansModal.jsx";
 
-const PROFILE_CONTROL_GROUPS = [
-  {
-    id: "account",
-    icon: "user",
-    titleKey: "profileHub.group.account",
-    hintKey: "profileHub.group.accountHint",
-    panels: ["personal-identity", "personal-account"],
-  },
-  {
-    id: "financial",
-    icon: "currency-inr",
-    titleKey: "profileHub.group.financial",
-    hintKey: "profileHub.group.financialHint",
-    panels: ["personal-money", "history"],
-  },
-  {
-    id: "notifications",
-    icon: "bell",
-    titleKey: "profileHub.group.notifications",
-    hintKey: "profileHub.group.notificationsHint",
-    panels: ["notifications"],
-  },
-  {
-    id: "privacy",
-    icon: "lock",
-    titleKey: "profileHub.group.privacy",
-    hintKey: "profileHub.group.privacyHint",
-    panels: ["security-sessions", "backup"],
-    privacyLink: true,
-  },
-  {
-    id: "appearance",
-    icon: "palette",
-    titleKey: "profileHub.group.appearance",
-    hintKey: "profileHub.group.appearanceHint",
-    panels: ["personal-appearance"],
-  },
-  {
-    id: "help",
-    icon: "chat-circle",
-    titleKey: "profileHub.group.help",
-    hintKey: "profileHub.group.helpHint",
-    panels: ["guide", "support"],
-  },
-];
+/** @typedef {{ id: string, labelKey: string, icon?: string, panelId?: string, danger?: boolean, action?: string }} SettingsRowDef */
+
+const PANEL_LABEL_KEYS = {
+  "personal-identity": "settings.row.personalDetails",
+  "personal-account": "settings.row.emailPassword",
+  "personal-appearance": "settings.row.appearance",
+  "personal-money": "settings.row.incomeSalary",
+  "history": "settings.row.paymentHistory",
+  "security-sessions": "settings.row.sessions",
+  backup: "settings.row.dataBackup",
+  notifications: "settings.row.reminders",
+  guide: "settings.row.help",
+  support: "settings.row.about",
+};
 
 /** @param {string | null} openId */
-function profileGroupForPanel(openId) {
-  if (!openId) return null;
-  return PROFILE_CONTROL_GROUPS.find((g) => g.panels.includes(openId)) || null;
+function panelLabelKey(openId) {
+  if (!openId) return "profileHub.settingsTitle";
+  return PANEL_LABEL_KEYS[openId] || `profileHub.panel.${openId}`;
 }
 
 /**
- * App settings in a sheet — opened from the profile hero gear, not inline on the page.
+ * App settings in a sheet — grouped rows per UI spec.
  * @param {{
  *   open: boolean,
  *   onClose: () => void,
  *   openId: string | null,
  *   onSelect: (id: string | null) => void,
  *   renderPanel: (id: string) => import('react').ReactNode,
+ *   settings: object,
+ *   isLoggedIn?: boolean,
+ *   privacyMode?: boolean,
+ *   onTogglePrivacyMode?: () => void,
+ *   onSignOut?: () => void | Promise<void>,
+ *   onDeleteData?: () => void,
+ *   signingOut?: boolean,
  * }} props
  */
-export default function ProfileSettingsSheet({ open, onClose, openId, onSelect, renderPanel }) {
+export default function ProfileSettingsSheet({
+  open,
+  onClose,
+  openId,
+  onSelect,
+  renderPanel,
+  settings,
+  isLoggedIn = false,
+  privacyMode = false,
+  onTogglePrivacyMode,
+  onSignOut,
+  onDeleteData,
+  signingOut = false,
+}) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const activeGroup = profileGroupForPanel(openId);
+  const [plansOpen, setPlansOpen] = useState(false);
 
   if (!open) return null;
 
@@ -78,63 +69,149 @@ export default function ProfileSettingsSheet({ open, onClose, openId, onSelect, 
     onClose();
   };
 
-  const title = openId && activeGroup ? t(activeGroup.titleKey) : t("profileHub.settingsTitle");
+  const isFamily = isSalariedFamily(settings);
+  const householdValue = isFamily ? t("settings.value.family") : t("settings.value.single");
+  const remindersOn = settings.remindersEnabled !== false;
+  const privacyValue = privacyMode ? t("settings.value.on") : t("settings.value.off");
+  const smartNotifValue = remindersOn ? t("settings.value.on") : t("settings.value.off");
+
+  const openPanel = (panelId) => onSelect(panelId);
+
+  const title = openId ? t(panelLabelKey(openId)) : t("profileHub.settingsTitle");
 
   return (
-    <Modal title={title} onClose={handleClose}>
-      {!openId || !activeGroup ? (
-        <div className="ct-profile-settings-grid">
-          <Caption className="block mb-3">{t("profileHub.settingsSubtitle")}</Caption>
-          <div className="ct-profile-modules-grid">
-            {PROFILE_CONTROL_GROUPS.map((group) => (
-              <ToolTile
-                key={group.id}
-                icon={group.icon}
-                title={t(group.titleKey)}
-                onClick={() => onSelect(group.panels[0])}
-                className="ct-profile-module-tile ct-profile-module-tile-compact"
+    <>
+      <Modal title={title} onClose={handleClose}>
+        {!openId ? (
+          <div className="ct-stack">
+            <Caption className="block">{t("profileHub.settingsSubtitle")}</Caption>
+
+            <SettingsGroup title={t("settings.group.account")} icon="user-circle">
+              <SettingsGroupRow
+                icon="user"
+                label={t("settings.row.personalDetails")}
+                onClick={() => openPanel("personal-identity")}
               />
-            ))}
+              <SettingsGroupRow
+                icon="lock"
+                label={t("settings.row.emailPassword")}
+                onClick={() => openPanel("personal-account")}
+              />
+              <SettingsGroupRow
+                icon="target"
+                label={t("settings.row.subscription")}
+                onClick={() => setPlansOpen(true)}
+              />
+              <SettingsGroupRow
+                icon="palette"
+                label={t("settings.row.appearance")}
+                onClick={() => openPanel("personal-appearance")}
+              />
+            </SettingsGroup>
+
+            <SettingsGroup title={t("settings.group.money")} icon="wallet">
+              <SettingsGroupRow
+                icon="currency-inr"
+                label={t("settings.row.incomeSalary")}
+                onClick={() => openPanel("personal-money")}
+              />
+              <SettingsGroupRow
+                icon="users-three"
+                label={t("settings.row.householdMode")}
+                value={householdValue}
+                onClick={() => openPanel("personal-money")}
+              />
+              <SettingsGroupRow
+                icon="push-pin"
+                label={t("settings.row.city")}
+                onClick={() => openPanel("personal-account")}
+              />
+              <SettingsGroupRow
+                icon="arrows-clockwise"
+                label={t("settings.row.paymentHistory")}
+                onClick={() => openPanel("history")}
+              />
+            </SettingsGroup>
+
+            <SettingsGroup title={t("settings.group.privacy")} icon="shield">
+              <SettingsGroupRow
+                icon="eye-slash"
+                label={t("settings.row.privacyMode")}
+                value={privacyValue}
+                onClick={() => onTogglePrivacyMode?.()}
+              />
+              <SettingsGroupRow
+                icon="device-mobile"
+                label={t("settings.row.sessions")}
+                onClick={() => openPanel("security-sessions")}
+              />
+              <SettingsGroupRow
+                icon="cloud"
+                label={t("settings.row.dataBackup")}
+                onClick={() => openPanel("backup")}
+              />
+            </SettingsGroup>
+
+            <SettingsGroup title={t("settings.group.notifications")} icon="bell">
+              <SettingsGroupRow
+                icon="bell"
+                label={t("settings.row.reminders")}
+                onClick={() => openPanel("notifications")}
+              />
+              <SettingsGroupRow
+                icon="lightning"
+                label={t("settings.row.smartNotifications")}
+                value={smartNotifValue}
+                onClick={() => openPanel("notifications")}
+              />
+            </SettingsGroup>
+
+            <SettingsGroup title={t("settings.group.support")} icon="chat-circle">
+              <SettingsGroupRow icon="book-open" label={t("settings.row.help")} onClick={() => openPanel("guide")} />
+              <SettingsGroupRow
+                icon="file-text"
+                label={t("settings.row.privacyPolicy")}
+                onClick={() => {
+                  handleClose();
+                  navigate("/privacy");
+                }}
+              />
+              <SettingsGroupRow icon="scroll" label={t("settings.row.about", { appName: t("brand.appName") })} onClick={() => openPanel("support")} />
+            </SettingsGroup>
+
+            <SettingsGroup title={t("settings.group.danger")} icon="warning">
+              {isLoggedIn ? (
+                <SettingsGroupRow
+                  icon="arrows-clockwise"
+                  label={t("settings.row.signOut")}
+                  danger
+                  disabled={signingOut}
+                  onClick={() => onSignOut?.()}
+                />
+              ) : null}
+              <SettingsGroupRow
+                icon="warning"
+                label={t("settings.row.deleteData")}
+                danger
+                onClick={() => onDeleteData?.()}
+              />
+            </SettingsGroup>
           </div>
-        </div>
-      ) : (
-        <div className="ct-stack">
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm !w-auto self-start"
-            onClick={() => onSelect(null)}
-          >
-            ← {t("profileHub.settingsBack")}
-          </button>
-          <Caption className="block">{t(activeGroup.hintKey)}</Caption>
-          {activeGroup.panels.length > 1 && (
-            <div className="ct-profile-subnav" role="tablist">
-              {activeGroup.panels.map((panelId) => (
-                <button
-                  key={panelId}
-                  type="button"
-                  role="tab"
-                  aria-selected={openId === panelId}
-                  className={`ct-profile-subnav-btn${openId === panelId ? " ct-profile-subnav-active" : ""}`}
-                  onClick={() => onSelect(panelId)}
-                >
-                  {t(`profileHub.panel.${panelId}`)}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="ct-profile-accordion-panel">{renderPanel(openId)}</div>
-          {activeGroup.privacyLink && (
+        ) : (
+          <div className="ct-stack">
             <button
               type="button"
-              className="ct-btn ct-btn-ghost ct-btn-sm !w-auto"
-              onClick={() => navigate("/privacy")}
+              className="ct-btn ct-btn-ghost ct-btn-sm !w-auto self-start"
+              onClick={() => onSelect(null)}
             >
-              {t("profileHub.openPrivacy")}
+              ← {t("profileHub.settingsBack")}
             </button>
-          )}
-        </div>
-      )}
-    </Modal>
+            <div className="ct-profile-accordion-panel">{renderPanel(openId)}</div>
+          </div>
+        )}
+      </Modal>
+
+      <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
+    </>
   );
 }

@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { buildLendingDashboard } from "../../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
-import { sealAndDownloadAgreement } from "../../../utils/agreementExport.js";
+import { sealAndDownloadAgreement, generateAgreementPdfBase64 } from "../../../utils/agreementExport.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
-import { Button } from "../../index.js";
+import { Button, Card } from "../../index.js";
 import {
   generateLendingShareCardHtml,
   lendingSharePlainText,
@@ -14,6 +14,8 @@ import {
 } from "../../../utils/lendingShareCard.js";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { LendingDetailCharts } from "./LendingDetailCharts.jsx";
+import LendingActionFlow from "./LendingActionFlow.jsx";
+import LegalDetailsModal from "../modals/LegalDetailsModal.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
@@ -21,6 +23,14 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateRepaymentMode } from "../../../i18n/domainLabels.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { useNavigate } from "react-router-dom";
+import {
+  isESignConfigured,
+  createLeegalityDocument,
+  checkLeegalityStatus,
+  buildESignFallbackNoteKey,
+} from "../../../services/lending/leegalityESign.js";
+import { getStampGuidance, ESTAMP_RESOURCES } from "../../../utils/estampGuidance.js";
+import { formatInr } from "../../../constants/symbols.js";
 
 export default function LendingDetailDashboard({
   lending,
@@ -35,6 +45,11 @@ export default function LendingDetailDashboard({
   const { settings, updateLending, allLendings } = useCommitTrack();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [legalOpen, setLegalOpen] = useState(false);
+  const [stampOpen, setStampOpen] = useState(false);
+  const [esignLoading, setEsignLoading] = useState(false);
+  const [esignError, setEsignError] = useState("");
+  const [esignUrl, setEsignUrl] = useState("");
   const canPrintAgreement = tierHasFeature("legal_agreement", settings);
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
@@ -60,8 +75,59 @@ export default function LendingDetailDashboard({
   const interestTypeLabel =
     lending.interestType === "simple" ? t("lending.detail.interestSimple") : lending.interestType || "";
 
+  const stampState = lending.agreementCity || settings.userCity || "";
+  const stampNote = getStampGuidance(stampState).note;
+
+  const handleStartESign = async () => {
+    if (!lending.borrowerFullName || !lending.borrowerPhone) {
+      setEsignError(t("lending.esign.missingDetails"));
+      return;
+    }
+    setEsignLoading(true);
+    setEsignError("");
+    const pdfBase64 = await generateAgreementPdfBase64({ ...lending, agreementText: agreementDraft }, settings);
+    const result = await createLeegalityDocument({
+      pdfBase64,
+      signerName: lending.borrowerFullName,
+      signerEmail: lending.borrowerEmail || "",
+      signerPhone: lending.borrowerPhone,
+      documentTitle: t("lending.esign.documentTitle", {
+        name: lending.personName,
+        amount: formatInr(Number(lending.principalAmount) || 0),
+      }),
+    });
+    setEsignLoading(false);
+    if (result.error) {
+      setEsignError(result.error);
+      return;
+    }
+    updateLending(lending.id, {
+      esignStatus: "pending",
+      esignDocumentId: result.documentId,
+      esignProvider: "leegality",
+    });
+    if (result.signingUrl) window.open(result.signingUrl, "_blank", "noopener,noreferrer");
+    setEsignUrl(result.signingUrl || "");
+  };
+
+  const handleCheckEsign = async () => {
+    const status = await checkLeegalityStatus(lending.esignDocumentId);
+    if (status?.status === "COMPLETED") {
+      updateLending(lending.id, {
+        esignStatus: "completed",
+        esignCompletedAt: status.completedAt || new Date().toISOString(),
+      });
+    }
+  };
+
   return (
     <div className="ct-stack">
+      <LendingActionFlow
+        lending={lending}
+        settings={settings}
+        onScrollToEsign={() => document.getElementById("lending-esign-section")?.scrollIntoView({ behavior: "smooth" })}
+      />
+
       <div className="ct-row-wrap">
         <span className={`ct-status ${trustStatusClass}`}>
           {t("lending.detail.trust", { score: dash.trustScore })}
@@ -167,6 +233,52 @@ export default function LendingDetailDashboard({
         </ToneSurface>
       )}
 
+      {!lending.borrowerFullName ? (
+        <ToneSurface tone="warning">
+          <Caption className="block">{t("lending.legal.incompletePrompt")}</Caption>
+          <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setLegalOpen(true)}>
+            {t("lending.legal.openModal")}
+          </Button>
+        </ToneSurface>
+      ) : null}
+
+      <section id="lending-esign-section" className="ct-stack-sm">
+        <Body className="text-xs font-semibold">{t("lending.esign.title")}</Body>
+        {lending.esignStatus === "completed" ? (
+          <ToneSurface tone="success">
+            <Caption className="block">{t("lending.esign.completed")}</Caption>
+            <Caption className="block">
+              {lending.esignCompletedAt || "—"} · {lending.esignDocumentId || "—"}
+            </Caption>
+          </ToneSurface>
+        ) : isESignConfigured() ? (
+          <Card className="ct-stack-sm">
+            <Caption className="block">{t("lending.esign.explainer")}</Caption>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={esignLoading || !lending.borrowerFullName || !lending.borrowerPhone}
+              onClick={handleStartESign}
+            >
+              {esignLoading ? t("common.loading") : t("lending.esign.startCta")}
+            </Button>
+            {esignUrl ? (
+              <Button type="button" variant="outline" size="sm" onClick={handleCheckEsign}>
+                {t("lending.esign.checkStatus")}
+              </Button>
+            ) : null}
+          </Card>
+        ) : (
+          <Caption className="block">{t(buildESignFallbackNoteKey())}</Caption>
+        )}
+        {esignError ? (
+          <ToneSurface tone="danger">
+            <Caption>{esignError}</Caption>
+          </ToneSurface>
+        ) : null}
+      </section>
+
       <textarea
         className={`${fieldClass} min-h-[64px] w-full`}
         value={agreementDraft}
@@ -185,7 +297,34 @@ export default function LendingDetailDashboard({
         </button>
       )}
 
+      <div className="ct-stack-sm">
+        <button type="button" className="ct-link text-left" onClick={() => setStampOpen((v) => !v)}>
+          {t("lending.stamp.toggle")}
+        </button>
+        {stampOpen ? (
+          <Card className="ct-stack-sm">
+            <Caption className="font-semibold block">{t("lending.stamp.requiredTitle")}</Caption>
+            <Body className="!text-sm">{stampNote}</Body>
+            <div className="ct-row-wrap gap-2">
+              {ESTAMP_RESOURCES.map((res) => (
+                <Button
+                  key={res.url}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open(res.url, "_blank", "noopener,noreferrer")}
+                >
+                  {t(res.labelKey)}
+                </Button>
+              ))}
+            </div>
+            <Caption className="block">{t("lending.stamp.footer")}</Caption>
+          </Card>
+        ) : null}
+      </div>
+
       <ProofSection fileRef={fileRef} proofs={lending.proofs} onAddProof={onAddProof} t={t} />
+      <LegalDetailsModal lending={lending} open={legalOpen} onClose={() => setLegalOpen(false)} />
     </div>
   );
 }

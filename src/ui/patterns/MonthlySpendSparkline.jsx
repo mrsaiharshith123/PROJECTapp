@@ -60,7 +60,8 @@ export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBud
             strokeWidth={2.5}
             dot={false}
             activeDot={{ r: 4, stroke: color, fill: "#0f172a" }}
-            isAnimationActive={false}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </LineChart>
       </ResponsiveContainer>

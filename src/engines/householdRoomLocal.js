@@ -126,3 +126,23 @@ export function joinLocalHouseholdRoom({ userId, displayName, inviteCode, member
     local: true,
   };
 }
+
+/**
+ * @param {{ userId: string, roomId: string }} params
+ */
+export function leaveLocalHouseholdRoom({ userId, roomId }) {
+  const reg = readRegistry();
+  const entry = Object.entries(reg).find(([, r]) => r.roomId === roomId);
+  if (!entry) return { ok: false };
+  const [code, room] = entry;
+  const isOwner = room.ownerId === userId;
+  if (isOwner) {
+    delete reg[code];
+  } else {
+    room.members = (room.members || []).filter((m) => m.userId !== userId);
+    if (room.members.length === 0) delete reg[code];
+    else reg[code] = room;
+  }
+  writeRegistry(reg);
+  return { ok: true };
+}

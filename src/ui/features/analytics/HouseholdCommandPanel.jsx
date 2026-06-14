@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
 import { useFamilyCommandIntel } from "../../../hooks/useFamilyCommandIntel.js";
+import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
@@ -9,11 +11,12 @@ import { fetchUserHouseholdRoom } from "../../../services/household/householdRoo
 import { getLocalHouseholdRoomById } from "../../../engines/householdRoomLocal.js";
 import { householdMemberLimit } from "../../../engines/householdRoom.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, Heading, Caption, Body, Badge, Button } from "../../index.js";
+import { Card, Heading, Caption, Body, Badge, Button, InfoTip, GuideButton } from "../../index.js";
 import { insightToneClass } from "../../tokens/severity.js";
 import HouseholdSetupModal from "../modals/HouseholdSetupModal.jsx";
 import HouseholdDependentsEditorModal from "../modals/HouseholdDependentsEditorModal.jsx";
 import HouseholdFamilyBadge from "../../patterns/HouseholdFamilyBadge.jsx";
+import { useCountUp } from "../../hooks/useCountUp.js";
 
 const TIER_KEYS = {
   thriving: "family.command.tierThriving",
@@ -24,8 +27,10 @@ const TIER_KEYS = {
 
 /** Unified household hub + command center — room, members, stability, outlook. */
 export default function HouseholdCommandPanel() {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const cmd = useFamilyCommandIntel();
+  const stable = useStabilityIntel();
   const { settings, updateSettings } = useCommitTrack();
   const { user, isLoggedIn } = useAuth();
   const [setupOpen, setSetupOpen] = useState(false);
@@ -79,11 +84,18 @@ export default function HouseholdCommandPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on room + sign-in
   }, [isFamily, isLoggedIn, user?.id, roomId]);
 
+  const countedFreeCash = useCountUp(
+    Math.max(0, Math.round(cmd?.household?.combinedFreeCash ?? 0)),
+    900,
+  );
+  const countedBurden = useCountUp(Math.max(0, Math.round(cmd?.household?.combinedBurden ?? 0)), 900);
+
   if (!cmd || !isFamily) return null;
 
   const { stability, household, forecast, dependency, insights, emergencyPct, sharedGoals } = cmd;
   const tierKey = TIER_KEYS[stability.tier] || TIER_KEYS.steady;
   const dependentCount = Math.max(0, Number(settings.dependents) || 0);
+  const runwayMonths = stable.survival?.survivalMonths;
 
   return (
     <>
@@ -116,34 +128,42 @@ export default function HouseholdCommandPanel() {
         {!roomId ? (
           <div className="ct-hero-inset ct-stack-sm">
             <Caption className="block">{t("household.hub.notLinked")}</Caption>
-            <Button type="button" variant="primary" size="sm" className="!w-auto" onClick={() => setSetupOpen(true)}>
-              {t("household.hub.setupCta")}
-            </Button>
+            <div className="ct-row gap-2 flex-wrap">
+              <Button type="button" variant="primary" size="sm" className="!w-auto" onClick={() => setSetupOpen(true)}>
+                {t("household.hub.setupCta")}
+              </Button>
+              <Button type="button" variant="outline" size="sm" className="!w-auto" onClick={() => navigate("/family-room")}>
+                {t("profile.familyRoomLink")}
+              </Button>
+            </div>
           </div>
-        ) : null}
+        ) : (
+          <Button type="button" variant="outline" size="sm" className="!w-auto self-start" onClick={() => navigate("/family-room")}>
+            {t("profile.familyRoomLink")}
+          </Button>
+        )}
 
-        <div className="ct-family-command-score ct-hero-inset ct-hero-inset-financial">
-          <Caption className="block">{t("family.command.stabilityScore")}</Caption>
-          <Body className="ct-numeral font-bold text-2xl text-[var(--ct-accent)]">{stability.score}</Body>
-          <Caption className="block mt-1 opacity-80">
-            {dependency.incomeConcentrationPct != null
-              ? t("family.command.incomeConcentration", { pct: dependency.incomeConcentrationPct })
-              : null}
-          </Caption>
+        <div className="ct-grid-2 gap-2">
+          <div className="ct-hero-inset ct-hero-inset-financial" data-guide="free-cash">
+            <Caption className="block">{t("family.command.householdFree")}</Caption>
+            <Body
+              className={`ct-amount-lg ct-numeral ${household.combinedFreeCash < 0 ? "ct-text-danger" : "ct-text-success"}`}
+            >
+              {formatInr(countedFreeCash)}
+            </Body>
+          </div>
+          <div className="ct-hero-inset ct-hero-inset-financial" data-guide="survival-months">
+            <Caption className="block">{t("home.strip.familyRunway")}</Caption>
+            <Body className="ct-amount-lg ct-numeral">
+              {runwayMonths != null ? `${runwayMonths}m` : "—"}
+            </Body>
+          </div>
         </div>
 
         <div className="ct-grid-2 gap-2">
           <div className="ct-hero-inset ct-hero-inset-financial">
             <Caption className="block">{t("family.command.obligations")}</Caption>
-            <Body className="ct-numeral font-semibold">{formatInr(household.combinedBurden)}</Body>
-          </div>
-          <div className="ct-hero-inset ct-hero-inset-financial">
-            <Caption className="block">{t("family.command.householdFree")}</Caption>
-            <Body
-              className={`ct-numeral font-semibold ${household.combinedFreeCash < 0 ? "ct-text-danger" : "ct-text-success"}`}
-            >
-              {formatInr(household.combinedFreeCash)}
-            </Body>
+            <Body className="ct-numeral font-semibold">{formatInr(countedBurden)}</Body>
           </div>
           <div className="ct-hero-inset ct-hero-inset-financial">
             <Caption className="block">{t("family.command.dependents")}</Caption>
@@ -155,20 +175,54 @@ export default function HouseholdCommandPanel() {
               {emergencyPct != null ? `${emergencyPct}%` : "—"}
             </Body>
           </div>
+          {dependency.incomeConcentrationPct != null ? (
+            <div className="ct-hero-inset ct-hero-inset-financial">
+              <Caption className="block">
+                {t("family.command.incomeShare")}
+                <InfoTip textKey="family.command.incomeShareHint" />
+              </Caption>
+              <Body className="ct-numeral font-semibold">{dependency.incomeConcentrationPct}%</Body>
+            </div>
+          ) : null}
         </div>
 
         {roomId ? (
           <div className="ct-household-hub-room ct-stack-sm">
-            <div className="ct-row-between gap-2 flex-wrap">
-              <Caption className="block font-semibold">{t("household.commandHub.roomSection")}</Caption>
+            <div className="ct-row-between gap-2 flex-wrap items-center">
+              <Heading level={4} className="!text-sm">
+                {t("household.commandHub.roomSection")}
+                <InfoTip textKey="household.hub.privacyNote" />
+              </Heading>
+              <GuideButton
+                labelKey="guide.household.roomsLabel"
+                steps={[
+                  {
+                    selector: "[data-guide='room-invite-code']",
+                    titleKey: "guide.household.inviteTitle",
+                    textKey: "guide.household.inviteText",
+                  },
+                  {
+                    selector: "[data-guide='room-share-toggle']",
+                    titleKey: "guide.household.shareTitle",
+                    textKey: "guide.household.shareText",
+                  },
+                  {
+                    selector: "[data-guide='household-outlook']",
+                    titleKey: "guide.household.outlookTitle",
+                    textKey: "guide.household.outlookText",
+                  },
+                ]}
+              />
               {syncing ? <Caption>{t("common.loading")}</Caption> : null}
             </div>
 
             {isOwner && settings.householdInviteCode ? (
-              <div className="ct-hero-inset ct-stack-sm">
-                <Caption className="block">{t("household.hub.inviteCode")}</Caption>
+              <div className="ct-hero-inset ct-stack-sm" data-guide="room-invite-code">
+                <Caption className="block">
+                  {t("household.hub.inviteCode")}
+                  <InfoTip textKey="household.hub.inviteHint" />
+                </Caption>
                 <Body className="ct-numeral font-bold tracking-widest">{settings.householdInviteCode}</Body>
-                <Caption className="block ct-text-muted">{t("household.hub.inviteHint")}</Caption>
               </div>
             ) : null}
 
@@ -190,9 +244,7 @@ export default function HouseholdCommandPanel() {
               ))
             )}
 
-            <Caption className="block ct-text-muted">{t("household.hub.privacyNote")}</Caption>
-
-            <div className="ct-row gap-2 flex-wrap pt-1">
+            <div className="ct-row gap-2 flex-wrap pt-1" data-guide="room-share-toggle">
               <label className="ct-row gap-2 items-center text-sm">
                 <input
                   type="checkbox"
@@ -216,7 +268,7 @@ export default function HouseholdCommandPanel() {
         ) : null}
 
         {(forecast.heavyMonths?.length > 0 || sharedGoals.length > 0 || insights.length > 0) && (
-          <div className="ct-household-hub-outlook ct-stack-sm">
+          <div className="ct-household-hub-outlook ct-stack-sm" data-guide="household-outlook">
             <Caption className="block font-semibold">{t("household.commandHub.outlookSection")}</Caption>
 
             {forecast.heavyMonths?.length > 0 && (

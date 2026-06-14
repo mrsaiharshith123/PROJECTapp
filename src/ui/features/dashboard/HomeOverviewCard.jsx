@@ -19,7 +19,10 @@ import { HeroMonthCard } from "../HeroMonthCard.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatMonthYear } from "../../../i18n/formatLocale.js";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
+import { computeMomentumScore } from "../../../engines/momentumScore.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import HouseholdDependentsEditorModal from "../modals/HouseholdDependentsEditorModal.jsx";
+import { useCountUp } from "../../hooks/useCountUp.js";
 
 export default function HomeOverviewCard() {
   const [editHouseholdOpen, setEditHouseholdOpen] = useState(false);
@@ -33,6 +36,7 @@ export default function HomeOverviewCard() {
     getEffectiveStatus,
     getEffectiveLendingStatus,
     todayStr,
+    monthlySnapshots,
   } = useCommitTrack();
   const intel = useCommitIntel();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
@@ -95,6 +99,11 @@ export default function HomeOverviewCard() {
           )
         : null;
 
+  const momentum = useMemo(() => {
+    if (isFamily) return null;
+    return computeMomentumScore({ monthlySnapshots, commitments, getEffectiveStatus });
+  }, [isFamily, monthlySnapshots, commitments, getEffectiveStatus]);
+
   const statusLine = pressure?.score != null ? (
     <div className="ct-stack-sm !gap-1.5">
       <p className="ct-body !text-xs leading-snug">
@@ -114,6 +123,14 @@ export default function HomeOverviewCard() {
       {spendTip ? (
         <p className={`ct-body !text-xs leading-snug ${guidance?.isTight ? "ct-text-warning" : "ct-text-secondary"}`}>
           {spendTip}
+        </p>
+      ) : null}
+      {momentum ? (
+        <p className="ct-body !text-xs leading-snug ct-row gap-1.5 items-center">
+          <CtIcon name="chart-line-up" size={16} context="status" />
+          <span>
+            {t(momentum.labelKey)} · {t("home.momentum.streak", { months: momentum.streakMonths })}
+          </span>
         </p>
       ) : null}
     </div>
@@ -142,6 +159,11 @@ export default function HomeOverviewCard() {
 
   const spendTitleKey = isFamily ? "home.salarySpendTitleHousehold" : "home.salarySpendTitle";
 
+  const countedFreeCash = useCountUp(Math.max(0, Math.round(monthSummary.freeCash ?? 0)), 900);
+  const countedScheduled = useCountUp(Math.max(0, Math.round(monthSummary.scheduledThisMonth ?? 0)));
+  const countedPaid = useCountUp(Math.max(0, Math.round(monthSummary.paidThisMonth ?? 0)));
+  const countedUnpaid = useCountUp(Math.max(0, Math.round(monthSummary.dueThisMonth ?? 0)));
+
   return (
     <>
       <HeroMonthCard
@@ -151,12 +173,12 @@ export default function HomeOverviewCard() {
         householdCount={isFamily ? Math.max(0, Number(settings.dependents) || 0) : undefined}
         onEditHousehold={isFamily ? () => setEditHouseholdOpen(true) : undefined}
         scopeBadge={scopeBadge}
-        scheduled={formatInr(monthSummary.scheduledThisMonth)}
-        paid={formatInr(monthSummary.paidThisMonth)}
-        unpaid={formatInr(monthSummary.dueThisMonth)}
+        scheduled={formatInr(countedScheduled)}
+        paid={formatInr(countedPaid)}
+        unpaid={formatInr(countedUnpaid)}
         variableSpent={formatInr(monthSummary.spentThisMonth)}
         freeCashLabel={freeCashLabel}
-        freeCashValue={monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
+        freeCashValue={monthSummary.freeCash != null ? formatInr(countedFreeCash) : EM_DASH}
         freeCashWarn={monthSummary.freeCash != null && monthSummary.freeCash < 0}
         spendPct={spendPct}
         spendTitleKey={spendTitleKey}

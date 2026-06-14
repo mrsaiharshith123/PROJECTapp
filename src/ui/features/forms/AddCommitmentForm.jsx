@@ -1,4 +1,4 @@
-import { Card, InfoTip, Button, PageHeader } from "../../index.js";
+import { Card, InfoTip, Button, PageShell } from "../../index.js";
 import { Caption } from "../../primitives/Text.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import ChitFundFields from "./ChitFundFields.jsx";
@@ -41,8 +41,11 @@ export default function AddCommitmentForm({
   const copy = useCopy();
 
   return (
-    <div className="ct-page ct-form-narrow">
-      <PageHeader title={entryType === "variable" ? t("add.variableTitle") : copy.addBill} eyebrow={t("add.newEntry")} />
+    <PageShell
+      title={entryType === "variable" ? t("add.variableTitle") : copy.addBill}
+      subtitle={t("add.newEntry")}
+      className="ct-form-narrow"
+    >
 
       <Card className="ct-stack-lg">
         <SegmentedControl
@@ -320,6 +323,6 @@ export default function AddCommitmentForm({
         </ul>
       </Card>
       )}
-    </div>
+    </PageShell>
   );
 }

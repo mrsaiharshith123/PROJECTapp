@@ -33,7 +33,7 @@ npm run audit        # full quality gate before PR
 |---------|---------|
 | `npm run dev` | Dev server |
 | `npm run build` | Production build + PWA |
-| `npm run test` | Vitest (**264** tests, 85 files) |
+| `npm run test` | Vitest (**386** tests, 141 files) |
 | `npm run test:sync` | Snapshot + cloud backup meta tests |
 | `npm run test:engines` | Engine tests only |
 | `npm run test:utils` | Utils tests only |

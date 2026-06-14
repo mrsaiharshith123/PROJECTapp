@@ -114,7 +114,16 @@ export default function ProfileFinancialHero({
       <button type="button" className="ct-profile-hero-identity" onClick={onOpenAccount}>
         <ProfileAvatar settings={settings} updateSettings={updateSettings} size="lg" compact />
         <div className="ct-profile-hero-text">
-          <Heading level={2} className="!text-xl truncate">
+          <Heading
+            level={2}
+            className="truncate"
+            style={{
+              fontFamily: "var(--ct-font-display)",
+              fontSize: "1.5rem",
+              fontWeight: 700,
+              color: "var(--ct-life-heading)",
+            }}
+          >
             {name}
           </Heading>
           <Caption className="block truncate">
@@ -188,7 +197,7 @@ export default function ProfileFinancialHero({
                 <span className="ct-profile-chip-value">{chip.value}</span>
               )}
               {!privacyMode && chip.subKey ? (
-                <Caption className="block ct-profile-chip-sub">
+                <Caption className="block ct-profile-chip-sub opacity-75">
                   {t(chip.subKey, chip.subParams || {})}
                 </Caption>
               ) : null}

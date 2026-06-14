@@ -21,7 +21,9 @@ const MUST_NOT_SAY_DEFERRED = [
   { pattern: /\b352\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b358\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b366\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b373\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b81\/81\b engine modules/i, note: "Engine test count stale — run audit:engine-tests" },
+  { pattern: /\b86\/86\b engine modules/i, note: "Engine test count stale — run audit:engine-tests" },
   { pattern: /FamilyCommandCenter\.jsx.*Home|Family command center \(Home\)/i, note: "FamilyCommandCenter removed from Home — use HouseholdCommandPanel" },
   { pattern: /HouseholdHubSection/i, note: "HouseholdHubSection removed — use HouseholdCommandPanel on Analytics" },
   { pattern: /SubscriptionsAuditPanel/i, note: "SubscriptionsAuditPanel removed — delete from status doc" },
@@ -36,7 +38,7 @@ const MUST_EXIST = [
   { pattern: /householdRoom|HouseholdCommandPanel|household rooms/i, note: "Document household rooms / command panel" },
   { pattern: /resolveDataProfileScope|household combined/i, note: "Document family household data scope" },
   { pattern: /HouseholdDependentsEditorModal|HouseholdFamilyBadge/i, note: "Document household dependents editor + badge" },
-  { pattern: /373.*test|test.*373/i, note: "Document current test count (373)" },
+  { pattern: /386.*test|test.*386/i, note: "Document current test count (386)" },
 ];
 
 function main() {

@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 14 June 2026 (Family Financial OS Phase 1, 373 tests / 86 engines).
+Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
 
 ## V1 product scope
 
@@ -30,7 +30,11 @@ Last reviewed: 14 June 2026 (Family Financial OS Phase 1, 373 tests / 86 engines
 | Household rooms (create/join, invite code) | ✅ Local-first | `householdRoom*.js`, `HouseholdSetupModal.jsx`, `HouseholdRoomBridge.jsx` |
 | Room seat limit (2–20 at create) | ✅ | `settings.householdMemberLimit`; owner can edit in dependents modal |
 | Dependents count (0–99) | ✅ | `settings.dependents`; pencil edit on Home/Analytics badge |
-| Home safe-to-spend widget | ✅ | `SafeToSpendCard.jsx` on Home when `salaryCreditDay` set |
+| Home insights card + hero status block | ✅ | `HomeInsightsSection.jsx`, `HeroMonthCard.jsx` — titled Insights with curved panel |
+| Modal portal (all sheets) | ✅ | `Modal.jsx` — portals to `document.body`; Control center fits viewport |
+| Single vs family income fields | ✅ | `ProfilePersonalSection.jsx` — second income (family) / side income (single) |
+| Combined income scope | ✅ | `combinedIncome.js` — secondary income only in family household |
+| Dependents persist on mode switch | ✅ | `useCommitTrackCrud.js` — no reset when toggling household scope |
 | Paycheck page `/paycheck` | ✅ | `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` |
 | Salary-day bridge | ✅ | `SalaryDayBridge.jsx` — auto-navigate + goal auto-save on credit day |
 | Bill health (per-bill + portfolio) | ✅ | `engines/billHealth.js`, `BillCard.jsx`, portfolio score on `CommitmentsBillsTab.jsx` |
@@ -96,14 +100,14 @@ Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZO
 
 ## Tests & quality
 
-- **373** unit tests (`npm test`) — **86/86** engine modules have dedicated tests (`npm run audit:engine-tests`)
+- **386** unit tests in **141** files (`npm test`) — **90/90** engine modules have dedicated tests (`npm run audit:engine-tests`)
 - Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
 - Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, tier gates, insight i18n, code+depth, tests, types, build
 - Pre-release bundle: `npm run audit:pre-release` — full gate + governance + docs-sync + engine-test count
 - Strict: `npm run audit -- --strict` — also fails on i18n hardcoded + English fallback threshold
 - Family/household: `npm run audit:household` — mode isolation + profile-scope wiring
 - Advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
-- Engine coverage: `npm run audit:engine-tests` (86/86) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
+- Engine coverage: `npm run audit:engine-tests` (90/90) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
 
 ## Related docs
 

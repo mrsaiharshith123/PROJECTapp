@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, Caption, Heading, inputClassName } from "../../index.js";
+import { Card, Caption, Heading, Body, Button, inputClassName } from "../../index.js";
+import { formatInr } from "../../../constants/symbols.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
@@ -178,7 +179,7 @@ export default function ProfilePersonalSection({
           />
         </ProfileField>
 
-        {userMode === "salaried" && (
+        {userMode === "salaried" && salariedFamily && (
           <ProfileField label={t("profile.secondIncome")} hint={t("profile.secondIncomeHint")}>
             <input
               type="number"
@@ -227,6 +228,10 @@ export default function ProfilePersonalSection({
               {t("profile.paycheckLink")}
             </Link>
           </ProfileField>
+        )}
+
+        {userMode === "salaried" && !salariedFamily && (
+          <SideIncomeSection settings={settings} updateSettings={updateSettings} t={t} profileInputClass={profileInputClass} />
         )}
 
         <ProfileField label={t("profile.liquidAssets")} hint={t("profile.liquidAssetsHint")}>
@@ -282,5 +287,102 @@ export default function ProfilePersonalSection({
 
       {showAccount && <AccountSettingsBlock />}
     </Card>
+  );
+}
+
+const SIDE_INCOME_TYPES = ["rental", "freelance", "tuition", "other"];
+
+function SideIncomeSection({ settings, updateSettings, t, profileInputClass }) {
+  const sideIncomes = settings.sideIncomes || [];
+  const [draft, setDraft] = useState({ label: "", monthlyAmount: "", type: "other" });
+  const [adding, setAdding] = useState(false);
+
+  const saveEntry = () => {
+    const amt = Math.max(0, Number(draft.monthlyAmount) || 0);
+    if (!draft.label.trim() || amt <= 0) return;
+    updateSettings({
+      sideIncomes: [
+        ...sideIncomes,
+        {
+          id: `side-${Date.now()}`,
+          label: draft.label.trim(),
+          monthlyAmount: amt,
+          type: SIDE_INCOME_TYPES.includes(draft.type) ? draft.type : "other",
+        },
+      ],
+    });
+    setDraft({ label: "", monthlyAmount: "", type: "other" });
+    setAdding(false);
+  };
+
+  return (
+    <div className="ct-stack-sm">
+      <Heading level={3}>{t("profile.sideIncome.title")}</Heading>
+      <Caption className="block">{t("profile.sideIncome.hint")}</Caption>
+      {sideIncomes.length === 0 ? (
+        <Caption>{t("profile.sideIncome.empty")}</Caption>
+      ) : (
+        sideIncomes.map((inc) => (
+          <div key={inc.id} className="ct-row-between gap-2 py-1">
+            <div className="min-w-0">
+              <Body className="font-semibold truncate">{inc.label}</Body>
+              <Caption>
+                {t(`profile.sideIncome.type.${inc.type}`)} · {formatInr(Number(inc.monthlyAmount) || 0)}/mo
+              </Caption>
+            </div>
+            <button
+              type="button"
+              className="ct-link !text-xs shrink-0"
+              onClick={() =>
+                updateSettings({ sideIncomes: sideIncomes.filter((s) => s.id !== inc.id) })
+              }
+            >
+              {t("common.delete")}
+            </button>
+          </div>
+        ))
+      )}
+      {adding ? (
+        <div className="ct-stack-sm">
+          <input
+            className={profileInputClass}
+            value={draft.label}
+            onChange={(e) => setDraft((p) => ({ ...p, label: e.target.value }))}
+            placeholder={t("profile.sideIncome.labelPh")}
+          />
+          <input
+            type="number"
+            min="0"
+            className={profileInputClass}
+            value={draft.monthlyAmount}
+            onChange={(e) => setDraft((p) => ({ ...p, monthlyAmount: e.target.value }))}
+            placeholder={t("profile.sideIncome.amountPh")}
+          />
+          <select
+            className={profileInputClass}
+            value={draft.type}
+            onChange={(e) => setDraft((p) => ({ ...p, type: e.target.value }))}
+          >
+            {SIDE_INCOME_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {t(`profile.sideIncome.type.${type}`)}
+              </option>
+            ))}
+          </select>
+          <div className="ct-row gap-2">
+            <Button type="button" size="sm" onClick={saveEntry}>
+              {t("common.save")}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setAdding(false)}>
+              {t("common.cancel")}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button type="button" variant="outline" size="sm" onClick={() => setAdding(true)}>
+          {t("profile.sideIncome.add")}
+        </Button>
+      )}
+    </div>
   );
 }

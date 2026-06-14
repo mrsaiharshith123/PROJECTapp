@@ -53,12 +53,6 @@ export default function LendingProfileCard({ totals, trustScore, dealCount }) {
   const trustDisplay = hasTrust ? `${trustScore}/100` : t("profileHub.widget.trustEmpty");
 
   const metrics = [
-    { label: t("lending.profile.lentTotal"), value: formatInr(totals.lentOut) },
-    {
-      label: t("lending.profile.borrowedTotal"),
-      value: formatInr(totals.borrowedIn),
-      valueClass: "ct-hero-metric-accent",
-    },
     { label: t("lending.profile.lentOutstanding"), value: formatInr(totals.lentOutstanding) },
     {
       label: t("lending.profile.borrowedOutstanding"),

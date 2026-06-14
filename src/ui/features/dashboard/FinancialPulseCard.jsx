@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from "react";
-import { useNumericChange } from "../../hooks/useNumericChange.js";
+import { useMemo, useState } from "react";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
@@ -12,6 +11,9 @@ import { Card } from "../../primitives/Card.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { TabContent } from "../../patterns/TabContent.jsx";
+import { GuideButton } from "../../patterns/GuideButton.jsx";
+import { PressureRing } from "../../patterns/PressureRing.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
 import { Heading, Caption } from "../../primitives/Text.jsx";
 import { Surface } from "../../primitives/Surface.jsx";
@@ -22,6 +24,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { joinEngineMessages, translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
 import { tierHasFeature, aheadForecastMonthsForTier } from "../../../utils/tierAccess.js";
+import { pressureTone } from "../../utils/statusColor.js";
 
 function mergeTips(intel, stable, settings) {
   const seenIds = new Set();
@@ -109,10 +112,26 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
   const defaultTab = showPressure && (stress?.top?.length || (showHouseholdPulse && family?.grouped)) ? "pressure" : "snapshot";
   const [tab, setTab] = useState(defaultTab);
   const [shareHint, setShareHint] = useState("");
-  const scoreRef = useRef(null);
-  useNumericChange(intel.stability.score, scoreRef);
 
   const visibleTabs = tabDefs.filter((t) => t.id !== "pressure" || showPressure);
+
+  const pulseGuideSteps = [
+    {
+      selector: "[data-guide='pressure-score']",
+      titleKey: "guide.pulse.pressureTitle",
+      textKey: "guide.pulse.pressureText",
+    },
+    {
+      selector: "[data-guide='free-cash']",
+      titleKey: "guide.pulse.freeCashTitle",
+      textKey: "guide.pulse.freeCashText",
+    },
+    {
+      selector: "[data-guide='survival-months']",
+      titleKey: "guide.pulse.survivalTitle",
+      textKey: "guide.pulse.survivalText",
+    },
+  ];
 
   const groupedEntries = family?.grouped
     ? Object.entries(family.grouped)
@@ -127,10 +146,13 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
           {t("pulse.title")}
           <ConceptHelp conceptId="stability" />
         </Heading>
-        <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
+        <div className="ct-row gap-2 items-center flex-wrap shrink-0">
+          <GuideButton labelKey="guide.pulse.label" steps={pulseGuideSteps} />
+          <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
+        </div>
       </div>
 
-      {tab === "snapshot" && (
+      <TabContent tabId="snapshot" activeTab={tab}>
         <div className="ct-stack text-sm">
           <Caption className="block ct-guidance-micro">{t(microTipKey)}</Caption>
 
@@ -151,13 +173,12 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </div>
           )}
 
-          <div className="ct-row-between gap-2" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
+          <div className="ct-row-between gap-2" style={{ flexWrap: "wrap", alignItems: "flex-start" }} data-guide="pressure-score">
             <div>
               <Caption className="inline-flex items-center">
                 {t("pulse.pressure")}
                 <InfoTip text={CALC_HELP.pressureScore} />
               </Caption>
-              <Caption className="block mt-0.5 opacity-80">{t("pulse.pressureHint")}</Caption>
             </div>
             <div className="ct-stack-sm items-end shrink-0">
               <button
@@ -179,12 +200,10 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               >
                 {t("pulse.shareSummary")}
               </button>
-              <Badge tone={intel.stability.tone}>
+              <Badge tone={pressureTone(intel.stability.score) || intel.stability.tone}>
                 {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)}
               </Badge>
-              <Caption className="ct-numeral block opacity-80">
-                <span ref={scoreRef}>{intel.stability.score}</span>/100
-              </Caption>
+              <PressureRing score={intel.stability.score ?? 0} size={72} />
             </div>
           </div>
           {advancedPressure && pressureIntel?.emotionalHintKey && (
@@ -205,7 +224,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               <p className="text-xs text-gray-500">{t(emergency.messageKey)}</p>
               <div className="h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full"
+                  className="h-full bg-emerald-500 rounded-full ct-bar-animated"
                   style={{ width: `${Math.min(100, emergency.progressPercent)}%` }}
                 />
               </div>
@@ -213,9 +232,10 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
           )}
 
         </div>
-      )}
+      </TabContent>
 
-      {tab === "ahead" && ahead && (
+      {ahead ? (
+        <TabContent tabId="ahead" activeTab={tab}>
         <div className="ct-stack text-sm">
           <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
             <p className="text-xs text-gray-500 dark:text-slate-400">
@@ -371,9 +391,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </div>
           )}
         </div>
-      )}
+        </TabContent>
+      ) : null}
 
-      {tab === "pressure" && showPressure && (
+      <TabContent tabId="pressure" activeTab={tab}>
+        {showPressure ? (
         <div className="ct-stack">
           <p className="text-xs text-gray-500 dark:text-slate-400">
             {showHouseholdPulse ? t("pulse.householdPressure") : t("pulse.mainPressure")}
@@ -426,9 +448,10 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </p>
           )}
         </div>
-      )}
+        ) : null}
+      </TabContent>
 
-      {tab === "tips" && (
+      <TabContent tabId="tips" activeTab={tab}>
         <div className="ct-stack-sm">
           {tips.length === 0 ? (
             <p className="text-sm text-gray-500">{t("pulse.noTips")}</p>
@@ -450,7 +473,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </ul>
           )}
         </div>
-      )}
+      </TabContent>
     </Card>
   );
 }

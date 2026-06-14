@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { InstallAppBanner, ToneSurface, Body, Caption, Button } from "../../index.js";
+import { InstallAppBanner, ToneSurface, Body, Caption, Button, Modal } from "../../index.js";
+import { resolveUserMode, getIncomeLabelKey } from "../../../constants/modeExperience.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
+import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { resolveUserMode } from "../../../constants/modeExperience.js";
-import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 import ProfileNotificationsSection from "../profile/ProfileNotificationsSection.jsx";
 import ProfileBackupSection from "../profile/ProfileBackupSection.jsx";
 import ProfileHistorySection from "../profile/ProfileHistorySection.jsx";
@@ -34,8 +34,12 @@ function resolveSettingsSection(fromNav) {
 const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoggedIn, signOut } = useAuth();
+  const { isLoggedIn, signOut, user } = useAuth();
+  const { privacyMode, togglePrivacyMode } = useNetWorth();
   const [signingOut, setSigningOut] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const {
     commitments,
     allCommitments,
@@ -78,6 +82,39 @@ const Profile = () => {
     setOpenSection(section);
     setSettingsOpen(true);
   }, []);
+
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+      setSettingsOpen(false);
+    } finally {
+      setSigningOut(false);
+    }
+  }, [signOut]);
+
+  const handleDeleteData = useCallback(() => {
+    setDeleteError("");
+    setConfirmDelete(true);
+  }, []);
+
+  const confirmDeleteAll = useCallback(async () => {
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const { clearAllLocalData } = await import("../../../utils/migrateStorage.js");
+      const { deleteAccountData } = await import("../../../services/supabase/auth.js");
+      clearAllLocalData();
+      if (user?.id) await deleteAccountData(user.id);
+      setConfirmDelete(false);
+      setSettingsOpen(false);
+      window.location.reload();
+    } catch {
+      setDeleteError(t("backup.deleteFailed"));
+    } finally {
+      setDeleting(false);
+    }
+  }, [user, t]);
 
   const renderPanel = useCallback(
     (id) => {
@@ -194,6 +231,7 @@ const Profile = () => {
       )}
 
       <ProfileNetWorthSection />
+
       <ProfileAdminEntry />
 
       <ProfileSettingsSheet
@@ -202,28 +240,37 @@ const Profile = () => {
         openId={openSection}
         onSelect={setOpenSection}
         renderPanel={renderPanel}
+        settings={settings}
+        isLoggedIn={isLoggedIn}
+        privacyMode={privacyMode}
+        onTogglePrivacyMode={togglePrivacyMode}
+        onSignOut={handleSignOut}
+        onDeleteData={handleDeleteData}
+        signingOut={signingOut}
       />
 
-      <InstallAppBanner />
+      {confirmDelete ? (
+        <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && setConfirmDelete(false)}>
+          <div className="ct-stack-sm">
+            <Body className="!text-sm">
+              {t("backup.deleteModalBody", {
+                cloud: user?.id ? t("backup.deleteCloudModal") : t("backup.deleteSignout"),
+              })}
+            </Body>
+            {deleteError ? <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption> : null}
+            <div className="ct-row">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmDelete(false)} disabled={deleting}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="button" variant="danger" className="flex-1" onClick={confirmDeleteAll} disabled={deleting}>
+                {deleting ? t("common.deleting") : t("backup.deleteConfirm")}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
 
-      {isLoggedIn && (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full ct-reveal"
-          disabled={signingOut}
-          onClick={async () => {
-            setSigningOut(true);
-            try {
-              await signOut();
-            } finally {
-              setSigningOut(false);
-            }
-          }}
-        >
-          {signingOut ? t("profile.signingOut") : t("profile.signOut")}
-        </Button>
-      )}
+      <InstallAppBanner />
 
       <Caption className="text-center block pb-2">{t("profile.savedLocally")}</Caption>
       <ProfileBrandFooter />

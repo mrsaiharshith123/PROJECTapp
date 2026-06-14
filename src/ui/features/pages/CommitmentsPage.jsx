@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { PageHeader, Fab, SegmentedControl } from "../../";
+import { PageShell, Fab, SegmentedControl, TabContent } from "../../";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
@@ -126,53 +126,50 @@ const Commitments = () => {
   const cycleAlreadyPaid =
     paymentFor && isCurrentCyclePaid(paymentFor, todayStr, sortedCommitments);
 
+  const headerActions = (
+    <div className="ct-header-actions">
+      {pageTab === "spend" ? (
+        <>
+          <button
+            type="button"
+            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+            aria-label={t("bills.importBankStatement")}
+            onClick={openBankImport}
+          >
+            <CtIcon name="file-text" size={22} />
+          </button>
+          <button
+            type="button"
+            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+            aria-label={t("bills.detectSmsSpend")}
+            onClick={() => setSpendSmsOpen(true)}
+          >
+            <CtIcon name="device-mobile" size={22} />
+          </button>
+          <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
+            +
+          </Fab>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+            aria-label={t("bills.detectSms")}
+            onClick={() => setSmsOpen(true)}
+          >
+            <CtIcon name="device-mobile" size={22} />
+          </button>
+          <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
+            +
+          </Fab>
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className="ct-page">
-      <PageHeader
-        title={copy.billsPageTitle}
-        eyebrow={t("bills.eyebrowMonthly")}
-        actions={
-          <div className="ct-header-actions">
-            {pageTab === "spend" ? (
-              <>
-                <button
-                  type="button"
-                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                  aria-label={t("bills.importBankStatement")}
-                  onClick={openBankImport}
-                >
-                  <CtIcon name="file-text" size={22} />
-                </button>
-                <button
-                  type="button"
-                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                  aria-label={t("bills.detectSmsSpend")}
-                  onClick={() => setSpendSmsOpen(true)}
-                >
-                  <CtIcon name="device-mobile" size={22} />
-                </button>
-                <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
-                  +
-                </Fab>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-                  aria-label={t("bills.detectSms")}
-                  onClick={() => setSmsOpen(true)}
-                >
-                  <CtIcon name="device-mobile" size={22} />
-                </button>
-                <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
-                  +
-                </Fab>
-              </>
-            )}
-          </div>
-        }
-      />
+    <PageShell title={copy.billsPageTitle} subtitle={t("bills.eyebrowMonthly")} action={headerActions}>
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
       <SpendSmsDetectModal open={spendSmsOpen} onClose={() => setSpendSmsOpen(false)} />
       {logSpendOpen && <LogSpendModal onClose={() => setLogSpendOpen(false)} />}
@@ -187,9 +184,11 @@ const Commitments = () => {
         onChange={switchTab}
       />
 
-      {pageTab === "spend" ? (
+      <TabContent tabId="spend" activeTab={pageTab}>
         <DailySpendPanel />
-      ) : (
+      </TabContent>
+
+      <TabContent tabId="bills" activeTab={pageTab}>
         <CommitmentsBillsTab
           copy={copy}
           sortedCommitments={sortedCommitments}
@@ -213,8 +212,9 @@ const Commitments = () => {
           onEdit={setEditing}
           onDelete={deleteCommitment}
           dailySpends={dailySpends}
+          onAddCommitment={() => navigate("/add")}
         />
-      )}
+      </TabContent>
 
       <CommitmentsPaymentModal
         paymentFor={paymentFor}
@@ -261,7 +261,7 @@ const Commitments = () => {
           onSave={(id, patch) => updateCommitment(id, patch)}
         />
       )}
-    </div>
+    </PageShell>
   );
 };
 

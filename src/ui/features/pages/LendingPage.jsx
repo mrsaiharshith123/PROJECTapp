@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Card, PageHeader, Caption, Button, StatCard, fieldInputClass } from "../../";
-import { formatInr } from "../../../constants/symbols.js";
+import { PageShell, Card, Caption, Button, fieldInputClass, EmptyState } from "../../";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
@@ -163,37 +162,29 @@ const Lending = () => {
     resetForm();
   };
 
+  const addActions = (
+    <div className="ct-stack-sm items-end">
+      <Button type="button" size="sm" onClick={() => setShowRequest(true)}>
+        {t("lending.requestMoney")}
+      </Button>
+      <Button type="button" size="sm" variant="outline" onClick={() => setBillSplitOpen(true)}>
+        {t("lending.splitBill")}
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        onClick={() => {
+          resetForm();
+          setShowAdd(true);
+        }}
+      >
+        {t("lending.addShort")}
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="ct-page">
-      <PageHeader
-        eyebrow={t("lending.eyebrow")}
-        title={t("lending.title")}
-        subtitle={
-          <Caption className="mt-1 max-w-xs block">
-            {t("lending.subtitle")}
-          </Caption>
-        }
-        actions={
-          <div className="flex flex-col gap-2">
-            <Button type="button" size="sm" onClick={() => setShowRequest(true)}>
-              {t("lending.requestMoney")}
-            </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => setBillSplitOpen(true)}>
-              Split bill
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                resetForm();
-                setShowAdd(true);
-              }}
-            >
-              {t("lending.addShort")}
-            </Button>
-          </div>
-        }
-      />
+    <PageShell title={t("lending.title")} subtitle={t("lending.subtitle")} action={addActions}>
 
       {!canAddLendingRecord(settings, lendings).ok && (
         <TierLimitBanner
@@ -206,20 +197,28 @@ const Lending = () => {
 
       <LendingOverduePanel />
 
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard value={formatInr(totals.recovered)} label={t("lending.stat.recovered")} valueClassName="text-emerald-300" />
-        <StatCard value={formatInr(totals.repaid)} label={t("lending.stat.repaid")} />
-      </div>
-
       {borrowedList.length === 0 && lentList.length === 0 && (
-        <Card className="text-center py-10 text-sm text-gray-500">
-          {t("lending.empty")}
-        </Card>
+        <EmptyState
+          icon="handshake"
+          title={t("lending.emptyTitle")}
+          message={t("lending.empty")}
+          action={
+            <Button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setShowAdd(true);
+              }}
+            >
+              {t("lending.addShort")}
+            </Button>
+          }
+        />
       )}
 
       {borrowedList.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-violet-800 uppercase tracking-wide">{t("lending.sectionOwe")}</h2>
+        <section className="ct-stack-sm ct-list-animate">
+          <h2 className="ct-eyebrow">{t("lending.sectionOwe")}</h2>
           {borrowedList.map((item) => (
             <LendingEntryCard
               key={item.id}
@@ -235,8 +234,8 @@ const Lending = () => {
       )}
 
       {lentList.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-indigo-800 uppercase tracking-wide">{t("lending.sectionLent")}</h2>
+        <section className="ct-stack-sm ct-list-animate">
+          <h2 className="ct-eyebrow">{t("lending.sectionLent")}</h2>
           {lentList.map((item) => (
             <LendingEntryCard
               key={item.id}
@@ -252,13 +251,13 @@ const Lending = () => {
       )}
 
       {trustRows.length > 0 && (
-        <Card className="space-y-2">
-          <h2 className="text-base font-semibold text-gray-800">{t("lending.trustTitle")}</h2>
-          <p className="text-xs text-gray-500">{t("lending.trustHint")}</p>
+        <Card className="ct-stack-sm">
+          <h2 className="ct-body-strong">{t("lending.trustTitle")}</h2>
+          <Caption className="block">{t("lending.trustHint")}</Caption>
           {trustRows.slice(0, 8).map((row) => (
-            <p key={row.personKey} className="text-xs text-gray-700 border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+            <Caption key={row.personKey} className="block border-b border-[var(--ct-border-subtle)] last:border-0 pb-2 last:pb-0">
               {trustSummaryLine(row)}
-            </p>
+            </Caption>
           ))}
         </Card>
       )}
@@ -290,7 +289,7 @@ const Lending = () => {
         onSubmitPayment={submitPayment}
         onPayRemaining={payRemaining}
       />
-    </div>
+    </PageShell>
   );
 };
 
