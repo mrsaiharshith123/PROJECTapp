@@ -231,6 +231,18 @@ export function resolveDataProfileScope(settings) {
   return settings?.activeProfileId || "default";
 }
 
+/**
+ * Profile scope for analytics: family mode can view self only or full household.
+ * @param {object | null | undefined} settings
+ * @param {"self" | "household"} [view]
+ * @returns {string | null}
+ */
+export function resolveAnalyticsProfileScope(settings, view = "household") {
+  if (!isSalariedFamily(settings)) return settings?.activeProfileId || "default";
+  if (view === "self") return settings?.activeProfileId || "default";
+  return null;
+}
+
 /** Icon + label key for mode badge in profile / home. */
 export function getHouseholdModeDisplay(settings) {
   if (isSalariedFamily(settings)) return { icon: "users-three", labelKey: "mode.family" };

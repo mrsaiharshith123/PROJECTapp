@@ -41,8 +41,9 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:features` | Feature registry & cross-feature imports |
 | `audit:modes` | User mode isolation |
 | `audit:sync` | Local-first vs cloud sync boundaries (no auto-pull, allowed Supabase UI paths) |
-| `audit:household` | Family mode isolation + `activeProfileId` / CRUD profile wiring |
-| `audit:pre-release` | Full gate + governance + docs-sync + engine-test count (before release) |
+| `audit:household` | Family mode isolation + profile-scope wiring + dependents UI |
+| `audit:docs-sync` | `09-implementation-status.md` matches shipped features |
+| `audit:pre-release` | Full gate + governance + docs-sync + engine tests |
 | `audit:guidance` | Financial guidance / education copy wiring |
 | `audit:insights` | Insight engine overlap |
 | `audit:performance` | Heavy pages & render heuristics |
@@ -120,6 +121,7 @@ npm run dev             # develop
 npm test                # after engine/utils changes
 npm run audit:governance:quick  # during large UI refactors
 npm run audit:household         # family mode + profile scope (after household work)
+npm run audit:docs-sync         # implementation status doc matches code
 npm run audit:pre-release       # gate + governance + docs + engine tests
 npm run audit           # before push / PR
 ```

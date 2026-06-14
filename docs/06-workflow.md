@@ -32,7 +32,7 @@ See [10-i18n.md](./10-i18n.md).
 
 1. Set `householdScope: "family"` in settings (Profile → Household)
 2. Use `isSalariedFamily`, `resolveDataProfileScope`, `tFamily` / `familyTextKey` — see `.cursor/rules/family-mode-copy.mdc`
-3. Household rooms: `HouseholdHubSection`, `householdRoomService.js` (local-first fallback)
+3. Household rooms: `HouseholdCommandPanel`, `HouseholdRoomBridge`, `householdRoomService.js` (local-first fallback)
 4. `npm run audit:household` after UI changes
 5. `npm run audit` before merge
 

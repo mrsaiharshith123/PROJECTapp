@@ -26,12 +26,13 @@ When `isSalariedFamily(settings)` is true, **never** show single/salaried-only w
    - **Single:** `activeProfileId || "default"`.
 2. `NetWorthContext` already scopes to `null` (all entries) when family — do not re-filter to one profile in UI.
 3. Income math: `combinedMonthlyIncome(settings)` (primary + secondary).
-4. Seat limit: `householdMemberLimit(settings)` from dependents (max 6).
+4. Seat limit: `householdMemberLimit(settings)` reads `settings.householdMemberLimit` (2–20, set at room create).
+5. Dependents: `settings.dependents` — shown on `HouseholdFamilyBadge`; edit via `HouseholdDependentsEditorModal`.
 
 ## Profiles vs household rooms
 
 - **Profiles** (`ProfileManager`, multi-profile picker) are **single mode only**.
-- Family mode uses **household rooms** (`HouseholdHubSection`, `HouseholdSetupModal`) with invite codes — not settings profile lists.
+- Family mode uses **household rooms** (`HouseholdCommandPanel`, `HouseholdSetupModal`) with invite codes — not settings profile lists.
 
 ## Checks
 

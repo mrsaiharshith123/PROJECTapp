@@ -3,6 +3,7 @@ import { SalarySpendBar } from "../patterns/SalarySpendBar.jsx";
 import { MonthlySpendSparkline } from "../patterns/MonthlySpendSparkline.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
+import HouseholdFamilyBadge from "../patterns/HouseholdFamilyBadge.jsx";
 
 export function HeroMonthCard({
   title,
@@ -26,6 +27,8 @@ export function HeroMonthCard({
   statusLine = undefined,
   privacyMode = false,
   onTogglePrivacy,
+  householdCount = undefined,
+  onEditHousehold = undefined,
   onClick,
   className = "",
 }) {
@@ -67,7 +70,14 @@ export function HeroMonthCard({
               <CtIcon name={privacyMode ? "eye-slash" : "eye"} size={18} />
             </button>
           ) : null}
-          {icon ? (
+          {householdCount != null ? (
+            <HouseholdFamilyBadge
+              count={householdCount}
+              onEdit={onEditHousehold}
+              iconSize={28}
+              editLabel={t("household.edit.open")}
+            />
+          ) : icon ? (
             <span className="ct-hero-month-icon" aria-hidden>
               <CtIcon name={icon} size={28} />
             </span>

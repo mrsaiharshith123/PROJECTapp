@@ -143,6 +143,7 @@ html[data-ui="ct"] {
   --ct-font: "Inter", system-ui, sans-serif;
   --ct-font-display: "Outfit", "DM Sans", system-ui, sans-serif;
   --ct-radius-sm: 0.75rem;
+  --ct-radius-md: 0.875rem;
   --ct-radius: 1rem;
   --ct-radius-lg: 1.25rem;
   --ct-radius-xl: 1.5rem;

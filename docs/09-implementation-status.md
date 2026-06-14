@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 14 June 2026 (household rooms, family-mode UI pass, 366 tests / 81 engines).
+Last reviewed: 14 June 2026 (Family Financial OS Phase 1, 373 tests / 86 engines).
 
 ## V1 product scope
 
@@ -21,15 +21,21 @@ Last reviewed: 14 June 2026 (household rooms, family-mode UI pass, 366 tests / 8
 |------|--------|-----------|
 | Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` |
 | Family household UX (combined data + copy) | ✅ | `resolveDataProfileScope()` in `modeExperience.js`; Home, Profile, Analytics |
-| Household rooms (create/join, invite code) | ✅ Local-first | `householdRoom*.js`, `HouseholdSetupModal.jsx`, `HouseholdHubSection.jsx` |
-| Household member limit from dependents (max 6) | ✅ | `householdMemberLimit()`, Profile dependents field |
+| Household command panel (Analytics full house) | ✅ Phase 1 | `HouseholdCommandPanel.jsx`, `familyCommandCenter.js`, `useFamilyCommandIntel.js` |
+| Household dependents badge + editor | ✅ | `HouseholdFamilyBadge.jsx`, `HouseholdDependentsEditorModal.jsx` — Home + Analytics |
+| Family stability score (unified) | ✅ | `familyStabilityScore.js` — one household index |
+| Contribution memory (payment history) | ✅ Local | `familyContribution.js` — payer-tag ledger insights |
+| Dependency analysis | ✅ | `familyDependency.js` — income concentration, overload |
+| Pressure forecast (family) | ✅ | `familyPressureForecast.js` + `familyCalendar.js` |
+| Household rooms (create/join, invite code) | ✅ Local-first | `householdRoom*.js`, `HouseholdSetupModal.jsx`, `HouseholdRoomBridge.jsx` |
+| Room seat limit (2–20 at create) | ✅ | `settings.householdMemberLimit`; owner can edit in dependents modal |
+| Dependents count (0–99) | ✅ | `settings.dependents`; pencil edit on Home/Analytics badge |
 | Home safe-to-spend widget | ✅ | `SafeToSpendCard.jsx` on Home when `salaryCreditDay` set |
 | Paycheck page `/paycheck` | ✅ | `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` |
 | Salary-day bridge | ✅ | `SalaryDayBridge.jsx` — auto-navigate + goal auto-save on credit day |
 | Bill health (per-bill + portfolio) | ✅ | `engines/billHealth.js`, `BillCard.jsx`, portfolio score on `CommitmentsBillsTab.jsx` |
 | Goals ↔ SIP advisory + linking | ✅ | `sipAdvisor.js`, `GoalsToolPanel.jsx`; SIP payment → `savedAmount` via `goalId` on bill |
 | Goal salary-day auto-save | ✅ | `goalAutoSave.js`, checkbox in `GoalsToolPanel.jsx`, `settings.goalAutoSaveRules` |
-| Subscription audit page | ✅ | `SubscriptionsAuditPanel.jsx` on Analytics (Pro `subscription_leak`) |
 | Lending recovery UI | ✅ | `LendingOverduePanel.jsx` on `/lending` — overdue installments, mark paid, share notice |
 | Recurring spend detection | ✅ | `recurringSpendDetect.js`, inline banner in `DailySpendPanel.jsx` |
 | Net worth benchmark engine | ✅ | `netWorthBenchmark.js` (engine + tests; UI card removed — wealth analytics on Profile) |
@@ -90,14 +96,14 @@ Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZO
 
 ## Tests & quality
 
-- **366** unit tests (`npm test`) — **81/81** engine modules have dedicated tests (`npm run audit:engine-tests`)
+- **373** unit tests (`npm test`) — **86/86** engine modules have dedicated tests (`npm run audit:engine-tests`)
 - Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
 - Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, tier gates, insight i18n, code+depth, tests, types, build
 - Pre-release bundle: `npm run audit:pre-release` — full gate + governance + docs-sync + engine-test count
 - Strict: `npm run audit -- --strict` — also fails on i18n hardcoded + English fallback threshold
 - Family/household: `npm run audit:household` — mode isolation + profile-scope wiring
 - Advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
-- Engine coverage: `npm run audit:engine-tests` (81/81) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
+- Engine coverage: `npm run audit:engine-tests` (86/86) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
 
 ## Related docs
 

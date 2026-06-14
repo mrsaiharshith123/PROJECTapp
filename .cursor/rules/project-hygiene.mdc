@@ -20,13 +20,13 @@ globs:
 - `npm run audit:dead-code` — unmounted screens / orphan tool handlers
 - `npm run audit:merge` — advisory; fold single-consumer helper panels when sensible
 - `npm run audit:duplicates` — basename collisions (e.g. rename `netWorth/categories.js` → `wealthCategories.js`)
-- `npm run audit:engine-tests` — engines missing dedicated `__tests__` files (target: 77/77)
+- `npm run audit:engine-tests` — engines missing dedicated `__tests__` files (target: 86/86)
 - `npm run audit:engines` — test coverage + no React/UI imports in engines
 - `npm run audit:complexity` — skeleton engines (&lt;40 lines) needing depth
 - `npm run audit:notification-i18n` — `notifications.js` feed builders must use `titleKey` / `messageKey`, not hardcoded English
 - `npm run audit:pro-features-built` — Pro/Power features in registry have UI wiring
-- `npm run audit:docs-sync` — docs match shipped paths and test counts
-- `npm run audit:household` — family mode isolation + profile-scope (after household UI)
+- `npm run audit:docs-sync` — `09-implementation-status.md` matches shipped paths (no stale FamilyCommandCenter / HouseholdHubSection)
+- `npm run audit:household` — family mode isolation + profile-scope + dependents editor wiring
 - `npm run audit:pre-release` — gate + governance + docs-sync + engine tests before release
 
 ## Tool layout (Home)

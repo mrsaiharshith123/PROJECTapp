@@ -65,12 +65,11 @@ export function cashflowDaysForTier(settings) {
   return tierHasFeature("cashflow_90d", settings) ? PRO_CASHFLOW_DAYS : FREE_TIER_LIMITS.cashflowDays;
 }
 
-/** Money outlook bars on Analytics — Pro gets 12-month view. */
-export function moneyOutlookWindowForTier(settings) {
-  if (tierHasFeature("forecast_12m", settings)) {
-    return { months: 12, startOffset: -3 };
-  }
-  return { months: 7, startOffset: -3 };
+import { MONEY_OUTLOOK_WINDOW } from "../engines/forecastSeries.js";
+
+/** Money outlook bars on Analytics — 7 months (3 back, current, 3 ahead). */
+export function moneyOutlookWindowForTier(_settings) {
+  return MONEY_OUTLOOK_WINDOW;
 }
 
 /** Months shown in pulse “Ahead” forecast list. */

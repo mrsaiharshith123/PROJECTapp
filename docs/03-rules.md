@@ -129,8 +129,9 @@ When `householdScope === "family"` (`isSalariedFamily(settings)`):
 
 - **Copy:** use `familyTextKey` / `tFamily` — never "Salaried", "my income", or single-person framing in UI. See `.cursor/rules/family-mode-copy.mdc`.
 - **Data:** use `resolveDataProfileScope(settings)` — returns `null` for family (combined household spends + net worth across all profiles). Do not filter month summaries to `activeProfileId` alone.
-- **Profiles:** `ProfileManager` is single-mode only; family uses **household rooms** (`HouseholdHubSection`, invite codes).
-- **Seat limit:** `householdMemberLimit(settings)` from dependents (max 6 people).
+- **Profiles:** `ProfileManager` is single-mode only; family uses **household rooms** (`HouseholdCommandPanel` on Analytics, `HouseholdSetupModal`, invite codes).
+- **Seat limit:** `settings.householdMemberLimit` (2–20) set at room creation; `householdMemberLimit(settings)` reads stored value.
+- **Dependents:** `settings.dependents` (0–99) — edit via pencil on Home/Analytics `HouseholdFamilyBadge`; affects stability/pressure engines.
 - **Checks:** `npm run audit:household`, `npm run audit:i18n:hardcoded`, grep for hardcoded salary/personal strings in touched UI.
 
 ## Quick “allowed vs banned”

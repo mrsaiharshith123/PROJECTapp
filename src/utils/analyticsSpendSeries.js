@@ -1,4 +1,4 @@
-import { format, subMonths, endOfMonth, parseISO } from "date-fns";
+import { format, subMonths, addMonths, endOfMonth, parseISO } from "date-fns";
 import {
   sumDailySpendsInRange,
   dailySpendByLifeCategory,
@@ -7,34 +7,58 @@ import {
 import { getTransactionLifeCategoryMeta } from "../constants/transactionCategories.js";
 
 /** Bill payments + variable logs per calendar month (last N months). */
-export function buildPaymentsWithVariableSeries(commitments, dailySpends = [], monthsBack = 12) {
+export function buildPaymentsWithVariableSeries(commitments, dailySpends = [], monthsBack = 7) {
   const rows = [];
   const today = new Date();
   for (let i = monthsBack - 1; i >= 0; i--) {
     const d = subMonths(today, i);
-    const monthKey = format(d, "yyyy-MM");
-    const label = format(d, "MMM");
-    const end = format(endOfMonth(d), "yyyy-MM-dd");
-    const start = `${monthKey}-01`;
-
-    let billsPaid = 0;
-    for (const c of commitments) {
-      for (const p of c.payments || []) {
-        if ((p.date || "").startsWith(monthKey)) {
-          billsPaid += Math.max(0, Number(p.amount) || 0);
-        }
-      }
-    }
-    const variableLogged = sumDailySpendsInRange(dailySpends, start, end);
-    rows.push({
-      month: label,
-      monthKey,
-      billsPaid: Math.round(billsPaid),
-      variableLogged: Math.round(variableLogged),
-      amount: Math.round(billsPaid + variableLogged),
-    });
+    rows.push(buildPaymentMonthRow(commitments, dailySpends, d));
   }
   return rows;
+}
+
+/**
+ * Centered outlook window: e.g. 3 months back, current, 3 ahead (7 bars).
+ * @param {{ months?: number, startOffset?: number }} window
+ */
+export function buildPaymentsOutlookSeries(
+  commitments,
+  dailySpends = [],
+  window = { months: 7, startOffset: -3 },
+) {
+  const months = window.months ?? 7;
+  const startOffset = window.startOffset ?? -3;
+  const today = new Date();
+  const rows = [];
+  for (let i = startOffset; i < startOffset + months; i++) {
+    const d = addMonths(today, i);
+    rows.push(buildPaymentMonthRow(commitments, dailySpends, d));
+  }
+  return rows;
+}
+
+function buildPaymentMonthRow(commitments, dailySpends, d) {
+  const monthKey = format(d, "yyyy-MM");
+  const label = format(d, "MMM yy");
+  const end = format(endOfMonth(d), "yyyy-MM-dd");
+  const start = `${monthKey}-01`;
+
+  let billsPaid = 0;
+  for (const c of commitments) {
+    for (const p of c.payments || []) {
+      if ((p.date || "").startsWith(monthKey)) {
+        billsPaid += Math.max(0, Number(p.amount) || 0);
+      }
+    }
+  }
+  const variableLogged = sumDailySpendsInRange(dailySpends, start, end);
+  return {
+    month: label,
+    monthKey,
+    billsPaid: Math.round(billsPaid),
+    variableLogged: Math.round(variableLogged),
+    amount: Math.round(billsPaid + variableLogged),
+  };
 }
 
 /** Attach logged variable spend to forecast rows (historical months only). */

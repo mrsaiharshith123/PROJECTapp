@@ -12,9 +12,9 @@ describe("householdRoom", () => {
     expect(normalizeInviteCode(" ab-12c ")).toBe("AB12C");
   });
 
-  it("computes member limit from dependents capped at 6", () => {
-    expect(householdMemberLimit({ dependents: 0 })).toBe(2);
-    expect(householdMemberLimit({ dependents: 4 })).toBe(6);
-    expect(householdMemberLimit({ dependents: 6 })).toBe(6);
+  it("uses stored member limit when room was created", () => {
+    expect(householdMemberLimit({ householdMemberLimit: 4 })).toBe(4);
+    expect(householdMemberLimit({ householdMemberLimit: 25 })).toBe(20);
+    expect(householdMemberLimit({})).toBe(2);
   });
 });

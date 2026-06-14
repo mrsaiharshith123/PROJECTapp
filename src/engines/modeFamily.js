@@ -54,31 +54,23 @@ export function computeFamilyPressure(commitments, income, getEffectiveStatus, d
 
   const insights = [];
   if (ratio != null && ratio > 0.55) {
-    insights.push({
-      id: "family-burden",
-      tone: "warning",
-      text: "Household bills use a large share of income — review shared commitments together.",
-    });
+    insights.push({ id: "family-burden", tone: "warning" });
   }
   if (dependents >= 2 && inc > 0 && burden / inc > 0.5) {
-    insights.push({
-      id: "family-dependency",
-      tone: "info",
-      text: "The home relies on a tight income-to-bills ratio — emergency planning matters for everyone.",
-    });
+    insights.push({ id: "family-dependency", tone: "info" });
   }
   if (schoolOpen > 5000) {
     insights.push({
       id: "family-school",
       tone: "info",
-      text: `School fees add about ₹${Math.round(schoolOpen).toLocaleString("en-IN")} to open household dues.`,
+      params: { amount: Math.round(schoolOpen) },
     });
   }
   if (heavyRenewals.length >= 2) {
     insights.push({
       id: "family-renewals",
       tone: "info",
-      text: `${heavyRenewals.length} large yearly or insurance bills coming up — plan cash for those months.`,
+      params: { count: heavyRenewals.length },
     });
   }
 

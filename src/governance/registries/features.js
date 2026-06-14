@@ -201,13 +201,10 @@ export const FEATURES = [
     id: "subscription-leak",
     name: "Subscription leak detection",
     layer: "product",
-    ui: [
-      "ui/features/analytics/SubscriptionsAuditPanel.jsx",
-      "ui/features/dashboard/FinancialPulseCard.jsx",
-    ],
+    ui: ["ui/features/dashboard/FinancialPulseCard.jsx"],
     engines: ["engines/subscriptionLeak.js"],
     hooks: [],
-    notes: "SubscriptionsAuditPanel on Analytics + pulse tips — Pro tier subscription_leak",
+    notes: "Subscription insights in Financial Pulse tips — Pro tier subscription_leak",
   },
   {
     id: "ai-advisor",

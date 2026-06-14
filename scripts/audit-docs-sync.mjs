@@ -20,15 +20,23 @@ const MUST_NOT_SAY_DEFERRED = [
   { pattern: /\b336\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b352\b unit tests/i, note: "Test count stale — run npm test and update" },
   { pattern: /\b358\b unit tests/i, note: "Test count stale — run npm test and update" },
-  { pattern: /\b77\/77\b engine modules/i, note: "Engine test count stale — run audit:engine-tests" },
+  { pattern: /\b366\b unit tests/i, note: "Test count stale — run npm test and update" },
+  { pattern: /\b81\/81\b engine modules/i, note: "Engine test count stale — run audit:engine-tests" },
+  { pattern: /FamilyCommandCenter\.jsx.*Home|Family command center \(Home\)/i, note: "FamilyCommandCenter removed from Home — use HouseholdCommandPanel" },
+  { pattern: /HouseholdHubSection/i, note: "HouseholdHubSection removed — use HouseholdCommandPanel on Analytics" },
+  { pattern: /SubscriptionsAuditPanel/i, note: "SubscriptionsAuditPanel removed — delete from status doc" },
+  { pattern: /dependents.*max 6|max 6 people/i, note: "Seat limit is householdMemberLimit (2–20), not dependents cap" },
+  { pattern: /Profile dependents field/i, note: "Dependents edited via HouseholdDependentsEditorModal, not Profile" },
 ];
 
 const MUST_EXIST = [
   { pattern: /\/paycheck/, note: "Document /paycheck route" },
   { pattern: /billHealth|bill health/i, note: "Document bill health feature" },
   { pattern: /caExport|CA export/i, note: "Document CA export" },
-  { pattern: /householdRoom|HouseholdHub|household rooms/i, note: "Document household rooms feature" },
+  { pattern: /householdRoom|HouseholdCommandPanel|household rooms/i, note: "Document household rooms / command panel" },
   { pattern: /resolveDataProfileScope|household combined/i, note: "Document family household data scope" },
+  { pattern: /HouseholdDependentsEditorModal|HouseholdFamilyBadge/i, note: "Document household dependents editor + badge" },
+  { pattern: /373.*test|test.*373/i, note: "Document current test count (373)" },
 ];
 
 function main() {

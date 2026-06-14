@@ -13,6 +13,7 @@ import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
+import HouseholdRoomBridge from "./app/HouseholdRoomBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
 import RequireAdmin from "./app/RequireAdmin.jsx";
@@ -72,6 +73,7 @@ function MainShell() {
     <Screen>
       <ThemeSync />
       <CloudSyncBridge />
+      <HouseholdRoomBridge />
       <SalaryDayBridge />
       <AnalyticsBridge />
       <Navbar />

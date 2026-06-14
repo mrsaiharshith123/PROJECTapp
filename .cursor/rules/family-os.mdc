@@ -1,0 +1,45 @@
+---
+description: Family Financial OS philosophy — responsibility, not transactions
+globs:
+  - src/engines/family*.js
+  - src/engines/household*.js
+  - src/engines/modeFamily.js
+  - src/ui/features/analytics/HouseholdCommandPanel.jsx
+  - src/ui/features/dashboard/Family*.jsx
+  - src/ui/features/dashboard/HomeOverviewCard.jsx
+  - src/ui/patterns/HouseholdFamilyBadge.jsx
+  - src/ui/features/modals/HouseholdDependentsEditorModal.jsx
+  - src/hooks/useFamilyCommandIntel.js
+---
+
+# Family Financial Operating System
+
+Family mode is a **household coordination OS**, not budgeting or accounting.
+
+## Build for
+
+- Responsibility, contribution, sacrifice, pressure, dependency
+- Warm, calm, emotionally intelligent copy
+- Engine-driven graphs (members → obligations → forecasts → insights)
+
+## Do NOT build
+
+- Spreadsheet layouts, generic fintech cards, transaction-first UX
+- Single-person framing when `isSalariedFamily(settings)` (see `family-mode-copy.mdc`)
+- Hardcoded insight `text` in engines — use `{ id, tone, params? }` + `insight.{id}` in `en.js`
+
+## Adding family intelligence
+
+1. Logic → new function in `src/engines/family*.js` or extend `familyCommandCenter.js`
+2. Unit test in `src/engines/__tests__/`
+3. Wire via `useFamilyCommandIntel` or `useStabilityIntel` — not raw engine calls in JSX
+4. UI → `HouseholdCommandPanel` (Analytics full house) or `HomeOverviewCard` badge (Home glance) or `FamilyModeDashboard` (Analytics depth)
+5. Dependents edit → `HouseholdDependentsEditorModal` + `HouseholdFamilyBadge` (count + pencil)
+6. Register engine in `src/governance/registries/modes.js` if new file
+7. `npm run audit:household` + `npm run audit:insight-registry`
+
+## Long-term north star
+
+“Google Photos for family financial life” — contribution history, household coordination, emotional memory.
+
+See `docs/architecture/FamilyOperatingSystem.md` for phase roadmap.

@@ -27,7 +27,8 @@ describe("householdPayer", () => {
     const getEff = () => "pending";
     const ins = householdPayerInsight(commitments, getEff, 30000);
     expect(ins).not.toBeNull();
-    expect(ins?.text).toContain("primary earner");
-    expect(ins?.text).toContain("second income");
+    expect(ins?.id).toBe("household-payer-split");
+    expect(ins?.params?.summary).toContain("primary");
+    expect(ins?.params?.summary).toContain("second");
   });
 });

@@ -34,3 +34,28 @@ export function computeHouseholdSpendBreakdown(commitments, dailySpends, todaySt
     total: byMember[id].bills + byMember[id].variable,
   })).filter((row) => row.total > 0);
 }
+
+/**
+ * Household spending by category this month (bills + variable).
+ */
+export function computeHouseholdCategorySpend(commitments, dailySpends, todayStr, getEffectiveStatus) {
+  /** @type {Record<string, number>} */
+  const byCat = {};
+  const monthPrefix = todayStr.slice(0, 7);
+
+  for (const c of commitments) {
+    if (getEffectiveStatus(c) === "paid") continue;
+    const cat = String(c.category || "Other");
+    byCat[cat] = (byCat[cat] || 0) + monthlyBurdenForCommitment(c, getEffectiveStatus);
+  }
+  for (const s of dailySpends) {
+    if (!s?.date?.startsWith(monthPrefix)) continue;
+    const cat = String(s.category || "Other");
+    byCat[cat] = (byCat[cat] || 0) + Math.max(0, Number(s.amount) || 0);
+  }
+
+  return Object.entries(byCat)
+    .map(([category, amount]) => ({ category, amount }))
+    .filter((row) => row.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+}

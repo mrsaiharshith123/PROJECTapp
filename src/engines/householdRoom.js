@@ -24,12 +24,13 @@ export function isValidInviteCode(code) {
 }
 
 /**
- * Max people in a household room from dependents (you + partner + dependents), capped at 6.
- * @param {{ dependents?: number }} settings
+ * Max people who can join a household room (set when the room is created).
+ * @param {{ householdMemberLimit?: number }} settings
  */
 export function householdMemberLimit(settings) {
-  const deps = Math.min(6, Math.max(0, Math.floor(Number(settings?.dependents) || 0)));
-  return Math.min(6, Math.max(2, deps + 2));
+  const stored = Math.floor(Number(settings?.householdMemberLimit) || 0);
+  if (stored >= 2) return Math.min(20, stored);
+  return 2;
 }
 
 /** @param {string} message */

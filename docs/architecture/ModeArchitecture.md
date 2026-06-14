@@ -9,7 +9,7 @@ Registry: `src/governance/registries/modes.js`
 | Pick | Experience | Dashboard |
 |------|------------|-----------|
 | Salaried | Personal salary & bills | `ModeIntelligenceSection.jsx` (survival panel) |
-| Salaried + household scope **family** | Household (combined income, shared bills, household net worth) | `FamilyModeDashboard.jsx`, `HouseholdHubSection.jsx` |
+| Salaried + household scope **family** | Household (combined income, shared bills, household net worth) | `FamilyModeDashboard.jsx`, `HouseholdCommandPanel.jsx` |
 
 ## Family data scope
 
@@ -17,7 +17,8 @@ When `isSalariedFamily(settings)`:
 
 - **`resolveDataProfileScope(settings)`** returns `null` — month summaries, analytics, and net worth include **all profiles** (household combined).
 - **`combinedMonthlyIncome(settings)`** — primary + spouse income fields.
-- **`householdMemberLimit(settings)`** — you + partner + dependents, capped at 6.
+- **`householdMemberLimit(settings)`** — reads `settings.householdMemberLimit` (2–20 seats, set at room create).
+- **`settings.dependents`** — household dependents (0–99); edit via `HouseholdDependentsEditorModal`.
 - **Household rooms** — local-first registry (`householdRoomLocal.js`) with cloud fallback (`householdRoomService.js`); migration `supabase/migrations/20260614000000_household_rooms.sql`.
 
 Copy rules: `.cursor/rules/family-mode-copy.mdc`. Audit: `npm run audit:household`.
@@ -36,10 +37,10 @@ Copy rules: `.cursor/rules/family-mode-copy.mdc`. Audit: `npm run audit:househol
 
 ## Home composition
 
-1. `HomeOverviewCard` → `HeroMonthCard` — month hero (Financial Life palette): scheduled / paid / unpaid chips, **free cash** + stress copy + **variable spend** tile, salary progress bar (green→red), cumulative spend sparkline → `/analytics`
+1. `HomeOverviewCard` → `HeroMonthCard` — month hero: scheduled / paid / unpaid, **HouseholdFamilyBadge** (dependents + pencil) in family mode, free cash + stress copy, salary bar, sparkline → `/analytics`
 2. KPI row — `getHomeKpiTiles()` in `config/modeDashboardMetrics.js`
-3. `ModeIntelligenceSection` — one mode dashboard
-4. `FinancialPulseCard` — shared pulse
+3. `ModeIntelligenceSection` — one mode dashboard (Analytics; family uses `FamilyModeDashboard` + `HouseholdCommandPanel`)
+4. `FinancialPulseCard` — Analytics (Self = personal; Full house = household pulse)
 
 ## Isolation rules
 

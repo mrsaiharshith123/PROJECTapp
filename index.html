@@ -12,12 +12,54 @@
     <meta name="apple-mobile-web-app-title" content="Perovo" />
     <link rel="apple-touch-icon" href="pwa-192.png" />
     <title>Perovo</title>
+    <style>
+      #boot-loader {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        background: linear-gradient(165deg, #f8fafc 0%, #eef2ff 55%, #f8fafc 100%);
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      #boot-loader .boot-ring {
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 50%;
+        border: 3px solid rgba(74, 108, 247, 0.15);
+        border-top-color: #4a6cf7;
+        animation: boot-spin 0.85s linear infinite;
+      }
+      #boot-loader .boot-bar {
+        width: 7rem;
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(74, 108, 247, 0.12);
+        overflow: hidden;
+      }
+      #boot-loader .boot-bar::after {
+        content: "";
+        display: block;
+        width: 40%;
+        height: 100%;
+        border-radius: inherit;
+        background: #4a6cf7;
+        animation: boot-slide 1.4s ease-in-out infinite;
+      }
+      @keyframes boot-spin { to { transform: rotate(360deg); } }
+      @keyframes boot-slide {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(320%); }
+      }
+    </style>
   </head>
   <body>
     <div id="root">
-      <p style="margin:0;padding:2rem 1rem;font-family:system-ui,sans-serif;color:#334155;text-align:center">
-        Loading Perovo…
-      </p>
+      <div id="boot-loader" aria-live="polite" aria-busy="true">
+        <div class="boot-ring" aria-hidden="true"></div>
+        <div class="boot-bar" aria-hidden="true"></div>
+      </div>
     </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

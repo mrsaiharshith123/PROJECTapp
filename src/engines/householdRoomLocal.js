@@ -59,6 +59,7 @@ export function createLocalHouseholdRoom({ userId, displayName, roomName, member
     roomName: room.roomName,
     role: "owner",
     members,
+    memberLimit,
     local: true,
   };
 }
@@ -75,7 +76,7 @@ export function updateLocalHouseholdMemberLimit(roomId, memberLimit) {
   const entry = Object.entries(reg).find(([, r]) => r.roomId === roomId);
   if (!entry) return;
   const [code, room] = entry;
-  room.memberLimit = Math.min(6, Math.max(2, Math.floor(Number(memberLimit) || 2)));
+  room.memberLimit = Math.min(20, Math.max(2, Math.floor(Number(memberLimit) || 2)));
   reg[code] = room;
   writeRegistry(reg);
 }

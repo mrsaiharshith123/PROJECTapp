@@ -34,7 +34,6 @@ import {
   ProgressBar,
 } from "../../index.js";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
-import StickyStatusStrip from "../home/StickyStatusStrip.jsx";
 import AttentionSection from "../home/AttentionSection.jsx";
 import SafeToSpendCard from "../paycheck/SafeToSpendCard.jsx";
 import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
@@ -127,8 +126,6 @@ const Home = () => {
       )}
 
       <HomeOverviewCard />
-
-      <StickyStatusStrip />
 
       <HomeQuickActions onOpenCalendar={() => setCalendarOpen(true)} scrollToTools={scrollToTools} />
 

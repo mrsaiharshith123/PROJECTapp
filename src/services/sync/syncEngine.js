@@ -209,6 +209,53 @@ export function scheduleCloudPush(ctx) {
   }, 4000);
 }
 
+/**
+ * Push at most once per calendar day when account backup is enabled.
+ * @param {{ userId: string, getState: () => object }} ctx
+ */
+export async function pushDailyCloudBackupIfDue(ctx) {
+  const state = ctx.getState();
+  if (!canUseAccountBackup(state.settings, true)) return { ok: false, reason: "disabled" };
+
+  const meta = loadSyncMeta();
+  const todayKey = new Date().toISOString().slice(0, 10);
+  if (meta.lastDailyPushDate === todayKey) return { ok: false, reason: "already_today" };
+
+  const result = await pushLocalSnapshotToCloud(ctx);
+  if (result.ok) {
+    saveSyncMeta({ lastDailyPushDate: todayKey });
+  }
+  return result;
+}
+
+/**
+ * Restore from cloud when local storage is empty but remote has user data.
+ * @param {{ userId: string, getState: () => { commitments: object[], lendings: object[], settings: object, goals: object[], monthlySnapshots: object[] }, applySnapshot: (payload: object, options: { mode: string }) => unknown }} ctx
+ */
+export async function tryAutoRestoreFromCloud(ctx) {
+  if (!isCloudSyncConfigured()) return { ok: false, reason: "not_configured" };
+
+  const localState = ctx.getState();
+  if (localStateHasUserData(localState)) return { ok: false, reason: "local-has-data" };
+
+  const remote = await fetchRemoteSnapshot(ctx.userId);
+  if (!remote?.payload || !snapshotHasUserData(remote.payload)) {
+    return { ok: false, reason: "empty" };
+  }
+
+  const meta = loadSyncMeta();
+  if (meta.lastAutoRestoreAt) {
+    const elapsed = Date.now() - new Date(meta.lastAutoRestoreAt).getTime();
+    if (elapsed < 60_000) return { ok: false, reason: "recent" };
+  }
+
+  const result = await pullRemoteSnapshotToLocal({ ...ctx, force: false });
+  if (result.ok) {
+    saveSyncMeta({ lastAutoRestoreAt: new Date().toISOString() });
+  }
+  return result;
+}
+
 export function cancelScheduledCloudPush() {
   if (pushTimer) {
     clearTimeout(pushTimer);

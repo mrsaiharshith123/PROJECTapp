@@ -5,8 +5,6 @@ import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
 import ProfileAvatar from "./ProfileAvatar.jsx";
 import { isSalariedFamily, resolveUserMode } from "../../../constants/modeExperience.js";
-import { householdMemberLimit } from "../../../engines/householdRoom.js";
-import { updateLocalHouseholdMemberLimit } from "../../../engines/householdRoomLocal.js";
 import { SELECTABLE_USER_MODES } from "../../../constants/userModes.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
 import ProfileManager from "./ProfileManager.jsx";
@@ -34,7 +32,7 @@ function ProfileField({ label, hint, required, children }) {
 }
 
 /**
- * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account', onRequestHouseholdSetup?: () => void }} props
+ * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
  */
 /** @param {{ updateSettings: (p: object) => void }} props */
 function LanguagePickerBlock({ updateSettings }) {
@@ -82,7 +80,6 @@ export default function ProfilePersonalSection({
   settings,
   updateSettings,
   part = "full",
-  onRequestHouseholdSetup = undefined,
 }) {
   const { t } = useTranslation();
   const salariedFamily = isSalariedFamily(settings);
@@ -271,45 +268,12 @@ export default function ProfilePersonalSection({
                 updateSettings({
                   householdScope: family ? "family" : "single",
                   activeProfileId: "default",
-                  dependents: family ? settings.dependents : 0,
                 });
-                if (family && !settings.householdRoomId) onRequestHouseholdSetup?.();
               }}
             >
               <option value="single">{t("profile.householdSingle")}</option>
               <option value="family">{t("profile.householdFamily")}</option>
             </select>
-          </ProfileField>
-        )}
-
-        {settings.householdScope === "family" && (
-          <ProfileField label={t("profile.dependents")} hint={t("profile.dependentsHouseholdHint")}>
-            <input
-              type="number"
-              min="0"
-              max="6"
-              className={profileInputClass}
-              value={settings.dependents === 0 ? "" : String(settings.dependents)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                const deps = raw === "" ? 0 : Math.min(6, Math.max(0, Math.floor(Number(raw) || 0)));
-                const limit = householdMemberLimit({ ...settings, dependents: deps });
-                const patch = { dependents: deps, householdMemberLimit: limit };
-                if (
-                  settings.householdRoomRole === "owner" &&
-                  settings.householdRoomId &&
-                  (settings.householdRoomLocal || String(settings.householdRoomId).startsWith("local-"))
-                ) {
-                  updateLocalHouseholdMemberLimit(settings.householdRoomId, limit);
-                }
-                updateSettings(patch);
-              }}
-            />
-            <Caption className="block mt-1">
-              {t("household.hub.seatLimit", {
-                count: householdMemberLimit(settings),
-              })}
-            </Caption>
           </ProfileField>
         )}
 

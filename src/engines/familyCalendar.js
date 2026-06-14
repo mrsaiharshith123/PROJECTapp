@@ -42,7 +42,11 @@ export function buildFamilyExpenseCalendar(commitments, todayStr, getEffectiveSt
     insights.push({
       id: "family-heavy-month",
       tone: cats.length ? "warning" : "info",
-      text: `${top.label} may be high-pressure (~₹${Math.round(top.amount).toLocaleString("en-IN")}${cats.length ? ` — ${cats.join(", ")}` : ""}).`,
+      params: {
+        month: top.label,
+        amount: Math.round(top.amount),
+        categories: cats.length ? ` — ${cats.join(", ")}` : "",
+      },
     });
   }
 

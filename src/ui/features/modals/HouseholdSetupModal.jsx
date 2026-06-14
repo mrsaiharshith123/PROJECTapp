@@ -16,6 +16,10 @@ export default function HouseholdSetupModal({ open, onClose }) {
   const { user, isLoggedIn } = useAuth();
   const [mode, setMode] = useState("create");
   const [roomName, setRoomName] = useState(t("household.room.defaultName"));
+  const [seatCount, setSeatCount] = useState(
+    Math.max(2, Math.min(20, Number(settings.householdMemberLimit) || 4)),
+  );
+  const [dependents, setDependents] = useState(Math.max(0, Number(settings.dependents) || 0));
   const [inviteCode, setInviteCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -23,6 +27,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
   if (!open) return null;
 
   const applyRoom = (result) => {
+    const limit = Number(result.memberLimit) || householdMemberLimit(settings);
     updateSettings({
       householdRoomId: result.roomId,
       householdInviteCode: result.inviteCode,
@@ -30,7 +35,8 @@ export default function HouseholdSetupModal({ open, onClose }) {
       householdRoomName: result.roomName,
       householdRoomMembers: result.members,
       householdRoomLocal: Boolean(result.local),
-      householdMemberLimit: householdMemberLimit(settings),
+      householdMemberLimit: limit,
+      dependents: mode === "create" ? Math.max(0, Math.floor(dependents) || 0) : settings.dependents,
       householdShareSpends: true,
       householdShareBillDetail: result.role === "owner",
       activeProfileId: "default",
@@ -48,9 +54,10 @@ export default function HouseholdSetupModal({ open, onClose }) {
     setBusy(true);
     try {
       const displayName = settings.displayName?.trim() || t("household.room.you");
+      const memberLimit = mode === "create" ? Math.min(20, Math.max(2, Math.floor(seatCount) || 2)) : undefined;
       const result =
         mode === "create"
-          ? await createHouseholdRoom({ userId: user.id, displayName, roomName, settings })
+          ? await createHouseholdRoom({ userId: user.id, displayName, roomName, settings, memberLimit })
           : await joinHouseholdRoom({
               userId: user.id,
               displayName,
@@ -84,9 +91,36 @@ export default function HouseholdSetupModal({ open, onClose }) {
     <Modal title={t("household.setup.title")} onClose={onClose}>
       <Stack gap="md">
         <Caption className="block">{t("household.setup.subtitle")}</Caption>
-        <Caption className="block ct-text-muted">
-          {t("household.setup.seatLimit", { count: householdMemberLimit(settings) })}
-        </Caption>
+        {mode === "create" ? (
+          <div>
+            <label className="ct-field-label">{t("household.setup.seatCountLabel")}</label>
+            <input
+              type="number"
+              min={2}
+              max={20}
+              className="ct-input w-full"
+              value={seatCount}
+              onChange={(e) =>
+                setSeatCount(Math.min(20, Math.max(2, Math.floor(Number(e.target.value) || 2))))
+              }
+            />
+            <Caption className="block mt-1">{t("household.setup.seatLimit", { count: seatCount })}</Caption>
+            <label className="ct-field-label mt-3">{t("household.setup.dependentsLabel")}</label>
+            <input
+              type="number"
+              min={0}
+              className="ct-input w-full"
+              value={dependents === 0 ? "" : dependents}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setDependents(raw === "" ? 0 : Math.max(0, Math.floor(Number(raw) || 0)));
+              }}
+            />
+            <Caption className="block mt-1">{t("household.setup.dependentsHint")}</Caption>
+          </div>
+        ) : (
+          <Caption className="block ct-text-muted">{t("household.setup.joinSeatNote")}</Caption>
+        )}
         <div className="ct-row gap-2">
           <button
             type="button"

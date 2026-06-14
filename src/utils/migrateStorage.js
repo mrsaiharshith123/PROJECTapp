@@ -654,12 +654,8 @@ export function loadSettingsFromStorage() {
           : [],
         householdRoomLocal: Boolean(o.householdRoomLocal),
         householdMemberLimit: Math.min(
-          6,
-          Math.max(
-            2,
-            Math.floor(Number(o.householdMemberLimit) || 0) ||
-              householdMemberLimit({ dependents: Math.min(6, Math.floor(Number(o.dependents) || 0)) }),
-          ),
+          20,
+          Math.max(2, Math.floor(Number(o.householdMemberLimit) || 0) || householdMemberLimit({})),
         ),
         epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),
         epfCorpus: Math.max(0, Number(o.epfCorpus) || 0),

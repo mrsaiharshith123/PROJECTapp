@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
@@ -19,8 +19,10 @@ import { HeroMonthCard } from "../HeroMonthCard.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatMonthYear } from "../../../i18n/formatLocale.js";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
+import HouseholdDependentsEditorModal from "../modals/HouseholdDependentsEditorModal.jsx";
 
 export default function HomeOverviewCard() {
+  const [editHouseholdOpen, setEditHouseholdOpen] = useState(false);
   const navigate = useNavigate();
   const { t, locale } = useTranslation();
   const {
@@ -141,29 +143,36 @@ export default function HomeOverviewCard() {
   const spendTitleKey = isFamily ? "home.salarySpendTitleHousehold" : "home.salarySpendTitle";
 
   return (
-    <HeroMonthCard
-      title={title}
-      monthLabel={monthLabel}
-      icon={modeCfg.icon}
-      scopeBadge={scopeBadge}
-      scheduled={formatInr(monthSummary.scheduledThisMonth)}
-      paid={formatInr(monthSummary.paidThisMonth)}
-      unpaid={formatInr(monthSummary.dueThisMonth)}
-      variableSpent={formatInr(monthSummary.spentThisMonth)}
-      freeCashLabel={freeCashLabel}
-      freeCashValue={monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
-      freeCashWarn={monthSummary.freeCash != null && monthSummary.freeCash < 0}
-      spendPct={spendPct}
-      spendTitleKey={spendTitleKey}
-      salaryLabel={salaryLabel}
-      spendSeries={spendSeries}
-      monthlyIncome={income}
-      overBudget={overBudget}
-      sparklineHousehold={isFamily}
-      statusLine={statusLine}
-      privacyMode={privacyMode}
-      onTogglePrivacy={togglePrivacyMode}
-      onClick={() => navigate("/analytics")}
-    />
+    <>
+      <HeroMonthCard
+        title={title}
+        monthLabel={monthLabel}
+        icon={isFamily ? undefined : modeCfg.icon}
+        householdCount={isFamily ? Math.max(0, Number(settings.dependents) || 0) : undefined}
+        onEditHousehold={isFamily ? () => setEditHouseholdOpen(true) : undefined}
+        scopeBadge={scopeBadge}
+        scheduled={formatInr(monthSummary.scheduledThisMonth)}
+        paid={formatInr(monthSummary.paidThisMonth)}
+        unpaid={formatInr(monthSummary.dueThisMonth)}
+        variableSpent={formatInr(monthSummary.spentThisMonth)}
+        freeCashLabel={freeCashLabel}
+        freeCashValue={monthSummary.freeCash != null ? formatInr(monthSummary.freeCash) : EM_DASH}
+        freeCashWarn={monthSummary.freeCash != null && monthSummary.freeCash < 0}
+        spendPct={spendPct}
+        spendTitleKey={spendTitleKey}
+        salaryLabel={salaryLabel}
+        spendSeries={spendSeries}
+        monthlyIncome={income}
+        overBudget={overBudget}
+        sparklineHousehold={isFamily}
+        statusLine={statusLine}
+        privacyMode={privacyMode}
+        onTogglePrivacy={togglePrivacyMode}
+        onClick={() => navigate("/analytics")}
+      />
+      {isFamily ? (
+        <HouseholdDependentsEditorModal open={editHouseholdOpen} onClose={() => setEditHouseholdOpen(false)} />
+      ) : null}
+    </>
   );
 }

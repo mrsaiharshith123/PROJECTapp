@@ -49,6 +49,7 @@ async function createHouseholdRoomCloud({ userId, displayName, roomName, memberL
     roomName: room.name,
     role: "owner",
     members,
+    memberLimit,
     local: false,
   };
 }
@@ -101,10 +102,19 @@ async function joinHouseholdRoomCloud({ userId, displayName, inviteCode, memberL
 }
 
 /**
- * @param {{ userId: string, displayName: string, roomName?: string, settings?: object }} params
+ * @param {{ userId: string, displayName: string, roomName?: string, settings?: object, memberLimit?: number }} params
  */
-export async function createHouseholdRoom({ userId, displayName, roomName = "Our household", settings = {} }) {
-  const memberLimit = householdMemberLimit(settings);
+export async function createHouseholdRoom({
+  userId,
+  displayName,
+  roomName = "Our household",
+  settings = {},
+  memberLimit: memberLimitOverride,
+}) {
+  const memberLimit =
+    memberLimitOverride != null && memberLimitOverride >= 2
+      ? Math.min(20, Math.floor(memberLimitOverride))
+      : householdMemberLimit(settings);
   try {
     const cloud = await createHouseholdRoomCloud({ userId, displayName, roomName, memberLimit });
     if (cloud.ok) return cloud;
@@ -175,7 +185,7 @@ export async function fetchUserHouseholdRoom(userId) {
     inviteCode: room.invite_code,
     roomName: room.name,
     role: membership.role || "member",
-    memberLimit: Number(room.member_limit) || householdMemberLimit({ dependents: 0 }),
+    memberLimit: Number(room.member_limit) || householdMemberLimit({}),
     shareSpends: membership.share_spends !== false,
     shareBillDetail: Boolean(membership.share_bill_detail),
     members,

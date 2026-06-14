@@ -50,9 +50,6 @@ function mergeTips(intel, stable, settings) {
   for (const f of intel.forecast || []) {
     add({ id: f.id, tone: f.tone || "info", params: f.params });
   }
-  if (tierHasFeature("subscription_leak", settings)) {
-    (intel.subscriptionLeak?.insights || []).forEach((item) => add(item));
-  }
   if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.messageKey) {
     add({ id: "lifestyle-inflation", tone: "info", key: stable.lifestyle.messageKey, params: stable.lifestyle.params });
   } else if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.message) {
@@ -77,8 +74,8 @@ function mergeTips(intel, stable, settings) {
   return out;
 }
 
-/** One card with Summary / Pressure / Tips — replaces stacked insight sections on Home. */
-export default function FinancialPulseCard({ microTipSeed = 0 }) {
+/** One card with Summary / Pressure / Tips — Analytics financial pulse. */
+export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "auto" }) {
   const { t } = useTranslation();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
@@ -86,6 +83,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
   const microTipKey = pickMicroTip(microTipSeed);
   const showPressure = showSalariedStabilityCards(settings);
   const isFamily = isSalariedFamily(settings);
+  const showHouseholdPulse = pulseScope === "household" || (pulseScope === "auto" && isFamily);
   const ahead = stable.ahead;
 
   const tips = useMemo(() => mergeTips(intel, stable, settings), [intel, stable, settings]);
@@ -108,7 +106,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
     return [base[0], { id: "ahead", label: t("pulse.tabAhead") }, ...base.slice(1)];
   }, [ahead, t]);
 
-  const defaultTab = showPressure && (stress?.top?.length || family?.grouped) ? "pressure" : "snapshot";
+  const defaultTab = showPressure && (stress?.top?.length || (showHouseholdPulse && family?.grouped)) ? "pressure" : "snapshot";
   const [tab, setTab] = useState(defaultTab);
   const [shareHint, setShareHint] = useState("");
   const scoreRef = useRef(null);
@@ -286,7 +284,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             </div>
           )}
 
-          {isFamily && ahead.familyCalendar?.heavyMonths?.length > 0 && (
+          {showHouseholdPulse && ahead.familyCalendar?.heavyMonths?.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.householdHeavy")}</p>
               <ul className="space-y-1">
@@ -302,7 +300,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             </div>
           )}
 
-          {isFamily && family?.heavyRenewals?.length > 0 && (
+          {showHouseholdPulse && family?.heavyRenewals?.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.largeRenewals")}</p>
               <ul className="text-xs text-gray-600 dark:text-slate-300 space-y-0.5">
@@ -378,11 +376,11 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
       {tab === "pressure" && showPressure && (
         <div className="ct-stack">
           <p className="text-xs text-gray-500 dark:text-slate-400">
-            {isFamily ? t("pulse.householdPressure") : t("pulse.mainPressure")}
+            {showHouseholdPulse ? t("pulse.householdPressure") : t("pulse.mainPressure")}
             <InfoTip text={CALC_HELP.pressureWeight} />
           </p>
 
-          {isFamily && groupedEntries.length > 0 ? (
+          {showHouseholdPulse && groupedEntries.length > 0 ? (
             <ol className="space-y-2">
               {groupedEntries.map(([cat, amt], i) => (
                 <li key={cat} className="flex justify-between gap-2 text-sm">
@@ -422,7 +420,7 @@ export default function FinancialPulseCard({ microTipSeed = 0 }) {
             <p className="ct-insight-violet">{translateInsight(t, intel.transactionRhythmNote)}</p>
           )}
 
-          {!isFamily && payoffRec && (
+          {!showHouseholdPulse && payoffRec && (
             <p className="ct-insight-accent">
               <span className="font-semibold">{t("pulse.focusFirst")}</span> {payoffRec.name}
             </p>

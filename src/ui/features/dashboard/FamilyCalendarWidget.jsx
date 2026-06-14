@@ -2,8 +2,11 @@ import { useMemo } from "react";
 import { Card, Heading, Caption } from "../../index.js";
 import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
 import { buildFamilyExpenseCalendar } from "../../../engines/familyCalendar.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateInsight } from "../../../i18n/insightLabels.js";
 
 export default function FamilyCalendarWidget() {
+  const { t } = useTranslation();
   const { commitments, getEffectiveStatus, todayStr } = useCommitTrack();
 
   const cal = useMemo(
@@ -15,7 +18,7 @@ export default function FamilyCalendarWidget() {
 
   return (
     <Card className="ct-stack">
-      <Heading level={3}>Family expense calendar</Heading>
+      <Heading level={3}>{t("family.calendar.title")}</Heading>
       <div className="ct-row-wrap">
         {(cal.months || []).slice(0, 6).map((m) => (
           <div
@@ -30,7 +33,7 @@ export default function FamilyCalendarWidget() {
       </div>
       {(cal.insights || []).map((ins) => (
         <Caption key={ins.id} className="block">
-          {ins.text}
+          {translateInsight(t, ins)}
         </Caption>
       ))}
     </Card>

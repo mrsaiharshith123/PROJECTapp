@@ -30,14 +30,16 @@ export function householdPayerInsight(commitments, getEffectiveStatus, secondary
   if (!hasTags) return null;
 
   const parts = [];
-  if (by.primary > 0) parts.push(`primary earner ~₹${Math.round(by.primary).toLocaleString("en-IN")}/mo open`);
-  if (by.secondary > 0) parts.push(`second income ~₹${Math.round(by.secondary).toLocaleString("en-IN")}/mo open`);
-  if (by.shared > 0) parts.push(`shared ~₹${Math.round(by.shared).toLocaleString("en-IN")}/mo open`);
-  if (by.unset > 0) parts.push(`untagged ~₹${Math.round(by.unset).toLocaleString("en-IN")}/mo open`);
+  if (by.primary > 0) parts.push(`primary ~${Math.round(by.primary)}`);
+  if (by.secondary > 0) parts.push(`second ~${Math.round(by.secondary)}`);
+  if (by.shared > 0) parts.push(`shared ~${Math.round(by.shared)}`);
+  if (by.unset > 0) parts.push(`untagged ~${Math.round(by.unset)}`);
+  if (!parts.length) return null;
 
-  let text = `Bills by payer (approx. open amounts): ${parts.join(" · ")}.`;
+  const summary = parts.join(" · ");
+  const params = { summary };
   if (secondaryIncomeMonthly > 0 && by.secondary > 0) {
-    text += " If second income paused, revisit bills tagged to second earner.";
+    params.secondIncomeNote = true;
   }
-  return { id: "household-payer-split", tone: /** @type {const} */ ("info"), text };
+  return { id: "household-payer-split", tone: /** @type {const} */ ("info"), params };
 }
