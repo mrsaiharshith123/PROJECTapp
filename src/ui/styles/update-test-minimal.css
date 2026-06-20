@@ -106,6 +106,7 @@ html[data-ui="ct"] .ct-update-progress-overlay {
   justify-content: center;
   padding: 1.5rem;
   background: rgba(8, 9, 18, 0.82);
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 

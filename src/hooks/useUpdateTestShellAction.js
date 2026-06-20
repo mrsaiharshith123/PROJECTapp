@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { useUpdateTestTranslation } from "../i18n/UpdateTestShellI18n.jsx";
+import { useUpdateTestTranslation } from "../app/UpdateTestShellI18n.jsx";
 import { applyAppUpdate, checkForAppUpdate } from "../services/appUpdate.js";
 
 /** Update flow for the minimal update test shell. */

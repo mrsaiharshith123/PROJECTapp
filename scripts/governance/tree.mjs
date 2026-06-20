@@ -27,6 +27,7 @@ const UI_SUBDIRS = ["primitives", "patterns", "features", "layout", "styles", "g
 const JSX_SHELL_PREFIXES = [
   "src/App.jsx",
   "src/main.jsx",
+  "src/main-update-test.jsx",
   "src/app/",
   "src/context/",
 ];

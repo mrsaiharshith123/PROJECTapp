@@ -1,5 +1,5 @@
 import updateTestShellMessages from "../i18n/updateTestShellMessages.js";
-import { UpdateTestShellI18n } from "../i18n/UpdateTestShellI18n.jsx";
+import { UpdateTestShellI18n } from "./UpdateTestShellI18n.jsx";
 import UpdateTestShell from "../ui/features/UpdateTestShell.jsx";
 
 /** Minimal tree — no router, Perovo, locales, or full App.jsx. */

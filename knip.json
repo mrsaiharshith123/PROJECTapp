@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/main.jsx", "public/notification-handler.js"],
+  "entry": ["src/main.jsx", "src/main-update-test.jsx", "public/notification-handler.js"],
   "project": ["src/**/*.{js,jsx}", "public/notification-handler.js"],
   "ignore": [
     "scripts/**",

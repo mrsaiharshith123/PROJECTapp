@@ -1,4 +1,4 @@
-import { useUpdateTestTranslation } from "../../i18n/UpdateTestShellI18n.jsx";
+import { useUpdateTestTranslation } from "../../app/UpdateTestShellI18n.jsx";
 import { UpdateTestShellUpdateProvider } from "./UpdateTestShellUpdateProvider.jsx";
 import { getLocalAppVersion } from "../../services/appUpdate.js";
 
