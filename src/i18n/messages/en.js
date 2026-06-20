@@ -1640,6 +1640,9 @@ export default {
   "download.platform.androidHint": "Download the React APK and install on your phone.",
   "download.platform.ios": "iOS",
   "download.platform.iosHint": "Install via Capacitor build — opens the latest iOS release.",
+  "download.androidVersionsTitle": "Choose Android version",
+  "download.androidVersionsBody": "Pick which build to install. Use the older one to test in-app updates.",
+  "download.backToPlatforms": "← Back to platforms",
 
   "support.updateApp": "Update app",
   "support.updateAppHint": "Check our server for a new build, download it in the app, then restart.",
