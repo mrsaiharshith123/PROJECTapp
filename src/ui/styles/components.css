@@ -1717,6 +1717,69 @@ html[data-ui="ct"] .ct-landing-section-title {
   text-align: center;
   font-size: clamp(1.25rem, 3vw, 1.5rem);
 }
+html[data-ui="ct"] .ct-landing-versions-lede {
+  max-width: 36rem;
+  margin: 0 auto 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--ct-text-secondary);
+}
+html[data-ui="ct"] .ct-landing-version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+html[data-ui="ct"] .ct-landing-version-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--ct-radius-xl);
+  background: var(--ct-surface);
+  border: 1px dashed var(--ct-border-accent-soft);
+  box-shadow: var(--ct-shadow-card);
+}
+@media (min-width: 40rem) {
+  html[data-ui="ct"] .ct-landing-version-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+html[data-ui="ct"] .ct-landing-version-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+html[data-ui="ct"] .ct-landing-version-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ct-radius-md);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ct-accent);
+  background: var(--ct-accent-soft);
+}
+html[data-ui="ct"] .ct-landing-version-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ct-text);
+}
+html[data-ui="ct"] .ct-landing-version-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
 html[data-ui="ct"] .ct-landing-feature-grid {
   list-style: none;
   margin: 0;

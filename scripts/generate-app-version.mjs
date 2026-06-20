@@ -10,6 +10,10 @@ const version = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
 const out = {
   version,
   builtAt: new Date().toISOString(),
+  appUrl:
+    process.env.VITE_UPDATE_SERVER_URL ||
+    process.env.VITE_APP_LIVE_URL ||
+    "https://mrsaiharshith123.github.io/PROJECTapp/",
 };
 
 fs.mkdirSync(path.join(root, "public"), { recursive: true });

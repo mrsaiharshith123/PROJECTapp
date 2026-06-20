@@ -9,6 +9,7 @@ import { LandingBrandLockup } from "../../brand/LandingBrandLockup.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Body, Caption, Heading } from "../../primitives/Text.jsx";
 import AppDownloadSheet from "../AppDownloadSheet.jsx";
+import LandingReleaseList from "../LandingReleaseList.jsx";
 
 const FEATURES = [
   { key: "score", icon: "chart-line-up" },
@@ -71,6 +72,8 @@ export default function WebLandingPage() {
             ))}
           </ul>
         </header>
+
+        <LandingReleaseList />
 
         <section id="features" className="ct-landing-section" aria-labelledby="landing-features">
           <Heading level={2} id="landing-features" className="ct-landing-section-title">

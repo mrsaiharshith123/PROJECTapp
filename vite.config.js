@@ -1,4 +1,6 @@
 /* global process */
+import fs from "fs";
+import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -9,12 +11,21 @@ const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
 const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
 const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
 const appVersion = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
+let appBuiltAt = "";
+try {
+  const manifestPath = path.join(process.cwd(), "public/app-version.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  appBuiltAt = manifest.builtAt || "";
+} catch {
+  /* dev without generated manifest */
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+    "import.meta.env.VITE_APP_BUILT_AT": JSON.stringify(appBuiltAt),
   },
   server: {
     host: true,

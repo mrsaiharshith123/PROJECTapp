@@ -41,6 +41,13 @@ export default {
   "webLanding.downloadButton": "Download app",
   "webLanding.downloadHint":
     "Choose Windows (PWA), Android (APK), or iOS (Capacitor). Enable “Install unknown apps” on Android if your device blocks the APK.",
+  "webLanding.versionsTitle": "Pick a version (testing)",
+  "webLanding.versionsNote":
+    "Temporary list for testing downloads and in-app updates. Install an older APK, then use Update app in Settings after a newer build is live.",
+  "webLanding.versionsLoading": "Loading available versions…",
+  "webLanding.versionBuilt": "Built {date}",
+  "webLanding.versionDownloadApk": "Download APK",
+  "webLanding.versionOpenWeb": "Open web app",
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
 
   "nav.home": "Home",
@@ -1630,8 +1637,10 @@ export default {
   "download.platform.iosHint": "Install via Capacitor build — opens the latest iOS release.",
 
   "support.updateApp": "Update app",
-  "support.updateAppHint": "Check for a new version from our server and refresh.",
+  "support.updateAppHint": "Check our server for a new build, download it in the app, then restart.",
   "support.updateAppChecking": "Checking for updates…",
+  "support.updateAppDownloading": "Downloading the latest build…",
+  "support.updateAppRestarting": "Restarting to finish the update…",
   "support.updateAppCurrent": "You are on the latest version ({version}).",
   "support.updateAppAvailable": "Version {remote} is available — you have {local}.",
   "support.updateAppApplying": "Updating…",

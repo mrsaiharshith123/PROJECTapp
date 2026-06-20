@@ -4,7 +4,13 @@ import { SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
 import { Caption } from "../../index.js";
 import { applyAppUpdate, checkForAppUpdate } from "../../../services/appUpdate.js";
 
-/** One-tap update row for Profile settings (not the About sub-panel). */
+const PHASE_KEYS = {
+  checking: "support.updateAppChecking",
+  downloading: "support.updateAppDownloading",
+  restarting: "support.updateAppRestarting",
+};
+
+/** One-tap in-app update — checks live server, pulls build, restarts (no browser redirect). */
 export default function ProfileUpdateAppRow() {
   const { t } = useTranslation();
   const [updateStatus, setUpdateStatus] = useState("");
@@ -15,7 +21,13 @@ export default function ProfileUpdateAppRow() {
     setUpdateStatus(t("support.updateAppChecking"));
     try {
       const result = await checkForAppUpdate();
-      if (result.status === "available") {
+      if (result.status === "current") {
+        setUpdateStatus(t("support.updateAppCurrent", { version: result.localVersion }));
+        setUpdateBusy(false);
+        return;
+      }
+
+      if (result.status === "available" && result.remoteVersion) {
         setUpdateStatus(
           t("support.updateAppAvailable", {
             local: result.localVersion,
@@ -23,8 +35,14 @@ export default function ProfileUpdateAppRow() {
           }),
         );
       }
-      setUpdateStatus(t("support.updateAppApplying"));
-      await applyAppUpdate();
+
+      await applyAppUpdate({
+        force: result.status === "unknown",
+        onPhase: (phase) => {
+          const key = PHASE_KEYS[phase];
+          if (key) setUpdateStatus(t(key));
+        },
+      });
     } catch {
       setUpdateStatus(t("support.updateAppError"));
       setUpdateBusy(false);
@@ -41,7 +59,7 @@ export default function ProfileUpdateAppRow() {
         onClick={handleUpdateApp}
         disabled={updateBusy}
       />
-      {updateStatus && !updateBusy ? (
+      {updateStatus ? (
         <SettingsGroupContent>
           <Caption className="block">{updateStatus}</Caption>
         </SettingsGroupContent>
