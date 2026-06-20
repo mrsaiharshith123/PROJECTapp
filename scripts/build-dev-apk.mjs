@@ -29,6 +29,19 @@ function run(label, command, args, opts = {}) {
   }
 }
 
+function resolveJdkHome() {
+  if (process.env.JAVA_HOME) return process.env.JAVA_HOME;
+  const candidates = [
+    "C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot",
+    "C:\\Program Files\\Microsoft\\jdk-21.0.11-hotspot",
+    "C:\\Program Files\\Android\\Android Studio\\jbr",
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(path.join(p, "bin", "java.exe"))) return p;
+  }
+  return null;
+}
+
 function hasAndroidSdk() {
   return Boolean(process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT);
 }
@@ -44,6 +57,17 @@ if (!fs.existsSync(androidDir)) {
 }
 
 run("Capacitor sync android", "npx", ["cap", "sync", "android"]);
+
+const jdkHome = resolveJdkHome();
+if (jdkHome) {
+  process.env.JAVA_HOME = jdkHome;
+  console.log(`Using JAVA_HOME=${jdkHome}`);
+} else {
+  console.warn(
+    "\n⚠ JDK 21 not found. Install with: winget install Microsoft.OpenJDK.21\n" +
+      "  Then re-run: npm run apk:dev\n",
+  );
+}
 
 if (!hasAndroidSdk()) {
   console.warn(
