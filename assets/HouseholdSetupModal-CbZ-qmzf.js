@@ -1,0 +1,1 @@
+import{t as e}from"./HouseholdSetupModal-BE9yD0gu.js";export{e as default};

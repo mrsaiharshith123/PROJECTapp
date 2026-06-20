@@ -1,0 +1,1 @@
+import{t as e}from"./LegalDetailsModal-VuePQeo-.js";export{e as default};

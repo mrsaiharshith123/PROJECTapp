@@ -1,0 +1,1 @@
+var e=``;function t(){return!!e}async function n(e){return{verified:!1,error:`kyc_not_configured`}}export{n,t};

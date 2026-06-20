@@ -1,0 +1,1 @@
+import{n as e}from"./auth-BuNwGNMU.js";export{e as deleteAccountData};

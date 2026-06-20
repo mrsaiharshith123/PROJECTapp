@@ -1,1 +1,0 @@
-var e={bill:`bill`,bills:`bills`,Bill:`Bill`,Bills:`Bills`,addBill:`Add bill`,editBill:`Edit bill`,billName:`Bill name`,noBills:`No bills yet`,billsPageTitle:`Bills`,billsNav:`Bills`,trackBills:`Bills & lending tracker`,newBillsHint:`New bills and lending entries use this label locally.`,billsStat:`Bills`,recordPaymentOnBills:`Record partial payments from Bills`};export{e as t};

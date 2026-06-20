@@ -1,0 +1,1 @@
+import{nt as e}from"./react-vendor-BPqyOxID.js";import{Mn as t,m as n,p as r}from"./ui-Cus8me0D.js";import{r as i}from"./SegmentedControl-D2LNQih2.js";var a=e();function o(){let{t:e}=i();return(0,a.jsxs)(t,{title:e(`nav.plan`),subtitle:e(`plan.subtitle`),children:[(0,a.jsx)(n,{}),(0,a.jsx)(r,{variant:`home`})]})}export{o as default};
