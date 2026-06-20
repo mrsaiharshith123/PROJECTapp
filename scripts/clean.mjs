@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const DIRS = ["dist", "dev-dist", "dist-ssr"];
+const DIRS = ["dist", "dist-ota", "dev-dist", "dist-ssr"];
 
 for (const name of DIRS) {
   const p = path.join(ROOT, name);
@@ -14,4 +14,4 @@ for (const name of DIRS) {
     console.log(`Removed ${name}/`);
   }
 }
-console.log("Clean done (dist, dev-dist, dist-ssr).");
+console.log("Clean done (dist, dist-ota, dev-dist, dist-ssr).");
