@@ -93,6 +93,8 @@
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
     "apk:dev": "node scripts/build-dev-apk.mjs",
+    "apk:update-test": "node scripts/build-update-test-apk.mjs",
+    "apk:update-test:publish": "node scripts/build-update-test-apk.mjs --publish",
     "apk:twa": "cd twa && bubblewrap build --manifest twa-manifest.json",
     "apk:twa:install": "cd twa && bubblewrap install",
     "audit:native-shells": "node scripts/audit-runner.mjs native-shells",

@@ -1873,6 +1873,58 @@ html[data-ui="ct"] .ct-landing-link {
   text-underline-offset: 2px;
 }
 
+/* ── Update test shell (temporary APK build) ── */
+html[data-ui="ct"] .ct-update-test-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+html[data-ui="ct"] .ct-update-test-inner {
+  width: min(100%, 22rem);
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: var(--ct-radius-2xl);
+  border: 1px dashed var(--ct-border-accent-soft);
+  background: var(--ct-surface);
+  box-shadow: var(--ct-shadow-card);
+}
+html[data-ui="ct"] .ct-update-test-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  border-radius: var(--ct-radius-lg);
+  color: var(--ct-accent);
+  background: var(--ct-accent-soft);
+}
+html[data-ui="ct"] .ct-update-test-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.35rem;
+}
+html[data-ui="ct"] .ct-update-test-body {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--ct-text-secondary);
+  line-height: 1.5;
+}
+html[data-ui="ct"] .ct-update-test-version {
+  display: block;
+  margin-bottom: 1.25rem;
+  color: var(--ct-text-muted);
+}
+html[data-ui="ct"] .ct-update-test-btn {
+  width: 100%;
+}
+html[data-ui="ct"] .ct-update-test-status {
+  display: block;
+  margin-top: 1rem;
+  color: var(--ct-text-secondary);
+}
+
 /* ── Auth email confirm (Supabase redirect landing) ── */
 html[data-ui="ct"] .ct-auth-confirm-inner {
   max-width: 28rem;

@@ -50,6 +50,11 @@ export default {
   "webLanding.versionOpenWeb": "Open web app",
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
 
+  "updateTestShell.title": "Update test",
+  "updateTestShell.body": "This build only exists to test in-app updates. Tap the button to pull the latest app from the server.",
+  "updateTestShell.version": "Installed version: {version}",
+  "updateTestShell.button": "Update app",
+
   "nav.home": "Home",
   "nav.money": "Money",
   "nav.bills": "Money",

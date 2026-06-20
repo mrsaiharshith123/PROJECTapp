@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
 import { isCustomerModeEnabled } from "./utils/embeddedApp.js";
+import { isUpdateTestShell } from "./utils/updateTestShell.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -27,6 +28,7 @@ import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
 import WebLandingPage from "./ui/features/pages/WebLandingPage.jsx";
 import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
 import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
+import UpdateTestShellApp from "./app/UpdateTestShellApp.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -250,6 +252,10 @@ function MarketingShell() {
 }
 
 function App() {
+  if (isUpdateTestShell()) {
+    return <UpdateTestShellApp />;
+  }
+
   if (isCustomerModeEnabled()) {
     return <MarketingShell />;
   }
