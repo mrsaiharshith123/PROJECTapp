@@ -159,6 +159,25 @@ if (!publishOnly) {
     },
   });
 
+  const distDir = path.join(ROOT, "dist");
+  const builtHtml = path.join(distDir, "update-test.html");
+  const capIndex = path.join(distDir, "index.html");
+  if (fs.existsSync(builtHtml)) {
+    fs.copyFileSync(builtHtml, capIndex);
+  } else {
+    console.error("Expected dist/update-test.html after minimal build.");
+    process.exit(1);
+  }
+
+  const assetsDir = path.join(distDir, "assets");
+  if (fs.existsSync(assetsDir)) {
+    const jsBytes = fs
+      .readdirSync(assetsDir)
+      .filter((f) => f.endsWith(".js"))
+      .reduce((sum, f) => sum + fs.statSync(path.join(assetsDir, f)).size, 0);
+    console.log(`Web bundle (JS only): ${(jsBytes / 1024 / 1024).toFixed(2)} MB`);
+  }
+
   const androidDir = path.join(ROOT, "android");
   if (!fs.existsSync(androidDir)) {
     run("Capacitor add android", "npx", ["cap", "add", "android"]);
@@ -192,7 +211,9 @@ if (!publishOnly) {
 
   fs.mkdirSync(path.join(ROOT, "releases"), { recursive: true });
   fs.copyFileSync(apkSrc, APK_PATH);
-  console.log(`\n✓ Update test APK ready:\n  ${APK_PATH}\n`);
+  const apkMb = (fs.statSync(APK_PATH).size / 1024 / 1024).toFixed(2);
+  console.log(`\n✓ Update test APK ready (${apkMb} MB):\n  ${APK_PATH}\n`);
+  console.log("Re-publish: npm run apk:update-test:publish");
 }
 
 if (publishOnly || process.argv.includes("--publish-after")) {

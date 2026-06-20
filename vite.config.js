@@ -10,6 +10,7 @@ import pkg from "./package.json" with { type: "json" };
 const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
 const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
 const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
+const updateTestShell = process.env.VITE_UPDATE_TEST_SHELL === "1";
 const appVersion = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
 let appBuiltAt = "";
 try {
@@ -23,9 +24,11 @@ try {
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
+  publicDir: updateTestShell ? false : "public",
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
     "import.meta.env.VITE_APP_BUILT_AT": JSON.stringify(appBuiltAt),
+    "import.meta.env.VITE_UPDATE_TEST_SHELL": JSON.stringify(updateTestShell ? "1" : ""),
   },
   server: {
     host: true,
@@ -33,15 +36,20 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("recharts") || id.includes("d3-")) return "charts";
-          if (id.includes("@supabase")) return "supabase";
-          if (id.includes("react-router") || id.includes("react-dom") || id.includes("/react/")) return "react-vendor";
-          if (id.includes("date-fns")) return "date-fns";
-        },
-      },
+      input: updateTestShell
+        ? path.resolve(process.cwd(), "update-test.html")
+        : path.resolve(process.cwd(), "index.html"),
+      output: updateTestShell
+        ? undefined
+        : {
+            manualChunks(id) {
+              if (!id.includes("node_modules")) return;
+              if (id.includes("recharts") || id.includes("d3-")) return "charts";
+              if (id.includes("@supabase")) return "supabase";
+              if (id.includes("react-router") || id.includes("react-dom") || id.includes("/react/")) return "react-vendor";
+              if (id.includes("date-fns")) return "date-fns";
+            },
+          },
     },
   },
   plugins: [

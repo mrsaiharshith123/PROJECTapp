@@ -46,6 +46,23 @@ function getFallbackReleases() {
 
 /** @param {string} url @param {string} [version] */
 export function triggerApkDownload(url, version) {
+  let resolved;
+  try {
+    resolved = new URL(url, window.location.href);
+  } catch {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const crossOrigin = resolved.origin !== window.location.origin;
+  const mobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  // Chrome on Android often stalls at 100% with window.open / download attribute on GitHub URLs.
+  if (crossOrigin && mobile) {
+    window.location.assign(resolved.href);
+    return;
+  }
+
   const props = apkDownloadLinkProps(url);
   if (props.download) {
     const a = document.createElement("a");
@@ -57,5 +74,5 @@ export function triggerApkDownload(url, version) {
     a.remove();
     return;
   }
-  window.open(url, "_blank", "noopener,noreferrer");
+  window.location.assign(resolved.href);
 }

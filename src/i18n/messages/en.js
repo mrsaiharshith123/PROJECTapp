@@ -51,7 +51,8 @@ export default {
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
 
   "updateTestShell.title": "Update test",
-  "updateTestShell.body": "This build only exists to test in-app updates. Tap the button to pull the latest app from the server.",
+  "updateTestShell.body":
+    "Small test build (~few MB). Tap Update to load the full app from our server — that is the big download, not a second APK install.",
   "updateTestShell.version": "Installed version: {version}",
   "updateTestShell.button": "Update app",
 
