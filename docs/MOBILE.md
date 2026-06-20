@@ -36,6 +36,31 @@ npm run cap:android
 
 Package id: `app.perovo.mobile` (side-by-side with Play Store `app.perovo.twa`).
 
+## Ship (commit + push + GitHub Release APK)
+
+One command publishes code **and** attaches the latest APK to GitHub Releases (web landing download button):
+
+```bash
+npm run ship -- "Describe what changed"
+```
+
+Steps: `git add` → commit → push → `npm run apk:dev` → `gh release create … --latest`.
+
+**Prerequisites (one-time):**
+
+```bash
+winget install GitHub.cli
+gh auth login
+```
+
+Skip APK when only docs/copy changed:
+
+```bash
+npm run ship -- --no-apk "Docs only"
+```
+
+Download URL (landing page): `…/releases/latest/download/Perovo-dev-latest.apk`
+
 ## Android Play Store (TWA)
 
 Loads **https://perovo.app** — not a bundled copy.

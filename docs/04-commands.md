@@ -115,7 +115,9 @@ Full guide: [MOBILE.md](./MOBILE.md).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run git:ship` | Helper commit/push script (`scripts/git-commit-push.mjs`) |
+| `npm run ship` | Commit, push, build dev APK, publish to GitHub Releases (`latest` + `Perovo-dev-latest.apk`) |
+| `npm run ship -- --no-apk "msg"` | Commit and push only (skip APK build + release) |
+| `npm run git:ship` | Alias for `npm run ship` |
 
 ### Dev-only (local `npm run dev`)
 
