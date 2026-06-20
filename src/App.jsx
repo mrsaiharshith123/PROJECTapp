@@ -26,6 +26,7 @@ import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
 import WebLandingPage from "./ui/features/pages/WebLandingPage.jsx";
 import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
+import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -237,6 +238,7 @@ function MarketingShell() {
       <I18nProvider standalone>
         <ErrorBoundary>
           <Routes>
+            <Route path="/auth/confirm" element={<AuthConfirmPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<WebLandingPage />} />
           </Routes>
@@ -261,6 +263,7 @@ function App() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  <Route path="/auth/confirm" element={<AuthConfirmPage />} />
                   <Route
                     path="/lend/offer"
                     element={

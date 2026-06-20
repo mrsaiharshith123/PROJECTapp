@@ -851,6 +851,18 @@ export default {
   "auth.accountCreated": "Account created — finish setup on the next screens.",
   "auth.accountCreatedConfirm": "Account created. Confirm your email if Supabase asks, then sign in to finish setup.",
   "auth.checkEmail": "Check your email to confirm, then sign in to continue setup.",
+  "auth.confirmPageTitle": "Email confirmed — Perovo",
+  "auth.confirmProcessingTitle": "Confirming your email…",
+  "auth.confirmProcessingBody": "Hang on — we are verifying your Perovo account.",
+  "auth.confirmSuccessTitle": "Account verified!",
+  "auth.confirmSuccessBody":
+    "Your email is confirmed and your Perovo account is ready. Open the app and sign in to finish setup.",
+  "auth.confirmOpenAppHint": "Install the Android app if you have not already, then sign in with the same email and password.",
+  "auth.confirmContinueApp": "Continue to Perovo",
+  "auth.confirmErrorTitle": "Could not verify email",
+  "auth.confirmErrorBody": "This link may have expired or already been used. Try signing up again or request a new confirmation email.",
+  "auth.confirmInvalidLink": "This confirmation link is invalid or expired.",
+  "auth.confirmBackHome": "Back to home",
 
   "onboarding.title": "How do you manage money?",
   "onboarding.stepOf": "Step {current} of {total}",

@@ -152,7 +152,12 @@ export async function signUpWithEmail(email, password, metadata = null) {
   const supabase = getSupabaseClient();
   if (!supabase) throwAuth(new Error("Supabase is not configured."), "Sign up");
   log.auth.info("Sign up attempt");
-  const options = metadata && typeof metadata === "object" ? { data: metadata } : undefined;
+  const options = {
+    emailRedirectTo: getAuthConfirmRedirectUrl(),
+  };
+  if (metadata && typeof metadata === "object") {
+    options.data = metadata;
+  }
   const { data, error } = await supabase.auth.signUp({ email, password, options });
   if (error) throwAuth(error, "Sign up failed");
   return data;
@@ -168,11 +173,22 @@ export async function signInWithEmail(email, password) {
 }
 
 /** @returns {string|undefined} */
-export function getPasswordResetRedirectUrl() {
+export function getAuthRedirectUrl(path = "auth") {
   if (typeof window === "undefined") return undefined;
   const base = import.meta.env.BASE_URL || "/";
-  const authPath = base.endsWith("/") ? `${base}auth` : `${base}/auth`;
+  const segment = String(path).replace(/^\/+|\/+$/g, "");
+  const authPath = base.endsWith("/") ? `${base}${segment}` : `${base}/${segment}`;
   return `${window.location.origin}${authPath}`;
+}
+
+/** Email confirmation + magic-link landing (GitHub Pages + local dev). */
+export function getAuthConfirmRedirectUrl() {
+  return getAuthRedirectUrl("auth/confirm");
+}
+
+/** @returns {string|undefined} */
+export function getPasswordResetRedirectUrl() {
+  return getAuthRedirectUrl("auth");
 }
 
 export async function requestPasswordReset(email) {
