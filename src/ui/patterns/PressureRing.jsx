@@ -1,8 +1,13 @@
 import { useCountUp } from "../hooks/useCountUp.js";
 
-/** @param {number | null | undefined} score */
-function pressureRingFillColor(score) {
+/** @param {number | null | undefined} score @param {'pressure' | 'perovo'} mode */
+function scoreRingFillColor(score, mode = "pressure") {
   if (score == null) return "#6e6c8a";
+  if (mode === "perovo") {
+    if (score >= 70) return "#2dd4bf";
+    if (score >= 40) return "#fbbf24";
+    return "#f87171";
+  }
   if (score < 45) return "#2dd4bf";
   if (score < 70) return "#fbbf24";
   if (score < 80) return "#fb923c";
@@ -10,21 +15,35 @@ function pressureRingFillColor(score) {
 }
 
 /**
- * Circular pressure score — SVG stroke or conic gradient.
- * @param {{ score?: number, size?: number, strokeWidth?: number, variant?: 'stroke' | 'conic', tierLabel?: string }} props
+ * Circular score ring — pressure (lower is better) or Perovo Score (higher is better).
+ * @param {{ score?: number, size?: number, strokeWidth?: number, variant?: 'stroke' | 'conic', tierLabel?: string, scoreMode?: 'pressure' | 'perovo', ariaLabel?: string }} props
  */
-export function PressureRing({ score = 0, size = 80, strokeWidth = 6, variant = "stroke", tierLabel }) {
+export function PressureRing({
+  score = 0,
+  size = 80,
+  strokeWidth = 6,
+  variant = "stroke",
+  tierLabel,
+  scoreMode = "pressure",
+  ariaLabel,
+}) {
   const animated = useCountUp(score, 1000);
-  const tone = pressureRingFillColor(score);
+  const tone = scoreRingFillColor(score, scoreMode);
 
   if (variant === "conic") {
     const outer = size;
     const inner = Math.round(size * 0.78);
-    const filledDeg = Math.max(0, Math.min(360, ((100 - animated) / 100) * 360));
+    const fillRatio = scoreMode === "perovo" ? animated / 100 : (100 - animated) / 100;
+    const filledDeg = Math.max(0, Math.min(360, fillRatio * 360));
     const conic = `conic-gradient(${tone} 0deg ${filledDeg}deg, rgba(255,255,255,0.08) ${filledDeg}deg 360deg)`;
 
     return (
-      <div className="ct-conic-ring" style={{ width: outer, height: outer, background: conic }}>
+      <div
+        className="ct-conic-ring"
+        style={{ width: outer, height: outer, background: conic }}
+        role="img"
+        aria-label={ariaLabel}
+      >
         <div
           className="ct-conic-ring-inner"
           style={{ width: inner, height: inner }}

@@ -1,6 +1,6 @@
-export function SegmentedControl({ options, value, onChange }) {
+export function SegmentedControl({ options, value, onChange, className = "" }) {
   return (
-    <div className="ct-segmented">
+    <div className={className ? `ct-segmented ${className}` : "ct-segmented"}>
       {options.map((opt) => {
         const id = typeof opt === "string" ? opt : opt.id;
         const label = typeof opt === "string" ? opt : opt.label;

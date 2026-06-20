@@ -31,10 +31,14 @@ globs:
 ## Governance
 
 ```bash
-npm run audit:native-shells   # capacitor + twa + scripts + no legacy folders
+npm run audit                  # full gate — includes mobile, PWA, a11y, theme, cleanup
+npm run audit:mobile           # responsive & device resize heuristics
+npm run audit:pwa              # viewport, safe-area, manifest assets
+npm run audit:native-shells    # capacitor + twa + scripts + no legacy folders
+npm run audit:cleanup          # stale public.zip, appversion/, rebrand scripts
 ```
 
-Included in `npm run audit:governance:quick`.
+Included in `npm run audit` and `npm run audit:governance:quick`.
 
 ## Docs
 

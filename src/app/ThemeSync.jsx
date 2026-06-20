@@ -5,7 +5,7 @@ import { applyColorScheme } from "../utils/theme.js";
 /** Keeps document theme in sync with settings, OS (system), and tab restore. */
 export default function ThemeSync() {
   const { settings } = usePerovo();
-  const preference = settings.colorScheme || "system";
+  const preference = settings.colorScheme || "dark";
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;

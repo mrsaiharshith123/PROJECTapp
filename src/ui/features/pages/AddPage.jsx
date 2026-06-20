@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fieldInputClass } from "../../";
+import { fieldInputClass, PageShell, Button } from "../../";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   categoryShowsInterestRate,
@@ -33,14 +33,26 @@ import {
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
 import AddCommitmentForm from "../forms/AddCommitmentForm.jsx";
-import { canAddChitRecord } from "../../../utils/tierAccess.js";
+import AddTypePicker from "../add/AddTypePicker.jsx";
+import { buildLendingRecord } from "../../../utils/lendingRecord.js";
+import { canAddChitRecord, canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const Add = () => {
   const { t } = useTranslation();
-  const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = usePerovo();
+  const { addCommitment, addLending, commitments, lendings, settings, todayStr, getEffectiveStatus } =
+    usePerovo();
   const navigate = useNavigate();
+  const [step, setStep] = useState(/** @type {"pick" | "form"} */ ("pick"));
+  const [addKind, setAddKind] = useState(/** @type {"bill" | "spend" | "lending" | null} */ (null));
   const [entryType, setEntryType] = useState("scheduled");
+  const [lendingForm, setLendingForm] = useState({
+    personName: "",
+    type: "lent",
+    totalAmount: "",
+    dueDate: "",
+  });
   const [form, setForm] = useState({
     name: "",
     amount: "",
@@ -58,6 +70,13 @@ const Add = () => {
     ...emptyChitFundFields(),
   });
   const [errors, setErrors] = useState(/** @type {Record<string, string>} */ ({}));
+
+  const handlePick = (id) => {
+    setAddKind(/** @type {"bill" | "spend" | "lending"} */ (id));
+    setStep("form");
+    if (id === "spend") setEntryType("variable");
+    else setEntryType("scheduled");
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -148,7 +167,7 @@ const Add = () => {
         amount: Number(form.amount) || 0,
         category,
       },
-      todayStr
+      todayStr,
     );
   }, [form.startDate, form.dueDate, form.endDate, form.repeatType, form.amount, category, todayStr]);
 
@@ -170,7 +189,6 @@ const Add = () => {
       status: "pending",
     };
     return evaluateNewCommitmentAffordability(income, commitments, draft, getEffectiveStatus);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- income fields listed; full settings would over-rerender
   }, [
     showAffordability,
     form.amount,
@@ -254,33 +272,164 @@ const Add = () => {
     navigate("/money/bills");
   };
 
+  const submitLending = () => {
+    const errs = {};
+    if (!lendingForm.personName.trim()) errs.personName = "Name is required";
+    if (!lendingForm.totalAmount || Number(lendingForm.totalAmount) <= 0) {
+      errs.totalAmount = "Enter a valid amount";
+    }
+    if (!lendingForm.dueDate) errs.dueDate = "Due date is required";
+    if (Object.keys(errs).length) {
+      setErrors(/** @type {Record<string, string>} */ (/** @type {unknown} */ (errs)));
+      return;
+    }
+    const gate = canAddLendingRecord(settings, lendings);
+    if (!gate.ok) return;
+    addLending(
+      buildLendingRecord({
+        type: lendingForm.type,
+        personName: lendingForm.personName.trim(),
+        totalAmount: lendingForm.totalAmount,
+        dueDate: lendingForm.dueDate,
+        interestRate: 0,
+        notes: "",
+        relationshipTag: "Other",
+        extra: {
+          startDate: lendingForm.dueDate,
+          endDate: "",
+          interestType: "simple",
+          repaymentFrequency: "monthly",
+          repaymentType: "monthly",
+        },
+      }),
+    );
+    navigate("/money/lending");
+  };
+
   const fieldClass = (field) => fieldInputClass(Boolean(errors[field]));
 
+  const formTitle =
+    addKind === "bill"
+      ? t("add.pick.bill")
+      : addKind === "spend"
+        ? t("add.pick.spend")
+        : addKind === "lending"
+          ? t("add.pick.lending")
+          : t("add.title");
+
+  const headerAction =
+    step === "pick" ? (
+      <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => navigate(-1)} aria-label={t("common.close")}>
+        ×
+      </button>
+    ) : (
+      <button
+        type="button"
+        className="ct-btn ct-btn-ghost ct-btn-sm"
+        onClick={() => {
+          setStep("pick");
+          setAddKind(null);
+          setErrors({});
+        }}
+        aria-label={t("common.back")}
+      >
+        ←
+      </button>
+    );
+
   return (
-    <AddCommitmentForm
-      entryType={entryType}
-      onEntryTypeChange={setEntryType}
-      onVariableSaved={() => navigate("/money/bills?tab=spend")}
-      form={form}
-      errors={errors}
-      fieldClass={fieldClass}
-      billCategories={billCategories}
-      showChit={showChit}
-      showInsurance={showInsurance}
-      showInterest={showInterest}
-      isSubscription={isSubscription}
-      isOther={isOther}
-      category={category}
-      salariedFamily={salariedFamily}
-      priorSpendHint={priorSpendHint}
-      todayStr={todayStr}
-      affordability={affordability}
-      onChange={handleChange}
-      onChitChange={handleChitChange}
-      onInsuranceChange={handleInsuranceChange}
-      onFillEndDate={fillEndDateIfEmpty}
-      onSubmit={handleSubmit}
-    />
+    <PageShell title={step === "pick" ? t("add.title") : formTitle} action={headerAction} className="ct-add-page ct-form-narrow">
+      {step === "pick" ? (
+        <AddTypePicker onSelect={handlePick} />
+      ) : addKind === "lending" ? (
+        <div className="ct-stack ct-add-form-embedded">
+          <div>
+            <label className="ct-field-label">{t("add.lendingPersonName")}</label>
+            <input
+              type="text"
+              value={lendingForm.personName}
+              onChange={(e) => setLendingForm((f) => ({ ...f, personName: e.target.value }))}
+              className={fieldClass("personName")}
+            />
+          </div>
+          <div>
+            <label className="ct-field-label">{t("add.amountLabel")}</label>
+            <input
+              type="number"
+              value={lendingForm.totalAmount}
+              onChange={(e) => setLendingForm((f) => ({ ...f, totalAmount: e.target.value }))}
+              className={fieldClass("totalAmount")}
+            />
+          </div>
+          <div className="ct-grid-2">
+            <button
+              type="button"
+              className={`ct-add-type-mini ${lendingForm.type === "lent" ? "active" : ""}`}
+              onClick={() => setLendingForm((f) => ({ ...f, type: "lent" }))}
+            >
+              {t("lending.sectionLent")}
+            </button>
+            <button
+              type="button"
+              className={`ct-add-type-mini ${lendingForm.type === "borrowed" ? "active" : ""}`}
+              onClick={() => setLendingForm((f) => ({ ...f, type: "borrowed" }))}
+            >
+              {t("lending.sectionOwe")}
+            </button>
+          </div>
+          <div>
+            <label className="ct-field-label">{t("add.dueDateLabel")}</label>
+            <input
+              type="date"
+              value={lendingForm.dueDate}
+              onChange={(e) => setLendingForm((f) => ({ ...f, dueDate: e.target.value }))}
+              className={fieldClass("dueDate")}
+            />
+          </div>
+          <Button type="button" size="lg" className="ct-add-submit-sticky" onClick={submitLending}>
+            {t("add.submitLending")}
+          </Button>
+        </div>
+      ) : (
+        <>
+          {addKind === "bill" && (
+            <button type="button" className="ct-add-scan-tile" onClick={() => navigate("/tools?tool=bill-scanner")}>
+              <CtIcon name="camera" size={24} />
+              <span>
+                <strong>{t("add.scanTileTitle")}</strong>
+                <span className="block">{t("add.scanTileHint")}</span>
+              </span>
+            </button>
+          )}
+          <AddCommitmentForm
+            entryType={entryType}
+            onEntryTypeChange={setEntryType}
+            onVariableSaved={() => navigate("/money/spends")}
+            form={form}
+            errors={errors}
+            fieldClass={fieldClass}
+            billCategories={billCategories}
+            showChit={showChit}
+            showInsurance={showInsurance}
+            showInterest={showInterest}
+            isSubscription={isSubscription}
+            isOther={isOther}
+            category={category}
+            salariedFamily={salariedFamily}
+            priorSpendHint={priorSpendHint}
+            todayStr={todayStr}
+            affordability={affordability}
+            onChange={handleChange}
+            onChitChange={handleChitChange}
+            onInsuranceChange={handleInsuranceChange}
+            onFillEndDate={fillEndDateIfEmpty}
+            onSubmit={handleSubmit}
+            embedded
+            hideTypeSwitcher
+          />
+        </>
+      )}
+    </PageShell>
   );
 };
 

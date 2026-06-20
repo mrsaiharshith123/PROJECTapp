@@ -1,0 +1,46 @@
+---
+description: Checklist when creating or editing a new Page screen — route, i18n, empty state, nav.
+globs:
+  - src/ui/features/pages/*Page.jsx
+  - src/App.jsx
+---
+
+# New screen checklist
+
+When adding or substantially editing a page under `src/ui/features/pages/`:
+
+## 1. Route wiring
+
+- Add lazy import in `src/App.jsx`: `const Foo = lazy(() => import("./ui/features/pages/FooPage.jsx"));`
+- Add `<Route path="..." element={<Foo />} />` under the correct parent route.
+- Add the path to `NAV_FULL` in `src/constants/userModes.js` if it is a navigable screen.
+
+## 2. Page shell & i18n
+
+- Wrap content in `PageShell` with `title={t("…")}` — **never hardcode English titles**.
+- Add all new copy keys to `src/i18n/messages/en.js`, then run `npm run sync:i18n`.
+
+## 3. Empty states
+
+- List screens (bills, spends, lending, goals) must render `EmptyState` or `GuidedEmptyState`.
+- Register guided empty states in `src/guidance/registry/emptyStates.js` with a stable key.
+- Use `GuidedEmptyState` with `guidanceKey="…"` for primary product lists.
+
+## 4. Mobile / device resize
+
+- Use `ct-*` layout classes — no fixed pixel widths on page containers.
+- Prefer `100dvh` / `min-height: 100dvh` over `100vh` for full-height layouts.
+- Bottom sheets and modals must respect `env(safe-area-inset-*)` (see `components.css`).
+- Test mentally at 320px width — no horizontal scroll on the main column.
+
+## 5. Accessibility
+
+- Icon-only buttons and FABs need `aria-label={t("…")}`.
+- Modals/sheets use `role="dialog"` + `aria-modal="true"` (see `Modal.jsx`).
+
+## 6. Verify
+
+```bash
+npm run audit          # full gate including governance
+npm run audit:ui-depth # route/nav wiring
+```

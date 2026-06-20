@@ -5,13 +5,6 @@ export const ARROW = "\u2192";
 export const CHEVRON = "\u203A";
 
 /** Semantic icon keys — render with CtIcon in UI. */
-export const STATUS_ICONS = {
-  paid: "check",
-  pending: "calendar",
-  overdue: "warning",
-  upnext: "arrows-clockwise",
-};
-
 export const TOOL_ICONS = {
   planner: "calculator",
   loan: "chart-line-down",

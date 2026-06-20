@@ -3,6 +3,22 @@ import { getExperienceMode } from "../../constants/modeExperience.js";
 /** @typedef {{ icon: string, titleKey: string, hintKey: string, actionLabelKey?: string, actionPath?: string }} EmptyGuidance */
 
 const BY_KEY = {
+  "home-score": {
+    salaried: {
+      icon: "chart-line-up",
+      titleKey: "empty.homeScore.title",
+      hintKey: "empty.homeScore.hint",
+      actionLabelKey: "empty.homeScore.action",
+      actionPath: "/add",
+    },
+    family: {
+      icon: "users-three",
+      titleKey: "empty.homeScore.family.title",
+      hintKey: "empty.homeScore.family.hint",
+      actionLabelKey: "empty.homeScore.family.action",
+      actionPath: "/add",
+    },
+  },
   "home-upcoming": {
     salaried: {
       icon: "calendar",

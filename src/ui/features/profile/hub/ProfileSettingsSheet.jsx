@@ -5,6 +5,7 @@ import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { isSalariedFamily } from "../../../../constants/modeExperience.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
 import PlansModal from "../PlansModal.jsx";
+import ProfileUpdateAppRow from "../ProfileUpdateAppRow.jsx";
 
 /** @typedef {{ id: string, labelKey: string, icon?: string, panelId?: string, danger?: boolean, action?: string }} SettingsRowDef */
 
@@ -124,6 +125,7 @@ export default function ProfileSettingsSheet({
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.support")} icon="chat-circle">
+              <ProfileUpdateAppRow />
               <SettingsGroupRow icon="book-open" iconColor="violet" label={t("settings.row.help")} onClick={() => openPanel("guide")} />
               <SettingsGroupRow
                 icon="file-text"

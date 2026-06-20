@@ -1,0 +1,48 @@
+---
+description: Responsive layout, device resize, safe-area for PWA/TWA/Capacitor.
+globs:
+  - src/ui/**/*.jsx
+  - src/ui/styles/**/*.css
+  - index.html
+  - vite.config.js
+---
+
+# Responsive & device resize (PWA / TWA / Capacitor)
+
+Perovo ships as **browser PWA**, **Play Store TWA**, and **Capacitor APK/iOS**. One codebase must resize correctly on all devices.
+
+## Viewport & safe area
+
+- `index.html` must keep `viewport-fit=cover` and boot styles using `100dvh`.
+- Page padding uses `env(safe-area-inset-*)` via `.ct-page` in `components.css` — do not bypass with raw `padding: 16px` on page roots.
+- Bottom nav, FAB, and sticky CTAs account for `safe-area-inset-bottom`.
+
+## Layout rules
+
+- **No fixed page widths** ≥300px without `max-width` or a `@media` breakpoint.
+- Prefer `ct-stack`, `ct-row-between`, `ct-grid-2`, `ct-form-narrow` over ad-hoc flex with pixel widths.
+- Use `min-w-0` on flex children that contain truncating text or horizontal scroll regions.
+- Avoid `100vw` on full-width elements (scrollbar overflow). Use `100%` or `ct-page` instead.
+- Prefer `dvh` over `vh` for full-screen panels, sheets, and auth gates.
+
+## Shell-specific
+
+- **PWA install prompt**: hide when `isEmbeddedApp()` is true (`src/utils/embeddedApp.js`).
+- **TWA**: requires `public/.well-known/assetlinks.json` on production host.
+- **Capacitor**: `webDir: "dist"` in `capacitor.config.ts`; run `npm run cap:sync` after build changes.
+
+## Components
+
+- `PageShell` for top-level pages; nested tabs (Money shell) omit duplicate shells intentionally.
+- Bottom sheets (`Modal sheet`) max-height uses `dvh` + safe-area — see `.ct-modal-panel--sheet`.
+- Segmented controls and chip rows wrap or scroll horizontally — never clip on 320px screens.
+
+## Governance
+
+```bash
+npm run audit:mobile   # responsive heuristics
+npm run audit:pwa      # viewport, manifest, safe-area
+npm run audit:native-shells  # TWA + Capacitor config
+```
+
+Both are included in `npm run audit`.

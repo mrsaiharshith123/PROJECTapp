@@ -173,6 +173,15 @@ html[data-ui="ct"][data-theme="light"] .ct-attention-row.warning {
 html[data-ui="ct"][data-theme="light"] .ct-icon-tile.primary {
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.22);
 }
+html[data-ui="ct"][data-theme="light"] .ct-home-hero-stat,
+html[data-ui="ct"][data-theme="light"] .ct-home-tools-entry,
+html[data-ui="ct"][data-theme="light"] .ct-home-goal-nudge {
+  background: rgba(15, 23, 42, 0.03);
+  border-color: rgba(15, 23, 42, 0.06);
+}
+html[data-ui="ct"][data-theme="light"] .ct-home-hero-divider {
+  background: rgba(15, 23, 42, 0.08);
+}
 html[data-ui="ct"] .ct-settings-group-modern {
   background: rgba(15, 23, 42, 0.03);
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { computeGoalProgress } from "../../../engines/goalsProgress.js";
 import { analyzeSipForGoal } from "../../../engines/sipAdvisor.js";
 import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
@@ -31,7 +31,10 @@ function goalTypeI18nKey(id) {
   return `goals.type.${map[id] || id}`;
 }
 
-export default function GoalsToolPanel() {
+export default function GoalsToolPanel({
+  initialTitle = "",
+  initialType = "save_amount",
+}) {
   const { t } = useTranslation();
   const {
     allGoals,
@@ -46,14 +49,19 @@ export default function GoalsToolPanel() {
     todayStr,
   } = usePerovo();
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
-  const [gType, setGType] = useState("reduce_open_debt");
-  const [gTitle, setGTitle] = useState("");
+  const [gType, setGType] = useState(initialType);
+  const [gTitle, setGTitle] = useState(initialTitle);
   const [gTarget, setGTarget] = useState("");
   const [gTargetDate, setGTargetDate] = useState("");
   const [gForMember, setGForMember] = useState("shared");
   const [celebration, setCelebration] = useState(null);
   const celebratedGoals = useRef(new Set());
   const salariedFamily = isSalariedFamily(settings);
+
+  useEffect(() => {
+    if (initialTitle) setGTitle(initialTitle);
+    if (initialType) setGType(initialType);
+  }, [initialTitle, initialType]);
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;

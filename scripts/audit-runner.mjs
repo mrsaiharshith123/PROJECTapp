@@ -26,6 +26,11 @@ import { runSyncAudit } from "./governance/sync.mjs";
 import { runGuidanceAudit } from "./governance/guidance.mjs";
 import { runTreeAudit } from "./governance/tree.mjs";
 import { runTransactionsAudit } from "./governance/transactions.mjs";
+import { runA11yAudit } from "./governance/a11y.mjs";
+import { runThemeAudit } from "./governance/theme.mjs";
+import { runEmptyStatesAudit } from "./governance/empty-states.mjs";
+import { runPwaAudit } from "./governance/pwa.mjs";
+import { runCleanupAudit } from "./governance/cleanup.mjs";
 
 /** @type {{ id: string, label: string, group: string, quick: boolean, fn?: () => object, script?: string }[]} */
 const GOVERNANCE = [
@@ -36,7 +41,12 @@ const GOVERNANCE = [
   { id: "insights", label: "Insight engines", group: "product", quick: false, fn: runInsightsAudit },
   { id: "transactions", label: "Transaction intelligence", group: "product", quick: true, fn: runTransactionsAudit },
   { id: "performance", label: "Performance heuristics", group: "frontend", quick: false, fn: runPerformanceAudit },
-  { id: "mobile", label: "Mobile & responsive", group: "frontend", quick: true, fn: runMobileAudit },
+  { id: "mobile", label: "Mobile, responsive & device resize", group: "frontend", quick: true, fn: runMobileAudit },
+  { id: "pwa", label: "PWA, viewport & safe-area", group: "frontend", quick: true, fn: runPwaAudit },
+  { id: "a11y", label: "Accessibility (ARIA, labels)", group: "frontend", quick: true, fn: runA11yAudit },
+  { id: "theme", label: "Light/dark theme tokens", group: "frontend", quick: true, fn: runThemeAudit },
+  { id: "empty-states", label: "Empty-state & page shells", group: "product", quick: true, fn: runEmptyStatesAudit },
+  { id: "cleanup", label: "Stale files & ghost folders", group: "platform", quick: true, fn: runCleanupAudit },
   { id: "native-shells", label: "TWA & Capacitor shells", group: "platform", quick: true, fn: runNativeShellsAudit },
   { id: "duplicates", label: "Duplicate & similar UI", group: "frontend", quick: false, fn: runDuplicatesAudit },
   { id: "sync", label: "Local-first & cloud sync", group: "platform", quick: true, fn: runSyncAudit },
@@ -48,7 +58,9 @@ const LEGACY = [
   { id: "ui", label: "UI layout (ct-* / src/ui)", group: "legacy", quick: true, script: "scripts/audit-ui.mjs" },
   { id: "styles", label: "CSS & tokens", group: "legacy", quick: true, script: "scripts/audit-styles.mjs" },
   { id: "ui-depth", label: "Screens, nav, dead buttons", group: "legacy", quick: true, script: "scripts/audit-ui-depth.mjs" },
-  { id: "merge", label: "Merge suggestions", group: "legacy", quick: false, script: "scripts/audit-merge-suggestions.mjs" },
+  { id: "merge", label: "Merge suggestions", group: "legacy", quick: true, script: "scripts/audit-merge-suggestions.mjs" },
+  { id: "orphans", label: "Test-only production modules", group: "legacy", quick: true, script: "scripts/audit-orphan-modules.mjs" },
+  { id: "tier", label: "Subscription tier gates", group: "legacy", quick: true, script: "scripts/audit-tier-gates.mjs" },
 ];
 
 /** Full lint/knip — use npm run audit:code (not bundled in governance to avoid duplicate failures) */
@@ -109,6 +121,26 @@ function runLegacy(entry, opts) {
         message: i.from?.length ? `Merge → ${i.into}` : String(i.into),
         detail: i.reason,
       })),
+    };
+  }
+  if (entry.id === "orphans") {
+    const items = data.items || [];
+    return {
+      id: entry.id,
+      title: entry.label,
+      errors: [],
+      warnings: items.map((i) => ({ message: i.file, detail: "Only imported from tests" })),
+      advisories: [],
+    };
+  }
+  if (entry.id === "tier") {
+    const items = data.items || [];
+    return {
+      id: entry.id,
+      title: entry.label,
+      errors: items.length ? items.map((id) => ({ message: `Ungated feature: ${id}` })) : [],
+      warnings: [],
+      advisories: [],
     };
   }
   if (entry.id === "ui-depth") {

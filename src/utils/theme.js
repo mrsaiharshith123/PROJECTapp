@@ -1,7 +1,7 @@
 export const COLOR_SCHEME_IDS = ["light", "dark", "system"];
 
 export function resolveColorScheme(preference) {
-  const pref = COLOR_SCHEME_IDS.includes(preference) ? preference : "system";
+  const pref = COLOR_SCHEME_IDS.includes(preference) ? preference : "dark";
   if (pref === "light") return "light";
   if (pref === "dark") return "dark";
   if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -31,11 +31,11 @@ export function bootstrapThemeFromStorage() {
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === "object" && !Array.isArray(o)) {
-        return applyColorScheme(o.colorScheme || "system");
+        return applyColorScheme(o.colorScheme || "dark");
       }
     }
   } catch {
     /* ignore */
   }
-  return applyColorScheme("system");
+  return applyColorScheme("dark");
 }

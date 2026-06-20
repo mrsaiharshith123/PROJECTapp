@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { PageShell, Fab, SegmentedControl, TabContent } from "../../";
+import { Fab } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
-import SpendSmsDetectModal from "../../features/modals/SpendSmsDetectModal.jsx";
-import LogSpendModal from "../../features/modals/LogSpendModal.jsx";
-import BankStatementImportModal from "../../features/modals/BankStatementImportModal.jsx";
-import DailySpendPanel from "../../features/commitments/DailySpendPanel.jsx";
 import CommitmentsBillsTab from "../../features/commitments/CommitmentsBillsTab.jsx";
 import CommitmentsPaymentModal from "../../features/commitments/CommitmentsPaymentModal.jsx";
+import PaymentDeadlineCalendarModal from "../../features/dashboard/PaymentDeadlineCalendarModal.jsx";
+import MoneyOverflowMenu from "../../features/money/MoneyOverflowMenu.jsx";
 import { useCommitmentsBillData } from "../../features/commitments/useCommitmentsBillData.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
@@ -21,17 +19,15 @@ import {
   suggestedCyclePaymentAmount,
 } from "../../../utils/commitmentPayments.js";
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
-import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
 import { exportCommitmentsToExcel } from "../../../utils/excelExport.js";
-import { Button } from "../../primitives/Button.jsx";
 
 const Commitments = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   const copy = useCopy();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const {
     sortedCommitments,
     commitments,
@@ -53,36 +49,20 @@ const Commitments = () => {
   const [filterPreset, setFilterPreset] = useState("");
   const filterPriority = "";
   const sortBy = "priority_due";
-  const [showHistory, setShowHistory] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const [editing, setEditing] = useState(null);
   const [detailFor, setDetailFor] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
   const [payDate, setPayDate] = useState(() => todayYmd());
   const [smsOpen, setSmsOpen] = useState(false);
-  const [spendSmsOpen, setSpendSmsOpen] = useState(false);
-  const [logSpendOpen, setLogSpendOpen] = useState(false);
-  const [bankImportOpen, setBankImportOpen] = useState(false);
-  const [pageTab, setPageTab] = useState(() =>
-    searchParams.get("tab") === "spend" ? "spend" : "bills",
-  );
   const [celebration, setCelebration] = useState(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const openBankImport = () => {
-    if (!tierHasFeature("bank_import", settings)) {
-      navigate("/profile#upgrade");
-      return;
+  useEffect(() => {
+    if (searchParams.get("tab") === "spend") {
+      navigate("/money/spends", { replace: true });
     }
-    setBankImportOpen(true);
-  };
-
-  const switchTab = (tab) => {
-    setPageTab(tab);
-    if (tab === "spend") {
-      setSearchParams({ tab: "spend" }, { replace: true });
-    } else {
-      setSearchParams({}, { replace: true });
-    }
-  };
+  }, [searchParams, navigate]);
 
   useEffect(() => {
     const openBillId = location.state?.openBillId;
@@ -90,10 +70,7 @@ const Commitments = () => {
     const bill = commitments.find((c) => c.id === openBillId);
     navigate(location.pathname + location.search, { replace: true, state: {} });
     if (!bill) return;
-    queueMicrotask(() => {
-      setPageTab("bills");
-      setDetailFor(bill);
-    });
+    queueMicrotask(() => setDetailFor(bill));
   }, [location.state?.openBillId, commitments, location.pathname, location.search, navigate]);
 
   const { activeBills, historyBills, counts } = useCommitmentsBillData({
@@ -142,98 +119,69 @@ const Commitments = () => {
   const cycleAlreadyPaid =
     paymentFor && isCurrentCyclePaid(paymentFor, todayStr, sortedCommitments);
 
-  const headerActions = (
-    <div className="ct-header-actions">
-      {pageTab === "spend" ? (
-        <>
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-            aria-label={t("bills.importBankStatement")}
-            onClick={openBankImport}
-          >
-            <CtIcon name="file-text" size={22} />
-          </button>
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-            aria-label={t("bills.detectSmsSpend")}
-            onClick={() => setSpendSmsOpen(true)}
-          >
-            <CtIcon name="device-mobile" size={22} />
-          </button>
-          <Fab type="button" onClick={() => setLogSpendOpen(true)} aria-label={t("bills.actionLogSpend")}>
-            +
-          </Fab>
-        </>
-      ) : (
-        <>
-          <Button type="button" variant="ghost" size="sm" onClick={() => exportCommitmentsToExcel(commitments)}>
-            {t("export.excel.commitments")}
-          </Button>
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
-            aria-label={t("bills.detectSms")}
-            onClick={() => setSmsOpen(true)}
-          >
-            <CtIcon name="device-mobile" size={22} />
-          </button>
+  const overflowItems = [
+    {
+      id: "export",
+      label: t("export.excel.commitments"),
+      onClick: () => exportCommitmentsToExcel(commitments),
+    },
+    {
+      id: "calendar",
+      label: t("home.actionCalendar"),
+      onClick: () => setCalendarOpen(true),
+    },
+    {
+      id: "sms",
+      label: t("bills.detectSms"),
+      onClick: () => setSmsOpen(true),
+    },
+  ];
+
+  return (
+    <div className="ct-stack ct-money-bills-page">
+      <div className="ct-row-between gap-2 mb-1">
+        <span className="ct-caption">{t("bills.eyebrowMonthly")}</span>
+        <div className="ct-header-actions">
+          <MoneyOverflowMenu items={overflowItems} />
           <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
             +
           </Fab>
-        </>
-      )}
-    </div>
-  );
+        </div>
+      </div>
 
-  return (
-    <PageShell title={copy.billsPageTitle} subtitle={t("bills.eyebrowMonthly")} action={headerActions}>
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
-      <SpendSmsDetectModal open={spendSmsOpen} onClose={() => setSpendSmsOpen(false)} />
-      {logSpendOpen && <LogSpendModal onClose={() => setLogSpendOpen(false)} />}
-      {bankImportOpen && <BankStatementImportModal onClose={() => setBankImportOpen(false)} />}
-
-      <SegmentedControl
-        options={[
-          { id: "bills", label: t("bills.tabRecurring") },
-          { id: "spend", label: t("bills.tabVariable") },
-        ]}
-        value={pageTab}
-        onChange={switchTab}
+      <PaymentDeadlineCalendarModal
+        key={calendarOpen ? `cal-${todayStr}` : "closed"}
+        open={calendarOpen}
+        onClose={() => setCalendarOpen(false)}
       />
 
-      <TabContent tabId="spend" activeTab={pageTab}>
-        <DailySpendPanel />
-      </TabContent>
-
-      <TabContent tabId="bills" activeTab={pageTab}>
-        <CommitmentsBillsTab
-          copy={copy}
-          sortedCommitments={sortedCommitments}
-          commitments={commitments}
-          todayStr={todayStr}
-          activeBills={activeBills}
-          historyBills={historyBills}
-          counts={counts}
-          search={search}
-          onSearchChange={setSearch}
-          filterCategory={filterCategory}
-          onFilterCategoryChange={setFilterCategory}
-          filterStatus={filterStatus}
-          onFilterStatusChange={setFilterStatus}
-          filterPreset={filterPreset}
-          onFilterPresetChange={setFilterPreset}
-          showHistory={showHistory}
-          onToggleHistory={() => setShowHistory((v) => !v)}
-          onOpenDetail={setDetailFor}
-          onOpenPayment={openPayment}
-          onEdit={setEditing}
-          onDelete={deleteCommitment}
-          dailySpends={dailySpends}
-          onAddCommitment={() => navigate("/add")}
-        />
-      </TabContent>
+      <CommitmentsBillsTab
+        copy={copy}
+        sortedCommitments={sortedCommitments}
+        commitments={commitments}
+        todayStr={todayStr}
+        activeBills={activeBills}
+        historyBills={historyBills}
+        counts={counts}
+        search={search}
+        onSearchChange={setSearch}
+        filterCategory={filterCategory}
+        onFilterCategoryChange={setFilterCategory}
+        filterStatus={filterStatus}
+        onFilterStatusChange={setFilterStatus}
+        filterPreset={filterPreset}
+        onFilterPresetChange={setFilterPreset}
+        showHistory={showHistory}
+        onToggleHistory={() => setShowHistory((v) => !v)}
+        onOpenDetail={setDetailFor}
+        onOpenPayment={openPayment}
+        onEdit={setEditing}
+        onDelete={deleteCommitment}
+        dailySpends={dailySpends}
+        onAddCommitment={() => navigate("/add")}
+        getEffectiveStatus={getEffectiveStatus}
+      />
 
       <CommitmentsPaymentModal
         paymentFor={paymentFor}
@@ -269,6 +217,7 @@ const Commitments = () => {
             setDetailFor(null);
             deleteCommitment(id);
           }}
+          sheet
         />
       )}
 
@@ -289,7 +238,7 @@ const Commitments = () => {
           onComplete={() => setCelebration(null)}
         />
       )}
-    </PageShell>
+    </div>
   );
 };
 

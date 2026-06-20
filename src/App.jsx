@@ -30,6 +30,7 @@ import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
+const Spends = lazy(() => import("./ui/features/pages/SpendsPage.jsx"));
 const Add = lazy(() => import("./ui/features/pages/AddPage.jsx"));
 const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
@@ -93,6 +94,7 @@ function MainShell() {
             <Route path="/money" element={<MoneyShell />}>
               <Route index element={<Navigate to="bills" replace />} />
               <Route path="bills" element={<Commitments />} />
+              <Route path="spends" element={<Spends />} />
               <Route
                 path="lending"
                 element={
@@ -114,7 +116,6 @@ function MainShell() {
             <Route path="/family-room" element={<HouseholdRoom />} />
             <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
             <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
-            <Route path="/tools" element={<Tools />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/scores" element={<ProfileScoresDetail />} />
             <Route

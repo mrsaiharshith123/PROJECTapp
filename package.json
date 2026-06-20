@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:simulate-pay": "node scripts/dev-simulate-pay.mjs",
     "preview:simulate-pay": "node scripts/dev-simulate-pay.mjs preview",
-    "build": "node scripts/generate-pwa-icons.mjs && vite build && node scripts/copy-404.mjs",
+    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-app-version.mjs && vite build && node scripts/copy-404.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "node scripts/clean.mjs",
@@ -95,7 +95,12 @@
     "apk:dev": "node scripts/build-dev-apk.mjs",
     "apk:twa": "cd twa && bubblewrap build --manifest twa-manifest.json",
     "apk:twa:install": "cd twa && bubblewrap install",
-    "audit:native-shells": "node scripts/audit-runner.mjs native-shells"
+    "audit:native-shells": "node scripts/audit-runner.mjs native-shells",
+    "audit:a11y": "node scripts/audit-runner.mjs a11y",
+    "audit:theme": "node scripts/audit-runner.mjs theme",
+    "audit:empty-states": "node scripts/audit-runner.mjs empty-states",
+    "audit:pwa": "node scripts/audit-runner.mjs pwa",
+    "audit:cleanup": "node scripts/audit-runner.mjs cleanup"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.2",

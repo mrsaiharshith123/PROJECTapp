@@ -29,13 +29,13 @@ export const FEATURES = [
     layer: "product",
     ui: [
       "ui/features/pages/LendingPage.jsx",
-      "ui/features/lending/LendingProfileCard.jsx",
+      "ui/features/money/LendingHeroSummary.jsx",
       "ui/features/lending/",
       "ui/features/modals/LendingDetailModal.jsx",
     ],
     engines: ["engines/lendingTrust.js", "engines/lendingAgreement.js"],
     hooks: [],
-    notes: "Lending profile hero card + share; trust score from lendingTrust engine",
+    notes: "Lending hero summary + share; trust score from lendingTrust engine",
   },
   {
     id: "net-worth",

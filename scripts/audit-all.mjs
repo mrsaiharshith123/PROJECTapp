@@ -404,6 +404,86 @@ console.log(paint(C.bold, "Running checks…\n"));
   record("build", "Production build & bundles", errors, bundle.warnings, r.ok, bundle.notes, false);
 }
 
+// 9 — Governance batch (design, mobile, PWA, a11y, theme, shells, merge, orphans, tier, …)
+{
+  const r = runQuiet("Governance & project health", "node", [
+    "scripts/audit-runner.mjs",
+    "--gov",
+    "--with-legacy",
+    "--json",
+  ]);
+  const data = parseJson(r.out) || { totals: { errors: 1, warnings: 0, advisories: 0 }, audits: [] };
+  const notes = [];
+  const failedAudits = (data.audits || []).filter((a) => a.errors > 0);
+  const warnAudits = (data.audits || []).filter((a) => a.warnings > 0 && a.errors === 0);
+  const mergeAudit = (data.audits || []).find((a) => a.id === "merge");
+  const orphanAudit = (data.audits || []).find((a) => a.id === "orphans");
+
+  if (failedAudits.length) {
+    notes.push(`${failedAudits.length} governance check(s) with errors: ${failedAudits.map((a) => a.id).join(", ")}`);
+    for (const a of failedAudits.slice(0, 3)) {
+      notes.push(`  ${a.id}: ${a.errors} error(s)`);
+    }
+  } else {
+    notes.push(`Governance OK — ${(data.audits || []).length} checks (design, mobile, PWA, a11y, theme, shells, merge)`);
+  }
+  if (warnAudits.length) {
+    notes.push(`${warnAudits.length} advisory governance check(s) — npm run audit:governance:full -- --verbose`);
+  }
+  if (mergeAudit?.advisories > 0) {
+    notes.push(`${mergeAudit.advisories} file merge suggestion(s) — npm run audit:merge -- --list`);
+  }
+  if (orphanAudit?.warnings > 0) {
+    notes.push(`${orphanAudit.warnings} test-only module(s) — npm run audit:orphans -- --list`);
+  }
+
+  const govErrors = data.totals?.errors ?? (r.ok ? 0 : 1);
+  const govWarnings = (data.totals?.warnings ?? 0) + (data.totals?.advisories ?? 0);
+  record(
+    "governance",
+    "Governance & project health",
+    govErrors,
+    govWarnings,
+    r.ok && govErrors === 0,
+    notes,
+  );
+}
+
+// 10 — Registry sync & engine test coverage
+{
+  const reg = runQuiet("Feature registry sync", "node", ["scripts/audit-registry-sync.mjs", "--json"]);
+  const regData = parseJson(reg.out) || { total: reg.ok ? 0 : 1 };
+  const eng = runQuiet("Engine test coverage", "node", ["scripts/audit-engine-tests.mjs", "--json"]);
+  const engData = parseJson(eng.out) || { untested: 0 };
+  const notes = [];
+  const regErrors = regData.total ?? (reg.ok ? 0 : 1);
+  const engWarnings = engData.untested ?? 0;
+  if (regErrors) notes.push("Registry out of sync with code — npm run audit:registry-sync");
+  else notes.push("Feature/mode registries match codebase");
+  if (engWarnings) notes.push(`${engWarnings} engine(s) missing tests — npm run audit:engine-tests`);
+  else notes.push("Engine test coverage OK");
+  record(
+    "registry",
+    "Registries & engine tests",
+    regErrors,
+    engWarnings,
+    reg.ok && eng.ok && regErrors === 0,
+    notes,
+    false,
+  );
+}
+
+// 11 — Cloud sync governance
+{
+  const r = runQuiet("Local-first cloud sync rules", "node", ["scripts/audit-runner.mjs", "sync", "--json"]);
+  const data = parseJson(r.out) || { audits: [{ errors: r.ok ? 0 : 1 }] };
+  const audit = data.audits?.[0] || {};
+  const notes = [];
+  if (audit.errors) notes.push(`${audit.errors} sync rule violation(s)`);
+  else notes.push("No auto-pull on startup; empty remote guard OK");
+  record("sync", "Cloud sync governance", audit.errors || 0, audit.warnings || 0, r.ok && !(audit.errors > 0), notes);
+}
+
 // ── Report ───────────────────────────────────────────────────────────────────
 const totalErrors = sections.reduce((s, x) => s + x.errors, 0);
 const totalWarnings = sections.reduce((s, x) => s + x.warnings, 0);
@@ -465,13 +545,13 @@ if (STRICT) {
 }
 console.log(paint(C.dim, "  ● RED/FAIL = must fix · YELLOW/WARN = review · GREEN/PASS = clean"));
 console.log(
-  paint(C.dim, "  ● Checks: env, deps, CSS, UI layout, copy tone, i18n, code+UI depth, tests, types, build"),
+  paint(C.dim, "  ● Checks: env, deps, CSS, UI, copy, i18n, code, tests, types, build, governance, registries, sync"),
 );
 console.log(
-  paint(C.dim, "  ● Focused tests: npm run test:sync · test:engines · test:utils"),
+  paint(C.dim, "  ● Governance includes: design, mobile/PWA, a11y, theme, shells, merge, orphans, tier, cleanup"),
 );
 console.log(
-  paint(C.dim, "  ● Governance scans: npm run audit:governance:quick · audit:sync · docs/08-governance.md"),
+  paint(C.dim, "  ● Focused: npm run audit:merge · audit:orphans · audit:governance:full · test:sync"),
 );
 
 console.log();

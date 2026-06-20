@@ -3,8 +3,7 @@ import { Caption } from "../../index.js";
 import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SettingsGroup, SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
-
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
+import { getLocalAppVersion } from "../../../services/appUpdate.js";
 
 export default function ProfileSupportSection({ onOpenGuide }) {
   const { t } = useTranslation();
@@ -42,7 +41,7 @@ export default function ProfileSupportSection({ onOpenGuide }) {
       <SettingsGroup title={t("support.about")} icon="book">
         <SettingsGroupContent className="ct-stack-sm">
           <Caption className="block">{t("support.aboutBody")}</Caption>
-          <Caption className="block opacity-80">{t("support.version", { version: APP_VERSION })}</Caption>
+          <Caption className="block opacity-80">{t("support.version", { version: getLocalAppVersion() })}</Caption>
           <div className="flex justify-center pt-1">
             <PerovoBrand layout="column" iconSize="sm" wordmarkSize="sm" />
           </div>

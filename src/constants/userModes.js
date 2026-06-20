@@ -1,7 +1,7 @@
 /** Primary bottom nav — Home · Money · Add · Plan · Profile */
 export const NAV_ITEMS = [
   { to: "/", labelKey: "nav.home", icon: "house" },
-  { to: "/money/bills", labelKey: "nav.bills", icon: "clipboard-text", navGroup: "money" },
+  { to: "/money", labelKey: "nav.money", icon: "wallet", navGroup: "money" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
   { to: "/plan", labelKey: "nav.plan", icon: "target", navGroup: "plan" },
   { to: "/profile", labelKey: "nav.profile", icon: "user" },
@@ -13,7 +13,7 @@ export const USER_MODE_IDS = ["salaried"];
 /** Removed modes — migrated to salaried on load. */
 export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
-const NAV_FULL = ["/", "/money/bills", "/money/lending", "/money/insights", "/add", "/plan", "/profile"];
+const NAV_FULL = ["/", "/money", "/money/bills", "/money/spends", "/money/lending", "/money/insights", "/add", "/plan", "/profile"];
 
 export const USER_MODES = [
   {

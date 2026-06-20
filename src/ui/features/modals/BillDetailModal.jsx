@@ -35,6 +35,7 @@ export default function BillDetailModal({
   onAddPayment,
   onUndoPayment,
   onDelete,
+  sheet = false,
 }) {
   const { t } = useTranslation();
   const summary = computeBillSpendSummary(bill, todayStr, allCommitments);
@@ -52,6 +53,7 @@ export default function BillDetailModal({
     <Modal
       title={bill.name}
       onClose={onClose}
+      sheet={sheet}
       footer={
         <div className="ct-stack-sm w-full">
           {canPay ? (

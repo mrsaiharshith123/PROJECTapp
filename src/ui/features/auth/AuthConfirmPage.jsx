@@ -10,7 +10,7 @@ import { Card } from "../../primitives/Card.jsx";
 import { getSupabaseClient } from "../../../services/supabase/auth.js";
 import { isCustomerModeEnabled } from "../../../utils/embeddedApp.js";
 import { formatAuthError } from "../../../utils/authErrors.js";
-import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
+import AppDownloadSheet from "../AppDownloadSheet.jsx";
 
 function parseAuthCallbackParams() {
   const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
@@ -33,6 +33,7 @@ export default function AuthConfirmPage() {
   const { t } = useTranslation();
   const [phase, setPhase] = useState(/** @type {"processing"|"success"|"error"} */ ("processing"));
   const [detail, setDetail] = useState("");
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const marketing = isCustomerModeEnabled();
 
   useEffect(() => {
@@ -94,8 +95,6 @@ export default function AuthConfirmPage() {
     return () => sub.subscription.unsubscribe();
   }, [t]);
 
-  const downloadUrl = getApkDownloadUrl();
-
   return (
     <div className="ct-screen ct-landing ct-auth-confirm">
       <MarketingThemeSync />
@@ -129,13 +128,13 @@ export default function AuthConfirmPage() {
               <Body className="ct-auth-confirm-body">{t("auth.confirmSuccessBody")}</Body>
               {marketing ? (
                 <>
-                  <a
-                    href={downloadUrl}
-                    {...apkDownloadLinkProps(downloadUrl)}
+                  <button
+                    type="button"
+                    onClick={() => setDownloadOpen(true)}
                     className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
                   >
                     {t("webLanding.downloadButton")}
-                  </a>
+                  </button>
                   <Caption className="ct-auth-confirm-hint">{t("auth.confirmOpenAppHint")}</Caption>
                 </>
               ) : (
@@ -162,6 +161,7 @@ export default function AuthConfirmPage() {
           )}
         </Card>
       </div>
+      <AppDownloadSheet open={downloadOpen} onClose={() => setDownloadOpen(false)} />
     </div>
   );
 }

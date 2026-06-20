@@ -1,10 +1,9 @@
-import { useState } from "react";
-import { PageShell, Card, Caption, Button, fieldInputClass, EmptyState, inputClassName } from "../../";
+import { useMemo, useState } from "react";
+import { Card, Caption, Button, fieldInputClass, EmptyState, inputClassName } from "../../";
 import { exportLendingToExcel } from "../../../utils/excelExport.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
-import { trustSummaryLine } from "../../../engines/lendingTrust.js";
 import LendingEntryCard from "../lending/LendingEntryCard.jsx";
 import LendingPageDialogs from "../lending/LendingPageDialogs.jsx";
 import { useLendingLists } from "../lending/useLendingLists.js";
@@ -13,8 +12,11 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import BillSplitModal from "../modals/BillSplitModal.jsx";
 import { canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
-import LendingProfileCard from "../lending/LendingProfileCard.jsx";
 import LendingOverduePanel from "../lending/LendingOverduePanel.jsx";
+import LendingHeroSummary from "../money/LendingHeroSummary.jsx";
+import MoneyOverflowMenu from "../money/MoneyOverflowMenu.jsx";
+import { Fab } from "../../index.js";
+import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -46,8 +48,9 @@ const Lending = () => {
   const [showRequest, setShowRequest] = useState(false);
   const [billSplitOpen, setBillSplitOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [listTab, setListTab] = useState("lent");
 
-  const { borrowedList, lentList, trustRows, totals, trustScore } = useLendingLists(lendings, searchQuery);
+  const { borrowedList, lentList, totals, trustScore } = useLendingLists(lendings, searchQuery);
 
   const resetForm = () => {
     setForm(emptyLendingForm());
@@ -164,41 +167,54 @@ const Lending = () => {
     resetForm();
   };
 
-  const addActions = (
-    <div className="ct-stack-sm items-end">
-      <Button type="button" size="sm" variant="ghost" onClick={() => exportLendingToExcel(lendings)}>
-        {t("export.excel.lending")}
-      </Button>
-      <Button type="button" size="sm" onClick={() => setShowRequest(true)}>
-        {t("lending.requestMoney")}
-      </Button>
-      <Button type="button" size="sm" variant="outline" onClick={() => setBillSplitOpen(true)}>
-        {t("lending.splitBill")}
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        onClick={() => {
-          resetForm();
-          setShowAdd(true);
-        }}
-      >
-        {t("lending.addShort")}
-      </Button>
-    </div>
-  );
+  const overflowItems = [
+    {
+      id: "export",
+      label: t("export.excel.lending"),
+      onClick: () => exportLendingToExcel(lendings),
+    },
+    {
+      id: "request",
+      label: t("lending.requestMoney"),
+      onClick: () => setShowRequest(true),
+    },
+    {
+      id: "split",
+      label: t("lending.splitBill"),
+      onClick: () => setBillSplitOpen(true),
+    },
+  ];
+
+  const visibleList = listTab === "lent" ? lentList : borrowedList;
 
   return (
-    <PageShell title={t("lending.title")} subtitle={t("lending.subtitle")} action={addActions}>
+    <div className="ct-stack ct-money-lending-page">
+      <div className="ct-row-between gap-2 mb-1">
+        <span className="ct-caption">{t("lending.subtitle")}</span>
+        <div className="ct-header-actions">
+          <MoneyOverflowMenu items={overflowItems} />
+          <Fab
+            type="button"
+            aria-label={t("lending.addShort")}
+            onClick={() => {
+              resetForm();
+              setShowAdd(true);
+            }}
+          >
+            +
+          </Fab>
+        </div>
+      </div>
 
       {!canAddLendingRecord(settings, lendings).ok && (
         <TierLimitBanner
+          className="ct-tier-banner-warm"
           title={t("tier.limit.lendingTitle")}
           message={t("tier.limit.lendingMessage", { limit: 5 })}
         />
       )}
 
-      <LendingProfileCard totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+      <LendingHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
 
       <input
         className={inputClassName()}
@@ -208,6 +224,15 @@ const Lending = () => {
       />
 
       <LendingOverduePanel />
+
+      <SegmentedControl
+        options={[
+          { id: "lent", label: t("lending.sectionLent") },
+          { id: "owe", label: t("lending.sectionOwe") },
+        ]}
+        value={listTab}
+        onChange={setListTab}
+      />
 
       {borrowedList.length === 0 && lentList.length === 0 && (
         <EmptyState
@@ -228,10 +253,9 @@ const Lending = () => {
         />
       )}
 
-      {borrowedList.length > 0 && (
+      {visibleList.length > 0 && (
         <section className="ct-stack-sm ct-list-animate">
-          <h2 className="ct-eyebrow">{t("lending.sectionOwe")}</h2>
-          {borrowedList.map((item) => (
+          {visibleList.map((item) => (
             <LendingEntryCard
               key={item.id}
               item={item}
@@ -245,33 +269,8 @@ const Lending = () => {
         </section>
       )}
 
-      {lentList.length > 0 && (
-        <section className="ct-stack-sm ct-list-animate">
-          <h2 className="ct-eyebrow">{t("lending.sectionLent")}</h2>
-          {lentList.map((item) => (
-            <LendingEntryCard
-              key={item.id}
-              item={item}
-              todayStr={todayStr}
-              onPayment={openPayment}
-              onDetail={setDetailFor}
-              onEdit={openEdit}
-              onDelete={deleteLending}
-            />
-          ))}
-        </section>
-      )}
-
-      {trustRows.length > 0 && (
-        <Card className="ct-stack-sm">
-          <h2 className="ct-body-strong">{t("lending.trustTitle")}</h2>
-          <Caption className="block">{t("lending.trustHint")}</Caption>
-          {trustRows.slice(0, 8).map((row) => (
-            <Caption key={row.personKey} className="block border-b border-[var(--ct-border-subtle)] last:border-0 pb-2 last:pb-0">
-              {trustSummaryLine(row)}
-            </Caption>
-          ))}
-        </Card>
+      {visibleList.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
+        <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
       )}
 
       {billSplitOpen && <BillSplitModal onClose={() => setBillSplitOpen(false)} />}
@@ -301,7 +300,7 @@ const Lending = () => {
         onSubmitPayment={submitPayment}
         onPayRemaining={payRemaining}
       />
-    </PageShell>
+    </div>
   );
 };
 

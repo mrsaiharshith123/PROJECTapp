@@ -36,18 +36,16 @@ export default function AddCommitmentForm({
   onInsuranceChange,
   onFillEndDate,
   onSubmit,
+  embedded = false,
+  hideTypeSwitcher = false,
 }) {
   const { t } = useTranslation();
   const copy = useCopy();
 
-  return (
-    <PageShell
-      title={entryType === "variable" ? t("add.variableTitle") : copy.addBill}
-      subtitle={t("add.newEntry")}
-      className="ct-form-narrow"
-    >
-
-      <Card className="ct-stack-lg">
+  const formBody = (
+    <>
+    <Card className="ct-stack-lg">
+        {!hideTypeSwitcher && (
         <SegmentedControl
           options={[
             { id: "scheduled", label: t("add.entryScheduled") },
@@ -56,6 +54,7 @@ export default function AddCommitmentForm({
           value={entryType}
           onChange={onEntryTypeChange}
         />
+        )}
 
         {entryType === "variable" ? (
           <AddVariableSpendInline onSaved={onVariableSaved} />
@@ -286,14 +285,14 @@ export default function AddCommitmentForm({
           />
         </div>
 
-        <Button type="button" onClick={onSubmit} size="lg">
+        <Button type="button" onClick={onSubmit} size="lg" className="ct-add-submit-sticky">
           {copy.addBill}
         </Button>
           </>
         )}
       </Card>
 
-      {entryType === "scheduled" && affordability && (
+      {!embedded && entryType === "scheduled" && affordability && (
         <Card className="ct-stack-sm ct-insight-accent">
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
             <Caption className="font-semibold uppercase">Affordability</Caption>
@@ -312,17 +311,37 @@ export default function AddCommitmentForm({
         </Card>
       )}
 
-      {entryType === "scheduled" && (
-      <Card className="ct-insight-accent ct-stack-sm">
-        <p className="ct-body-strong">{t("add.guidanceTitle")}</p>
-        <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
-          <li>• {t("add.guidanceDeviceOnly")}</li>
-          <li>• {copy.recordPaymentOnBills}</li>
-          <li>• {t("add.guidanceEndDate")}</li>
-          <li>• {t("add.guidanceRollForward")}</li>
-        </ul>
-      </Card>
+      {embedded && entryType === "scheduled" && affordability && (
+        <p
+          className={`ct-afford-chip ${semanticToneToClass(affordabilityTierTone(affordability.tier))}`}
+        >
+          {affordability.label}
+        </p>
       )}
+
+      {!embedded && entryType === "scheduled" && (
+        <Card className="ct-insight-accent ct-stack-sm">
+          <p className="ct-body-strong">{t("add.guidanceTitle")}</p>
+          <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
+            <li>• {t("add.guidanceDeviceOnly")}</li>
+            <li>• {copy.recordPaymentOnBills}</li>
+            <li>• {t("add.guidanceEndDate")}</li>
+            <li>• {t("add.guidanceRollForward")}</li>
+          </ul>
+        </Card>
+      )}
+    </>
+  );
+
+  if (embedded) return <div className="ct-add-form-embedded ct-form-narrow">{formBody}</div>;
+
+  return (
+    <PageShell
+      title={entryType === "variable" ? t("add.variableTitle") : copy.addBill}
+      subtitle={t("add.newEntry")}
+      className="ct-form-narrow"
+    >
+      {formBody}
     </PageShell>
   );
 }

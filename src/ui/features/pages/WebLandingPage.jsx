@@ -1,14 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { brandIconForTheme } from "../../brand/brandAssets.js";
 import { assetUrl } from "../../../utils/basePath.js";
-import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
 import { useDocumentTheme } from "../../../hooks/useDocumentTheme.js";
 import MarketingThemeSync from "../../../app/MarketingThemeSync.jsx";
 import { LandingBrandLockup } from "../../brand/LandingBrandLockup.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Body, Caption, Heading } from "../../primitives/Text.jsx";
+import AppDownloadSheet from "../AppDownloadSheet.jsx";
 
 const FEATURES = [
   { key: "score", icon: "chart-line-up" },
@@ -24,7 +24,7 @@ const STATS = ["languages", "pillars", "offline"];
 export default function WebLandingPage() {
   const { t } = useTranslation();
   const theme = useDocumentTheme();
-  const downloadUrl = getApkDownloadUrl();
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const favicon = assetUrl(`brand/${brandIconForTheme(theme)}`);
 
   useEffect(() => {
@@ -50,13 +50,13 @@ export default function WebLandingPage() {
           <Body className="ct-landing-lede">{t("webLanding.lede")}</Body>
 
           <div className="ct-landing-hero-cta">
-            <a
-              href={downloadUrl}
-              {...apkDownloadLinkProps(downloadUrl)}
+            <button
+              type="button"
+              onClick={() => setDownloadOpen(true)}
               className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
             >
               {t("webLanding.downloadButton")}
-            </a>
+            </button>
             <a href="#features" className="ct-btn ct-btn-outline ct-btn-lg">
               {t("webLanding.ctaFeatures")}
             </a>
@@ -97,13 +97,13 @@ export default function WebLandingPage() {
             {t("webLanding.downloadTitle")}
           </Heading>
           <Body className="ct-landing-cta-body">{t("webLanding.downloadBody")}</Body>
-          <a
-            href={downloadUrl}
-            {...apkDownloadLinkProps(downloadUrl)}
+          <button
+            type="button"
+            onClick={() => setDownloadOpen(true)}
             className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
           >
             {t("webLanding.downloadButton")}
-          </a>
+          </button>
           <Caption className="ct-landing-cta-hint">{t("webLanding.downloadHint")}</Caption>
         </section>
 
@@ -115,6 +115,8 @@ export default function WebLandingPage() {
           <Caption className="block mt-2">{t("brand.byTadsaya")}</Caption>
         </footer>
       </div>
+
+      <AppDownloadSheet open={downloadOpen} onClose={() => setDownloadOpen(false)} />
     </div>
   );
 }

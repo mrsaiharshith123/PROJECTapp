@@ -5,12 +5,12 @@ import { loadSettingsFromStorage } from "../utils/migrateStorage.js";
 /** Keeps landing page in sync with saved light/dark preference (no PerovoProvider). */
 export default function MarketingThemeSync() {
   useEffect(() => {
-    const pref = loadSettingsFromStorage()?.colorScheme || "system";
+    const pref = loadSettingsFromStorage()?.colorScheme || "dark";
     applyColorScheme(pref);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
-      const current = loadSettingsFromStorage()?.colorScheme || "system";
+      const current = loadSettingsFromStorage()?.colorScheme || "dark";
       if (current === "system") applyColorScheme("system");
     };
     mq.addEventListener("change", onChange);

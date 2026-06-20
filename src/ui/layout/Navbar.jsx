@@ -83,7 +83,7 @@ function FabRadialMenu({ open, onClose, navigate, onScanBill }) {
           className="ct-fab-item"
           role="menuitem"
           onClick={() => {
-            navigate("/money/bills?tab=spend");
+            navigate("/money/spends");
             onClose();
           }}
         >

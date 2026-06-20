@@ -2,15 +2,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
+import pkg from "./package.json" with { type: "json" };
 
 /** GitHub Pages project site: https://user.github.io/PROJECTapp/ */
 const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
 const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
 const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
+const appVersion = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
 
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
+  define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+  },
   server: {
     host: true,
     port: 5173,
@@ -44,7 +49,7 @@ export default defineConfig({
         scope: basePath,
         display: "standalone",
         theme_color: "#4A6CF7",
-        background_color: "#FFFFFF",
+        background_color: "#0d0d17",
         orientation: "portrait-primary",
         icons: [
           {

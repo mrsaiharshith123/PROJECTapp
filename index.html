@@ -14,16 +14,18 @@
     <title>Perovo</title>
     <script>
       (function () {
-        var theme = "light";
+        var theme = "dark";
         try {
           var raw = localStorage.getItem("perovo_settings");
           if (raw) {
             var o = JSON.parse(raw);
-            if (o && o.colorScheme === "dark") theme = "dark";
-            else if (o && o.colorScheme === "light") theme = "light";
-            else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
-          } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            theme = "dark";
+            if (o && o.colorScheme === "light") theme = "light";
+            else if (o && o.colorScheme === "dark") theme = "dark";
+            else if (o && o.colorScheme === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+              theme = "dark";
+            } else if (o && o.colorScheme === "system") {
+              theme = "light";
+            }
           }
         } catch (e) {
           /* ignore */
