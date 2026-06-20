@@ -1,8 +1,7 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
-import { PerovoLogo } from "../../brand/PerovoLogo.jsx";
-import ThemeSync from "../../../app/ThemeSync.jsx";
+import { assetUrl } from "../../../utils/basePath.js";
 import { Body, Caption, Heading, Card, Stack } from "../../index.js";
 
 const FEATURE_IDS = [
@@ -23,10 +22,17 @@ function apkDownloadUrl() {
 export default function WebLandingPage() {
   const { t } = useTranslation();
   const downloadUrl = apkDownloadUrl();
+  const iconUrl = assetUrl("brand/icon-light-lg.png");
+  const wordmarkUrl = assetUrl("brand/wordmark-light.png");
+
+  useEffect(() => {
+    document.title = t("brand.appName");
+    const icon = document.querySelector('link[rel="icon"]');
+    if (icon) icon.setAttribute("href", iconUrl);
+  }, [t, iconUrl]);
 
   return (
     <div className="ct-screen ct-landing">
-      <ThemeSync />
       <div className="ct-auth-ambient" aria-hidden>
         <div className="ct-auth-grid" />
         <div className="ct-auth-orb ct-auth-orb-a" />
@@ -37,9 +43,22 @@ export default function WebLandingPage() {
       <div className="ct-landing-inner">
         <header className="ct-landing-hero">
           <div className="ct-landing-logo-ring">
-            <PerovoLogo size={96} alt={t("brand.appName")} />
+            <img
+              src={iconUrl}
+              alt={t("brand.appName")}
+              width={96}
+              height={96}
+              className="ct-perovo-logo"
+              draggable={false}
+            />
           </div>
-          <PerovoBrand layout="column" iconSize="lg" wordmarkSize="lg" className="ct-landing-brand" />
+          <img
+            src={wordmarkUrl}
+            alt={t("brand.appName")}
+            height={56}
+            className="ct-perovo-wordmark ct-perovo-wordmark-lg ct-landing-brand"
+            draggable={false}
+          />
           <Heading level={1} className="ct-landing-headline">
             {t("brand.tagline")}
           </Heading>

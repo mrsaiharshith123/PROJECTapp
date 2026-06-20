@@ -234,7 +234,6 @@ function MarketingShell() {
   return (
     <BrowserRouter basename={routerBasename()}>
       <I18nProvider>
-        <BrandDocumentSync />
         <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>

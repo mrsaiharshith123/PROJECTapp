@@ -117,6 +117,7 @@ Full guide: [MOBILE.md](./MOBILE.md).
 |---------|----------------|
 | `npm run ship` | Commit, push, build dev APK, publish to GitHub Releases (`latest` + `Perovo-dev-latest.apk`) |
 | `npm run ship -- --no-apk "msg"` | Commit and push only (skip APK build + release) |
+| `npm run ship -- --release-only` | Upload existing `releases/Perovo-dev-latest.apk` to GitHub Releases (no commit) |
 | `npm run git:ship` | Alias for `npm run ship` |
 
 ### Dev-only (local `npm run dev`)
