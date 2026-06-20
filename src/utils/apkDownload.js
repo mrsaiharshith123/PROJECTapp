@@ -1,4 +1,5 @@
 import { assetUrl } from "./basePath.js";
+import { isEmbeddedApp } from "./embeddedApp.js";
 
 const GH_RELEASE_APK =
   "https://github.com/mrsaiharshith123/PROJECTapp/releases/latest/download/Perovo-dev-latest.apk";
@@ -11,6 +12,10 @@ const GH_RELEASE_APK =
 export function getApkDownloadUrl() {
   const configured = import.meta.env.VITE_APK_DOWNLOAD_URL;
   if (configured) return configured;
+  // Native shells (Capacitor/TWA) must never use local/same-origin APK paths.
+  if (isEmbeddedApp()) {
+    return GH_RELEASE_APK;
+  }
   if (import.meta.env.PROD) {
     return assetUrl("apk/Perovo-dev-latest.apk");
   }
