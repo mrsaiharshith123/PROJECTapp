@@ -83,6 +83,7 @@
     "deploy": "gh-pages -d dist",
     "ship": "node scripts/git-ship.mjs",
     "git:ship": "node scripts/git-ship.mjs",
+    "gh:login": "node scripts/gh-auth-login.mjs",
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",
