@@ -10,6 +10,7 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Body, Caption, Heading } from "../../primitives/Text.jsx";
 import AppDownloadSheet from "../AppDownloadSheet.jsx";
 import LandingReleaseList from "../LandingReleaseList.jsx";
+import LandingLastUpdated from "../LandingLastUpdated.jsx";
 
 const FEATURES = [
   { key: "score", icon: "chart-line-up" },
@@ -47,6 +48,7 @@ export default function WebLandingPage() {
         <header className="ct-landing-hero">
           <LandingBrandLockup />
           <span className="ct-landing-badge">{t("webLanding.heroBadge")}</span>
+          <LandingLastUpdated className="ct-landing-last-updated" />
           <h1 className="ct-landing-display">{t("webLanding.heroTitle")}</h1>
           <Body className="ct-landing-lede">{t("webLanding.lede")}</Body>
 
@@ -111,6 +113,7 @@ export default function WebLandingPage() {
         </section>
 
         <footer className="ct-landing-footer">
+          <LandingLastUpdated className="block mb-2" />
           <Caption>{t("webLanding.footerNote")}</Caption>
           <Link to="/privacy" className="ct-landing-link">
             {t("privacy.title")}

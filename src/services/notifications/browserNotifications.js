@@ -1,4 +1,5 @@
 import { assetUrl } from "../../utils/basePath.js";
+import { isNativeCapacitorShell, checkNativePermission, requestNativePermission } from "../../utils/nativePermissions.js";
 
 const PERM_KEY = "perovo_notif_permission_asked";
 const SW_READY_MS = 4000;
@@ -14,15 +15,39 @@ export function absoluteNotificationIconUrl() {
 
 /** @returns {boolean} */
 export function isNotificationSupported() {
+  if (isNativeCapacitorShell()) return true;
   return typeof window !== "undefined" && "Notification" in window;
 }
 
 export function getNotificationPermission() {
+  if (isNativeCapacitorShell()) return "default";
   if (!isNotificationSupported()) return "unsupported";
   return Notification.permission;
 }
 
+/** @returns {Promise<NotificationPermission | "unsupported">} */
+export async function resolveNotificationPermission() {
+  if (isNativeCapacitorShell()) {
+    const perm = await checkNativePermission("notifications");
+    if (perm === "prompt") return "default";
+    if (perm === "granted") return "granted";
+    if (perm === "denied") return "denied";
+    return "default";
+  }
+  return getNotificationPermission();
+}
+
 export async function requestNotificationPermission() {
+  if (isNativeCapacitorShell()) {
+    try {
+      localStorage.setItem(PERM_KEY, "1");
+    } catch {
+      /* ignore */
+    }
+    const perm = await requestNativePermission("notifications");
+    return perm === "granted" ? "granted" : perm === "denied" ? "denied" : "default";
+  }
+
   if (!isNotificationSupported()) return "unsupported";
   try {
     localStorage.setItem(PERM_KEY, "1");
@@ -92,16 +117,42 @@ function showViaWindowNotification(title, body, tag) {
   return true;
 }
 
+async function showViaNativeNotification(title, body, tag, data) {
+  const { LocalNotifications } = await import("@capacitor/local-notifications");
+  const perm = await checkNativePermission("notifications");
+  if (perm !== "granted") return false;
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: Math.floor(Math.random() * 2147480000),
+        title,
+        body,
+        extra: { ...(data || {}), tag: tag || "perovo" },
+      },
+    ],
+  });
+  return true;
+}
+
 /**
  * Show a system notification (phone/laptop tray). Uses service worker when available.
  * @param {{ title: string, body: string, tag?: string, data?: object }} payload
  * @returns {Promise<boolean>}
  */
 export async function showLocalNotification(payload) {
+  const { title, body, tag, data } = payload;
+
+  if (isNativeCapacitorShell()) {
+    try {
+      return await showViaNativeNotification(title, body, tag, data);
+    } catch {
+      return false;
+    }
+  }
+
   if (!isNotificationSupported()) return false;
   if (Notification.permission !== "granted") return false;
 
-  const { title, body, tag, data } = payload;
   const icon = absoluteNotificationIconUrl();
   const options = {
     body,
@@ -147,7 +198,8 @@ export async function sendTestNotification() {
   if (!isNotificationSupported()) {
     return { ok: false, reason: "unsupported" };
   }
-  let perm = getNotificationPermission();
+
+  let perm = await resolveNotificationPermission();
   if (perm === "default") {
     perm = await requestNotificationPermission();
   }

@@ -8,6 +8,7 @@ import { bootstrapThemeFromStorage } from "./utils/theme.js";
 import { applyUiThemeToDocument } from "./utils/applyUiTheme.js";
 import App from "./App.jsx";
 import { log } from "./utils/logger.js";
+import { notifyNativeAppReady } from "./services/nativeOtaUpdate.js";
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 const sentryEnabled =
@@ -45,6 +46,7 @@ if (import.meta.env.PROD && import.meta.env.VITE_EMBEDDED_APP !== "1") {
 bootstrapThemeFromStorage();
 applyUiThemeToDocument();
 log.app.info("Perovo starting", { mode: import.meta.env.MODE });
+void notifyNativeAppReady();
 
 const app = (
   <StrictMode>

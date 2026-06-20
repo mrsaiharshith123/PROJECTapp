@@ -1,6 +1,7 @@
 export {
   isNotificationSupported,
   getNotificationPermission,
+  resolveNotificationPermission,
   requestNotificationPermission,
   wasPermissionAsked,
   showLocalNotification,

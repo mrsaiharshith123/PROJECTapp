@@ -2,23 +2,23 @@ import { useState } from "react";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import { applyAppUpdate, checkForAppUpdate } from "../services/appUpdate.js";
 
-const PHASE_KEYS = {
-  checking: "support.updateAppChecking",
-  downloading: "support.updateAppDownloading",
-  restarting: "support.updateAppRestarting",
-};
-
-/** Shared update flow for Profile settings and the update test shell. */
+/** Shared update flow — check status, in-app download with progress, auto restart. */
 export function useAppUpdateAction() {
   const { t } = useTranslation();
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [progress, setProgress] = useState(null);
 
   const runUpdate = async () => {
     setBusy(true);
     setStatus(t("support.updateAppChecking"));
+    setProgressOpen(false);
+    setProgress(null);
+
     try {
       const result = await checkForAppUpdate();
+
       if (result.status === "current") {
         setStatus(t("support.updateAppCurrent", { version: result.localVersion }));
         setBusy(false);
@@ -34,18 +34,27 @@ export function useAppUpdateAction() {
         );
       }
 
+      setProgressOpen(true);
       await applyAppUpdate({
         force: result.status === "unknown",
-        onPhase: (phase) => {
-          const key = PHASE_KEYS[phase];
-          if (key) setStatus(t(key));
+        onProgress: (p) => {
+          setProgress(p);
+          if (p.phase === "restarting") {
+            setStatus(t("support.updateAppRestarting"));
+          }
         },
       });
-    } catch {
-      setStatus(t("support.updateAppError"));
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "";
+      if (code === "bundle_missing") {
+        setStatus(t("support.updateAppBundleMissing"));
+      } else {
+        setStatus(t("support.updateAppError"));
+      }
+      setProgressOpen(false);
       setBusy(false);
     }
   };
 
-  return { status, busy, runUpdate };
+  return { status, busy, runUpdate, progressOpen, progress };
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { recognizeTextFromImage, extractBillData } from "../../../utils/billOcr.js";
 import { classifyMerchant } from "../../../utils/merchantNormalize.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -8,6 +8,7 @@ import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { trackEvent, EVENTS } from "../../../services/analytics/perovoAnalytics.js";
+import { isNativeCapacitorShell, pickBillImageNative } from "../../../utils/nativeMediaPicker.js";
 
 export default function BillScannerTool() {
   const { t } = useTranslation();
@@ -19,6 +20,8 @@ export default function BillScannerTool() {
   const [name, setName] = useState("");
   const [success, setSuccess] = useState(false);
   const [ocrEngine, setOcrEngine] = useState(null);
+  const [permError, setPermError] = useState("");
+  const nativeShell = isNativeCapacitorShell();
 
   const handleFile = useCallback(
     async (file) => {
@@ -26,6 +29,7 @@ export default function BillScannerTool() {
       setStage("scanning");
       setProgress(0);
       setOcrEngine(null);
+      setPermError("");
       try {
         const { text, engine } = await recognizeTextFromImage(file, setProgress);
         setOcrEngine(engine);
@@ -46,6 +50,21 @@ export default function BillScannerTool() {
       }
     },
     [t],
+  );
+
+  const pickNative = useCallback(
+    async (source) => {
+      try {
+        setPermError("");
+        const file = await pickBillImageNative(source);
+        if (file) await handleFile(file);
+      } catch (err) {
+        if (err instanceof Error && err.message === "permission_denied") {
+          setPermError(t("tools.billScanner.permissionDenied"));
+        }
+      }
+    },
+    [handleFile, t],
   );
 
   const handleAdd = () => {
@@ -74,25 +93,47 @@ export default function BillScannerTool() {
 
       {stage === "idle" && (
         <>
-          <button
-            type="button"
-            className="ct-scan-drop-zone ct-stat-tile !p-6 text-center w-full"
-            onClick={() => fileRef.current?.click()}
-          >
-            <span className="ct-icon-tile indigo mx-auto mb-2 inline-flex" aria-hidden>
-              <CtIcon name="receipt" size={28} />
-            </span>
-            <Body className="ct-numeral">{t("tools.billScanner.tapPhoto")}</Body>
-            <Caption>{t("tools.billScanner.orGallery")}</Caption>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="sr-only"
-            onChange={(e) => handleFile(e.target.files?.[0])}
-          />
+          {nativeShell ? (
+            <div className="ct-row gap-2">
+              <button
+                type="button"
+                className="ct-btn ct-btn-primary flex-1"
+                onClick={() => pickNative("camera")}
+              >
+                {t("tools.billScanner.useCamera")}
+              </button>
+              <button
+                type="button"
+                className="ct-btn ct-btn-outline flex-1"
+                onClick={() => pickNative("gallery")}
+              >
+                {t("tools.billScanner.useGallery")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="ct-scan-drop-zone ct-stat-tile !p-6 text-center w-full"
+                onClick={() => fileRef.current?.click()}
+              >
+                <span className="ct-icon-tile indigo mx-auto mb-2 inline-flex" aria-hidden>
+                  <CtIcon name="receipt" size={28} />
+                </span>
+                <Body className="ct-numeral">{t("tools.billScanner.tapPhoto")}</Body>
+                <Caption>{t("tools.billScanner.orGallery")}</Caption>
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="sr-only"
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+            </>
+          )}
+          {permError ? <Caption className="text-[var(--ct-warning)]">{permError}</Caption> : null}
         </>
       )}
 

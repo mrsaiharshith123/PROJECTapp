@@ -1,17 +1,17 @@
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
 import {
   compareSemver,
-  getRemoteAppUrl,
   getRemoteManifestUrl,
-  remoteAppUrlWithVersion,
 } from "../utils/updateServer.js";
+import { applyNativeOtaUpdate, canUseNativeOta } from "./nativeOtaUpdate.js";
 
 const LOCAL_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
 const LOCAL_BUILT_AT = import.meta.env.VITE_APP_BUILT_AT || "";
 
 /**
  * @typedef {"checking"|"downloading"|"restarting"|"current"|"available"|"unknown"} UpdatePhase
- * @typedef {{ version?: string, builtAt?: string, appUrl?: string, releaseNotes?: string }} UpdateManifest
+ * @typedef {{ phase?: UpdatePhase | string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} UpdateProgress
+ * @typedef {{ version?: string, builtAt?: string, appUrl?: string, bundleUrl?: string, bundleSize?: number, releaseNotes?: string }} UpdateManifest
  */
 
 /**
@@ -28,17 +28,6 @@ export async function fetchRemoteManifest() {
   }
 }
 
-function isOnLiveServer() {
-  if (typeof window === "undefined") return false;
-  try {
-    const live = new URL(getRemoteAppUrl());
-    const here = new URL(window.location.href);
-    return here.origin === live.origin && here.pathname.startsWith(live.pathname.replace(/\/$/, ""));
-  } catch {
-    return false;
-  }
-}
-
 function manifestIsNewer(remote, localVersion = LOCAL_VERSION, localBuiltAt = LOCAL_BUILT_AT) {
   if (!remote?.version) return false;
   const versionCmp = compareSemver(remote.version, localVersion);
@@ -51,7 +40,7 @@ function manifestIsNewer(remote, localVersion = LOCAL_VERSION, localBuiltAt = LO
 }
 
 /**
- * @returns {Promise<{ status: "current" | "available" | "unknown", localVersion: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string }>}
+ * @returns {Promise<{ status: "current" | "available" | "unknown", localVersion: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number }>}
  */
 export async function checkForAppUpdate() {
   const remote = await fetchRemoteManifest();
@@ -59,22 +48,20 @@ export async function checkForAppUpdate() {
     return { status: "unknown", localVersion: LOCAL_VERSION };
   }
 
-  if (!manifestIsNewer(remote, LOCAL_VERSION)) {
-    return {
-      status: "current",
-      localVersion: LOCAL_VERSION,
-      remoteVersion: remote.version,
-      builtAt: remote.builtAt,
-    };
-  }
-
-  return {
-    status: "available",
+  const base = {
     localVersion: LOCAL_VERSION,
     remoteVersion: remote.version,
     builtAt: remote.builtAt,
     releaseNotes: remote.releaseNotes,
+    bundleUrl: remote.bundleUrl,
+    bundleSize: remote.bundleSize,
   };
+
+  if (!manifestIsNewer(remote, LOCAL_VERSION)) {
+    return { status: "current", ...base };
+  }
+
+  return { status: "available", ...base };
 }
 
 function waitForServiceWorkerActivation(reg) {
@@ -98,43 +85,54 @@ function waitForServiceWorkerActivation(reg) {
 }
 
 /**
- * @param {(phase: UpdatePhase) => void} [onPhase]
+ * @param {(p: UpdateProgress) => void} [onProgress]
  */
-async function applyLiveWebUpdate(onPhase) {
-  onPhase?.("downloading");
-
+async function applyPwaUpdate(onProgress) {
+  onProgress?.({ phase: "downloading", percent: 0 });
   if ("serviceWorker" in navigator) {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
       await reg.update();
+      onProgress?.({ phase: "downloading", percent: 60 });
       await waitForServiceWorkerActivation(reg);
     }
   }
-
-  onPhase?.("restarting");
+  onProgress?.({ phase: "restarting", percent: 100 });
   window.location.reload();
 }
 
 /**
- * Load latest web build inside the native shell (no external browser).
  * @param {UpdateManifest} remote
- * @param {(phase: UpdatePhase) => void} [onPhase]
+ * @param {(p: UpdateProgress) => void} [onProgress]
  */
-async function applyEmbeddedWebUpdate(remote, onPhase) {
-  onPhase?.("downloading");
-  const target = remoteAppUrlWithVersion(remote.version || LOCAL_VERSION, remote.appUrl);
-  onPhase?.("restarting");
-  window.location.replace(target);
+async function applyEmbeddedUpdate(remote, onProgress) {
+  onProgress?.({ phase: "checking", percent: 0 });
+
+  if (canUseNativeOta()) {
+    if (!remote.bundleUrl) {
+      throw new Error("bundle_missing");
+    }
+    await applyNativeOtaUpdate(
+      {
+        version: remote.version || LOCAL_VERSION,
+        bundleUrl: remote.bundleUrl,
+        bundleSize: remote.bundleSize,
+      },
+      onProgress,
+    );
+    return;
+  }
+
+  await applyPwaUpdate(onProgress);
 }
 
 /**
- * Check server, pull latest build, restart in-app.
- * @param {{ onPhase?: (phase: UpdatePhase) => void, force?: boolean }} [opts]
- * @returns {Promise<{ status: string }>}
+ * Check server, download update in-app, restart.
+ * @param {{ onProgress?: (p: UpdateProgress) => void, force?: boolean }} [opts]
  */
 export async function applyAppUpdate(opts = {}) {
-  const { onPhase, force = false } = opts;
-  onPhase?.("checking");
+  const { onProgress, force = false } = opts;
+  onProgress?.({ phase: "checking", percent: 0 });
 
   const remote = await fetchRemoteManifest();
   const hasUpdate = remote && manifestIsNewer(remote, LOCAL_VERSION);
@@ -143,17 +141,15 @@ export async function applyAppUpdate(opts = {}) {
     return { status: "current" };
   }
 
-  if (isEmbeddedApp() && !isOnLiveServer()) {
+  if (isEmbeddedApp()) {
     if (remote) {
-      await applyEmbeddedWebUpdate(remote, onPhase);
+      await applyEmbeddedUpdate(remote, onProgress);
       return { status: "restarting" };
     }
-    onPhase?.("restarting");
-    window.location.reload();
-    return { status: "reloading" };
+    throw new Error("manifest_missing");
   }
 
-  await applyLiveWebUpdate(onPhase);
+  await applyPwaUpdate(onProgress);
   return { status: "restarting" };
 }
 

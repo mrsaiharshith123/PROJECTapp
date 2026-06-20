@@ -2,11 +2,12 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
 import { Caption } from "../../index.js";
 import { useAppUpdateAction } from "../../../hooks/useAppUpdateAction.js";
+import UpdateProgressModal from "../UpdateProgressModal.jsx";
 
-/** One-tap in-app update — checks live server, pulls build, restarts (no browser redirect). */
+/** In-app OTA update — check, progress bar, restart (no browser / APK reinstall). */
 export default function ProfileUpdateAppRow() {
   const { t } = useTranslation();
-  const { status, busy, runUpdate } = useAppUpdateAction();
+  const { status, busy, runUpdate, progressOpen, progress } = useAppUpdateAction();
 
   return (
     <>
@@ -23,6 +24,7 @@ export default function ProfileUpdateAppRow() {
           <Caption className="block">{status}</Caption>
         </SettingsGroupContent>
       ) : null}
+      <UpdateProgressModal open={progressOpen} progress={progress} />
     </>
   );
 }

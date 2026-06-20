@@ -49,6 +49,7 @@ export default {
   "webLanding.versionDownloadApk": "Download APK",
   "webLanding.versionOpenWeb": "Open web app",
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
+  "webLanding.lastUpdated": "Site last updated {date} · v{version}",
 
   "updateTestShell.title": "Update test",
   "updateTestShell.body":
@@ -701,6 +702,13 @@ export default {
   "notifications.unsupported": "Your browser does not support notifications.",
   "notifications.enabledOk":
     "Browser alerts enabled. Add app to Home Screen for alerts when the app is closed.",
+  "notifications.enableAlertsNative": "Allow notifications",
+  "notifications.enabledOkNative": "Notifications enabled. Due and overdue bills will alert you on this device.",
+  "notifications.deniedErrNative":
+    "Blocked in Android settings. Open Settings → Apps → Perovo → Notifications and allow alerts, then try again.",
+  "notifications.testDeniedNative": "Permission denied. Allow notifications in Android settings, then try again.",
+  "notifications.nativeHint":
+    "Tray alerts use Android notifications. Keep bill reminders on in this screen. Due and overdue bills notify even when the app is closed.",
   "notifications.deniedErr": "Blocked in browser settings. Allow notifications for this site, then try again.",
   "notifications.testOk":
     "Sent to your system notification panel and the in-app bell. Swipe down on phone to see it.",
@@ -1646,10 +1654,13 @@ export default {
   "download.backToPlatforms": "← Back to platforms",
 
   "support.updateApp": "Update app",
-  "support.updateAppHint": "Check our server for a new build, download it in the app, then restart.",
+  "support.updateAppHint": "Check our server for a new build, download it inside the app, then restart automatically.",
   "support.updateAppChecking": "Checking for updates…",
   "support.updateAppDownloading": "Downloading the latest build…",
-  "support.updateAppRestarting": "Restarting to finish the update…",
+  "support.updateAppRestarting": "Restarting to apply the update…",
+  "support.updateAppProgress": "{loaded} of {total} ({percent}%)",
+  "support.updateAppProgressPercent": "{percent}% complete",
+  "support.updateAppBundleMissing": "Update bundle not on the server yet. Deploy with npm run ship first.",
   "support.updateAppCurrent": "You are on the latest version ({version}).",
   "support.updateAppAvailable": "Version {remote} is available — you have {local}.",
   "support.updateAppApplying": "Updating…",
@@ -3088,6 +3099,10 @@ export default {
   "tools.billScanner.subtitle": "OCR from photo",
   "tools.billScanner.intro": "Photograph any printed bill — electricity, gas, broadband, insurance. Perovo reads the amount and due date automatically.",
   "tools.billScanner.tapPhoto": "Tap to photograph a bill",
+  "tools.billScanner.useCamera": "Take photo",
+  "tools.billScanner.useGallery": "Choose from gallery",
+  "tools.billScanner.permissionDenied":
+    "Camera or gallery access is blocked. Open Android Settings → Apps → Perovo → Permissions and allow Camera and Photos.",
   "tools.billScanner.orGallery": "or choose a photo from gallery",
   "tools.billScanner.reading": "Reading bill… {pct}%",
   "tools.billScanner.stageLoad": "Loading OCR engine…",

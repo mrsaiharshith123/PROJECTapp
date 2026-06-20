@@ -16,16 +16,41 @@ export function getAppReleasesManifestUrl() {
 }
 
 /**
+ * @returns {Promise<{ version?: string, builtAt?: string, bundleUrl?: string, bundleSize?: number } | null>}
+ */
+export async function fetchSiteVersionInfo() {
+  if (typeof fetch === "undefined") return null;
+  try {
+    const res = await fetch(assetUrl("app-version.json"), { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
  * @returns {Promise<AppRelease[]>}
  */
 export async function fetchAppReleases() {
   if (typeof fetch === "undefined") return [];
   try {
-    const res = await fetch(getAppReleasesManifestUrl(), { cache: "no-store" });
-    if (!res.ok) return getFallbackReleases();
-    const data = await res.json();
-    const list = Array.isArray(data?.releases) ? data.releases : [];
+    const [releasesRes, siteInfo] = await Promise.all([
+      fetch(getAppReleasesManifestUrl(), { cache: "no-store" }),
+      fetchSiteVersionInfo(),
+    ]);
+    if (!releasesRes.ok) return getFallbackReleases();
+    const data = await releasesRes.json();
+    let list = Array.isArray(data?.releases) ? data.releases : [];
     if (!list.length) return getFallbackReleases();
+    if (siteInfo?.builtAt) {
+      list = list.map((row) => {
+        if (row.version === siteInfo.version && !row.builtAt) {
+          return { ...row, builtAt: siteInfo.builtAt };
+        }
+        return row;
+      });
+    }
     return [...list].sort((a, b) => compareSemver(b.version, a.version));
   } catch {
     return getFallbackReleases();
@@ -50,15 +75,15 @@ export function triggerApkDownload(url, version) {
   try {
     resolved = new URL(url, window.location.href);
   } catch {
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.location.assign(url);
     return;
   }
 
-  const crossOrigin = resolved.origin !== window.location.origin;
   const mobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isApk = /\.apk(\?|$)/i.test(resolved.pathname);
 
-  // Chrome on Android often stalls at 100% with window.open / download attribute on GitHub URLs.
-  if (crossOrigin && mobile) {
+  // Chrome on Android stalls at 100% with download attribute / new tab — navigate directly.
+  if (mobile && isApk) {
     window.location.assign(resolved.href);
     return;
   }

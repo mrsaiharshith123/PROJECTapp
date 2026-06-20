@@ -1,11 +1,9 @@
 import { useUpdateTestTranslation } from "../../i18n/UpdateTestShellI18n.jsx";
-import { useUpdateTestShellAction } from "../../hooks/useUpdateTestShellAction.js";
+import { UpdateTestShellUpdateProvider } from "./UpdateTestShellUpdateProvider.jsx";
 import { getLocalAppVersion } from "../../services/appUpdate.js";
 
-/** Temporary — bare screen with one Update button for testing the update flow. */
-export default function UpdateTestShell() {
+function UpdateTestShellView({ status, busy, runUpdate }) {
   const { t } = useUpdateTestTranslation();
-  const { status, busy, runUpdate } = useUpdateTestShellAction();
   const version = getLocalAppVersion();
 
   return (
@@ -23,5 +21,14 @@ export default function UpdateTestShell() {
         {status ? <p className="ct-update-test-status">{status}</p> : null}
       </div>
     </div>
+  );
+}
+
+/** Temporary — bare screen with one Update button for testing the update flow. */
+export default function UpdateTestShell() {
+  return (
+    <UpdateTestShellUpdateProvider>
+      {(api) => <UpdateTestShellView {...api} />}
+    </UpdateTestShellUpdateProvider>
   );
 }

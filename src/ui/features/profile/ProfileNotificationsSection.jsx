@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Caption, Button } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isEmbeddedApp } from "../../../utils/embeddedApp.js";
 import {
-  getNotificationPermission,
+  resolveNotificationPermission,
   requestNotificationPermission,
   sendTestNotification,
   isNotificationSupported,
@@ -18,23 +18,31 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
   const { pushInAppNotification } = usePerovo();
   const supported = isNotificationSupported();
   const embedded = isEmbeddedApp();
-  const [, setPermRefresh] = useState(0);
+  const [perm, setPerm] = useState("default");
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
-  const perm = supported ? getNotificationPermission() : "unsupported";
-  const bumpPerm = () => setPermRefresh((n) => n + 1);
+
+  useEffect(() => {
+    let cancelled = false;
+    resolveNotificationPermission().then((p) => {
+      if (!cancelled) setPerm(p);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [busy, status]);
 
   const handleEnable = async () => {
     setBusy(true);
     setStatus(null);
     const result = await requestNotificationPermission();
-    bumpPerm();
+    setPerm(result);
     setBusy(false);
     if (result === "granted") {
-      await registerPeriodicReminderSync();
-      setStatus({ type: "ok", text: t("notifications.enabledOk") });
+      if (!embedded) await registerPeriodicReminderSync();
+      setStatus({ type: "ok", text: t(embedded ? "notifications.enabledOkNative" : "notifications.enabledOk") });
     } else if (result === "denied") {
-      setStatus({ type: "err", text: t("notifications.deniedErr") });
+      setStatus({ type: "err", text: t(embedded ? "notifications.deniedErrNative" : "notifications.deniedErr") });
     }
   };
 
@@ -42,10 +50,10 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
     setBusy(true);
     setStatus(null);
     const result = await sendTestNotification();
-    bumpPerm();
+    setPerm(await resolveNotificationPermission());
 
     if (result.ok) {
-      await requestServiceWorkerReminderFlush();
+      if (!embedded) await requestServiceWorkerReminderFlush();
       pushInAppNotification({
         id: `test-${Date.now()}`,
         message: t("notifications.testInApp"),
@@ -53,7 +61,7 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
       });
       setStatus({ type: "ok", text: t("notifications.testOk") });
     } else if (result.reason === "denied" || result.reason === "blocked") {
-      setStatus({ type: "err", text: t("notifications.testDenied") });
+      setStatus({ type: "err", text: t(embedded ? "notifications.testDeniedNative" : "notifications.testDenied") });
     } else if (result.reason === "unsupported") {
       setStatus({ type: "err", text: t("notifications.testUnsupported") });
     } else {
@@ -81,7 +89,7 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
             <div className="ct-row-wrap">
               {perm !== "granted" && (
                 <Button type="button" size="sm" disabled={busy} onClick={handleEnable}>
-                  {t("notifications.enableAlerts")}
+                  {t(embedded ? "notifications.enableAlertsNative" : "notifications.enableAlerts")}
                 </Button>
               )}
               <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleTest}>
@@ -95,7 +103,9 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
             )}
             {!embedded ? (
               <Caption className="block opacity-80 leading-relaxed">{t("notifications.installHint")}</Caption>
-            ) : null}
+            ) : (
+              <Caption className="block opacity-80 leading-relaxed">{t("notifications.nativeHint")}</Caption>
+            )}
           </div>
         </SettingsGroupContent>
       ) : (
@@ -103,12 +113,6 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
           <Caption>{t("notifications.unsupported")}</Caption>
         </SettingsGroupContent>
       )}
-
-      <SettingsGroupContent className="!pt-0">
-        <Button type="button" variant="ghost" className="w-full" onClick={() => updateSettings({ readNotificationIds: [] })}>
-          {t("notifications.markRead")}
-        </Button>
-      </SettingsGroupContent>
     </SettingsGroup>
   );
 }

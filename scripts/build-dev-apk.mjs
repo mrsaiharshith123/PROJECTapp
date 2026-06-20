@@ -119,6 +119,7 @@ if (!fs.existsSync(androidDir)) {
 run("Capacitor sync android", "npx", ["cap", "sync", "android"]);
 
 run("Sync Android launcher icons", "node", ["scripts/sync-android-icons.mjs"]);
+run("Patch Android permissions", "node", ["scripts/patch-android-manifest.mjs"]);
 
 const jdkHome = resolveJdkHome();
 if (jdkHome) {
