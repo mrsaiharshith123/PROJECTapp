@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, InfoTip, PageShell, Body, Caption, Heading } from "../../";
+import { Card, InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
@@ -11,7 +11,7 @@ import FestivalPlannerCard from "../dashboard/FestivalPlannerCard.jsx";
 import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
 import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
 import { FinancialPulseCard } from "../../";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import {
   snapshotsToPressureTrend,
@@ -41,6 +41,8 @@ import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily, resolveAnalytics
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { TabContent } from "../../patterns/TabContent.jsx";
+import AnalyticsScoreTiles from "../analytics/AnalyticsScoreTiles.jsx";
+import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
 
 const Analytics = () => {
   const { t } = useTranslation();
@@ -55,7 +57,7 @@ const Analytics = () => {
     getEffectiveLendingStatus,
     monthlySnapshots,
     todayStr,
-  } = useCommitTrack();
+  } = usePerovo();
 
   const pressureTrend = useMemo(() => snapshotsToPressureTrend(monthlySnapshots, 7), [monthlySnapshots]);
 
@@ -287,6 +289,23 @@ const Analytics = () => {
       <TabContent tabId="self" activeTab={analyticsView}>
         {showSelfView ? (
         <div className="ct-stack">
+          <AnalyticsScoreTiles />
+          <div className="ct-row justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                exportAnnualReportToExcel({
+                  commitments,
+                  lendings,
+                  snapshots: monthlySnapshots,
+                })
+              }
+            >
+              {t("analytics.exportCa")}
+            </Button>
+          </div>
           <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
             <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="personal" />
           </div>

@@ -33,6 +33,7 @@ npm run audit:fix-deps          # fix production npm audit issues
 | `audit:insights` | Insight producer overlap |
 | `audit:performance` | Heavy pages, hooks, chart usage |
 | `audit:mobile` | Overflow, viewport, fixed widths |
+| `audit:native-shells` | TWA + Capacitor config, dev APK scripts, no legacy mobile folders |
 | `audit:charts` | Duplicate/similar UI (alias: duplicates) |
 | `audit:guidance` | Guidance registries, onboarding, dashboard education |
 | `audit:tree` | File tree layout, UI-only placement, orphan screens (`--tree` prints src/) |

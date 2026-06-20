@@ -17,6 +17,6 @@ describe("salarySpendBar", () => {
   it("shifts hue from green toward red", () => {
     expect(salarySpendBarColor(10)).toMatch(/hsl\(12\d/);
     expect(salarySpendBarColor(90)).toMatch(/hsl\(1\d/);
-    expect(salarySpendBarColor(100)).toBe("#ef4444");
+    expect(salarySpendBarColor(100)).toBe("#f87171");
   });
 });

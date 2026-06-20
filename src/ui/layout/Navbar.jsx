@@ -1,13 +1,17 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
-import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { usePerovo } from "../../context/PerovoContext.jsx";
 import { navItemsForMode } from "../../constants/userModes.js";
 import { resolveUserMode } from "../../constants/modeExperience.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 import { PerovoBrand } from "../brand/PerovoBrand.jsx";
+import { Modal } from "../primitives/Modal.jsx";
 import LogSpendModal from "../features/modals/LogSpendModal.jsx";
+import { FAB_CHANGE_EVENT } from "../../constants/fabEvents.js";
+
+const BillScannerTool = lazy(() => import("../features/tools/BillScannerTool.jsx"));
 
 function Brand() {
   return (
@@ -17,6 +21,24 @@ function Brand() {
   );
 }
 
+/** @param {{ to: string, navGroup?: string }} item @param {{ pathname: string }} location */
+function isNavItemActive(item, location) {
+  const path = location.pathname;
+  if (item.navGroup === "money") {
+    return (
+      path.startsWith("/money") ||
+      path.startsWith("/commitments") ||
+      path.startsWith("/lending") ||
+      path === "/analytics"
+    );
+  }
+  if (item.navGroup === "plan") {
+    return path === "/plan" || path === "/tools";
+  }
+  if (item.to === "/") return path === "/";
+  return path === item.to || path.startsWith(`${item.to}/`);
+}
+
 function NavIcon({ item, active = false }) {
   if (item.icon === "+") {
     return <span className="ct-nav-fab-plus">+</span>;
@@ -24,17 +46,18 @@ function NavIcon({ item, active = false }) {
   return <CtIcon name={item.icon} size={22} context={active ? "nav" : "nav-off"} />;
 }
 
-function FabRadialMenu({ open, onClose, navigate }) {
+function FabRadialMenu({ open, onClose, navigate, onScanBill }) {
   const { t } = useTranslation();
   if (!open) return null;
 
   return (
     <>
       <div className="ct-fab-overlay" onClick={onClose} aria-hidden />
-      <div className="ct-fab-menu open">
+      <div className="ct-fab-menu open" role="menu" aria-label={t("nav.fabAria")}>
         <button
           type="button"
           className="ct-fab-item"
+          role="menuitem"
           onClick={() => {
             navigate("/add");
             onClose();
@@ -46,8 +69,21 @@ function FabRadialMenu({ open, onClose, navigate }) {
         <button
           type="button"
           className="ct-fab-item"
+          role="menuitem"
           onClick={() => {
-            navigate("/commitments?tab=spend");
+            onScanBill();
+            onClose();
+          }}
+        >
+          <CtIcon name="receipt" size={16} />
+          {t("tools.billScanner.title")}
+        </button>
+        <button
+          type="button"
+          className="ct-fab-item"
+          role="menuitem"
+          onClick={() => {
+            navigate("/money/bills?tab=spend");
             onClose();
           }}
         >
@@ -57,8 +93,9 @@ function FabRadialMenu({ open, onClose, navigate }) {
         <button
           type="button"
           className="ct-fab-item"
+          role="menuitem"
           onClick={() => {
-            navigate("/lending");
+            navigate("/money/lending");
             onClose();
           }}
         >
@@ -72,16 +109,24 @@ function FabRadialMenu({ open, onClose, navigate }) {
 
 export function Navbar() {
   const navigate = useNavigate();
-  const { settings } = useCommitTrack();
+  const location = useLocation();
+  const { settings } = usePerovo();
   const { t } = useTranslation();
   const navItems = navItemsForMode(resolveUserMode(settings));
   const tabItems = navItems.filter((item) => !item.fab);
   const fabItem = navItems.find((item) => item.fab);
   const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
   const [logSpendOpen, setLogSpendOpen] = useState(false);
+  const [scanBillOpen, setScanBillOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const longPressTimerRef = useRef(/** @type {number | null} */ (null));
   const didLongPressRef = useRef(false);
+
+  useEffect(() => {
+    if (fabOpen) document.body.setAttribute("data-fab-open", "1");
+    else document.body.removeAttribute("data-fab-open");
+    window.dispatchEvent(new CustomEvent(FAB_CHANGE_EVENT, { detail: { open: fabOpen } }));
+  }, [fabOpen]);
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current != null) window.clearTimeout(longPressTimerRef.current);
@@ -124,22 +169,30 @@ export function Navbar() {
 
   return (
     <>
-      <FabRadialMenu open={fabOpen} onClose={closeFab} navigate={navigate} />
+      <FabRadialMenu
+        open={fabOpen}
+        onClose={closeFab}
+        navigate={navigate}
+        onScanBill={() => setScanBillOpen(true)}
+      />
 
       <header className="ct-top-nav">
         <div className="ct-top-nav-inner">
           <Brand />
           <div className="ct-top-nav-links">
-            {tabItems.map((item) => (
+            {tabItems.map((item) => {
+              const active = isNavItemActive(item, location);
+              return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
-                className={({ isActive }) => cn("ct-top-link", isActive && "ct-top-link-active")}
+                className={cn("ct-top-link", active && "ct-top-link-active")}
               >
                 {navLabel(item)}
               </NavLink>
-            ))}
+            );
+            })}
             {fabItem && (
               <button type="button" className="ct-top-link ct-top-link-fab" {...fabPointerHandlers}>
                 {navLabel(fabItem)}
@@ -163,21 +216,18 @@ export function Navbar() {
                 </div>
               );
             }
+            const active = isNavItemActive(item, location);
             return (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
-                className={({ isActive }) => cn("ct-nav-item", isActive && "ct-nav-item-active")}
+                className={cn("ct-nav-item", active && "ct-nav-item-active")}
               >
-                {({ isActive }) => (
-                  <>
-                    <span className="ct-nav-icon">
-                      <NavIcon item={item} active={isActive} />
-                    </span>
-                    <span className="ct-nav-label">{navLabel(item)}</span>
-                  </>
-                )}
+                <span className="ct-nav-icon">
+                  <NavIcon item={item} active={active} />
+                </span>
+                <span className="ct-nav-label">{navLabel(item)}</span>
               </NavLink>
             );
           })}
@@ -192,6 +242,14 @@ export function Navbar() {
             clearLongPressTimer();
           }}
         />
+      )}
+
+      {scanBillOpen && (
+        <Suspense fallback={null}>
+          <Modal title={t("tools.billScanner.title")} onClose={() => setScanBillOpen(false)}>
+            <BillScannerTool />
+          </Modal>
+        </Suspense>
       )}
     </>
   );

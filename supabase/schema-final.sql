@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- CommitTrack — FINAL Supabase schema (paste entire file in SQL Editor → Run)
+-- Perovo — FINAL Supabase schema (paste entire file in SQL Editor → Run)
 -- Safe to re-run on a fresh project or after partial migrations.
 -- Tables: profiles · user_finance_snapshots · agreement_hashes
 -- Admin analytics (is_admin, app_events, admin RPC): see migrations/2026060600*.sql
@@ -39,12 +39,12 @@ alter table public.profiles add column if not exists subscription_tier text not 
 alter table public.profiles add column if not exists subscription_updated_at timestamptz;
 alter table public.profiles add column if not exists razorpay_payment_id text;
 
-comment on table public.profiles is 'CommitTrack account metadata linked to auth.users';
+comment on table public.profiles is 'Perovo account metadata linked to auth.users';
 comment on column public.profiles.phone is 'Indian mobile (10 digits), collected at signup';
 comment on column public.profiles.display_name is 'User name from signup/onboarding';
 comment on column public.profiles.monthly_income is 'Monthly salary in INR';
 comment on column public.profiles.onboarding_complete is 'True after onboarding flow finished';
-comment on column public.profiles.subscription_tier is 'CommitTrack plan: free, pro, or power';
+comment on column public.profiles.subscription_tier is 'Perovo plan: free, pro, or power';
 
 alter table public.profiles enable row level security;
 
@@ -79,7 +79,7 @@ create index if not exists user_finance_snapshots_updated_at_idx
   on public.user_finance_snapshots (updated_at desc);
 
 comment on table public.user_finance_snapshots is
-  'CommitTrack optional cloud continuity — full local snapshot per user';
+  'Perovo optional cloud continuity — full local snapshot per user';
 
 alter table public.user_finance_snapshots enable row level security;
 
@@ -162,8 +162,8 @@ begin
 end;
 $$;
 
-drop trigger if exists on_auth_user_created_committrack on auth.users;
-create trigger on_auth_user_created_committrack
+drop trigger if exists on_auth_user_created_perovo on auth.users;
+create trigger on_auth_user_created_perovo
   after insert on auth.users
   for each row
   execute function public.handle_new_auth_user();

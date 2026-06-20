@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { useMemo, useState, useEffect, useRef } from "react";
+import ReactConfetti from "react-confetti";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { buildLendingDashboard } from "../../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
 import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
+import { isInDefault } from "../../../engines/lendingRecovery.js";
 import { sealAndDownloadAgreement, generateAgreementPdfBase64 } from "../../../utils/agreementExport.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { Button, Card } from "../../index.js";
@@ -31,6 +33,8 @@ import {
 } from "../../../services/lending/leegalityESign.js";
 import { getStampGuidance, ESTAMP_RESOURCES } from "../../../utils/estampGuidance.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { buildWhatsAppLink } from "../../../utils/lendingWhatsApp.js";
+import { trackEvent, EVENTS } from "../../../services/analytics/perovoAnalytics.js";
 
 export default function LendingDetailDashboard({
   lending,
@@ -42,7 +46,7 @@ export default function LendingDetailDashboard({
   onAddProof,
 }) {
   const { t } = useTranslation();
-  const { settings, updateLending, allLendings } = useCommitTrack();
+  const { settings, updateLending, allLendings } = usePerovo();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [legalOpen, setLegalOpen] = useState(false);
@@ -50,6 +54,20 @@ export default function LendingDetailDashboard({
   const [esignLoading, setEsignLoading] = useState(false);
   const [esignError, setEsignError] = useState("");
   const [esignUrl, setEsignUrl] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showShareMoment, setShowShareMoment] = useState(false);
+  const prevRemaining = useRef(Number(lending.remainingAmount) || 0);
+
+  useEffect(() => {
+    const rem = Number(lending.remainingAmount) || 0;
+    if (prevRemaining.current > 0 && rem === 0) {
+      setShowConfetti(true);
+      setShowShareMoment(true);
+      trackEvent(EVENTS.LOAN_CLEARED, { type: lending.type });
+      setTimeout(() => setShowConfetti(false), 5000);
+    }
+    prevRemaining.current = rem;
+  }, [lending.remainingAmount, lending.type]);
   const canPrintAgreement = tierHasFeature("legal_agreement", settings);
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
@@ -77,6 +95,7 @@ export default function LendingDetailDashboard({
 
   const stampState = lending.agreementCity || settings.userCity || "";
   const stampNote = getStampGuidance(stampState).note;
+  const isOverdue = isInDefault(lending);
 
   const handleStartESign = async () => {
     if (!lending.borrowerFullName || !lending.borrowerPhone) {
@@ -122,6 +141,41 @@ export default function LendingDetailDashboard({
 
   return (
     <div className="ct-stack">
+      {showConfetti && typeof window !== "undefined" ? (
+        <ReactConfetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={300}
+          colors={["#6366f1", "#0d9488", "#f59e0b", "#f0eff9"]}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 400, pointerEvents: "none" }}
+        />
+      ) : null}
+      {Number(lending.remainingAmount) === 0 ? (
+        <div className="ct-debt-free-banner">{t("lending.fullySettled")}</div>
+      ) : null}
+      {showShareMoment && Number(lending.remainingAmount) === 0 ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const amount = Number(lending.principalAmount ?? lending.totalAmount) || 0;
+            const msg = `I just cleared a ${formatInr(amount)} loan tracked on Perovo!`;
+            window.open(buildWhatsAppLink("", msg), "_blank", "noopener,noreferrer");
+          }}
+        >
+          {t("lending.shareClearedMoment")}
+        </Button>
+      ) : null}
+      <div className={`ct-hero-card lending ${isOverdue ? "survival" : ""} relative`}>
+        {isOverdue ? <div className="ct-hero-glow amber" aria-hidden /> : <div className="ct-hero-glow" aria-hidden />}
+        <p className="ct-hero-label">{lending.personName}</p>
+        <p className="ct-hero-number">{formatInr(Number(lending.remainingAmount) || 0)}</p>
+        <Caption className="block relative mt-1 opacity-90">
+          {t("lending.left", { amount: formatInr(lending.remainingAmount) })}
+        </Caption>
+      </div>
       <LendingActionFlow
         lending={lending}
         settings={settings}
@@ -299,13 +353,47 @@ export default function LendingDetailDashboard({
 
       <div className="ct-stack-sm">
         <button type="button" className="ct-link text-left" onClick={() => setStampOpen((v) => !v)}>
-          {t("lending.stamp.toggle")}
+          {t("lending.stamp.courtReady")}
         </button>
         {stampOpen ? (
           <Card className="ct-stack-sm">
-            <Caption className="font-semibold block">{t("lending.stamp.requiredTitle")}</Caption>
+            <Caption className="font-semibold block">{t("lending.stamp.courtReady")}</Caption>
+            <ToneSurface tone="warning">
+              <Body className="!text-sm">{t("lending.stamp.courtWarn")}</Body>
+            </ToneSurface>
+            <div className="ct-stack-sm !gap-1">
+              {[
+                ["Maharashtra", "₹1"],
+                ["Karnataka", "₹2"],
+                ["Delhi", "₹1"],
+                ["Telangana", "₹2"],
+                ["Tamil Nadu", "₹2"],
+                ["West Bengal", "₹2"],
+                [t("lending.stamp.requiredTitle"), "₹1–10"],
+              ].map(([state, amount]) => (
+                <Caption key={state} className="block">
+                  {t("lending.stamp.stateRow", { state, amount })}
+                </Caption>
+              ))}
+            </div>
             <Body className="!text-sm">{stampNote}</Body>
             <div className="ct-row-wrap gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open("https://www.shcilestamp.com", "_blank", "noopener,noreferrer")}
+              >
+                {t("lending.stamp.buyEstamp")}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open("https://www.google.com/maps/search/stamp+vendor+near+me", "_blank", "noopener,noreferrer")}
+              >
+                {t("lending.stamp.findVendor")}
+              </Button>
               {ESTAMP_RESOURCES.map((res) => (
                 <Button
                   key={res.url}
@@ -318,6 +406,7 @@ export default function LendingDetailDashboard({
                 </Button>
               ))}
             </div>
+            <Caption className="block">{t("lending.stamp.printHint")}</Caption>
             <Caption className="block">{t("lending.stamp.footer")}</Caption>
           </Card>
         ) : null}

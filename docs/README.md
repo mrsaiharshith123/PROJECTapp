@@ -14,6 +14,7 @@
 | [08-governance.md](./08-governance.md) | Audit system, registries, engineering governance |
 | [09-implementation-status.md](./09-implementation-status.md) | **What’s built vs deferred** — V1 scope, payments, legal lending, i18n coverage, roadmap |
 | [10-i18n.md](./10-i18n.md) | **22 languages + English** — keys, scripts, wiring rules |
+| [MOBILE.md](./MOBILE.md) | **Android TWA + Capacitor dev APK + iOS** |
 | [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) | Modes, tools, household scope |
 | [architecture/FamilyOperatingSystem.md](./architecture/FamilyOperatingSystem.md) | **Family OS** — philosophy, engines, phases |
 | [architecture/PaymentsAndLending.md](./architecture/PaymentsAndLending.md) | Razorpay, promissory notes, confirmation service |

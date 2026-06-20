@@ -1,6 +1,8 @@
-# CommitTrack
+# Perovo (web)
 
-**CommitTrack by Daloy Tech** — local-first PWA for **commitments, pressure, and household/salary cashflow** (not a full expense tracker). Data stays in the browser (`localStorage`); optional Supabase for auth/profile. Supports **English + 22 Indian languages**.
+**Android (TWA)** and **iOS (Capacitor)** wrap this same build — see [`docs/MOBILE.md`](./docs/MOBILE.md).
+
+**Perovo by Tadsaya** — local-first PWA for **commitments, pressure, and household/salary cashflow** (not a full expense tracker). Data stays in the browser (`localStorage`); optional Supabase for auth/profile. Supports **English + 22 Indian languages**.
 
 ## Quick start
 
@@ -40,6 +42,7 @@ npm run audit        # full quality gate before PR
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript (`checkJs` on `src/`) |
 | `npm run audit` | **Full audit** (lint, UI rules, depth, tests, types, build) |
+| `npm run apk:dev` | **Developer APK** → `releases/Perovo-dev-latest.apk` (share with team) |
 | `npm run deploy` | Publish `dist/` to GitHub Pages |
 
 Details: [docs/04-commands.md](./docs/04-commands.md).

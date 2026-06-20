@@ -15,6 +15,7 @@ import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "../utils/dailySpends.js";
 import { postRoomEvent } from "../services/household/householdRoomService.js";
+import { trackEvent, EVENTS } from "../services/analytics/perovoAnalytics.js";
 
 function emitRoomEvent(settings, userId, eventType, eventData) {
   const roomId = settings?.householdRoomId;
@@ -28,8 +29,19 @@ function emitRoomEvent(settings, userId, eventType, eventData) {
   });
 }
 
+function settingsPatchUnchanged(prev, next, patch) {
+  return Object.keys(patch).every((key) => {
+    const before = prev[key];
+    const after = next[key];
+    if (Array.isArray(before) && Array.isArray(after)) {
+      return JSON.stringify(before) === JSON.stringify(after);
+    }
+    return Object.is(before, after);
+  });
+}
+
 /** @param {object} deps */
-export function useCommitTrackCrud({
+export function usePerovoCrud({
   commitments,
   settings,
   todayStr,
@@ -52,6 +64,7 @@ export function useCommitTrackCrud({
         updatedAt: now,
       });
       persistCommitments((prev) => [...prev, c]);
+      trackEvent(EVENTS.COMMITMENT_ADDED, { category: c.category });
       emitRoomEvent(settings, userId, "bill_added", {
         name: c.name,
         amount: c.amount,
@@ -162,6 +175,7 @@ export function useCommitTrackCrud({
         status: "pending",
       });
       persistLendings((prev) => [...prev, l]);
+      trackEvent(EVENTS.LENDING_CREATED, { type: l.type });
     },
     [persistLendings, settings.activeProfileId]
   );
@@ -214,13 +228,15 @@ export function useCommitTrackCrud({
   const updateSettings = useCallback(
     (patch) => {
       persistSettings((prev) => {
-        const next = { ...prev, ...patch };
+        let next = { ...prev, ...patch };
         if (patch.userMode != null && !USER_MODE_IDS.includes(patch.userMode)) {
           next.userMode = prev.userMode || "salaried";
         }
-        if (patch.householdScope != null && patch.householdScope !== "family") {
-          next.householdScope = "single";
-          next.secondaryMonthlyIncome = 0;
+        if (patch.householdScope != null) {
+          next.householdScope = patch.householdScope === "family" ? "family" : "single";
+          if (next.householdScope !== "family") {
+            next.secondaryMonthlyIncome = 0;
+          }
         }
         if (patch.subscriptionTier != null) {
           const t = patch.subscriptionTier;
@@ -230,6 +246,7 @@ export function useCommitTrackCrud({
         if (patch.appLanguage != null) {
           next.appLanguage = normalizeAppLanguage(patch.appLanguage);
         }
+        if (settingsPatchUnchanged(prev, next, patch)) return prev;
         return next;
       });
     },

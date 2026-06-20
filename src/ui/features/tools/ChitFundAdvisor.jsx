@@ -7,6 +7,7 @@ import { adviseChitTakeMonth, buildChitInstallmentSchedule } from "../../../engi
 import { formatInr } from "../../../constants/symbols.js";
 import { chitFieldsFromCommitment } from "../../../constants/chitFund.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
 const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
@@ -107,17 +108,15 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
       )}
 
       {advice.best && (
-        <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 p-3 text-xs space-y-1">
-          <p className="font-semibold text-emerald-900">
-            {t("chit.advisor.suggestedMonth", { month: advice.best.month })}
-          </p>
-          <p>
-            {t("chit.advisor.payoutLine", {
-              payout: formatInr(advice.best.payout),
-              loss: formatInr(advice.best.loss),
-            })}
-          </p>
-        </div>
+        <ToolAnswerHero
+          tone="survival"
+          label={t("chit.advisor.suggestedMonth", { month: advice.best.month })}
+          value={formatInr(advice.best.payout)}
+          subtitle={t("chit.advisor.payoutLine", {
+            payout: formatInr(advice.best.payout),
+            loss: formatInr(advice.best.loss),
+          })}
+        />
       )}
 
       {advice.rows.length > 0 && (

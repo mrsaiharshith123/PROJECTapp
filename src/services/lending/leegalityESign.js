@@ -11,8 +11,8 @@ export async function createLeegalityDocument({
   documentTitle,
 }) {
   const payload = {
-    name: String(documentTitle || "CommitTrack Agreement").slice(0, 100),
-    description: "Promissory note — CommitTrack Financial OS",
+    name: String(documentTitle || "Perovo Agreement").slice(0, 100),
+    description: "Promissory note — Perovo Financial OS",
     file_data: pdfBase64,
     signers: [
       {

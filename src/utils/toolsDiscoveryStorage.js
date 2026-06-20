@@ -1,5 +1,5 @@
-const STORAGE_KEY = "committrack_tools_nudge_dismissed";
-const SESSION_KEY = "committrack_tools_nudge_session";
+const STORAGE_KEY = "perovo_tools_nudge_dismissed";
+const SESSION_KEY = "perovo_tools_nudge_session";
 /** Re-show nudge after this many days if user dismissed it. */
 const DISMISS_TTL_DAYS = 7;
 

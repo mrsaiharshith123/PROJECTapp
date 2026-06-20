@@ -1,8 +1,9 @@
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { formatInr } from "../../../constants/symbols.js";
-import { Caption, Body, Heading } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
 
@@ -14,33 +15,38 @@ export default function SafetyPlannerPanel() {
   const emergency = stable.emergency;
 
   const hasLiquidAssets = entries.some((e) => e.kind === "asset");
+  const fundedPct = emergency?.progressPercent ?? 0;
 
   return (
     <div className="ct-stack">
+      <ToolAnswerHero
+        tone="survival"
+        label={t("tools.safety.heroLabel")}
+        value={formatInr(emergency?.recommended || 0)}
+        subtitle={t("tools.safety.heroSubtitle", { percent: fundedPct })}
+      />
       <Caption>{t("tools.safety.introAuto")}</Caption>
       {!hasLiquidAssets && (
         <Caption className="block ct-text-warning">{t("tools.safety.addBankAsset")}</Caption>
       )}
-      <div className="ct-inset ct-stack-sm">
-        <Heading level={3} className="!text-base">
-          {t("tools.emergency.target", {
-            amount: formatInr(emergency?.recommended || 0),
-            months: emergency?.recommendedMonths || 0,
-          })}
-        </Heading>
-        <Body className="!text-sm">
-          {t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}
-        </Body>
-        {emergency?.gap > 0 && (
-          <Caption className="block">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</Caption>
-        )}
-        <ProgressBar value={emergency?.progressPercent || 0} />
-        <Body className="!text-sm font-semibold">
-          {t("profileHub.widget.emergency")}: {emergency?.progressPercent ?? 0}%
-        </Body>
+      <div className="ct-stack-sm">
+        <ul className="ct-stack-sm divide-y divide-[var(--ct-border)]">
+          <li className="ct-row-between gap-2 py-2">
+            <Caption className="block">{t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}</Caption>
+          </li>
+          {emergency?.gap > 0 ? (
+            <li className="ct-row-between gap-2 py-2">
+              <Caption className="block">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</Caption>
+            </li>
+          ) : null}
+        </ul>
+        <ProgressBar value={fundedPct} />
         {emergency?.messageKey && (
           <Caption className="block">{translateInsight(t, { key: emergency.messageKey })}</Caption>
         )}
+      </div>
+      <div className="ct-inset ct-stack-sm !p-3">
+        <Caption className="block opacity-90">{t("tools.safety.disclaimer")}</Caption>
       </div>
     </div>
   );

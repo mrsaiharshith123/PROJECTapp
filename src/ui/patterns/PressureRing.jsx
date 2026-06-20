@@ -1,17 +1,67 @@
 import { useCountUp } from "../hooks/useCountUp.js";
 
+/** @param {number | null | undefined} score */
+function pressureRingFillColor(score) {
+  if (score == null) return "#6e6c8a";
+  if (score < 45) return "#2dd4bf";
+  if (score < 70) return "#fbbf24";
+  if (score < 80) return "#fb923c";
+  return "#f87171";
+}
+
 /**
- * Animated circular pressure score (0–100).
- * @param {{ score?: number, size?: number, strokeWidth?: number }} props
+ * Circular pressure score — SVG stroke or conic gradient.
+ * @param {{ score?: number, size?: number, strokeWidth?: number, variant?: 'stroke' | 'conic', tierLabel?: string }} props
  */
-export function PressureRing({ score = 0, size = 80, strokeWidth = 6 }) {
+export function PressureRing({ score = 0, size = 80, strokeWidth = 6, variant = "stroke", tierLabel }) {
   const animated = useCountUp(score, 1000);
+  const tone = pressureRingFillColor(score);
+
+  if (variant === "conic") {
+    const outer = size;
+    const inner = Math.round(size * 0.78);
+    const filledDeg = Math.max(0, Math.min(360, ((100 - animated) / 100) * 360));
+    const conic = `conic-gradient(${tone} 0deg ${filledDeg}deg, rgba(255,255,255,0.08) ${filledDeg}deg 360deg)`;
+
+    return (
+      <div className="ct-conic-ring" style={{ width: outer, height: outer, background: conic }}>
+        <div
+          className="ct-conic-ring-inner"
+          style={{ width: inner, height: inner }}
+        >
+          <span
+            className="ct-hero-number"
+            style={{ fontSize: size * 0.28, color: tone, marginTop: 0 }}
+          >
+            {animated}
+          </span>
+          {tierLabel ? (
+            <span
+              style={{
+                fontSize: 9,
+                color: tone,
+                fontWeight: 600,
+                marginTop: 2,
+                textAlign: "center",
+                lineHeight: 1.15,
+                maxWidth: inner * 0.85,
+              }}
+            >
+              {tierLabel}
+            </span>
+          ) : (
+            <span style={{ fontSize: 9, color: "var(--ct-text-muted)", fontWeight: 500, marginTop: 2 }}>
+              /100
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const r = (size - strokeWidth) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (animated / 100) * circ;
-
-  const tone =
-    score < 45 ? "#0d9488" : score < 70 ? "#d97706" : score < 80 ? "#ea580c" : "#dc2626";
 
   return (
     <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
@@ -51,7 +101,7 @@ export function PressureRing({ score = 0, size = 80, strokeWidth = 6 }) {
           style={{
             fontFamily: "var(--ct-font-display)",
             fontSize: `${size * 0.22}px`,
-            fontWeight: 800,
+            fontWeight: 600,
             letterSpacing: "-0.03em",
             color: tone,
             lineHeight: 1,

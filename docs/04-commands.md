@@ -96,11 +96,36 @@ Use when the repo looks messy locally. See [07-repo-folders.md](./07-repo-folder
 
 **Do not commit `dist/`** — it is build output.
 
+## Mobile (TWA + Capacitor)
+
+| Command | What it does |
+|---------|----------------|
+| `npm run apk:dev` | **Developer APK** — build web + Capacitor → `releases/Perovo-dev-latest.apk` (share offline) |
+| `npm run apk:twa` | Play Store TWA APK/AAB (loads live `perovo.app`) |
+| `npm run apk:twa:install` | Install TWA build on USB device |
+| `npm run cap:sync` | `npm run build` + copy into native projects |
+| `npm run cap:android` | Open Android Studio |
+| `npm run cap:ios` | Open Xcode (macOS) |
+| `npm run cap:add:android` | First-time Capacitor Android platform |
+| `npm run audit:native-shells` | Governance: TWA + Capacitor config, no legacy mobile folders |
+
+Full guide: [MOBILE.md](./MOBILE.md).
+
 ## Optional / internal
 
 | Command | What it does |
 |---------|----------------|
 | `npm run git:ship` | Helper commit/push script (`scripts/git-commit-push.mjs`) |
+
+### Dev-only (local `npm run dev`)
+
+| Surface | What it does |
+|---------|----------------|
+| `/dev` route | Developer panel — integration status, modals, state presets (`DevPanel.jsx`) |
+| 🔧 floating button | Bottom-left; opens `/dev` when overrides active |
+| `__perovoDev.help()` | Console shortcuts — presets, force-show, tier simulation (`devSubscriptionTools.js`) |
+
+Bill OCR scan is on the **+ FAB menu**, not the Home tools grid.
 
 ## Direct script access (rare)
 

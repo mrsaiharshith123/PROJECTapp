@@ -19,6 +19,7 @@ import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
+import { formatInr } from "../../../constants/symbols.js";
 
 const CATEGORY_OPTIONS = [
   ["EMI", "category.emi"],
@@ -70,6 +71,11 @@ export default function CommitmentsBillsTab({
     return aggregateBillHealthScore(scored);
   }, [activeBills, dailySpends, todayStr, topStressorName]);
 
+  const monthlyCommitted = useMemo(
+    () => activeBills.reduce((sum, bill) => sum + (Number(bill.amount) || 0), 0),
+    [activeBills],
+  );
+
   const presetChips = [
     { id: "", label: t("bills.filterAll") },
     { id: "upcoming", label: t("bills.filterDueSoon") },
@@ -118,9 +124,10 @@ export default function CommitmentsBillsTab({
       </div>
 
       {activeBills.length > 0 && (
-        <div className="ct-inset !p-3 ct-stack-sm">
-          <div className="ct-row-between gap-2 flex-wrap items-start">
-            <Caption className="inline-flex items-center font-semibold">
+        <div className="ct-hero-card survival ct-bills-portfolio-hero">
+          <div className="ct-hero-glow amber" aria-hidden />
+          <div className="ct-row-between gap-2 flex-wrap items-start relative">
+            <Caption className="inline-flex items-center font-semibold ct-hero-label !normal-case !tracking-normal">
               {t("bills.portfolioHealth")}
               <InfoTip text={CALC_HELP.billHealth} />
             </Caption>
@@ -132,13 +139,13 @@ export default function CommitmentsBillsTab({
               {t(billHealthBandKey(portfolioHealth.band))}
             </Badge>
           </div>
-          <Body className="!text-base ct-body-strong">
+          <Body className="!text-base ct-body-strong relative mt-2">
             {t(billHealthSummaryKey(portfolioHealth), {
               stress: portfolioHealth.stressCount,
               watch: portfolioHealth.watchCount,
             })}
           </Body>
-          <Caption className="block text-[var(--ct-text-muted)]">
+          <Caption className="block text-[var(--ct-text-muted)] relative">
             {translateInsight(t, {
               id: portfolioHealth.insightId,
               params: {
@@ -148,7 +155,7 @@ export default function CommitmentsBillsTab({
               },
             })}
           </Caption>
-          <Caption className="block opacity-75">
+          <Caption className="block opacity-75 relative">
             {t("bills.portfolioScoreDetail", { score: portfolioHealth.score })}
             {" · "}
             {t("bills.portfolioHealthHint")}
@@ -157,18 +164,21 @@ export default function CommitmentsBillsTab({
       )}
 
       <div className="ct-grid-2">
-        <StatCard value={String(counts.pending || 0)} label={t("bills.due")} />
+        <StatCard variant="tile" value={String(counts.pending || 0)} label={t("bills.due")} />
         <StatCard
+          variant="tile"
           value={String(counts.upnext || 0)}
           label={t("bills.upNext")}
           valueClassName="text-[var(--ct-accent-muted)]"
         />
         <StatCard
+          variant="tile"
           value={String(counts.overdue || 0)}
           label={t("bills.overdue")}
           valueClassName={counts.overdue > 0 ? "text-[var(--ct-warning)]" : undefined}
         />
         <StatCard
+          variant="tile"
           value={String(historyBills.length)}
           label={t("bills.history")}
           valueClassName="text-[var(--ct-text-muted)]"
@@ -242,6 +252,14 @@ export default function CommitmentsBillsTab({
           })}
         </div>
       </div>
+
+      {activeBills.length > 0 && monthlyCommitted > 0 && (
+        <div className="ct-hero-card pressure ct-bills-monthly-total">
+          <div className="ct-hero-glow" aria-hidden />
+          <p className="ct-hero-label">{t("bills.monthlyCommitted")}</p>
+          <p className="ct-hero-number">{formatInr(monthlyCommitted)}</p>
+        </div>
+      )}
 
       {historyBills.length > 0 && (
         <div>

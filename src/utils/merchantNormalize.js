@@ -1,3 +1,4 @@
+import Fuse from "fuse.js";
 import { lifeCategoryForBillCategory, getTransactionLifeCategoryMeta } from "../constants/transactionCategories.js";
 
 const KNOWN_MERCHANTS = [
@@ -115,14 +116,32 @@ const KNOWN_MERCHANTS = [
   // Note: classifyMerchant ultimately falls back to life-category derived from billCategory.
 ];
 
+const MERCHANT_SEARCH_LIST = KNOWN_MERCHANTS.map((m, i) => ({
+  index: i,
+  label: m.profile.label,
+  id: m.profile.id,
+}));
+
+const merchantFuse = new Fuse(MERCHANT_SEARCH_LIST, {
+  keys: ["label"],
+  threshold: 0.35,
+  includeScore: true,
+  minMatchCharLength: 3,
+});
+
 export function normalizeMerchantKey(raw) {
   return String(raw || "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[^\w\s&.-]/g, "") || "unknown";
 }
 
-export function classifyMerchant(name, billCategory) {
+export function classifyMerchant(name, billCategory, _vpa) {
   const key = normalizeMerchantKey(name);
   for (const { pattern, profile } of KNOWN_MERCHANTS) {
     if (pattern.test(key) || pattern.test(String(name || ""))) return { ...profile, key };
+  }
+  const fuzzyResults = merchantFuse.search(String(name || "").slice(0, 40));
+  if (fuzzyResults.length > 0 && (fuzzyResults[0].score ?? 1) < 0.35) {
+    const match = KNOWN_MERCHANTS[fuzzyResults[0].item.index];
+    return { ...match.profile, key: name.toLowerCase(), fuzzy: true };
   }
   const lifeCategory = lifeCategoryForBillCategory(billCategory);
   return {

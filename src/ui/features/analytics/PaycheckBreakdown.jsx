@@ -2,12 +2,12 @@ import { formatInr } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 
-const TONE_CLASS = {
-  income: "ct-text",
-  fixed: "ct-text-warning",
-  variable: "ct-text-accent",
-  freePositive: "ct-text-success",
-  freeNegative: "ct-text-danger",
+const STEP_TILE = {
+  income: "teal",
+  fixed: "amber",
+  variable: "indigo",
+  freePositive: "teal",
+  freeNegative: "danger",
 };
 
 /**
@@ -69,21 +69,22 @@ export default function PaycheckBreakdown({
   }
 
   return (
-    <div id={anchorId} className="ct-paycheck-section">
-      <div>
+    <div id={anchorId} className="ct-hero-card wealth ct-stack relative" style={{ scrollMarginTop: "6rem" }}>
+      <div className="ct-hero-glow teal" aria-hidden />
+      <div className="relative">
         <Body className="font-semibold">{t("analytics.paycheckFlow")}</Body>
         <Caption className="block mt-0.5">{t("analytics.paycheckFlowDesc")}</Caption>
       </div>
-      <div className="ct-stack-sm">
+      <div className="relative ct-stack-sm">
         {steps.map((row, i) => (
           <div key={row.label}>
             {i > 0 && <p className="ct-paycheck-arrow">↓</p>}
-            <div className="ct-paycheck-row">
-              <span className="ct-caption">
+            <div className={`ct-stat-tile ${STEP_TILE[row.tone]} ct-row-between gap-2 items-center`}>
+              <span className="ct-stat-label min-w-0">
                 {row.label}
                 {row.detail ? <span className="block text-[11px] opacity-80 mt-0.5">{row.detail}</span> : null}
               </span>
-              <span className={`ct-metric-value ${TONE_CLASS[row.tone]} ${row.bold ? "text-base" : ""}`}>
+              <span className={`ct-stat-value ct-numeral shrink-0 ${row.bold ? "!text-lg" : ""}`}>
                 {row.value < 0 ? "−" : ""}
                 {formatInr(Math.abs(row.value))}
               </span>
@@ -91,17 +92,17 @@ export default function PaycheckBreakdown({
           </div>
         ))}
       </div>
-      <Caption className="leading-relaxed">{footerParts.join(" · ")}</Caption>
+      <Caption className="leading-relaxed relative">{footerParts.join(" · ")}</Caption>
 
       {payerSplit?.rows?.length > 0 && (
-        <div className="ct-paycheck-subpanel">
+        <div className="ct-stat-tile indigo ct-stack-sm relative">
           <Body className="text-xs font-semibold">{t("analytics.householdPayerTags")}</Body>
           <Caption>{t("analytics.payerTagsHint")}</Caption>
           <ul className="ct-stack-sm">
             {payerSplit.rows.map((r) => (
               <li key={r.label} className="ct-row-between ct-caption">
                 <span>{r.label}</span>
-                <span className="font-semibold shrink-0">{formatInr(Math.round(r.amount))}</span>
+                <span className="ct-stat-value ct-numeral shrink-0">{formatInr(Math.round(r.amount))}</span>
               </li>
             ))}
           </ul>
@@ -109,9 +110,9 @@ export default function PaycheckBreakdown({
       )}
 
       {creditCard && (
-        <div className="ct-paycheck-subpanel">
+        <div className="ct-stat-tile amber ct-stack-sm relative">
           <Body className="text-xs font-semibold">{t("analytics.creditCardsRevolving")}</Body>
-          <Caption>
+          <Caption className="ct-numeral">
             {t("analytics.cardSummary", {
               count: creditCard.count,
               open: formatInr(creditCard.openBalance),
@@ -129,19 +130,19 @@ export default function PaycheckBreakdown({
       )}
 
       {sensitivityRows?.length > 0 && (
-        <div className="ct-paycheck-subpanel">
+        <div className="ct-stat-tile indigo ct-stack-sm relative">
           <Body className="text-xs font-semibold">{t("analytics.incomeShock")}</Body>
           <Caption>{t("analytics.incomeShockDesc")}</Caption>
           <ul className="ct-stack-sm">
             {sensitivityRows.map((r) => (
-              <li key={r.cutPercent} className="ct-row-between ct-caption">
+              <li key={r.cutPercent} className="ct-row-between ct-caption gap-2">
                 <span>
                   {t("analytics.incomeCutLine", {
                     cut: r.cutPercent,
                     income: formatInr(r.hypotheticalIncome),
                   })}
                 </span>
-                <span className={`font-semibold shrink-0 ${r.freeMoney < 0 ? "ct-text-danger" : "ct-text-success"}`}>
+                <span className={`ct-stat-value ct-numeral shrink-0 ${r.freeMoney < 0 ? "ct-text-danger" : "ct-text-success"}`}>
                   {t("analytics.freeAmount", { amount: formatInr(r.freeMoney) })}
                 </span>
               </li>

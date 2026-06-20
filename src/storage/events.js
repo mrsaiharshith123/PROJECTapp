@@ -1,5 +1,5 @@
-export const DATA_CHANGED_EVENT = "committrack:data-changed";
-export const SETTINGS_RESET_EVENT = "committrack:settings-reset";
+export const DATA_CHANGED_EVENT = "perovo:data-changed";
+export const SETTINGS_RESET_EVENT = "perovo:settings-reset";
 
 /** Fired after local finance data is persisted (sync layer listens; engines stay local-first). */
 export function emitLocalDataChanged() {

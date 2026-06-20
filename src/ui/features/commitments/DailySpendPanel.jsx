@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { format, subDays, parseISO } from "date-fns";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { sumDailySpendsInRange } from "../../../utils/dailySpends.js";
 import { getTransactionLifeCategoryMeta, TRANSACTION_LIFE_CATEGORIES } from "../../../constants/transactionCategories.js";
@@ -39,7 +39,7 @@ function formatSpendDate(dateStr) {
 
 /** Variable spend logs — totals, period filter, history. Charts live on Analytics. */
 export default function DailySpendPanel() {
-  const { dailySpends, deleteDailySpend, todayStr, addCommitment } = useCommitTrack();
+  const { dailySpends, deleteDailySpend, todayStr, addCommitment } = usePerovo();
   const { t } = useTranslation();
   const [period, setPeriod] = useState("30d");
   const [lifeFilter, setLifeFilter] = useState("");
@@ -150,8 +150,9 @@ export default function DailySpendPanel() {
       </div>
 
       <div className="ct-grid-2">
-        <StatCard value={formatInr(total)} label={t("bills.dailySpend.total")} />
+        <StatCard variant="tile" value={formatInr(total)} label={t("bills.dailySpend.total")} />
         <StatCard
+          variant="tile"
           value={String(periodSpends.length)}
           label={t("bills.dailySpend.entries")}
           valueClassName="text-[var(--ct-accent-muted)]"
@@ -187,7 +188,15 @@ export default function DailySpendPanel() {
               <Card key={spend.id} variant="flat" className="ct-daily-spend-row">
                 <div className="ct-row-between gap-3">
                   <div className="ct-row min-w-0 flex-1">
-                    <span className="ct-icon-box shrink-0">
+                    <span
+                      className={`ct-icon-tile ct-icon-tile-sm shrink-0 ${
+                        spend.lifeCategory === "risk" || spend.lifeCategory === "pressure"
+                          ? "danger"
+                          : spend.lifeCategory === "growth"
+                            ? "teal"
+                            : "indigo"
+                      }`}
+                    >
                       <CtIcon name={icon} size={20} context="category" />
                     </span>
                     <div className="min-w-0">

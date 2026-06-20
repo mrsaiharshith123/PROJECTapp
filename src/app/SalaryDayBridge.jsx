@@ -1,14 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { isSalaryCreditToday, planGoalAutoSave } from "../engines/goalAutoSave.js";
 
-const PAYCHECK_NAV_KEY = "committrack_paycheck_nav_date";
+const PAYCHECK_NAV_KEY = "perovo_paycheck_nav_date";
 
 /** Salary-day auto-save + optional navigate to Paycheck. */
 export default function SalaryDayBridge() {
   const navigate = useNavigate();
-  const { settings, todayStr, goals, logSavingsToGoal, updateSettings } = useCommitTrack();
+  const { settings, todayStr, goals, logSavingsToGoal, updateSettings } = usePerovo();
   const ran = useRef(false);
 
   useEffect(() => {

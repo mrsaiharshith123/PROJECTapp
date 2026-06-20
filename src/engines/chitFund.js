@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { addMonths, differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { isBillDueInMonth } from "../constants/repeatTypes.js";
 import { freeMoneyAfterBurden } from "./pressureScore.js";
@@ -371,9 +372,19 @@ export function computeChitIrr(cashFlows, guess = 0.01) {
   const flows = (cashFlows || []).map((f) => Number(f) || 0);
   if (flows.length < 2) return null;
 
-  const npv = (rate) => flows.reduce((s, cf, i) => s + cf / (1 + rate) ** i, 0);
+  const npv = (rate) =>
+    flows.reduce((s, cf, i) => {
+      if (i === 0) return new Decimal(s).plus(cf).toNumber();
+      const denom = new Decimal(1).plus(rate).pow(i);
+      return new Decimal(s).plus(new Decimal(cf).div(denom)).toNumber();
+    }, 0);
+
   const dnpv = (rate) =>
-    flows.reduce((s, cf, i) => (i === 0 ? s : s - (i * cf) / (1 + rate) ** (i + 1)), 0);
+    flows.reduce((s, cf, i) => {
+      if (i === 0) return s;
+      const denom = new Decimal(1).plus(rate).pow(i + 1);
+      return new Decimal(s).minus(new Decimal(i).times(cf).div(denom)).toNumber();
+    }, 0);
 
   let rate = guess;
   for (let i = 0; i < 50; i++) {
@@ -389,7 +400,7 @@ export function computeChitIrr(cashFlows, guess = 0.01) {
   }
 
   const monthly = rate;
-  const annual = (1 + monthly) ** 12 - 1;
+  const annual = new Decimal(1).plus(monthly).pow(12).minus(1).toNumber();
   return {
     monthlyIrr: Math.round(monthly * 10000) / 10000,
     annualIrrPercent: Math.round(annual * 1000) / 10,

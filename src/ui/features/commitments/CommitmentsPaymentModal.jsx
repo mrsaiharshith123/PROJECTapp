@@ -1,5 +1,8 @@
-import { Modal } from "../../index.js";
+import { Modal, Button, Caption, ToneSurface, inputClassName } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { formatInr } from "../../../constants/symbols.js";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function CommitmentsPaymentModal({
   paymentFor,
@@ -14,76 +17,51 @@ export default function CommitmentsPaymentModal({
   const { t } = useTranslation();
   if (!paymentFor) return null;
 
+  const installmentDisplay = formatInr(installmentAmount);
+  const contractDisplay = formatInr(contractStillToPay);
+
   return (
     <Modal
       title={t("bills.payThisMonth")}
       onClose={onClose}
       footer={
-        <button
+        <Button
           type="button"
+          variant="primary"
+          className="w-full"
           onClick={onPay}
           disabled={installmentAmount <= 0 || cycleAlreadyPaid}
-          className="w-full py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-xl hover:bg-violet-700 disabled:opacity-40"
         >
           {t("bills.markPaid")}
-        </button>
+        </Button>
       }
     >
-      <div>
-        <p className="text-sm text-gray-600">
-          <span className="font-semibold text-gray-800">{paymentFor.name}</span>
+      <div className="ct-stack">
+        <Caption className="block">
+          <span className="font-semibold text-[var(--ct-text)]">{paymentFor.name}</span>
           {contractStillToPay > installmentAmount && installmentAmount > 0 ? (
             <>
               {" "}
-              {"\u2014"} total left on contract{" "}
-              <span className="font-bold">
-                {"\u20b9"}
-                {contractStillToPay.toLocaleString("en-IN")}
-              </span>
-              {" "}
-              · paying this month{" "}
-              <span className="font-bold">
-                {"\u20b9"}
-                {installmentAmount.toLocaleString("en-IN")}
-              </span>
+              {t("bills.totalLeftOnContract", { amount: contractDisplay })}{" "}
+              {t("bills.payingThisMonth", { amount: installmentDisplay })}
             </>
           ) : (
-            <>
-              {" "}
-              {"\u2014"} this payment{" "}
-              <span className="font-bold">
-                {"\u20b9"}
-                {installmentAmount.toLocaleString("en-IN")}
-              </span>
-            </>
+            <> {t("bills.thisPayment", { amount: installmentDisplay })}</>
           )}
-        </p>
+        </Caption>
         {cycleAlreadyPaid ? (
-          <p className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-3 py-2 mt-3">
-            {t("bills.alreadyPaidMonth")}
-          </p>
+          <ToneSurface tone="success">
+            <Caption className="block">{t("bills.alreadyPaidMonth")}</Caption>
+          </ToneSurface>
         ) : (
-          <div className="mt-3">
-            <label className="block text-xs font-semibold text-gray-600 mb-1">
-              {t("bills.installmentFixed")}
-            </label>
-            <p
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-100 text-lg font-bold text-gray-900"
-              style={{ fontFamily: "'Sora', sans-serif" }}
-            >
-              {"\u20b9"}
-              {installmentAmount.toLocaleString("en-IN")}
-            </p>
+          <div>
+            <label className="ct-field-label">{t("bills.installmentFixed")}</label>
+            <p className={`${fieldClass} ct-numeral text-lg font-bold !py-3`}>{installmentDisplay}</p>
           </div>
         )}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">{t("bills.date")}</label>
-          <input
-            type="date"
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-            value={payDate}
-            onChange={(e) => onPayDateChange(e.target.value)}
-          />
+          <label className="ct-field-label">{t("bills.date")}</label>
+          <input type="date" className={fieldClass} value={payDate} onChange={(e) => onPayDateChange(e.target.value)} />
         </div>
       </div>
     </Modal>

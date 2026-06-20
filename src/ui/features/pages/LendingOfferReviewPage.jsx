@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Card } from "../../";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Card, Button, Caption, Body, Eyebrow, ToneSurface, inputClassName } from "../../index.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { decodeOfferPayload, trustScoreLabel } from "../../../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { formatInr } from "../../../constants/symbols.js";
@@ -9,11 +9,14 @@ import { trustScoreToTone } from "../../../engines/lendingTrust.js";
 import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function LendingOfferReview() {
   const { t } = useTranslation();
   const [params] = useSearchParams();
-  const { addLending, settings } = useCommitTrack();
+  const { addLending, settings } = usePerovo();
   const [lenderName, setLenderName] = useState(settings.displayName || "");
   const [signName, setSignName] = useState("");
   const [agree, setAgree] = useState(false);
@@ -23,12 +26,15 @@ export default function LendingOfferReview() {
 
   if (!offer) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 py-10 max-w-lg mx-auto">
-        <Card className="text-center py-10 space-y-3">
-          <p className="text-lg font-semibold text-gray-800">Link not valid</p>
-          <p className="text-sm text-gray-500">{t("lending.offer.invalidLink")}</p>
-          <Link to="/" className="text-sm font-semibold text-indigo-600">
-            Go to app home
+      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center">
+        <Card className="ct-stack-sm text-center py-10">
+          <span className="ct-icon-tile danger mx-auto" aria-hidden>
+            <CtIcon name="warning" size={24} context="status" />
+          </span>
+          <Body className="font-semibold">{t("lending.offer.invalidTitle")}</Body>
+          <Caption className="block">{t("lending.offer.invalidLink")}</Caption>
+          <Link to="/" className="ct-link text-sm font-semibold mt-2 inline-block">
+            {t("lending.offer.goHome")}
           </Link>
         </Card>
       </div>
@@ -61,23 +67,24 @@ export default function LendingOfferReview() {
           lenderSignedAt: signedAt,
           collateralDescription: offer.collateral || "",
         },
-      })
+      }),
     );
     setAccepted(true);
   };
 
   if (accepted) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 py-10 max-w-lg mx-auto space-y-4">
-        <Card className="text-center py-8 space-y-2">
-          <p className="text-2xl">&#10003;</p>
-          <p className="text-lg font-semibold text-emerald-700">You accepted the loan</p>
-          <p className="text-sm text-gray-500">
-            Saved on this device as money you lent to {offer.borrowerName}. It stays until repaid or you both sign to
-            cancel.
-          </p>
-          <Link to="/lending" className="inline-block mt-4 text-sm font-semibold text-indigo-600">
-            Open lending tracker
+      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center">
+        <Card className="ct-stack-sm text-center py-8">
+          <span className="ct-icon-tile teal mx-auto" aria-hidden>
+            <CtIcon name="check" size={28} context="status" />
+          </span>
+          <Body className="font-semibold ct-text-success">{t("lending.offer.acceptedTitle")}</Body>
+          <Caption className="block">
+            {t("lending.offer.acceptedBody", { name: offer.borrowerName })}
+          </Caption>
+          <Link to="/money/lending" className="ct-link text-sm font-semibold mt-4 inline-block">
+            {t("lending.offer.openTracker")}
           </Link>
         </Card>
       </div>
@@ -85,90 +92,85 @@ export default function LendingOfferReview() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-slate-950 px-4 py-8 max-w-lg mx-auto space-y-4">
-      <div>
-        <p className="text-sm text-gray-400 uppercase tracking-widest">Loan request</p>
-        <h1 className="text-2xl font-bold text-gray-900 mt-1" style={{ fontFamily: "'Sora', sans-serif" }}>
-          {offer.borrowerName} wants to borrow
-        </h1>
-        <p className="text-3xl font-bold text-indigo-600 mt-2">{formatInr(offer.amount)}</p>
+    <div className="ct-page ct-stack max-w-lg mx-auto pb-10">
+      <div className="ct-hero-card lending relative">
+        <div className="ct-hero-glow" aria-hidden />
+        <Eyebrow>{t("lending.offer.eyebrow")}</Eyebrow>
+        <p className="ct-hero-label mt-2">{t("lending.offer.headline", { name: offer.borrowerName })}</p>
+        <p className="ct-hero-number">{formatInr(offer.amount)}</p>
       </div>
 
-      <Card className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase">Trust score</p>
-        <div className="flex items-center gap-2">
-          <span className={`text-sm font-bold px-3 py-1 rounded-full border ${semanticToneToClass(trustScoreToTone(score))}`}>
-            {score}/100 · {label}
-          </span>
-        </div>
-        <p className="text-xs text-gray-600">{offer.trustSummary}</p>
+      <Card className="ct-stack-sm">
+        <Caption className="block font-semibold uppercase tracking-wide">{t("lending.offer.trustTitle")}</Caption>
+        <span className={`inline-flex text-sm font-bold px-3 py-1 rounded-full border ${semanticToneToClass(trustScoreToTone(score))}`}>
+          {score}/100 · {label}
+        </span>
+        <Caption className="block">{offer.trustSummary}</Caption>
         {(offer.trustOnTime > 0 || offer.trustLate > 0) && (
-          <p className="text-[11px] text-gray-500">
-            On-time payments: {offer.trustOnTime} · Late: {offer.trustLate}
-          </p>
+          <Caption className="block opacity-80">
+            {t("lending.offer.onTimeLate", { onTime: offer.trustOnTime, late: offer.trustLate })}
+          </Caption>
         )}
       </Card>
 
-      <Card className="space-y-2 text-sm">
-        <p>
-          <span className="text-gray-500">Interest:</span> {offer.interestRate}% per year
-        </p>
-        <p>
-          <span className="text-gray-500">Pay back by:</span> {offer.dueDate}
-        </p>
-        {offer.purpose ? (
-          <p>
-            <span className="text-gray-500">For:</span> {offer.purpose}
+      <div className="ct-grid-2">
+        <div className="ct-stat-tile indigo">
+          <p className="ct-stat-tile-label">{t("lending.offer.interest")}</p>
+          <p className="ct-stat-tile-value ct-numeral mt-1">
+            {t("lending.offer.interestPerYear", { rate: offer.interestRate || 0 })}
           </p>
-        ) : null}
-        {offer.collateral ? (
-          <p>
-            <span className="text-gray-500">Collateral:</span> {offer.collateral}
-          </p>
-        ) : null}
-        <p className="text-xs text-gray-500">
-          Borrower signed: {offer.borrowerSignName} (
-          {new Date(offer.borrowerSignedAt).toLocaleString("en-IN", { dateStyle: "medium" })})
-        </p>
+        </div>
+        <div className="ct-stat-tile teal">
+          <p className="ct-stat-tile-label">{t("lending.offer.payBackBy")}</p>
+          <p className="ct-stat-tile-value mt-1">{offer.dueDate}</p>
+        </div>
+      </div>
+
+      {(offer.purpose || offer.collateral) && (
+        <Card className="ct-stack-sm">
+          {offer.purpose ? (
+            <Caption className="block">
+              <span className="font-semibold">{t("lending.offer.for")}</span> {offer.purpose}
+            </Caption>
+          ) : null}
+          {offer.collateral ? (
+            <Caption className="block">
+              <span className="font-semibold">{t("lending.offer.collateral")}</span> {offer.collateral}
+            </Caption>
+          ) : null}
+          <Caption className="block opacity-80">
+            {t("lending.offer.borrowerSigned", {
+              name: offer.borrowerSignName,
+              date: new Date(offer.borrowerSignedAt).toLocaleString("en-IN", { dateStyle: "medium" }),
+            })}
+          </Caption>
+        </Card>
+      )}
+
+      <Card className="ct-stack-sm">
+        <Body className="text-xs font-semibold">{t("lending.offer.agreement")}</Body>
+        <pre className="ct-inset text-[11px] whitespace-pre-wrap max-h-40 overflow-y-auto !p-3">{offer.agreementText}</pre>
       </Card>
 
-      <Card>
-        <p className="text-xs font-semibold text-gray-500 mb-2">Agreement</p>
-        <pre className="text-[11px] whitespace-pre-wrap bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto border border-gray-100">
-          {offer.agreementText}
-        </pre>
-      </Card>
-
-      <Card className="space-y-3">
-        <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-100 rounded-lg p-2">{LEGAL_DISCLAIMER}</p>
+      <Card className="ct-stack">
+        <ToneSurface tone="warning">
+          <Caption className="block">{LEGAL_DISCLAIMER}</Caption>
+        </ToneSurface>
         <div>
-          <label className="text-xs font-semibold text-gray-600">Your name (lender)</label>
-          <input
-            className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-            value={lenderName}
-            onChange={(e) => setLenderName(e.target.value)}
-          />
+          <label className="ct-field-label">{t("lending.offer.lenderName")}</label>
+          <input className={fieldClass} value={lenderName} onChange={(e) => setLenderName(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs font-semibold text-gray-600">Type full name to sign & accept</label>
-          <input
-            className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-            value={signName}
-            onChange={(e) => setSignName(e.target.value)}
-          />
+          <label className="ct-field-label">{t("lending.offer.signAccept")}</label>
+          <input className={fieldClass} value={signName} onChange={(e) => setSignName(e.target.value)} />
         </div>
-        <label className="flex items-start gap-2 text-xs text-gray-700">
+        <label className="ct-row gap-2 items-start ct-caption">
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
-          I agree to lend on these terms and sign as lender.
+          {t("lending.offer.agreeLender")}
         </label>
-        <button
-          type="button"
-          disabled={!signName.trim() || !agree}
-          onClick={acceptLoan}
-          className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm disabled:opacity-50"
-        >
-          Accept & save on my phone
-        </button>
+        <Button type="button" variant="primary" className="w-full" disabled={!signName.trim() || !agree} onClick={acceptLoan}>
+          {t("lending.offer.acceptCta")}
+        </Button>
       </Card>
     </div>
   );

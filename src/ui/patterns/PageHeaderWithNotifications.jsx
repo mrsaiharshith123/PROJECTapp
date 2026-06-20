@@ -4,7 +4,7 @@ import { NotificationPanel } from "../features/NotificationPanel.jsx";
 import { AppHeader } from "./PageHeader.jsx";
 import { NotificationBell } from "./NotificationBell.jsx";
 
-export function PageHeaderWithNotifications({ greeting, headerActions, showBrand = true }) {
+export function PageHeaderWithNotifications({ greeting = null, headerActions, showBrand = true }) {
   const { notificationUnread } = useCommitIntel();
   const [showNotifications, setShowNotifications] = useState(false);
 

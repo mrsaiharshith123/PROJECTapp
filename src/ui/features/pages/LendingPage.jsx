@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { PageShell, Card, Caption, Button, fieldInputClass, EmptyState } from "../../";
+import { PageShell, Card, Caption, Button, fieldInputClass, EmptyState, inputClassName } from "../../";
+import { exportLendingToExcel } from "../../../utils/excelExport.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
 import { trustSummaryLine } from "../../../engines/lendingTrust.js";
 import LendingEntryCard from "../lending/LendingEntryCard.jsx";
@@ -33,7 +34,7 @@ const emptyLendingForm = () => ({
 const Lending = () => {
   const { t } = useTranslation();
   const { lendings, settings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } =
-    useCommitTrack();
+    usePerovo();
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
@@ -44,8 +45,9 @@ const Lending = () => {
   const [detailFor, setDetailFor] = useState(null);
   const [showRequest, setShowRequest] = useState(false);
   const [billSplitOpen, setBillSplitOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { borrowedList, lentList, trustRows, totals, trustScore } = useLendingLists(lendings);
+  const { borrowedList, lentList, trustRows, totals, trustScore } = useLendingLists(lendings, searchQuery);
 
   const resetForm = () => {
     setForm(emptyLendingForm());
@@ -164,6 +166,9 @@ const Lending = () => {
 
   const addActions = (
     <div className="ct-stack-sm items-end">
+      <Button type="button" size="sm" variant="ghost" onClick={() => exportLendingToExcel(lendings)}>
+        {t("export.excel.lending")}
+      </Button>
       <Button type="button" size="sm" onClick={() => setShowRequest(true)}>
         {t("lending.requestMoney")}
       </Button>
@@ -194,6 +199,13 @@ const Lending = () => {
       )}
 
       <LendingProfileCard totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+
+      <input
+        className={inputClassName()}
+        placeholder={t("bills.searchPlaceholder")}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
       <LendingOverduePanel />
 

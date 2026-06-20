@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { translateNotification } from "../../i18n/notificationLabels.js";
@@ -14,7 +14,7 @@ export function NotificationPanel({ onClose }) {
   const panelRef = useRef(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { markNotificationRead, markAllNotificationsRead } = useCommitTrack();
+  const { markNotificationRead, markAllNotificationsRead } = usePerovo();
   const { notifications } = useCommitIntel();
   const unread = notifications.filter((n) => !n.read).length;
 
@@ -37,60 +37,74 @@ export function NotificationPanel({ onClose }) {
   return createPortal(
     <>
       <div className="ct-notif-overlay" onClick={onClose} aria-hidden />
-      <div ref={panelRef} className="ct-notif-panel" role="dialog" aria-label="Reminders">
+      <div
+        ref={panelRef}
+        className="ct-notif-panel"
+        role="dialog"
+        aria-label={t("notifications.panel.title")}
+      >
         <Card variant="flat" className="!p-0 overflow-hidden">
           <div className="ct-row-between px-4 py-3 border-b border-[var(--ct-border)]">
-            <Heading level={2}>Reminders</Heading>
+            <Heading level={2}>{t("notifications.panel.title")}</Heading>
             <div className="ct-row">
-              {unread > 0 && <Badge tone="danger">{unread} new</Badge>}
-              <button type="button" onClick={onClose} className="ct-btn ct-btn-ghost ct-btn-sm" aria-label="Close">
+              {unread > 0 ? (
+                <Badge tone="danger">{t("notifications.panel.new", { count: unread })}</Badge>
+              ) : null}
+              <button
+                type="button"
+                onClick={onClose}
+                className="ct-btn ct-btn-ghost ct-btn-sm"
+                aria-label={t("notifications.panel.close")}
+              >
                 ×
               </button>
             </div>
           </div>
           <div className="ct-notif-list">
             {notifications.length === 0 ? (
-              <Caption className="block py-6 text-center">No reminders right now.</Caption>
+              <Caption className="block py-6 text-center">{t("notifications.panel.empty")}</Caption>
             ) : (
               <ul>
                 {notifications.map((n) => {
                   const copy = translateNotification(t, n);
                   return (
-                  <li key={n.id} className={n.read ? "ct-notif-item" : "ct-notif-item ct-notif-item-unread"}>
-                    <div className="ct-row-between items-start">
-                      <div>
-                        <Body className="text-[var(--ct-text)]">{copy.message}</Body>
-                        <Caption className="uppercase font-semibold mt-1 block">{n.urgency}</Caption>
+                    <li key={n.id} className={n.read ? "ct-notif-item" : "ct-notif-item ct-notif-item-unread"}>
+                      <div className="ct-row-between items-start">
+                        <div>
+                          <Body className="text-[var(--ct-text)]">{copy.message}</Body>
+                          <Caption className="uppercase font-semibold mt-1 block">{n.urgency}</Caption>
+                        </div>
+                        <div className="ct-row gap-1">
+                          {"href" in n && n.href ? (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => {
+                                markNotificationRead(n.id);
+                                onClose();
+                                navigate(String(n.href));
+                              }}
+                            >
+                              {"actionKey" in n && n.actionKey
+                                ? t("notifications.panel.open")
+                                : t("notifications.panel.view")}
+                            </Button>
+                          ) : null}
+                          {!n.read ? (
+                            <Button type="button" variant="ghost" size="sm" onClick={() => markNotificationRead(n.id)}>
+                              {t("notifications.panel.read")}
+                            </Button>
+                          ) : null}
+                        </div>
                       </div>
-                      <div className="ct-row gap-1">
-                        {"href" in n && n.href && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              markNotificationRead(n.id);
-                              onClose();
-                              navigate(String(n.href));
-                            }}
-                          >
-                            {"actionKey" in n && n.actionKey ? "Open" : "View"}
-                          </Button>
-                        )}
-                        {!n.read && (
-                          <Button type="button" variant="ghost" size="sm" onClick={() => markNotificationRead(n.id)}>
-                            Read
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                );
+                    </li>
+                  );
                 })}
               </ul>
             )}
           </div>
-          {notifications.length > 0 && unread > 0 && (
+          {notifications.length > 0 && unread > 0 ? (
             <div className="px-4 py-3 border-t border-[var(--ct-border)]">
               <Button
                 type="button"
@@ -99,14 +113,14 @@ export function NotificationPanel({ onClose }) {
                 className="w-full"
                 onClick={() => markAllNotificationsRead(notifications.map((n) => n.id))}
               >
-                Mark all as read
+                {t("notifications.markRead")}
               </Button>
             </div>
-          )}
+          ) : null}
         </Card>
       </div>
     </>,
-    document.body
+    document.body,
   );
 }
 

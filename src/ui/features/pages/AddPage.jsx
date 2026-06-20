@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fieldInputClass } from "../../";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   categoryShowsInterestRate,
   categoryShowsInsuranceFields,
@@ -38,7 +38,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 const Add = () => {
   const { t } = useTranslation();
-  const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = useCommitTrack();
+  const { addCommitment, commitments, settings, todayStr, getEffectiveStatus } = usePerovo();
   const navigate = useNavigate();
   const [entryType, setEntryType] = useState("scheduled");
   const [form, setForm] = useState({
@@ -251,7 +251,7 @@ const Add = () => {
       ...draft,
       status: effective === "overdue" ? "overdue" : "pending",
     });
-    navigate("/commitments");
+    navigate("/money/bills");
   };
 
   const fieldClass = (field) => fieldInputClass(Boolean(errors[field]));
@@ -260,7 +260,7 @@ const Add = () => {
     <AddCommitmentForm
       entryType={entryType}
       onEntryTypeChange={setEntryType}
-      onVariableSaved={() => navigate("/commitments?tab=spend")}
+      onVariableSaved={() => navigate("/money/bills?tab=spend")}
       form={form}
       errors={errors}
       fieldClass={fieldClass}

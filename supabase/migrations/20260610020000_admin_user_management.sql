@@ -14,7 +14,7 @@ begin
   end if;
 
   if new.is_admin is distinct from old.is_admin then
-    if auth.uid() is not null and not public.is_committrack_admin() then
+    if auth.uid() is not null and not public.is_perovo_admin() then
       new.is_admin := old.is_admin;
     end if;
   end if;
@@ -30,7 +30,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if not public.is_committrack_admin() then
+  if not public.is_perovo_admin() then
     raise exception 'not_admin' using errcode = '42501';
   end if;
 end;
@@ -241,6 +241,6 @@ comment on function public.admin_list_users(text, int, int) is
 comment on function public.admin_update_user(uuid, jsonb) is
   'Admin-only: update profile fields including pan_verified and subscription_tier.';
 comment on function public.admin_set_user_admin(uuid, boolean) is
-  'Admin-only: grant or revoke CommitTrack admin role.';
+  'Admin-only: grant or revoke Perovo admin role.';
 comment on function public.admin_delete_user(uuid) is
   'Admin-only: permanently delete auth user (cascades to profiles and snapshots).';

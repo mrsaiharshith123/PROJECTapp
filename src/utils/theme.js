@@ -27,7 +27,7 @@ export function applyColorScheme(preference) {
 /** Apply theme before React mounts (avoids flash). */
 export function bootstrapThemeFromStorage() {
   try {
-    const raw = localStorage.getItem("committrack_settings");
+    const raw = localStorage.getItem("perovo_settings");
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === "object" && !Array.isArray(o)) {

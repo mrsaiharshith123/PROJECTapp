@@ -12,7 +12,7 @@
 |-------|------|------|
 | Storage keys | `src/storage/keys.js` | Canonical localStorage key names |
 | Snapshots | `src/storage/appSnapshot.js` | Export/sync JSON shape |
-| Events | `src/storage/events.js` | `committrack:data-changed` after local writes |
+| Events | `src/storage/events.js` | `perovo:data-changed` after local writes |
 | Snapshot helpers | `src/storage/snapshotData.js` | Detect empty remote vs local user data |
 | Sync meta | `src/services/sync/syncMeta.js` | Device id/label, backup log (push/restore history) |
 | Sync engine | `src/services/sync/syncEngine.js` | Push/pull, debounce, empty-remote guard |

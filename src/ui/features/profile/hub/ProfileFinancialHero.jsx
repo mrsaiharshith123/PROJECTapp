@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { hasPowerFeatures, isSalariedFamily, getHouseholdModeDisplay, resolveDataProfileScope } from "../../../../constants/modeExperience.js";
+import { getTier } from "../../../../utils/tierAccess.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import { useNetWorthIntel } from "../../../../hooks/useNetWorthIntel.js";
 import { useProfileScoreGuide } from "../../../../hooks/useProfileScoreGuide.js";
+import { usePerovoScore } from "../../../../hooks/usePerovoScore.js";
 import { translatePressureLabel } from "../../../../i18n/engineLabels.js";
 import { useNetWorth } from "../../../../context/NetWorthContext.jsx";
 import { formatInr } from "../../../../constants/symbols.js";
@@ -33,12 +35,18 @@ export default function ProfileFinancialHero({
   const { privacyMode, togglePrivacyMode, dailySnapshots, entries } = useNetWorth();
   const { notificationUnread } = useCommitIntel();
   const { heroChips } = useProfileScoreGuide();
+  const perovo = usePerovoScore();
   const [showNotifications, setShowNotifications] = useState(false);
   const modeDisplay = getHouseholdModeDisplay(settings);
   const salariedFamily = isSalariedFamily(settings);
   const name = settings.displayName?.trim() || t("brand.defaultUser");
 
   const suffix = hasPowerFeatures(settings) && !salariedFamily ? t("brand.proSuffix") : "";
+  const tier = getTier(settings);
+  const tierBadgeClass =
+    tier === "power" ? "ct-tier-badge-power" : tier === "pro" ? "ct-tier-badge-pro" : "ct-tier-badge-free";
+  const tierLabel =
+    tier === "power" ? t("plans.tier.power") : tier === "pro" ? t("plans.tier.pro") : t("plans.tier.free");
 
   const animated = useCountUp(intel.core.netWorth);
   const display = privacyMode ? "••••••" : formatInr(animated);
@@ -84,8 +92,8 @@ export default function ProfileFinancialHero({
   const stopBubble = (e) => e.stopPropagation();
 
   return (
-    <section className="ct-hero-month ct-hero-month-financial ct-profile-life-card ct-reveal">
-      <div className="ct-hero-month-glow" aria-hidden />
+    <section className="ct-hero-card wealth ct-profile-life-card ct-reveal">
+      <div className="ct-hero-glow teal" aria-hidden />
 
       <div className="ct-row-between px-1 pt-1 pb-2 relative">
         <Eyebrow>{salariedFamily ? t("netWorth.pageTitleHousehold") : t("netWorth.pageTitle")}</Eyebrow>
@@ -133,6 +141,7 @@ export default function ProfileFinancialHero({
             </span>
             {suffix ? ` · ${suffix}` : ""}
           </Caption>
+          <span className={`ct-tier-badge ${tierBadgeClass} mt-2 inline-flex`}>{tierLabel}</span>
         </div>
       </button>
 
@@ -177,7 +186,24 @@ export default function ProfileFinancialHero({
 
       <div className="ct-profile-hero-chips-row px-1 pb-3 relative" onClick={stopBubble}>
         <div className="ct-profile-hero-chips ct-profile-hero-chips-status ct-profile-hero-chips-3">
-          {heroChips.map((chip) => (
+          <div
+            className={`ct-profile-chip ct-profile-chip-${
+              perovo.tier.tone === "success" ? "ok" : perovo.tier.tone === "warning" ? "mid" : "risk"
+            }`}
+          >
+            <Caption className="block ct-profile-chip-label">{t("perovoScore.title")}</Caption>
+            {privacyMode ? (
+              <span className="ct-profile-chip-value">•••</span>
+            ) : (
+              <>
+                <span className="ct-profile-chip-value">{perovo.score}/100</span>
+                <Caption className="block ct-profile-chip-sub opacity-75">
+                  {t(`perovoScore.tier.${perovo.tier.id}`)}
+                </Caption>
+              </>
+            )}
+          </div>
+          {heroChips.filter((chip) => chip.id !== "pressure").map((chip) => (
             <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
               <Caption className="block ct-profile-chip-label">{t(chip.labelKey)}</Caption>
               {privacyMode ? (

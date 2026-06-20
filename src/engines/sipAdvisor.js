@@ -1,6 +1,7 @@
 /**
  * SIP future value and goal planning (education only).
  */
+import Decimal from "decimal.js";
 
 /**
  * @param {number} monthlySip
@@ -13,7 +14,11 @@ export function sipFutureValue(monthlySip, months, annualRate = 0.12) {
   const r = Math.max(0, Number(annualRate) || 0) / 12;
   if (p <= 0 || n <= 0) return 0;
   if (r <= 0) return Math.round(p * n);
-  const fv = p * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  const onePlusR = new Decimal(1).plus(r);
+  const fv = new Decimal(p)
+    .times(onePlusR.pow(n).minus(1).div(r))
+    .times(onePlusR)
+    .toNumber();
   return Math.round(fv);
 }
 
@@ -29,7 +34,8 @@ export function monthlySipForGoal(targetAmount, months, annualRate = 0.12) {
   const r = Math.max(0, Number(annualRate) || 0) / 12;
   if (target <= 0) return 0;
   if (r <= 0) return Math.ceil(target / n);
-  const factor = ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  const onePlusR = new Decimal(1).plus(r);
+  const factor = onePlusR.pow(n).minus(1).div(r).times(onePlusR).toNumber();
   return Math.round(target / factor);
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, Caption, Heading, Body, Button, inputClassName } from "../../index.js";
+import { Caption, Body, Button, inputClassName } from "../../index.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
 import AccountSettingsBlock from "./AccountSettingsBlock.jsx";
@@ -13,6 +13,7 @@ import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { applyColorScheme } from "../../../utils/theme.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
+import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
 
 const profileInputClass = inputClassName();
 
@@ -32,9 +33,6 @@ function ProfileField({ label, hint, required, children }) {
   );
 }
 
-/**
- * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
- */
 /** @param {{ updateSettings: (p: object) => void }} props */
 function LanguagePickerBlock({ updateSettings }) {
   const { t, locale } = useTranslation();
@@ -48,35 +46,36 @@ function LanguagePickerBlock({ updateSettings }) {
   };
 
   return (
-    <div className="ct-stack">
-      <div>
-        <Heading level={3}>{t("profile.language")}</Heading>
-        <Caption className="block mt-1">{t("profile.languageHint")}</Caption>
-      </div>
-      <div className="ct-grid-2">
-        {ALL_APP_LANGUAGES.map((lang) => {
-          const active = locale === lang.code;
-          return (
-            <button
-              key={lang.code}
-              type="button"
-              onClick={() => onSelect(lang.code)}
-              className={`ct-option-card !py-3 !text-left ${active ? "ct-option-card-active" : ""}`}
-              aria-pressed={active}
-            >
-              <span className="block text-sm font-semibold text-[var(--ct-text)]">{lang.nativeName}</span>
-              <span className="block text-xs text-[var(--ct-text-muted)] mt-0.5">{lang.englishName}</span>
-            </button>
-          );
-        })}
-      </div>
-      {savedFlash && (
-        <Caption className="text-[var(--ct-success)] font-semibold">{t("profile.languageSaved")}</Caption>
-      )}
-    </div>
+    <SettingsGroup title={t("profile.language")} icon="book" description={t("profile.languageHint")}>
+      <SettingsGroupContent className="ct-stack">
+        <div className="ct-grid-2">
+          {ALL_APP_LANGUAGES.map((lang) => {
+            const active = locale === lang.code;
+            return (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => onSelect(lang.code)}
+                className={`ct-option-card !py-3 !text-left ${active ? "ct-option-card-active" : ""}`}
+                aria-pressed={active}
+              >
+                <span className="block text-sm font-semibold text-[var(--ct-text)]">{lang.nativeName}</span>
+                <span className="block text-xs text-[var(--ct-text-muted)] mt-0.5">{lang.englishName}</span>
+              </button>
+            );
+          })}
+        </div>
+        {savedFlash && (
+          <Caption className="text-[var(--ct-success)] font-semibold">{t("profile.languageSaved")}</Caption>
+        )}
+      </SettingsGroupContent>
+    </SettingsGroup>
   );
 }
 
+/**
+ * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
+ */
 export default function ProfilePersonalSection({
   settings,
   updateSettings,
@@ -92,201 +91,197 @@ export default function ProfilePersonalSection({
   const showAccount = part === "full" || part === "account";
 
   const appearanceField = (
-    <ProfileField label={t("profile.appearance")}>
-      <div className="ct-grid-3">
-        {[
-          { id: "light", labelKey: "appearance.light" },
-          { id: "dark", labelKey: "appearance.dark" },
-          { id: "system", labelKey: "appearance.system" },
-        ].map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => {
-              updateSettings({ colorScheme: opt.id });
-              applyColorScheme(opt.id);
-            }}
-            className={`ct-option-card !py-2.5 ${(settings.colorScheme || "system") === opt.id ? "ct-option-card-active" : ""}`}
-          >
-            <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
-          </button>
-        ))}
-      </div>
-    </ProfileField>
+    <SettingsGroup title={t("profile.appearance")} icon="palette" description={t("profile.aboutYou.subtitle")}>
+      <SettingsGroupContent>
+        <ProfileField label={t("profile.appearance")}>
+          <div className="ct-grid-3">
+            {[
+              { id: "light", labelKey: "appearance.light" },
+              { id: "dark", labelKey: "appearance.dark" },
+              { id: "system", labelKey: "appearance.system" },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  updateSettings({ colorScheme: opt.id });
+                  applyColorScheme(opt.id);
+                }}
+                className={`ct-option-card !py-2.5 ${(settings.colorScheme || "system") === opt.id ? "ct-option-card-active" : ""}`}
+              >
+                <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
+              </button>
+            ))}
+          </div>
+        </ProfileField>
+      </SettingsGroupContent>
+    </SettingsGroup>
   );
 
   return (
-    <Card className="ct-stack">
+    <div className="ct-stack">
       {showAppearance && <LanguagePickerBlock updateSettings={updateSettings} />}
       {showAppearance && appearanceField}
 
       {showIdentity && (
-        <>
-          <div>
-            <Heading level={3}>{t("profile.aboutYou.title")}</Heading>
-            <Caption className="block mt-1">{t("profile.aboutYou.subtitle")}</Caption>
-          </div>
+        <SettingsGroup title={t("profile.aboutYou.title")} icon="user" description={t("profile.aboutYou.subtitle")}>
+          <SettingsGroupContent className="ct-stack">
+            <ProfileAvatar settings={settings} updateSettings={updateSettings} />
 
-          <ProfileAvatar settings={settings} updateSettings={updateSettings} />
+            <ProfileField label={t("profile.displayName")} hint={t("profile.displayNameHint")}>
+              <input
+                className={profileInputClass}
+                value={settings.displayName ?? ""}
+                onChange={(e) => updateSettings({ displayName: e.target.value })}
+                placeholder={t("profile.displayNamePlaceholder")}
+              />
+            </ProfileField>
 
-          <ProfileField label={t("profile.displayName")} hint={t("profile.displayNameHint")}>
-            <input
-              className={profileInputClass}
-              value={settings.displayName ?? ""}
-              onChange={(e) => updateSettings({ displayName: e.target.value })}
-              placeholder={t("profile.displayNamePlaceholder")}
-            />
-          </ProfileField>
+            <ProfileField label={t("profile.phone")} hint={t("profile.phoneHint")}>
+              <input
+                type="tel"
+                className={profileInputClass}
+                value={settings.phoneNumber ?? ""}
+                onChange={(e) => updateSettings({ phoneNumber: e.target.value.replace(/\D/g, "").slice(0, 12) })}
+                placeholder="9876543210"
+                inputMode="numeric"
+              />
+            </ProfileField>
 
-          <ProfileField label={t("profile.phone")} hint={t("profile.phoneHint")}>
-            <input
-              type="tel"
-              className={profileInputClass}
-              value={settings.phoneNumber ?? ""}
-              onChange={(e) => updateSettings({ phoneNumber: e.target.value.replace(/\D/g, "").slice(0, 12) })}
-              placeholder="9876543210"
-              inputMode="numeric"
-            />
-          </ProfileField>
-
-          {!salariedFamily && tierHasFeature("multiple_profiles", settings) && (
-            <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
-              <Caption className="font-semibold block">{t("profile.profilesTitle")}</Caption>
-              <ProfileManager />
-            </div>
-          )}
-        </>
+            {!salariedFamily && tierHasFeature("multiple_profiles", settings) && (
+              <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
+                <ProfileManager />
+              </div>
+            )}
+          </SettingsGroupContent>
+        </SettingsGroup>
       )}
 
       {showMoney && (
-        <div className="ct-stack pt-2 border-t border-[var(--ct-border)]">
-        <div>
-          <Heading level={3}>{t("profile.moneySetup.title")}</Heading>
-          <Caption className="block mt-1">{t("profile.moneySetup.subtitle")}</Caption>
-        </div>
+        <SettingsGroup title={t("profile.moneySetup.title")} icon="currency-inr" description={t("profile.moneySetup.subtitle")}>
+          <SettingsGroupContent className="ct-stack">
+            <ProfileField label={`${incomeLabel} (₹)`} required hint={t("profile.incomeUsedHint")}>
+              <input
+                type="number"
+                min="0"
+                className={profileInputClass}
+                value={settings.monthlyIncome === 0 ? "" : String(settings.monthlyIncome)}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  updateSettings({ monthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
+                }}
+                placeholder={t("profile.incomePlaceholder")}
+              />
+            </ProfileField>
 
-        <ProfileField label={`${incomeLabel} (₹)`} required hint={t("profile.incomeUsedHint")}>
-          <input
-            type="number"
-            min="0"
-            className={profileInputClass}
-            value={settings.monthlyIncome === 0 ? "" : String(settings.monthlyIncome)}
-            onChange={(e) => {
-              const raw = e.target.value;
-              updateSettings({ monthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-            }}
-            placeholder={t("profile.incomePlaceholder")}
-          />
-        </ProfileField>
+            {userMode === "salaried" && salariedFamily && (
+              <ProfileField label={t("profile.secondIncome")} hint={t("profile.secondIncomeHint")}>
+                <input
+                  type="number"
+                  min="0"
+                  className={profileInputClass}
+                  value={!settings.secondaryMonthlyIncome ? "" : String(settings.secondaryMonthlyIncome)}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    updateSettings({ secondaryMonthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
+                  }}
+                  placeholder="0"
+                />
+              </ProfileField>
+            )}
 
-        {userMode === "salaried" && salariedFamily && (
-          <ProfileField label={t("profile.secondIncome")} hint={t("profile.secondIncomeHint")}>
-            <input
-              type="number"
-              min="0"
-              className={profileInputClass}
-              value={!settings.secondaryMonthlyIncome ? "" : String(settings.secondaryMonthlyIncome)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                updateSettings({ secondaryMonthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-              }}
-              placeholder="0"
-            />
-          </ProfileField>
-        )}
+            {userMode === "salaried" && (
+              <ProfileField label={t("profile.incomeBasis")} hint={t(CALC_HELP.incomeEntryBasis)}>
+                <select
+                  className={profileInputClass}
+                  value={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
+                  onChange={(e) => updateSettings({ incomeEntryBasis: e.target.value === "gross" ? "gross" : "take_home" })}
+                >
+                  <option value="take_home">{t("profile.incomeTakeHome")}</option>
+                  <option value="gross">{t("profile.incomeGross")}</option>
+                </select>
+              </ProfileField>
+            )}
 
-        {userMode === "salaried" && (
-          <ProfileField label={t("profile.incomeBasis")} hint={t(CALC_HELP.incomeEntryBasis)}>
-            <select
-              className={profileInputClass}
-              value={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
-              onChange={(e) => updateSettings({ incomeEntryBasis: e.target.value === "gross" ? "gross" : "take_home" })}
-            >
-              <option value="take_home">{t("profile.incomeTakeHome")}</option>
-              <option value="gross">{t("profile.incomeGross")}</option>
-            </select>
-          </ProfileField>
-        )}
+            {userMode === "salaried" && (
+              <ProfileField label={t("profile.salaryCreditDay")} hint={t("profile.salaryCreditDayHint")}>
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  className={profileInputClass}
+                  value={settings.salaryCreditDay == null ? "" : String(settings.salaryCreditDay)}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    updateSettings({
+                      salaryCreditDay: raw === "" ? null : Math.min(31, Math.max(1, Math.floor(Number(raw) || 1))),
+                    });
+                  }}
+                  placeholder="1"
+                />
+                <Link to="/paycheck" className="ct-link text-xs font-semibold mt-2 inline-block">
+                  {t("profile.paycheckLink")}
+                </Link>
+              </ProfileField>
+            )}
 
-        {userMode === "salaried" && (
-          <ProfileField label={t("profile.salaryCreditDay")} hint={t("profile.salaryCreditDayHint")}>
-            <input
-              type="number"
-              min="1"
-              max="31"
-              className={profileInputClass}
-              value={settings.salaryCreditDay == null ? "" : String(settings.salaryCreditDay)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                updateSettings({
-                  salaryCreditDay: raw === "" ? null : Math.min(31, Math.max(1, Math.floor(Number(raw) || 1))),
-                });
-              }}
-              placeholder="1"
-            />
-            <Link to="/paycheck" className="ct-link text-xs font-semibold mt-2 inline-block">
-              {t("profile.paycheckLink")}
-            </Link>
-          </ProfileField>
-        )}
+            {userMode === "salaried" && !salariedFamily && (
+              <SideIncomeSection settings={settings} updateSettings={updateSettings} t={t} profileInputClass={profileInputClass} />
+            )}
 
-        {userMode === "salaried" && !salariedFamily && (
-          <SideIncomeSection settings={settings} updateSettings={updateSettings} t={t} profileInputClass={profileInputClass} />
-        )}
+            <ProfileField label={t("profile.liquidAssets")} hint={t("profile.liquidAssetsHint")}>
+              <Caption className="block">
+                {t("profile.liquidAssetsCta")}{" "}
+                <Link to="/profile" className="ct-link">
+                  {t("netWorth.tab.assets")}
+                </Link>
+              </Caption>
+            </ProfileField>
 
-        <ProfileField label={t("profile.liquidAssets")} hint={t("profile.liquidAssetsHint")}>
-          <Caption className="block">
-            {t("profile.liquidAssetsCta")}{" "}
-            <Link to="/profile" className="ct-link">
-              {t("netWorth.tab.assets")}
-            </Link>
-          </Caption>
-        </ProfileField>
+            <ProfileField label={t("profile.userMode")} hint={t("mode.salariedDesc")}>
+              <select
+                className={profileInputClass}
+                value={userMode}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  updateSettings({
+                    userMode: next,
+                    householdScope: next === "salaried" ? settings.householdScope || "single" : "single",
+                  });
+                }}
+              >
+                {SELECTABLE_USER_MODES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {t("mode.salaried")}
+                  </option>
+                ))}
+              </select>
+            </ProfileField>
 
-        <ProfileField label={t("profile.userMode")} hint={t("mode.salariedDesc")}>
-          <select
-            className={profileInputClass}
-            value={userMode}
-            onChange={(e) => {
-              const next = e.target.value;
-              updateSettings({
-                userMode: next,
-                householdScope: next === "salaried" ? settings.householdScope || "single" : "single",
-              });
-            }}
-          >
-            {SELECTABLE_USER_MODES.map((m) => (
-              <option key={m.id} value={m.id}>
-                {t("mode.salaried")}
-              </option>
-            ))}
-          </select>
-        </ProfileField>
-
-        {userMode === "salaried" && (
-          <ProfileField label={t("profile.household")} hint={t("profile.householdHint")}>
-            <select
-              className={profileInputClass}
-              value={settings.householdScope === "family" ? "family" : "single"}
-              onChange={(e) => {
-                const family = e.target.value === "family";
-                updateSettings({
-                  householdScope: family ? "family" : "single",
-                  activeProfileId: "default",
-                });
-              }}
-            >
-              <option value="single">{t("profile.householdSingle")}</option>
-              <option value="family">{t("profile.householdFamily")}</option>
-            </select>
-          </ProfileField>
-        )}
-
-        </div>
+            {userMode === "salaried" && (
+              <ProfileField label={t("profile.household")} hint={t("profile.householdHint")}>
+                <select
+                  className={profileInputClass}
+                  value={settings.householdScope === "family" ? "family" : "single"}
+                  onChange={(e) => {
+                    const family = e.target.value === "family";
+                    updateSettings({
+                      householdScope: family ? "family" : "single",
+                      activeProfileId: "default",
+                    });
+                  }}
+                >
+                  <option value="single">{t("profile.householdSingle")}</option>
+                  <option value="family">{t("profile.householdFamily")}</option>
+                </select>
+              </ProfileField>
+            )}
+          </SettingsGroupContent>
+        </SettingsGroup>
       )}
 
       {showAccount && <AccountSettingsBlock />}
-    </Card>
+    </div>
   );
 }
 
@@ -317,7 +312,7 @@ function SideIncomeSection({ settings, updateSettings, t, profileInputClass }) {
 
   return (
     <div className="ct-stack-sm">
-      <Heading level={3}>{t("profile.sideIncome.title")}</Heading>
+      <Body className="font-semibold">{t("profile.sideIncome.title")}</Body>
       <Caption className="block">{t("profile.sideIncome.hint")}</Caption>
       {sideIncomes.length === 0 ? (
         <Caption>{t("profile.sideIncome.empty")}</Caption>

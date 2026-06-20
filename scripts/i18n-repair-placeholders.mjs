@@ -65,8 +65,8 @@ async function main() {
     }
 
     // Reset broken brand byline to English source so auto-translate can re-fill per locale
-    if (messages["brand.byDaloyTech"] && needsRepair(messages["brand.byDaloyTech"])) {
-      messages["brand.byDaloyTech"] = en["brand.byDaloyTech"];
+    if (messages["brand.byTadsaya"] && needsRepair(messages["brand.byTadsaya"])) {
+      messages["brand.byTadsaya"] = en["brand.byTadsaya"];
       changed += 1;
     }
 

@@ -6,7 +6,7 @@ import { salarySpendBarColor } from "../../utils/salarySpendBar.js";
  */
 export function SalarySpendBar({ pct, overBudget = false }) {
   const fillPct = Math.min(100, Math.max(0, Number(pct) || 0));
-  const color = overBudget || pct >= 100 ? "#ef4444" : salarySpendBarColor(fillPct);
+  const color = overBudget || pct >= 100 ? "#f87171" : salarySpendBarColor(fillPct);
 
   return (
     <div className="ct-salary-spend-track" role="presentation">

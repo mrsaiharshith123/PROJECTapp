@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import { Card, Caption, Heading, EmptyState } from "../../../index.js";
+import { Caption, EmptyState } from "../../../index.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { useCommitTrack } from "../../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../../context/NetWorthContext.jsx";
 import { buildProfileAchievements } from "../../../../engines/profileAchievements.js";
 import { commitmentToIncomeRatio } from "../../../../engines/pressureAdvanced.js";
 import { combinedMonthlyIncome } from "../../../../utils/combinedIncome.js";
 import { formatAchievementDate } from "../../../../i18n/formatLocale.js";
+import { SettingsGroup, SettingsGroupContent } from "../SettingsGroup.jsx";
 
 export default function ProfileMilestonesPanel({ household = false }) {
   const { t, locale } = useTranslation();
@@ -18,7 +19,7 @@ export default function ProfileMilestonesPanel({ household = false }) {
     settings,
     getEffectiveStatus,
     todayStr,
-  } = useCommitTrack();
+  } = usePerovo();
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
@@ -42,43 +43,42 @@ export default function ProfileMilestonesPanel({ household = false }) {
   );
 
   return (
-    <Card className="ct-nw-panel ct-stack">
-      <Heading level={3}>
-        {household ? t("profileHub.milestonesTitleHousehold") : t("profileHub.milestonesTitle")}
-      </Heading>
-      <Caption className="block mt-1">
-        {household ? t("profileHub.milestonesSubtitleHousehold") : t("profileHub.milestonesSubtitle")}
-      </Caption>
-
-      {achievements.length === 0 ? (
-        <EmptyState
-          icon="trophy"
-          title={household ? t("profileHub.milestonesEmptyHousehold") : t("profileHub.milestonesEmpty")}
-          hint={household ? t("profileHub.milestonesEmptyHintHousehold") : t("profileHub.milestonesEmptyHint")}
-        />
-      ) : (
-        <ul className="ct-stack-sm mt-3">
-          {achievements.map((item) => {
-            const label = item.labelIsKey
-              ? t(item.label, item.labelParams || {})
-              : item.labelSuffixKey
-                ? `${item.label} — ${t(item.labelSuffixKey)}`
-                : item.label;
-            return (
-              <li key={item.id} className={`ct-nw-insight ct-nw-insight-positive ct-nw-milestone-row`}>
-                <div className="ct-row-between gap-2">
-                  <span>{label}</span>
-                  {item.achievedAt > 0 && (
-                    <Caption className="shrink-0">
-                      {formatAchievementDate(locale, item.achievedAt)}
-                    </Caption>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Card>
+    <SettingsGroup
+      title={household ? t("profileHub.milestonesTitleHousehold") : t("profileHub.milestonesTitle")}
+      icon="target"
+      description={household ? t("profileHub.milestonesSubtitleHousehold") : t("profileHub.milestonesSubtitle")}
+    >
+      <SettingsGroupContent>
+        {achievements.length === 0 ? (
+          <EmptyState
+            icon="trophy"
+            title={household ? t("profileHub.milestonesEmptyHousehold") : t("profileHub.milestonesEmpty")}
+            hint={household ? t("profileHub.milestonesEmptyHintHousehold") : t("profileHub.milestonesEmptyHint")}
+          />
+        ) : (
+          <ul className="ct-stack-sm">
+            {achievements.map((item) => {
+              const label = item.labelIsKey
+                ? t(item.label, item.labelParams || {})
+                : item.labelSuffixKey
+                  ? `${item.label} — ${t(item.labelSuffixKey)}`
+                  : item.label;
+              return (
+                <li key={item.id} className="ct-nw-insight ct-nw-insight-positive ct-nw-milestone-row">
+                  <div className="ct-row-between gap-2">
+                    <span>{label}</span>
+                    {item.achievedAt > 0 && (
+                      <Caption className="shrink-0">
+                        {formatAchievementDate(locale, item.achievedAt)}
+                      </Caption>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </SettingsGroupContent>
+    </SettingsGroup>
   );
 }

@@ -1,11 +1,11 @@
-# CommitTrack — system architecture
+# Perovo — system architecture
 
 ## Layers
 
 | Layer | Path | Responsibility |
 |-------|------|----------------|
 | Entry | `main.jsx`, `App.jsx` | Boot, routing, auth/onboarding gates |
-| Context | `context/` | `CommitTrackProvider`, `AuthProvider` — app state |
+| Context | `context/` | `PerovoProvider`, `AuthProvider` — app state |
 | Hooks | `hooks/` | Compose engines + context for screens |
 | Engines | `engines/` | Pure finance: forecast, pressure, survival, lending, insights |
 | Utils | `utils/` | Dates, storage, migrations, lending helpers |
@@ -55,9 +55,9 @@
 
 1. **Instrumentation** — `AnalyticsBridge` in `App.jsx` tracks page views, module opens, and session heartbeats for signed-in users.
 2. **API** — `trackEvent()` from `services/analytics/trackEvent.js` (never insert `app_events` from UI).
-3. **Storage** — Supabase `app_events` when cloud env is set; RLS limits users to own rows; admins read all via `is_committrack_admin()`.
+3. **Storage** — Supabase `app_events` when cloud env is set; RLS limits users to own rows; admins read all via `is_perovo_admin()`.
 4. **Dashboard** — `/admin` + `admin_product_overview()` RPC; Profile shows **Product intelligence** tile only when `profile.is_admin`.
-5. **Grant admin** — Supabase SQL only (`grant_committrack_admin`). See [AdminAnalytics.md](./AdminAnalytics.md).
+5. **Grant admin** — Supabase SQL only (`grant_perovo_admin`). See [AdminAnalytics.md](./AdminAnalytics.md).
 
 ## Future-proofing (partial / planned)
 

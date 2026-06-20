@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { PageHeader, Button } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 
@@ -9,11 +9,11 @@ import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 export default function ProfileWealthAnalyticsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const isFamily = isSalariedFamily(settings);
 
   return (
-    <div className="ct-page">
+    <div className="ct-page ct-stack pb-8">
       <PageHeader
         title={isFamily ? t("profile.analytics.titleHousehold") : t("profile.analytics.title")}
         eyebrow={isFamily ? t("netWorth.pageTitleHousehold") : t("netWorth.pageTitle")}

@@ -3,11 +3,13 @@ import { formatInr } from "../../../constants/symbols.js";
 import { affordabilityTierTone } from "../../../engines/affordability.js";
 import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { getExpensePresetsForMode, simulateNewExpense } from "../../../engines/expenseSimulator.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { freeMoneyAfterBurden } from "../../../engines/pressureScore.js";
 import { computeLoanEmi, interestFromLoan, totalRepaymentFromEmi } from "../../../utils/loanEmi.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { Caption } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import {
   presetLabelKey,
   translateAffordabilityLabel,
@@ -19,7 +21,7 @@ const LOAN_PRESETS = new Set(["loan", "emi", "home_loan", "car_loan", "personal_
 /** Affordability simulator — EMI presets support product price, rate, and tenure. */
 export default function ExpenseSimulatorForm() {
   const { t } = useTranslation();
-  const { commitments, settings, getEffectiveStatus } = useCommitTrack();
+  const { commitments, settings, getEffectiveStatus } = usePerovo();
   const presets = getExpensePresetsForMode(settings);
   const presetKeys = Object.keys(presets);
   const [preset, setPreset] = useState(presetKeys[0] || "loan");
@@ -75,6 +77,11 @@ export default function ExpenseSimulatorForm() {
         })
       : null;
 
+  const monthlyImpact = sim
+    ? Math.round((sim.affordability.freeMoneyAfter ?? 0) - cash.freeMoney)
+    : 0;
+  const impactPositive = monthlyImpact >= 0;
+
   const presetLabel = (key) => {
     const labelKey = presetLabelKey(key);
     const translated = t(labelKey);
@@ -82,19 +89,25 @@ export default function ExpenseSimulatorForm() {
   };
 
   return (
-    <div className="space-y-3">
-      <p className="text-xs text-gray-500 dark:text-slate-400">{t("tools.afford.intro")}</p>
-      <div className="flex flex-wrap gap-2">
+    <div className="ct-stack">
+      <ToolAnswerHero
+        tone="sim"
+        label={t("tools.afford.heroLabel")}
+        value={
+          sim
+            ? `${impactPositive ? "+" : ""}${formatInr(monthlyImpact)}`
+            : formatInr(0)
+        }
+        className={sim && !impactPositive ? "ct-hero-negative" : undefined}
+      />
+      <Caption>{t("tools.afford.intro")}</Caption>
+      <div className="ct-row flex-wrap gap-2">
         {presetKeys.map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => setPreset(key)}
-            className={`text-xs px-2.5 py-1 rounded-full border ${
-              preset === key
-                ? "border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
-                : "border-gray-200 text-gray-600 dark:border-slate-600 dark:text-slate-400"
-            }`}
+            className={`ct-chip ${preset === key ? "ct-chip-active" : ""}`}
           >
             {presetLabel(key)}
           </button>
@@ -108,30 +121,29 @@ export default function ExpenseSimulatorForm() {
             ? t("tools.afford.emiDirectPlaceholder")
             : t("tools.afford.amountPlaceholder")
         }
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm"
+        className="ct-input"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         disabled={isLoanPreset && useLoanCalc && computedEmi > 0}
       />
       {isLoanPreset && (
-        <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/20 p-3 space-y-2">
-          <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-200">
+        <div className="ct-inset ct-stack-sm !p-3">
+          <label className="flex items-center gap-2 text-xs font-semibold">
             <input
               type="checkbox"
               checked={useLoanCalc}
               onChange={(e) => setUseLoanCalc(e.target.checked)}
-              className="rounded border-gray-300"
             />
             {t("tools.afford.loanCalcLabel")}
           </label>
           {useLoanCalc && (
             <>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="ct-grid-2 gap-2">
                 <input
                   type="number"
                   min="0"
                   placeholder={t("tools.afford.productPrice")}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+                  className="ct-input"
                   value={productPrice}
                   onChange={(e) => setProductPrice(e.target.value)}
                 />
@@ -139,7 +151,7 @@ export default function ExpenseSimulatorForm() {
                   type="number"
                   min="0"
                   placeholder={t("tools.afford.downPayment")}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+                  className="ct-input"
                   value={downPayment}
                   onChange={(e) => setDownPayment(e.target.value)}
                 />
@@ -148,7 +160,7 @@ export default function ExpenseSimulatorForm() {
                   min="0"
                   step="0.1"
                   placeholder={t("tools.afford.interestRate")}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+                  className="ct-input"
                   value={interestRate}
                   onChange={(e) => setInterestRate(e.target.value)}
                 />
@@ -156,68 +168,68 @@ export default function ExpenseSimulatorForm() {
                   type="number"
                   min="1"
                   placeholder={t("tools.afford.tenure")}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+                  className="ct-input"
                   value={tenureMonths}
                   onChange={(e) => setTenureMonths(e.target.value)}
                 />
               </div>
               {computedEmi > 0 && (
-                <p className="text-xs text-indigo-800 dark:text-indigo-200">
+                <Caption className="block ct-text-accent">
                   {t("tools.afford.emiSummary", {
                     emi: formatInr(computedEmi),
                     total: formatInr(totalRepaymentFromEmi(computedEmi, tenure)),
                     months: tenure,
                     interest: formatInr(interestFromLoan(loanPrincipal, computedEmi, tenure)),
                   })}
-                </p>
+                </Caption>
               )}
             </>
           )}
         </div>
       )}
       {sim && (
-        <div className="space-y-2 text-sm">
+        <div className="ct-stack-sm">
           <span
             className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full border ${semanticToneToClass(affordabilityTierTone(sim.affordability.tier))}`}
           >
             {translateAffordabilityLabel(t, sim.affordability)}
           </span>
           {sim.loanMeta && (
-            <p className="text-xs text-gray-600 dark:text-slate-400">
+            <Caption className="block">
               {t("tools.afford.loanOn", {
                 price: formatInr(sim.loanMeta.productPrice),
                 down: formatInr(sim.loanMeta.downPayment),
                 rate: sim.loanMeta.interestRate,
                 months: sim.loanMeta.tenureMonths,
               })}
-            </p>
+            </Caption>
           )}
-          <p className="text-gray-700 dark:text-slate-300">
+          <Caption className="block">
             {t("tools.afford.freeCashAfter", {
               amount: formatInr(Math.round(sim.affordability.freeMoneyAfter)),
             })}
             {sim.affordability.committedPercent != null
               ? ` ${t("tools.afford.committedSuffix", { percent: sim.affordability.committedPercent })}`
               : ""}
-          </p>
+          </Caption>
           {sim.beforeSurvival && sim.afterSurvival && (
-            <p className="text-xs text-gray-600 dark:text-slate-400">
+            <Caption className="block">
               {t("tools.afford.survival", {
                 before: sim.beforeSurvival.survivalMonths ?? "—",
                 after: sim.afterSurvival.survivalMonths ?? "—",
               })}
-            </p>
+            </Caption>
           )}
           {sim.warnings.map((w, i) => (
-            <p
-              key={i}
-              className="text-xs text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-lg px-2 py-1.5"
-            >
+            <Caption key={i} className="block ct-text-warning ct-inset !p-2">
               {translateAffordWarning(t, w)}
-            </p>
+            </Caption>
           ))}
         </div>
       )}
+      <div className="ct-inset ct-stack-sm !p-3">
+        <Caption className="block opacity-90">{t("tools.afford.disclaimer")}</Caption>
+      </div>
     </div>
   );
 }

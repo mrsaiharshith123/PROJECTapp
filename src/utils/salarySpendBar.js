@@ -4,7 +4,7 @@
  */
 export function salarySpendBarColor(pctOfSalary) {
   const p = Math.min(100, Math.max(0, Number(pctOfSalary) || 0));
-  if (p >= 100) return "#ef4444";
+  if (p >= 100) return "#f87171";
   const hue = 142 - (p / 100) * 142;
   const lightness = p > 80 ? 46 : 42;
   return `hsl(${hue.toFixed(0)}, 72%, ${lightness}%)`;

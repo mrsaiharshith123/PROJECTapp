@@ -185,6 +185,22 @@ html[data-ui="ct"] {
   --ct-duration-base: 200ms;
   --ct-duration-slow: 350ms;
   --ct-duration-enter: 280ms;
+
+  /* Hero gradient washes — each screen type */
+  --ct-grad-pressure: linear-gradient(150deg, rgba(99, 102, 241, 0.22), rgba(13, 148, 136, 0.1) 60%, rgba(20, 20, 40, 0.4));
+  --ct-grad-wealth: linear-gradient(150deg, rgba(13, 148, 136, 0.2), rgba(99, 102, 241, 0.08) 60%, rgba(20, 20, 40, 0.3));
+  --ct-grad-survival: linear-gradient(150deg, rgba(217, 119, 6, 0.2), rgba(99, 102, 241, 0.06) 60%, rgba(20, 20, 40, 0.3));
+  --ct-grad-lending: linear-gradient(150deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.08) 60%, rgba(20, 20, 40, 0.3));
+  --ct-grad-sim: linear-gradient(150deg, rgba(139, 92, 246, 0.18), rgba(20, 20, 40, 0.3));
+  --ct-glow-indigo: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%);
+  --ct-glow-teal: radial-gradient(circle, rgba(13, 148, 136, 0.3), transparent 70%);
+  --ct-glow-amber: radial-gradient(circle, rgba(217, 119, 6, 0.3), transparent 70%);
+  --ct-grad-primary-btn: linear-gradient(135deg, #6366f1, #4f46e5);
+  --ct-grad-teal-fill: linear-gradient(135deg, #2dd4bf, #0d9488);
+  --ct-grad-amber-fill: linear-gradient(135deg, #f59e0b, #d97706);
+  --ct-grad-danger-fill: linear-gradient(90deg, #f87171, #dc2626);
+  --ct-shadow-indigo: 0 4px 14px rgba(99, 102, 241, 0.4);
+  --ct-shadow-teal: 0 4px 14px rgba(13, 148, 136, 0.35);
 }
 
 html[data-ui="ct"][data-theme="light"] {

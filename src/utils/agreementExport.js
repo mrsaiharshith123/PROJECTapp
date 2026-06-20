@@ -1,5 +1,11 @@
 import { buildPromissoryNoteText } from "../engines/lendingAgreement.js";
 import { persistAgreementHash } from "../services/lending/agreementHash.js";
+import {
+  generateAgreementPdfBase64 as pdfBase64,
+  downloadAgreementPdf,
+} from "./agreementPdf.js";
+
+export { downloadAgreementPdf };
 
 /** @param {string} text */
 export async function hashText(text) {
@@ -94,14 +100,10 @@ export function downloadLendingAgreementHtml(lending, settings = {}) {
   URL.revokeObjectURL(url);
 }
 
-/** Seal agreement with SHA-256, optionally persist hash, and download HTML. */
+/** Seal agreement with SHA-256, optionally persist hash, and download PDF. */
 export async function sealAndDownloadAgreement(lending, settings = {}, userId = null) {
   const { text, hash, sealedAt } = await sealAgreement(
     { ...lending, agreementText: lending.agreementText },
-    settings
-  );
-  const html = generateLegalAgreementHtml(
-    { ...lending, agreementText: text, agreementHash: hash, agreementSealedAt: sealedAt },
     settings
   );
 
@@ -114,26 +116,14 @@ export async function sealAndDownloadAgreement(lending, settings = {}, userId = 
     });
   }
 
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `perovo-agreement-${lending.id}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
+  await downloadAgreementPdf(
+    { ...lending, agreementText: text, agreementHash: hash, agreementSealedAt: sealedAt },
+    settings,
+  );
   return { hash, sealedAt };
 }
 
-/** HTML-as-base64 for Leegality MVP upload (replace with Edge Function PDF in production). */
+/** Real PDF base64 for Leegality upload. */
 export async function generateAgreementPdfBase64(lending, settings = {}) {
-  const html = generateLegalAgreementHtml(lending, settings);
-  const blob = new Blob([html], { type: "text/html" });
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = String(reader.result || "");
-      resolve(result.includes(",") ? result.split(",")[1] : "");
-    };
-    reader.readAsDataURL(blob);
-  });
+  return pdfBase64(lending, settings);
 }

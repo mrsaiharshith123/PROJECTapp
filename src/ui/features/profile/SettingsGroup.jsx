@@ -1,12 +1,20 @@
 import { Heading, Caption, CtIcon } from "../../index.js";
 import { cn } from "../../utils/cn.js";
 
+/** @param {"violet"|"teal"|"amber"|"red"|"slate"} color @param {boolean} danger */
+function tileColorClass(color, danger) {
+  if (danger) return "danger";
+  if (color === "red") return "danger";
+  if (color === "slate") return "slate";
+  return color;
+}
+
 /**
  * @param {{ title: string, icon?: string, children: import('react').ReactNode, description?: string }} props
  */
 export function SettingsGroup({ title, icon, children, description }) {
   return (
-    <section className="ct-settings-group">
+    <section className="ct-settings-group ct-settings-group-modern">
       <div className="ct-settings-group-head">
         {icon ? <CtIcon name={icon} size={16} context="info" /> : null}
         <div>
@@ -22,24 +30,109 @@ export function SettingsGroup({ title, icon, children, description }) {
 }
 
 /**
- * Grouped settings list row (ct-settings-row).
- * @param {{ label: string, value?: string, onClick?: () => void, icon?: string, danger?: boolean, disabled?: boolean }} props
+ * @param {{ children: import('react').ReactNode, className?: string }} props
  */
-export function SettingsGroupRow({ label, value, onClick, icon, danger = false, disabled = false }) {
+export function SettingsGroupContent({ children, className }) {
+  return <div className={cn("ct-settings-group-content", className)}>{children}</div>;
+}
+
+/**
+ * @param {{
+ *   label: string,
+ *   value?: string,
+ *   hint?: string,
+ *   onClick?: () => void,
+ *   icon?: string,
+ *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate",
+ *   danger?: boolean,
+ *   disabled?: boolean,
+ *   rightElement?: import('react').ReactNode,
+ * }} props
+ */
+export function SettingsGroupRow({
+  label,
+  value,
+  hint,
+  onClick,
+  icon,
+  iconColor = "slate",
+  danger = false,
+  disabled = false,
+  rightElement,
+}) {
+  const tileClass = tileColorClass(iconColor, danger);
+  const Tag = onClick ? "button" : "div";
+
   return (
-    <button
-      type="button"
-      className={cn("ct-settings-row", danger && "ct-settings-row-danger")}
+    <Tag
+      type={onClick ? "button" : undefined}
+      className={cn("ct-settings-row", danger && "ct-settings-row-danger", !onClick && "ct-settings-row-static")}
       onClick={onClick}
       disabled={disabled}
     >
-      {icon ? <CtIcon name={icon} size={18} context="info" /> : null}
-      <span className="ct-settings-row-label">{label}</span>
-      {value ? <span className="ct-settings-row-value">{value}</span> : null}
-      <span className="ct-settings-chevron" aria-hidden>
-        ›
+      {icon ? (
+        <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)}>
+          <CtIcon name={icon} size={18} weight="duotone" />
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1">
+        <span className="ct-settings-row-label">{label}</span>
+        {hint ? <Caption className="block mt-0.5 opacity-80">{hint}</Caption> : null}
       </span>
-    </button>
+      {rightElement ? (
+        <span className="ct-settings-row-value shrink-0">{rightElement}</span>
+      ) : value ? (
+        <span className="ct-settings-row-value">{value}</span>
+      ) : onClick ? (
+        <span className="ct-settings-chevron" aria-hidden>
+          ›
+        </span>
+      ) : null}
+    </Tag>
+  );
+}
+
+/**
+ * @param {{
+ *   icon?: string,
+ *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate",
+ *   label: string,
+ *   hint?: string,
+ *   checked: boolean,
+ *   onChange: (e: import('react').ChangeEvent<HTMLInputElement>) => void,
+ *   disabled?: boolean,
+ * }} props
+ */
+export function SettingsGroupToggleRow({
+  icon,
+  iconColor = "slate",
+  label,
+  hint,
+  checked,
+  onChange,
+  disabled = false,
+}) {
+  const tileClass = tileColorClass(iconColor, false);
+
+  return (
+    <label className={cn("ct-settings-row ct-settings-toggle-row", disabled && "opacity-60")}>
+      {icon ? (
+        <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)}>
+          <CtIcon name={icon} size={18} weight="duotone" />
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1">
+        <span className="ct-settings-row-label">{label}</span>
+        {hint ? <Caption className="block mt-0.5 opacity-80">{hint}</Caption> : null}
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        className="ct-checkbox shrink-0"
+      />
+    </label>
   );
 }
 

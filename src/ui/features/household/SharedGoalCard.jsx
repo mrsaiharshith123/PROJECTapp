@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import {
   addContribution,
@@ -8,15 +8,17 @@ import {
 } from "../../../engines/sharedGoalContribution.js";
 import { postRoomEvent } from "../../../services/household/householdRoomService.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, Body, Caption, Button, ProgressBar } from "../../index.js";
+import { Card, Body, Caption, Button, ProgressBar, inputClassName } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 /**
  * @param {{ goal: object, settings: object }} props
  */
 export default function SharedGoalCard({ goal, settings }) {
   const { t } = useTranslation();
-  const { updateGoal } = useCommitTrack();
+  const { updateGoal } = usePerovo();
   const { user } = useAuth();
   const progress = computeSharedGoalProgress(goal, settings);
   const suggestion = getContributionSuggestion(goal, settings);
@@ -55,13 +57,15 @@ export default function SharedGoalCard({ goal, settings }) {
     <Card className="ct-stack-sm">
       <div className="ct-row-between gap-2">
         <Body className="font-semibold truncate">{goal.title}</Body>
-        <Caption>{formatInr(progress.total)}</Caption>
+        <div className="ct-stat-tile teal shrink-0 text-right min-w-[5rem]">
+          <p className="ct-stat-tile-value ct-numeral">{formatInr(progress.total)}</p>
+          <p className="ct-stat-tile-label">{t("goals.shared.overallPct", { pct: progress.pct })}</p>
+        </div>
       </div>
       {goal.targetDate ? (
         <Caption className="block">{t("goals.shared.due", { date: goal.targetDate })}</Caption>
       ) : null}
       <ProgressBar value={progress.pct} />
-      <Caption className="block">{t("goals.shared.overallPct", { pct: progress.pct })}</Caption>
       <div className="ct-stack-sm">
         <div>
           <Caption>{t("goals.shared.contribLine", { name: progress.selfName, amount: formatInr(progress.selfAmt) })}</Caption>
@@ -86,7 +90,7 @@ export default function SharedGoalCard({ goal, settings }) {
         <input
           type="number"
           min="0"
-          className="ct-input flex-1"
+          className={`${fieldClass} flex-1 ct-numeral`}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder={t("goals.addAmount", { currency: "₹" })}

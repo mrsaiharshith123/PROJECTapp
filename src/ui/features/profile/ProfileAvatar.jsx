@@ -56,12 +56,22 @@ export default function ProfileAvatar({ settings, updateSettings, size = "lg", c
   }
 
   return (
-    <div className="ct-stack-sm items-center">
-      {avatarNode}
+    <div className="ct-stack-sm items-center ct-settings-group-content !py-4">
+      <div className="relative">
+        {avatarNode}
+        <button
+          type="button"
+          className="ct-icon-tile ct-icon-tile-sm violet absolute -bottom-1 -right-1"
+          onClick={() => fileRef.current?.click()}
+          aria-label={t("avatar.uploadPhoto")}
+        >
+          <CtIcon name="note-pencil" size={16} weight="duotone" />
+        </button>
+      </div>
       <Caption className="text-center">
         {isUploaded ? t("avatar.yourPhoto") : t("avatar.cartoonAvatar", { label: style.label })}
       </Caption>
-      <div className="ct-row" style={{ flexWrap: "wrap", justifyContent: "center" }}>
+      <div className="ct-row flex-wrap justify-center gap-2">
         <Button type="button" size="sm" variant="primary" onClick={() => fileRef.current?.click()}>
           {t("avatar.uploadPhoto")}
         </Button>

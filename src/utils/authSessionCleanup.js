@@ -3,7 +3,7 @@ import { STORAGE_KEYS } from "../storage/keys.js";
 import { emitSettingsReset } from "../storage/events.js";
 
 /** @see AuthGatePage - skip server profile check right after signup */
-export const SIGNUP_PENDING_KEY = "committrack_signup_pending";
+export const SIGNUP_PENDING_KEY = "perovo_signup_pending";
 
 export class ProfilesTableMissingError extends Error {
   constructor() {
@@ -40,8 +40,8 @@ export function isSignupPending() {
 export function clearAccountSeedKeys(userId) {
   if (!userId) return;
   try {
-    localStorage.removeItem(`committrack_auth_seeded_${userId}`);
-    localStorage.removeItem(`committrack_profile_seeded_${userId}`);
+    localStorage.removeItem(`perovo_auth_seeded_${userId}`);
+    localStorage.removeItem(`perovo_profile_seeded_${userId}`);
   } catch {
     /* ignore */
   }

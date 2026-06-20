@@ -1,0 +1,41 @@
+---
+description: Mobile distribution — TWA (Play Store), Capacitor (dev APK + iOS). No Expo/appversion.
+globs:
+  - twa/**/*
+  - capacitor.config.ts
+  - scripts/build-dev-apk.mjs
+  - scripts/governance/native-shells.mjs
+  - docs/MOBILE.md
+  - src/utils/embeddedApp.js
+---
+
+# Mobile shells (single web codebase)
+
+## Distribution
+
+| Channel | Wrapper | Command | Package id |
+|---------|---------|---------|------------|
+| **Play Store** | TWA → live `perovo.app` | `npm run apk:twa` | `app.perovo.twa` |
+| **Dev / sideload APK** | Capacitor + bundled `dist/` | `npm run apk:dev` | `app.perovo.mobile` |
+| **iOS** | Capacitor | `npm run cap:sync` + `npm run cap:ios` | `app.perovo.mobile` |
+| **Browser** | PWA | `npm run build` + deploy | — |
+
+## Rules
+
+1. **No `appversion/` or `webversion/` folders** — one repo root app only.
+2. **Product UI** lives in `src/` — never duplicate for mobile.
+3. **`isEmbeddedApp()`** in `src/utils/embeddedApp.js` — hide PWA install when TWA/Capacitor.
+4. **TWA** needs `public/.well-known/assetlinks.json` deployed with production site.
+5. **Dev APK** output: `releases/Perovo-dev-latest.apk` (gitignored) — share with remote developers.
+
+## Governance
+
+```bash
+npm run audit:native-shells   # capacitor + twa + scripts + no legacy folders
+```
+
+Included in `npm run audit:governance:quick`.
+
+## Docs
+
+Handbook: `docs/MOBILE.md` · Commands: `docs/04-commands.md`

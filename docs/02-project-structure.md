@@ -1,6 +1,23 @@
 # Project structure
 
 ```
+PROJECTapp/                  ← repo root (Vite + React PWA)
+├── docs/                    Developer handbook
+├── public/                  PWA assets, notification-handler.js, icons
+├── scripts/                 Build & audit tooling
+├── src/                     App source (see below)
+├── supabase/                Migrations + edge functions
+├── twa/                     Android TWA (Bubblewrap) for Play Store
+├── capacitor.config.ts      iOS Capacitor shell config
+├── .cursor/rules/           Cursor rules
+└── package.json
+```
+
+**Mobile:** No separate native UI codebase. Android = TWA ([`twa/README.md`](./twa/README.md)). iOS = Capacitor ([`docs/MOBILE.md`](./MOBILE.md)).
+
+## App layout
+
+```
 PROJECTapp/
 ├── docs/                    ← You are here (developer handbook)
 ├── public/                  PWA assets, notification-handler.js, icons
@@ -9,7 +26,7 @@ PROJECTapp/
 ├── src/
 │   ├── main.jsx, App.jsx    App entry + routing + I18nProvider
 │   ├── app/                 App glue (ThemeSync, AnalyticsBridge, RequireAdmin, ModeRoute, ToolsRedirect)
-│   ├── context/             React providers (CommitTrack, Auth)
+│   ├── context/             React providers (Perovo, Auth)
 │   ├── hooks/               React hooks (intel, PWA install, …)
 │   ├── i18n/                Translations — 22 langs + en (see docs/10-i18n.md)
 │   ├── engines/             Pure finance logic + __tests__/
@@ -25,7 +42,7 @@ PROJECTapp/
 ├── tsconfig.json            TypeScript (checkJs on src/)
 ├── eslint.config.js
 ├── package.json
-└── README.md                Short GitHub intro → links to docs/
+└── README.md                Short intro → links to docs/
 ```
 
 ## Routing pattern

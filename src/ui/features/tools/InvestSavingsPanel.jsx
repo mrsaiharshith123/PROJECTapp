@@ -1,19 +1,21 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { analyzeSipPlan, buildSipCorpusSeries } from "../../../engines/sipAdvisor.js";
+import { estimateCurrentValue, fetchFundNav } from "../../../services/market/amfiNav.js";
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { computeFdRdProjection } from "../../../engines/fdRdTracker.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption, Heading, Body } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 function SipAdvisorTab() {
   const { t } = useTranslation();
   const intel = useCommitIntel();
-  const { commitments } = useCommitTrack();
+  const { commitments, updateCommitment } = usePerovo();
   const [sip, setSip] = useState("");
   const [sipBoost, setSipBoost] = useState("");
   const [years, setYears] = useState("10");
@@ -51,6 +53,40 @@ function SipAdvisorTab() {
       }).rows,
     [monthlySip, boostAmount, years, rate],
   );
+
+  const sipCurrentValue = useMemo(
+    () =>
+      commitments
+        .filter((c) => c.category === "SIP" && c.currentNav)
+        .reduce((s, c) => s + estimateCurrentValue(c), 0),
+    [commitments],
+  );
+
+  useEffect(() => {
+    const sipWithCodes = commitments.filter((c) => c.category === "SIP" && c.schemeCode);
+    if (sipWithCodes.length === 0) return undefined;
+    let cancelled = false;
+    const refreshNavs = async () => {
+      for (const sip of sipWithCodes) {
+        if (cancelled) return;
+        const nav = await fetchFundNav(sip.schemeCode);
+        if (nav?.nav && nav.nav !== sip.currentNav) {
+          updateCommitment(sip.id, {
+            currentNav: nav.nav,
+            navFetchedAt: nav.date,
+            navDate: nav.date,
+          });
+        }
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    };
+    refreshNavs();
+    return () => {
+      cancelled = true;
+    };
+    // Refresh NAV once when SIP tool opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="ct-stack">
@@ -91,9 +127,18 @@ function SipAdvisorTab() {
         />
       </div>
       <div className="ct-inset ct-stack-sm">
-        <Heading level={3} className="!text-base">
-          {t("tools.sip.projected", { amount: formatInr(plan.projectedCorpus) })}
-        </Heading>
+        <ToolAnswerHero
+          tone="wealth"
+          label={t("tools.sip.projectedLabel")}
+          value={formatInr(plan.projectedCorpus)}
+          subtitle={plan.narrativeLines[0]}
+        />
+        {sipCurrentValue > 0 ? (
+          <>
+            <Body className="font-semibold">{t("tools.sip.liveValue", { amount: formatInr(sipCurrentValue) })}</Body>
+            <Caption className="block">{t("tools.sip.liveValueHint")}</Caption>
+          </>
+        ) : null}
         {plan.narrativeLines.map((line) => (
           <Caption key={line} className="block">
             {line}
@@ -112,6 +157,8 @@ function SipAdvisorTab() {
   );
 }
 
+import { lookupIfsc } from "../../../services/market/ifscLookup.js";
+
 function FdRdTab() {
   const { t } = useTranslation();
   const [kind, setKind] = useState("fd");
@@ -119,6 +166,9 @@ function FdRdTab() {
   const [monthlyDeposit, setMonthlyDeposit] = useState("");
   const [rate, setRate] = useState("7");
   const [tenure, setTenure] = useState("12");
+  const [bankName, setBankName] = useState("");
+  const [ifscInput, setIfscInput] = useState("");
+  const [ifscInfo, setIfscInfo] = useState(null);
 
   const projection = useMemo(
     () =>
@@ -183,6 +233,36 @@ function FdRdTab() {
             inputMode="numeric"
           />
         </div>
+      </div>
+      <div>
+        <label className="ct-metric-label block">{t("tier.fdrd.bankName")}</label>
+        <input className="ct-input mt-1" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+      </div>
+      <div>
+        <label className="ct-metric-label block">{t("tier.fdrd.ifsc")}</label>
+        <input
+          className="ct-input mt-1"
+          placeholder="HDFC0001234"
+          value={ifscInput}
+          maxLength={11}
+          onChange={(e) => {
+            const v = e.target.value.toUpperCase();
+            setIfscInput(v);
+            if (v.length === 11) {
+              lookupIfsc(v).then((info) => {
+                setIfscInfo(info);
+                if (info?.bank) setBankName(info.bank);
+              });
+            } else {
+              setIfscInfo(null);
+            }
+          }}
+        />
+        {ifscInfo ? (
+          <Caption className="block mt-1">
+            {t("tier.fdrd.ifscFound", { bank: ifscInfo.bank, branch: ifscInfo.branch, city: ifscInfo.city })}
+          </Caption>
+        ) : null}
       </div>
       <div className="ct-inset ct-stack-sm">
         <Body className="font-semibold">{t("tier.fdrd.maturity", { amount: formatInr(projection.maturityAmount) })}</Body>

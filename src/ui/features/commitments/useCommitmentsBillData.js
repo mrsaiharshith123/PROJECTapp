@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Fuse from "fuse.js";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { isActiveBill, isHistoryBill } from "../../../utils/billLifecycle.js";
 import { monthlyBurdenForCommitment } from "../../../engines/burden.js";
@@ -24,9 +25,20 @@ export function useCommitmentsBillData({
     [sortedCommitments, getEffectiveStatus]
   );
 
+  const searchMatched = useMemo(() => {
+    const q = String(search || "").trim();
+    if (!q) return null;
+    const fuse = new Fuse(withEffective, {
+      keys: ["name", "category", "notes"],
+      threshold: 0.4,
+      minMatchCharLength: 2,
+    });
+    return new Set(fuse.search(q).map((r) => r.item.id));
+  }, [withEffective, search]);
+
   const filtered = useMemo(() => {
     let list = withEffective.filter((item) => {
-      if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (searchMatched && !searchMatched.has(item.id)) return false;
       if (filterCategory && item.category !== filterCategory) return false;
       if (filterStatus && item.effectiveStatus !== filterStatus) return false;
       if (filterPriority && item.priority !== filterPriority) return false;
@@ -90,7 +102,7 @@ export function useCommitmentsBillData({
     return sorted;
   }, [
     withEffective,
-    search,
+    searchMatched,
     filterCategory,
     filterStatus,
     filterPriority,
@@ -107,10 +119,10 @@ export function useCommitmentsBillData({
 
   const historyBills = useMemo(() => {
     let list = withEffective.filter((c) => isHistoryBill(c, getEffectiveStatus, todayStr));
-    if (search) list = list.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));
+    if (searchMatched) list = list.filter((i) => searchMatched.has(i.id));
     if (filterCategory) list = list.filter((i) => i.category === filterCategory);
     return list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  }, [withEffective, search, filterCategory, getEffectiveStatus, todayStr]);
+  }, [withEffective, searchMatched, filterCategory, getEffectiveStatus, todayStr]);
 
   const counts = useMemo(() => {
     return withEffective.filter((c) => isActiveBill(c, getEffectiveStatus, todayStr)).reduce(

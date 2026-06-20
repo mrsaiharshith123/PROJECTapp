@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Caption, Body, Heading, Modal } from "../../index.js";
+import { Button, Caption, Body, Modal } from "../../index.js";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useCloudSync } from "../../../hooks/useCloudSync.js";
 import { fetchRemoteBackupMeta, isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
 import { getDeviceLabel, loadBackupLog } from "../../../services/sync/syncMeta.js";
 import { hasPaidBackupTier } from "../../../constants/subscriptionTiers.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { SettingsGroup, SettingsGroupContent, SettingsGroupToggleRow } from "./SettingsGroup.jsx";
 
 function formatWhen(iso) {
   if (!iso) return "—";
@@ -67,9 +68,7 @@ function RestoreBackupModal({ open, onClose, onRestoreLatest, busy = false }) {
 
         {log.length > 0 && (
           <div>
-            <Heading level={4} className="!text-sm mb-2">
-              {t("sync.restoreHistory")}
-            </Heading>
+            <Body className="font-semibold !text-sm mb-2">{t("sync.restoreHistory")}</Body>
             <ul className="ct-stack-sm max-h-48 overflow-y-auto">
               {log.map((row, i) => (
                 <li key={`${row.at}-${i}`} className="ct-hero-inset !text-xs">
@@ -100,7 +99,7 @@ export default function ProfileCloudSyncSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user, profile } = useAuth();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const sync = useCloudSync();
   const configured = isCloudSyncConfigured();
   const paid = hasPaidBackupTier(settings);
@@ -115,62 +114,55 @@ export default function ProfileCloudSyncSection() {
 
   if (!configured) {
     return (
-      <Card className="ct-stack">
-        <Heading level={3}>{t("sync.title")}</Heading>
-        <Caption className="block">{t("sync.notConfigured")}</Caption>
-      </Card>
+      <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.notConfigured")}>
+        <SettingsGroupContent>
+          <Caption>{t("sync.notConfigured")}</Caption>
+        </SettingsGroupContent>
+      </SettingsGroup>
     );
   }
 
   if (!paid) {
     return (
-      <Card className="ct-stack">
-        <Heading level={3}>{t("sync.title")}</Heading>
-        <Body className="!text-sm">{t("sync.freePlanBody")}</Body>
-        <Caption className="block">{t("sync.freePlanHint")}</Caption>
-        <Button type="button" variant="primary" size="sm" onClick={() => navigate("/profile#upgrade")}>
-          {t("common.viewPlans")} →
-        </Button>
-      </Card>
+      <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.freePlanHint")}>
+        <SettingsGroupContent className="ct-stack-sm">
+          <Body className="!text-sm">{t("sync.freePlanBody")}</Body>
+          <Button type="button" variant="primary" size="sm" onClick={() => navigate("/profile#upgrade")}>
+            {t("common.viewPlans")} →
+          </Button>
+        </SettingsGroupContent>
+      </SettingsGroup>
     );
   }
 
   if (!isLoggedIn) {
     return (
-      <Card className="ct-stack">
-        <Heading level={3}>{t("sync.title")}</Heading>
-        <Body className="!text-sm">{t("sync.signInBody", { account: accountLabel })}</Body>
-        <Caption className="block opacity-90">{t("sync.signInHint")}</Caption>
-      </Card>
+      <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.signInHint")}>
+        <SettingsGroupContent className="ct-stack-sm">
+          <Body className="!text-sm">{t("sync.signInBody", { account: accountLabel })}</Body>
+          <Caption className="block opacity-90">{t("sync.signInHint")}</Caption>
+        </SettingsGroupContent>
+      </SettingsGroup>
     );
   }
 
   return (
-    <Card className="ct-stack">
-      <div>
-        <Heading level={3}>{t("sync.title")}</Heading>
-        <Body className="!text-sm mt-1">{t("sync.accountLine", { account: accountLabel })}</Body>
-      </div>
+    <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.accountLine", { account: accountLabel })}>
+      <SettingsGroupToggleRow
+        icon="cloud"
+        iconColor="teal"
+        label={t("sync.toggleTitle")}
+        hint={t("sync.toggleHint")}
+        checked={enabled}
+        onChange={(e) => {
+          const on = e.target.checked;
+          updateSettings({ cloudSyncEnabled: on });
+          if (on) queueMicrotask(() => sync.pushNow());
+        }}
+      />
 
-      <label className="ct-row-between gap-3 cursor-pointer">
-        <span>
-          <Body className="font-semibold !text-sm">{t("sync.toggleTitle")}</Body>
-          <Caption className="block mt-0.5">{t("sync.toggleHint")}</Caption>
-        </span>
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => {
-            const on = e.target.checked;
-            updateSettings({ cloudSyncEnabled: on });
-            if (on) queueMicrotask(() => sync.pushNow());
-          }}
-          className="h-5 w-5 accent-[var(--ct-accent)]"
-        />
-      </label>
-
-      {enabled && (
-        <>
+      {enabled ? (
+        <SettingsGroupContent className="ct-stack-sm">
           <div className="ct-hero-inset ct-stack gap-1 !text-xs">
             <p>• {t("sync.backupBullet")}</p>
             <p>• {t("sync.restoreBullet")}</p>
@@ -202,13 +194,23 @@ export default function ProfileCloudSyncSection() {
               setRestoreOpen(false);
             }}
           />
-        </>
+        </SettingsGroupContent>
+      ) : (
+        <SettingsGroupContent>
+          <Caption>{t("sync.offHint")}</Caption>
+        </SettingsGroupContent>
       )}
 
-      {!enabled && <Caption className="block">{t("sync.offHint")}</Caption>}
-
-      {sync.message && <Caption className="block text-[var(--ct-success)]">{sync.message}</Caption>}
-      {sync.error && <Caption className="block text-[var(--ct-danger)]">{sync.error}</Caption>}
-    </Card>
+      {sync.message && (
+        <SettingsGroupContent className="!pt-0">
+          <Caption className="block text-[var(--ct-success)]">{sync.message}</Caption>
+        </SettingsGroupContent>
+      )}
+      {sync.error && (
+        <SettingsGroupContent className="!pt-0">
+          <Caption className="block text-[var(--ct-danger)]">{sync.error}</Caption>
+        </SettingsGroupContent>
+      )}
+    </SettingsGroup>
   );
 }

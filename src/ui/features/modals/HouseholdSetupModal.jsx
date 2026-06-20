@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { Modal, Button, Caption, Body, Stack } from "../../index.js";
+import { Modal, Button, Caption, Body, Stack, inputClassName } from "../../index.js";
 import { createHouseholdRoom, joinHouseholdRoom } from "../../../services/household/householdRoomService.js";
 import { normalizeInviteCode, householdMemberLimit } from "../../../engines/householdRoom.js";
 
@@ -12,7 +12,7 @@ import { normalizeInviteCode, householdMemberLimit } from "../../../engines/hous
  */
 export default function HouseholdSetupModal({ open, onClose }) {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { user, isLoggedIn } = useAuth();
   const [mode, setMode] = useState("create");
   const [roomName, setRoomName] = useState(t("household.room.defaultName"));
@@ -98,7 +98,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
               type="number"
               min={2}
               max={20}
-              className="ct-input w-full"
+              className={`${inputClassName()} ct-input-tint w-full`}
               value={seatCount}
               onChange={(e) =>
                 setSeatCount(Math.min(20, Math.max(2, Math.floor(Number(e.target.value) || 2))))
@@ -109,7 +109,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
             <input
               type="number"
               min={0}
-              className="ct-input w-full"
+              className={`${inputClassName()} ct-input-tint w-full`}
               value={dependents === 0 ? "" : dependents}
               onChange={(e) => {
                 const raw = e.target.value;
@@ -141,7 +141,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
           <div>
             <label className="ct-field-label">{t("household.room.nameLabel")}</label>
             <input
-              className="ct-input w-full"
+              className={`${inputClassName()} ct-input-tint w-full`}
               value={roomName}
               onChange={(e) => setRoomName(e.target.value.slice(0, 60))}
             />
@@ -150,7 +150,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
           <div>
             <label className="ct-field-label">{t("household.room.codeLabel")}</label>
             <input
-              className="ct-input w-full ct-numeral"
+              className={`${inputClassName()} ct-input-tint w-full ct-numeral`}
               value={inviteCode}
               onChange={(e) => setInviteCode(normalizeInviteCode(e.target.value))}
               placeholder={t("household.room.codePlaceholder")}

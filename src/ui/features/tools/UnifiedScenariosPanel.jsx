@@ -2,19 +2,20 @@ import { useMemo, useState } from "react";
 import { formatInr } from "../../../constants/symbols.js";
 import { buildQuickScenarioSummaries } from "../../../engines/quickScenarios.js";
 import { buildUnifiedScenarioTiles, runWealthSimulation } from "../../../engines/scenarioCatalog.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
 /**
  * Scenario analysis — only tiles that apply to the user's income, bills, and debt.
  */
 export default function UnifiedScenariosPanel() {
   const { t } = useTranslation();
-  const { commitments, settings, getEffectiveStatus } = useCommitTrack();
+  const { commitments, settings, getEffectiveStatus } = usePerovo();
   const intel = useNetWorthIntel();
   const mode = getExperienceMode(settings);
   const income = combinedMonthlyIncome(settings);
@@ -66,6 +67,16 @@ export default function UnifiedScenariosPanel() {
 
   return (
     <div className="ct-stack text-sm">
+      <ToolAnswerHero
+        tone="survival"
+        label={t("tools.planner.runwayLabel")}
+        value={
+          pack.survivalMonths != null
+            ? t("tools.planner.runwayMonths", { months: Math.min(99, pack.survivalMonths) })
+            : "—"
+        }
+        subtitle={active?.label}
+      />
       <Caption>{t("tools.planner.whatifIntro")}</Caption>
       <Caption>
         {t("tools.planner.baselineFree", { amount: formatInr(pack.baselineFree) })}

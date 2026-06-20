@@ -16,6 +16,8 @@ Some paths look like clutter in the file tree. Most are **not duplicated docs** 
 |------|------------|-------------------|
 | **`dist/`** | Output of `npm run build` (production site). CI builds its own copy. | **Yes** — `npm run clean` or delete the folder. Reappears after `npm run build`. |
 | **`dev-dist/`** | PWA dev service-worker cache from `vite-plugin-pwa` while `npm run dev` runs. | **Yes** — deleted by `npm run clean`. Recreated next time you run dev with PWA enabled. |
+| **`releases/`** | Output of `npm run apk:dev` (developer APK). | **Yes** — gitignored; share the `.apk` file, not the folder. |
+| **`android/` / `ios/`** | Capacitor native projects (generated locally). | **Yes** — gitignored; recreated via `npx cap add`. |
 | **`node_modules/`** | npm install | Delete only if you plan to run `npm install` again. |
 | **`*.log`** (e.g. `i18n-translate-all.log`) | One-off script output | **Yes** — gitignored; safe to delete after batch jobs. |
 

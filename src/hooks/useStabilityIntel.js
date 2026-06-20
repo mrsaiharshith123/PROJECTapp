@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useNetWorth } from "../context/NetWorthContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { buildSurvivalContext, lendingMonthlyOutflow } from "../engines/survival.js";
@@ -16,14 +16,16 @@ import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
 import { resolveUserMode, getExperienceMode, hasPowerFeatures } from "../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { householdPayerInsight } from "../engines/householdPayer.js";
+import { applyDevOverrideToStabilityIntel, useDevOverrideTick } from "../utils/devOverride.js";
 
 /** Mode-specific financial stability intelligence (salaried, family, etc.). */
 export function useStabilityIntel() {
-  const ctx = useCommitTrack();
+  const ctx = usePerovo();
   const { entries: wealthEntries } = useNetWorth();
   const intel = useCommitIntel();
   const baseMode = resolveUserMode(ctx.settings);
   const experienceMode = getExperienceMode(ctx.settings);
+  const devTick = useDevOverrideTick();
 
   return useMemo(() => {
     const income = combinedMonthlyIncome(ctx.settings);
@@ -121,7 +123,7 @@ export function useStabilityIntel() {
 
     const stabilityInsights = mergeExtendedInsights(intel.insights, extraInsights);
 
-    return {
+    const stable = {
       mode: experienceMode,
       income,
       overdueCount,
@@ -141,6 +143,7 @@ export function useStabilityIntel() {
       stabilityInsights,
       ...modeData,
     };
+    return applyDevOverrideToStabilityIntel(stable);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- broad ctx fields drive one stability snapshot
   }, [
     baseMode,
@@ -155,5 +158,6 @@ export function useStabilityIntel() {
     ctx.getEffectiveLendingStatus,
     intel,
     wealthEntries,
+    devTick,
   ]);
 }

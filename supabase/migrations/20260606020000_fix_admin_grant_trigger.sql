@@ -25,7 +25,7 @@ end;
 $$;
 
 -- Explicit helper for Supabase SQL Editor (paste user uuid).
-create or replace function public.grant_committrack_admin(target_user_id uuid)
+create or replace function public.grant_perovo_admin(target_user_id uuid)
 returns void
 language plpgsql
 security definer
@@ -44,5 +44,5 @@ begin
 end;
 $$;
 
-comment on function public.grant_committrack_admin(uuid) is
-  'Run in SQL Editor: select grant_committrack_admin(''<user-uuid>'');';
+comment on function public.grant_perovo_admin(uuid) is
+  'Run in SQL Editor: select grant_perovo_admin(''<user-uuid>'');';

@@ -7,6 +7,20 @@ import { QUICK_COMMITMENT_TEMPLATES } from "../../../utils/onboardingTemplates.j
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
 
+export function OnboardingProgress({ step, total = 4 }) {
+  const { t } = useTranslation();
+  return (
+    <div className="mb-4">
+      <div className="ct-onboard-dots" aria-hidden>
+        {Array.from({ length: total }, (_, i) => (
+          <span key={i} className={`ct-onboard-dot ${i === step ? "active" : ""}`} />
+        ))}
+      </div>
+      <Caption className="block text-center mt-2">{t("onboarding.stepOf", { current: step + 1, total })}</Caption>
+    </div>
+  );
+}
+
 export function OnboardingModeStep({
   replay,
   experienceId,
@@ -20,11 +34,11 @@ export function OnboardingModeStep({
   const titlePrefix = replay ? "Review" : "Welcome";
 
   return (
-    <div className="ct-onboard-page">
-      <div>
-        <Eyebrow>{titlePrefix}</Eyebrow>
-        <h1 className="ct-onboard-title">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
-        <Caption className="block mt-2">
+    <div className="ct-onboard-page ct-onboard-modern">
+      <div className="ct-onboard-step-hero">
+        <p className="ct-hero-label">{titlePrefix}</p>
+        <h1 className="ct-onboard-title !mt-1">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
+        <Caption className="block mt-2 relative">
           {replay ? t("onboarding.modeReplaySubtitle") : t("onboarding.subtitle")}
         </Caption>
       </div>
@@ -83,7 +97,7 @@ export function OnboardingModeStep({
 
 export function OnboardingFocusStep({ experience, onBack, onContinue }) {
   return (
-    <div className="ct-onboard-page">
+    <div className="ct-onboard-page ct-onboard-modern">
       <div>
         <Eyebrow>{experience.label}</Eyebrow>
         <h1 className="ct-onboard-title">What we will focus on</h1>
@@ -121,7 +135,7 @@ export function OnboardingBasicsStep({
   const { t } = useTranslation();
 
   return (
-    <div className="ct-onboard-page">
+    <div className="ct-onboard-page ct-onboard-modern">
       <div>
         <Eyebrow>{t("onboarding.setupEyebrow")}</Eyebrow>
         <h1 className="ct-onboard-title">{replay ? "Update basics" : "Confirm your details"}</h1>
@@ -187,7 +201,7 @@ export function OnboardingBillsStep({
   const { t } = useTranslation();
 
   return (
-    <div className="ct-onboard-page">
+    <div className="ct-onboard-page ct-onboard-modern">
       <div>
         <Eyebrow>{t("onboarding.initialSetupEyebrow")}</Eyebrow>
         <h1 className="ct-onboard-title">What do you pay regularly?</h1>

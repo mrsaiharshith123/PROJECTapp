@@ -16,6 +16,7 @@ import {
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import { Caption } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateCategory, translateLendingStatus } from "../../../i18n/domainLabels.js";
 
@@ -212,7 +213,20 @@ export default function LoanPayoffAdvisor({
 
       {showResults && (
         <>
-          <p className="text-xs text-gray-500 dark:text-slate-400">
+          {payoffSeries && payoffSeries.acceleratedMonths < payoffSeries.baselineMonths ? (
+            <ToolAnswerHero
+              tone="wealth"
+              label={t("loan.advisor.paymentPlanTitle")}
+              value={t("charts.loanBalanceLumpy", {
+                month: payoffLabelFromMonths(payoffSeries.acceleratedMonths, todayStr),
+                balance: formatInr(0),
+              })}
+              subtitle={advice.bestForExtra ? t("loan.advisor.extraInMonths", {
+                schedule: `${advice.bestForExtra.label} ${formatInr(advice.bestForExtra.recommendedExtra)}`,
+              }) : undefined}
+            />
+          ) : null}
+          <p className="text-xs text-[var(--ct-text-muted)]">
             {t("loan.advisor.timingIntro")}
             <InfoTip text={CALC_HELP.loanExtraTiming} />
           </p>

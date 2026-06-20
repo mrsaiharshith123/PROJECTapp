@@ -1,11 +1,12 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { useStabilityIntel } from "./useStabilityIntel.js";
 import { useNetWorthIntel } from "./useNetWorthIntel.js";
 import { useProfileHubIntel } from "./useProfileHubIntel.js";
 import { computeControlScore } from "../utils/profileStats.js";
 import { trustScoreForLendingEntry } from "../engines/lendingTrust.js";
+import { applyLegacyScoreTaxonomy } from "../i18n/legacyScoreLabels.js";
 import { formatInr } from "../constants/symbols.js";
 
 /**
@@ -37,7 +38,7 @@ const HEALTH_LEVEL_KEYS = {
 
 /** Profile score metrics — hero chips, merged primaries, and detail-page rows. */
 export function useProfileScoreGuide() {
-  const { commitments, lendings, getEffectiveStatus } = useCommitTrack();
+  const { commitments, lendings, getEffectiveStatus } = usePerovo();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const nwIntel = useNetWorthIntel();
@@ -208,7 +209,7 @@ export function useProfileScoreGuide() {
           tone: runwayTone,
         },
       },
-      detailScores,
+      detailScores: applyLegacyScoreTaxonomy(detailScores),
       payoffOrder,
       focusFirst: intel.payoffRec,
       freeMoney: intel.freeMoneyAfterBurden,

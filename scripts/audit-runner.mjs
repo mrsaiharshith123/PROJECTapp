@@ -20,6 +20,7 @@ import { runModesAudit } from "./governance/modes.mjs";
 import { runInsightsAudit } from "./governance/insights.mjs";
 import { runPerformanceAudit } from "./governance/performance.mjs";
 import { runMobileAudit } from "./governance/mobile.mjs";
+import { runNativeShellsAudit } from "./governance/native-shells.mjs";
 import { runDuplicatesAudit } from "./governance/duplicates.mjs";
 import { runSyncAudit } from "./governance/sync.mjs";
 import { runGuidanceAudit } from "./governance/guidance.mjs";
@@ -36,6 +37,7 @@ const GOVERNANCE = [
   { id: "transactions", label: "Transaction intelligence", group: "product", quick: true, fn: runTransactionsAudit },
   { id: "performance", label: "Performance heuristics", group: "frontend", quick: false, fn: runPerformanceAudit },
   { id: "mobile", label: "Mobile & responsive", group: "frontend", quick: true, fn: runMobileAudit },
+  { id: "native-shells", label: "TWA & Capacitor shells", group: "platform", quick: true, fn: runNativeShellsAudit },
   { id: "duplicates", label: "Duplicate & similar UI", group: "frontend", quick: false, fn: runDuplicatesAudit },
   { id: "sync", label: "Local-first & cloud sync", group: "platform", quick: true, fn: runSyncAudit },
   { id: "guidance", label: "Financial guidance & education", group: "product", quick: true, fn: runGuidanceAudit },

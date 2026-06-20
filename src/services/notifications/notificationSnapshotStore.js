@@ -1,4 +1,4 @@
-const DB_NAME = "committrack-notifications";
+const DB_NAME = "perovo-notifications";
 const DB_VERSION = 1;
 const STORE = "snapshot";
 

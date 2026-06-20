@@ -13,4 +13,4 @@ alter table public.profiles
 alter table public.profiles
   add column if not exists razorpay_payment_id text;
 
-comment on column public.profiles.subscription_tier is 'CommitTrack plan: free, pro, or power';
+comment on column public.profiles.subscription_tier is 'Perovo plan: free, pro, or power';

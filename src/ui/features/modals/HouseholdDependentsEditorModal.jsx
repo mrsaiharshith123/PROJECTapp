@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { householdMemberLimit } from "../../../engines/householdRoom.js";
 import { updateLocalHouseholdMemberLimit } from "../../../engines/householdRoomLocal.js";
 import { Modal, Button, Caption, Body, Stack } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 function Stepper({ value, min, max, onChange, decreaseLabel, increaseLabel }) {
   return (
@@ -66,7 +67,12 @@ function HouseholdDependentsEditorForm({ settings, updateSettings, onClose }) {
   return (
     <Modal title={t("household.edit.title")} onClose={onClose}>
       <Stack gap="md">
-        <Caption className="block">{t("household.edit.subtitle")}</Caption>
+        <div className="ct-row gap-3 items-start">
+          <span className="ct-icon-tile violet" aria-hidden>
+            <CtIcon name="users-three" size={22} />
+          </span>
+          <Caption className="block">{t("household.edit.subtitle")}</Caption>
+        </div>
 
         <div className="ct-stack-sm">
           <Body className="font-semibold">{t("household.edit.dependentsLabel")}</Body>
@@ -116,7 +122,7 @@ function HouseholdDependentsEditorForm({ settings, updateSettings, onClose }) {
  * @param {{ open: boolean, onClose: () => void }} props
  */
 export default function HouseholdDependentsEditorModal({ open, onClose }) {
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   if (!open) return null;
 
   const members = settings.householdRoomMembers || [];

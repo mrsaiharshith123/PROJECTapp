@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 import { computeGoalProgress } from "../../../engines/goalsProgress.js";
 import { analyzeSipForGoal } from "../../../engines/sipAdvisor.js";
 import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { INR } from "../../../constants/symbols.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
@@ -12,6 +12,9 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { canAddGoal } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
+import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { formatInr } from "../../../constants/symbols.js";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
@@ -41,13 +44,15 @@ export default function GoalsToolPanel() {
     logSavingsToGoal,
     updateSettings,
     todayStr,
-  } = useCommitTrack();
+  } = usePerovo();
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
   const [gType, setGType] = useState("reduce_open_debt");
   const [gTitle, setGTitle] = useState("");
   const [gTarget, setGTarget] = useState("");
   const [gTargetDate, setGTargetDate] = useState("");
   const [gForMember, setGForMember] = useState("shared");
+  const [celebration, setCelebration] = useState(null);
+  const celebratedGoals = useRef(new Set());
   const salariedFamily = isSalariedFamily(settings);
 
   const openRemaining = commitments.reduce((s, c) => {
@@ -93,6 +98,26 @@ export default function GoalsToolPanel() {
   const freeMoney = Math.max(0, income - monthlyBurden);
   const autoSaveRules = settings.goalAutoSaveRules || [];
 
+  const goalHero = useMemo(() => {
+    const active = allGoals.filter((g) => !g.archived);
+    let totalSaved = 0;
+    let onTrack = 0;
+    active.forEach((g) => {
+      const savedForGoal =
+        g.type === "save_amount" || g.type === "education" || g.type === "wedding"
+          ? Number(g.savedAmount) || 0
+          : 0;
+      totalSaved += savedForGoal;
+      const p = computeGoalProgress(g, {
+        openRemainingSum: openRemaining,
+        burdenRatio: ratio,
+        savedAmountTowardGoal: savedForGoal,
+      });
+      if (p >= 0.5) onTrack += 1;
+    });
+    return { totalSaved, onTrack, total: active.length };
+  }, [allGoals, openRemaining, ratio]);
+
   const toggleSalaryAutoSave = (goalId, defaultAmount) => {
     const exists = autoSaveRules.some((r) => String(r.goalId) === String(goalId));
     if (exists) {
@@ -108,6 +133,16 @@ export default function GoalsToolPanel() {
 
   return (
     <div className="ct-stack">
+      <ToolAnswerHero
+        tone="wealth"
+        label={t("tools.goals.heroLabel")}
+        value={formatInr(goalHero.totalSaved)}
+        subtitle={
+          goalHero.total > 0
+            ? t("tools.goals.heroSubtitle", { onTrack: goalHero.onTrack, total: goalHero.total })
+            : undefined
+        }
+      />
       <Caption>{t("goals.intro")}</Caption>
       {!goalGate.ok && (
         <TierLimitBanner
@@ -252,8 +287,18 @@ export default function GoalsToolPanel() {
                         type="button"
                         size="sm"
                         onClick={() => {
-                          logSavingsToGoal(g.id, goalLogAmounts[g.id]);
+                          const amt = Number(goalLogAmounts[g.id]) || 0;
+                          logSavingsToGoal(g.id, amt);
                           setGoalLogAmounts((prev) => ({ ...prev, [g.id]: "" }));
+                          const savedAfter = (Number(g.savedAmount) || 0) + amt;
+                          if (
+                            Number(g.targetAmount) > 0 &&
+                            savedAfter >= Number(g.targetAmount) &&
+                            !celebratedGoals.current.has(g.id)
+                          ) {
+                            celebratedGoals.current.add(g.id);
+                            setCelebration({ type: "trophy", message: t("celebration.goalAchieved") });
+                          }
                         }}
                       >
                         {t("common.add")}
@@ -281,6 +326,17 @@ export default function GoalsToolPanel() {
           })
         )}
       </div>
+      <div className="ct-inset ct-stack-sm !p-3">
+        <Caption className="block opacity-90">{t("tools.goals.disclaimer")}</Caption>
+      </div>
+      {celebration ? (
+        <CelebrationOverlay
+          type={celebration.type}
+          show
+          message={celebration.message}
+          onComplete={() => setCelebration(null)}
+        />
+      ) : null}
     </div>
   );
 }

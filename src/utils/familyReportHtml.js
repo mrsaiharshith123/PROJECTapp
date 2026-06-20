@@ -48,7 +48,7 @@ export function generateFamilyReportHtml(report) {
 </style>
 </head>
 <body>
-<h1>CommitTrack · ${escapeHtml(report.familyName)}</h1>
+<h1>Perovo · ${escapeHtml(report.familyName)}</h1>
 <p class="sub">${escapeHtml(report.month)} Report</p>
 <div class="grid">
   <div class="cell"><label>Combined Income</label><strong>₹${Number(report.income).toLocaleString("en-IN")}</strong></div>
@@ -62,7 +62,7 @@ export function generateFamilyReportHtml(report) {
 <p class="row">Overdue: ${overdueLine}</p>
 <p class="row">Top spending category: ${topCat}</p>
 <p class="row">Dependents tracked: ${report.dependents}</p>
-<div class="footer">CommitTrack Family Financial OS · not financial advice</div>
+<div class="footer">Perovo Family Financial OS · not financial advice</div>
 </body>
 </html>`;
 }

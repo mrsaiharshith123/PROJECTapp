@@ -103,7 +103,8 @@ Audit checks (see [05-audit-and-quality.md](./05-audit-and-quality.md)):
 
 - Barrel exports in `ui/index.js` must be used somewhere in `src/`
 - Every `*Page.jsx` must have a route in `App.jsx` (lazy import from `ui/features/pages/`)
-- Dashboard tool ids in `modeExperience.js` must have a handler in `DashboardTools.jsx`
+- Dashboard tool ids in `modeExperience.js` (`TOOL_ORDER`) must have a handler in `DashboardTools.jsx`
+- FAB-only flows (bill scan, log spend modal) live in `Navbar.jsx` — not duplicated in `DashboardTools.jsx`
 - UI files unreachable from `App.jsx` / `pages/` are flagged
 - **`engines/` / `services/` modules only imported from `__tests__` fail audit** — remove or wire into UI (`npm run audit:orphans`)
 

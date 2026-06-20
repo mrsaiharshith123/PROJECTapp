@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { DATA_CHANGED_EVENT } from "../storage/events.js";
 import {
   canUseCloudSync,
@@ -17,7 +17,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Background local-first → Supabase account backup when signed in (never blocks UI). */
 export default function CloudSyncBridge() {
   const { user, isLoggedIn, isReady } = useAuth();
-  const track = useCommitTrack();
+  const track = usePerovo();
 
   useEffect(() => {
     if (!isReady || !isLoggedIn || !user?.id) {

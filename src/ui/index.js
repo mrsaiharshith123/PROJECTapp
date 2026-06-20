@@ -19,7 +19,6 @@ export { FormField } from "./patterns/FormField.jsx";
 export { MetricTile } from "./patterns/MetricTile.jsx";
 export { SegmentedControl } from "./patterns/SegmentedControl.jsx";
 export { TabContent } from "./patterns/TabContent.jsx";
-export { GuideButton } from "./patterns/GuideButton.jsx";
 export { PressureRing } from "./patterns/PressureRing.jsx";
 export { FilterChips } from "./patterns/FilterChips.jsx";
 export { FilterChipsWithSearch } from "./patterns/FilterChipsWithSearch.jsx";
@@ -30,7 +29,9 @@ export { PageLoader, RouteFallback, SectionLoader, InlineLoader, LoadingSpinner,
 export { AdminSkeleton } from "./patterns/loadingSkeletons.jsx";
 export { ProgressBar } from "./patterns/ProgressBar.jsx";
 export { ChartShell } from "./patterns/ChartShell.jsx";
+export { MetricCard } from "./patterns/MetricCard.jsx";
 export { StatCard } from "./patterns/StatCard.jsx";
+export { ToolAnswerHero } from "./patterns/ToolAnswerHero.jsx";
 export { CountTile } from "./patterns/CountTile.jsx";
 export { ToneSurface } from "./patterns/ToneSurface.jsx";
 export { NotificationBell } from "./patterns/NotificationBell.jsx";
@@ -40,6 +41,7 @@ export { ProfileSectionPicker } from "./patterns/ProfileSectionPicker.jsx";
 export { PlansButton } from "./patterns/PlansButton.jsx";
 export { SettingsRow, SettingsSection } from "./patterns/SettingsRow.jsx";
 export { BillCard } from "./patterns/BillCard.jsx";
+export { CelebrationOverlay } from "./patterns/CelebrationOverlay.jsx";
 export { ProGate } from "./patterns/ProGate.jsx";
 export { TierLimitBanner } from "./patterns/TierLimitBanner.jsx";
 
@@ -61,7 +63,7 @@ export { Navbar } from "./layout/Navbar.jsx";
 export { insightToneClass } from "./tokens/severity.js";
 export { statusTone, pressureTone } from "./utils/statusColor.js";
 
-export { SettingsGroup, SettingsGroupRow } from "./features/profile/SettingsGroup.jsx";
+export { SettingsGroup, SettingsGroupRow, SettingsGroupContent, SettingsGroupToggleRow } from "./features/profile/SettingsGroup.jsx";
 
 export { ConceptHelp } from "./guidance/ConceptHelp.jsx";
 export { WhyInsightPanel } from "./guidance/WhyInsightPanel.jsx";

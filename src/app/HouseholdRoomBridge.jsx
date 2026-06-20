@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { isSalariedFamily } from "../constants/modeExperience.js";
 import { fetchUserHouseholdRoom } from "../services/household/householdRoomService.js";
 import { getLocalHouseholdRoomById } from "../engines/householdRoomLocal.js";
@@ -9,7 +9,7 @@ import HouseholdSetupModal from "../ui/features/modals/HouseholdSetupModal.jsx";
 /** On family mode: rejoin server room or prompt create/join once. */
 export default function HouseholdRoomBridge() {
   const { user, isLoggedIn, isReady } = useAuth();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const [setupOpen, setSetupOpen] = useState(false);
   const syncedRef = useRef("");
 

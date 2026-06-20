@@ -28,7 +28,7 @@ describe("buildSmartPressureNotifications", () => {
     });
     const lend = items.find((n) => n.id?.includes("lending-overdue"));
     expect(lend).toBeTruthy();
-    expect(lend.href).toBe("/lending");
+    expect(lend.href).toBe("/money/lending");
     expect(lend.messageKey).toBe("notifications.lendingOverdue.messageNamed");
   });
 });

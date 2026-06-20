@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { TRANSACTION_LIFE_CATEGORIES, getTransactionLifeCategoryMeta } from "../../../constants/transactionCategories.js";
 import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
 import { classifyMerchant } from "../../../utils/merchantNormalize.js";
 import { todayYmd } from "../../../utils/dates.js";
-import { Modal, Stack, Button, Input, FormField, Caption, CtIcon } from "../../index.js";
+import { Modal, Stack, Button, Input, FormField, Caption, CtIcon, inputClassName } from "../../index.js";
+import { formatInr } from "../../../constants/symbols.js";
 import { canAddDailySpend } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
@@ -19,7 +20,7 @@ const LIFE_CATEGORY_ICON = {
 
 /** Quick-add daily spend — primary entry on Bills → Daily spend. */
 export default function LogSpendModal({ onClose }) {
-  const { addDailySpend, allDailySpends, todayStr, settings } = useCommitTrack();
+  const { addDailySpend, allDailySpends, todayStr, settings } = usePerovo();
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
@@ -71,6 +72,8 @@ export default function LogSpendModal({ onClose }) {
 
   const lifeMeta = getTransactionLifeCategoryMeta(lifeCategory);
 
+  const fieldClass = `${inputClassName()} ct-input-tint`;
+
   return (
     <Modal
       title={t("bills.actionLogSpend")}
@@ -94,6 +97,13 @@ export default function LogSpendModal({ onClose }) {
           message={t("tier.limit.spendMessage", { limit: spendGate.limit })}
         />
       )}
+      {Number(amount) > 0 ? (
+        <div className="ct-hero-card wealth mb-3">
+          <div className="ct-hero-glow teal" aria-hidden />
+          <p className="ct-hero-label relative">{t("bills.dailySpend.amount")}</p>
+          <p className="ct-hero-number ct-numeral relative">{formatInr(Number(amount) || 0)}</p>
+        </div>
+      ) : null}
       <Stack gap="md">
         <FormField label={t("bills.dailySpend.amount")}>
           <Input
@@ -101,7 +111,7 @@ export default function LogSpendModal({ onClose }) {
             min="0"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="ct-numeral"
+            className={`${fieldClass} ct-numeral`}
             autoFocus
           />
         </FormField>
@@ -110,6 +120,7 @@ export default function LogSpendModal({ onClose }) {
             value={label}
             onChange={(e) => onLabelChange(e.target.value)}
             placeholder={t("bills.dailySpend.labelPlaceholder")}
+            className={fieldClass}
           />
           {merchantPreview && label.trim() && (
             <Caption className="block mt-1.5 text-[var(--ct-accent-muted)]">
@@ -144,11 +155,11 @@ export default function LogSpendModal({ onClose }) {
           <Caption className="block mt-1.5">{t("bills.dailySpend.selectedCategory", { category: lifeMeta.label })}</Caption>
         </FormField>
         <FormField label={t("bills.dailySpend.date")}>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={fieldClass} />
         </FormField>
         <FormField label={t("bills.dailySpend.smsOptional")}>
           <textarea
-            className="ct-input w-full min-h-[72px]"
+            className={`${fieldClass} w-full min-h-[72px]`}
             value={sms}
             onChange={(e) => setSms(e.target.value)}
             placeholder={t("bills.dailySpend.smsPlaceholder")}

@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
+Last reviewed: 15 June 2026 (Perovo rebrand, six-task batch, 386 tests / 90 engines).
 
 ## V1 product scope
 
@@ -34,10 +34,11 @@ Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
 | Modal portal (all sheets) | ✅ | `Modal.jsx` — portals to `document.body`; Control center fits viewport |
 | Single vs family income fields | ✅ | `ProfilePersonalSection.jsx` — second income (family) / side income (single) |
 | Combined income scope | ✅ | `combinedIncome.js` — secondary income only in family household |
-| Dependents persist on mode switch | ✅ | `useCommitTrackCrud.js` — no reset when toggling household scope |
+| Dependents persist on mode switch | ✅ | `usePerovoCrud.js` — no reset when toggling household scope |
 | Paycheck page `/paycheck` | ✅ | `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` |
 | Salary-day bridge | ✅ | `SalaryDayBridge.jsx` — auto-navigate + goal auto-save on credit day |
 | Bill health (per-bill + portfolio) | ✅ | `engines/billHealth.js`, `BillCard.jsx`, portfolio score on `CommitmentsBillsTab.jsx` |
+| Bill OCR scan (photo → commitment) | ✅ | `BillScannerTool.jsx`, `billOcr.js` — **+ FAB menu** (`Navbar.jsx`), not dashboard tools grid |
 | Goals ↔ SIP advisory + linking | ✅ | `sipAdvisor.js`, `GoalsToolPanel.jsx`; SIP payment → `savedAmount` via `goalId` on bill |
 | Goal salary-day auto-save | ✅ | `goalAutoSave.js`, checkbox in `GoalsToolPanel.jsx`, `settings.goalAutoSaveRules` |
 | Lending recovery UI | ✅ | `LendingOverduePanel.jsx` on `/lending` — overdue installments, mark paid, share notice |
@@ -67,6 +68,12 @@ Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
 | Razorpay checkout (client) | ✅ Wired | `services/razorpaySubscription.js`, `PlansModal.jsx` |
 | Server payment verify | ✅ Edge Function | `supabase/functions/razorpay-checkout` — deploy + secrets |
 | Promissory note engine (India) | ✅ | `engines/lendingAgreement.js` |
+| Agreement PDF (pdfmake) + eStamp guidance | ✅ | `utils/agreementPdf.js`, `LendingDetailDashboard.jsx` |
+| KYC — PAN verify + IFSC bank lookup | ✅ | `kycVerification.js`, `LegalDetailsModal.jsx` (DigiLocker placeholder) |
+| Market data — AMFI NAV, gold rate, IFSC | ✅ | `services/market/*`, `PerovoContext.jsx` daily refresh |
+| Perovo rebrand + storage migration | ✅ | `PerovoContext`, `usePerovo`, `perovo_*` keys, `migrateLegacyStorageKeys()` |
+| Dev panel (`/dev`, dev builds only) | ✅ | `DevPanel.jsx`, `devOverride.js`, floating 🔧 — state overrides + integration status |
+| Claude financial translation pipeline | ✅ | `financialGlossary.js`, `i18n-auto-translate.mjs`, `i18n:fix` |
 
 ### Settings fields (profile)
 
@@ -80,9 +87,8 @@ Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
 
 | Phase | Description |
 |-------|-------------|
-| Full i18n on all screens | ~1,400+ locale slots still English fallback; run `npm run i18n:translate:all` before release |
+| Full i18n on all screens | ~1,400+ locale slots still English fallback; run `npm run i18n:translate` + `i18n:fix` with `ANTHROPIC_API_KEY` before release |
 | OS launcher home | Status bar + module tile grid instead of scroll dashboard |
-| Legal details modal | `LegalDetailsModal` + lender/borrower confirmation screens |
 | Account Aggregator bank sync | Competitive gap — manual import only today |
 | Live CIBIL / MF CAS import | Not started |
 
@@ -93,6 +99,9 @@ Last reviewed: 15 June 2026 (household UX polish, 386 tests / 90 engines).
 | `VITE_SUPABASE_URL` | For cloud auth | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | For cloud auth | Supabase anon key |
 | `VITE_RAZORPAY_KEY_ID` | For paid upgrades | Razorpay checkout |
+| `VITE_SUREPASS_TOKEN` | Optional | PAN + bank KYC verification |
+| `VITE_GOLD_API_KEY` | Optional | Auto gold rate (100 calls/mo free tier) |
+| `VITE_LEEGALITY_*` | Optional | Aadhaar eSign via Leegality |
 
 Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
 

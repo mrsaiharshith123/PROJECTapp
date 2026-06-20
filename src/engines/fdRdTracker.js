@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 /**
  * Fixed deposit (FD) and recurring deposit (RD) maturity projections.
  * @param {{ principal: number, annualRate: number, tenureMonths: number, isRd?: boolean, monthlyDeposit?: number }} params
@@ -18,19 +19,25 @@ export function computeFdRdProjection({
   let totalInvested;
 
   if (isRd && rd > 0) {
-    const r = rate / 12;
-    totalInvested = rd * months;
-    if (r > 0) {
-      maturityAmount = rd * (((1 + r) ** months - 1) / r) * (1 + r);
+    const r = new Decimal(rate).div(12);
+    totalInvested = new Decimal(rd).times(months).toNumber();
+    if (r.gt(0)) {
+      const onePlusR = r.plus(1);
+      maturityAmount = new Decimal(rd)
+        .times(onePlusR.pow(months).minus(1).div(r))
+        .times(onePlusR)
+        .toNumber();
     } else {
       maturityAmount = totalInvested;
     }
   } else {
     totalInvested = p;
-    maturityAmount = p * (1 + rate * (months / 12));
+    maturityAmount = new Decimal(p)
+      .times(new Decimal(1).plus(new Decimal(rate).times(months).div(12)))
+      .toNumber();
   }
 
-  const interestEarned = Math.max(0, (maturityAmount ?? 0) - (totalInvested ?? 0));
+  const interestEarned = Math.max(0, new Decimal(maturityAmount ?? 0).minus(totalInvested ?? 0).toNumber());
   const narrativeLines = [];
   if (isRd) {
     narrativeLines.push(`RD of ₹${Math.round(rd).toLocaleString("en-IN")}/month for ${months} months.`);

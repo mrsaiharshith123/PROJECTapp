@@ -12,7 +12,7 @@ globs:
 
 1. Run `npm run audit -- --strict`
 2. If you remove a feature, delete its engine, tests, i18n keys (`en.js` first), and tier flags — then `npm run sync:i18n`
-3. Dashboard tools: each id in `modeExperience.js` needs exactly one handler in `DashboardTools.jsx`. Do not duplicate standalone tools inside grouped hubs.
+3. Dashboard tools: each id in `MODE_TOOL_IDS` / `TOOL_ORDER` needs exactly one handler in `DashboardTools.jsx`. Bill scan is **not** a dashboard tool — wire it via `Navbar.jsx` FAB only.
 
 ## Dead code
 
@@ -31,11 +31,17 @@ globs:
 
 ## Tool layout (Home)
 
-10 tools: planner, advisor, loan, insurance, chit, bond, incomeTax, retirement, safety, **invest**.
+**12 dashboard tools** (`MODE_TOOL_IDS` in `modeExperience.js`): planner, advisor, incomeTax, retirement, loan, goals, invest, chit, insurance, bond, accountConnect, payBills.
 
+- Each id needs exactly one handler in `DashboardTools.jsx`. Do not duplicate standalone tools inside grouped hubs.
+- **Bill OCR scan** lives on the **+ FAB menu** (`Navbar.jsx` → `BillScannerTool`), not in the dashboard grid.
 - **Retirement** subtitle: EPF · PPF · NPS · gratuity (no FD/RD)
 - **Invest & save**: SIP · FD · RD (voluntary savings moved from wrong parents)
-- **Safety**: emergency fund only (no SIP)
+- **Safety**: emergency fund only (Profile — not a dashboard tile)
+
+## FAB quick actions (`Navbar.jsx`)
+
+Tap **+**: add commitment, scan bill, log daily spend, record lending. Long-press **+** opens log-spend modal directly.
 
 ## i18n
 

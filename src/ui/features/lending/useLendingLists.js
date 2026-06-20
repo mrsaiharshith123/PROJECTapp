@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Fuse from "fuse.js";
 import { lendingTrustByPerson, trustScoreForLendingEntry } from "../../../engines/lendingTrust.js";
 
 function sortLendings(list) {
@@ -10,9 +11,26 @@ function sortLendings(list) {
   });
 }
 
-export function useLendingLists(lendings) {
-  const borrowedList = useMemo(() => sortLendings(lendings.filter((l) => l.type === "borrowed")), [lendings]);
-  const lentList = useMemo(() => sortLendings(lendings.filter((l) => l.type === "lent")), [lendings]);
+function filterBySearch(list, searchQuery) {
+  const q = String(searchQuery || "").trim();
+  if (!q) return list;
+  const fuse = new Fuse(list, {
+    keys: ["personName", "notes", "relationshipTag"],
+    threshold: 0.4,
+    minMatchCharLength: 2,
+  });
+  return fuse.search(q).map((r) => r.item);
+}
+
+export function useLendingLists(lendings, searchQuery = "") {
+  const borrowedList = useMemo(
+    () => sortLendings(filterBySearch(lendings.filter((l) => l.type === "borrowed"), searchQuery)),
+    [lendings, searchQuery],
+  );
+  const lentList = useMemo(
+    () => sortLendings(filterBySearch(lendings.filter((l) => l.type === "lent"), searchQuery)),
+    [lendings, searchQuery],
+  );
   const trustRows = useMemo(() => lendingTrustByPerson(lendings), [lendings]);
 
   const totals = useMemo(() => {

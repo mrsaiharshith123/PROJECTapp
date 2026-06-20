@@ -11,6 +11,7 @@ import { useTranslation } from "../../i18n/I18nProvider.js";
 import { translateBillStatus, translateRepeatType } from "../../i18n/domainLabels.js";
 import { formatLocaleDate } from "../../i18n/formatLocale.js";
 import { cn } from "../utils/cn.js";
+import { BbpsPayButton } from "./BbpsPayButton.jsx";
 
 const LOAN_CATEGORIES = new Set(["EMI", "Loan", "Credit Card", "BNPL"]);
 
@@ -207,6 +208,7 @@ export function BillCard({
             {t("common.pay")} {"\u20b9"}
             {cycleDue.toLocaleString("en-IN")}
           </Button>
+          <BbpsPayButton commitment={item} cycleDue={cycleDue} />
           <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
             {t("common.edit")}
           </Button>

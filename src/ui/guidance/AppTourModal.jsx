@@ -26,16 +26,16 @@ function AppTourSteps({ settings, onComplete, onDismiss }) {
       footer={
         <div className="ct-row-between ct-gap-sm">
           <Caption>
-            Step {index + 1} of {steps.length}
+            {t("tour.stepOf", { current: index + 1, total: steps.length })}
           </Caption>
           <div className="ct-row ct-gap-sm">
             {!last && (
               <Button type="button" variant="ghost" size="sm" onClick={finish}>
-                Skip guide
+                {t("tour.skip")}
               </Button>
             )}
             <Button type="button" variant="primary" size="sm" onClick={next}>
-              {last ? "Close" : "Next"}
+              {last ? t("tour.close") : t("tour.next")}
             </Button>
           </div>
         </div>

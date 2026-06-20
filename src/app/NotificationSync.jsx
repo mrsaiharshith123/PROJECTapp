@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useCommitIntel } from "../hooks/useCommitIntel.js";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import { translateNotification } from "../i18n/notificationLabels.js";
 import {
@@ -17,17 +17,23 @@ import {
   registerPeriodicReminderSync,
   requestServiceWorkerReminderFlush,
 } from "../services/notifications/backgroundNotificationSync.js";
+import { listenForForegroundMessages } from "../services/notifications/fcmService.js";
 
 const URGENT_INTERVAL_MS = 15 * 60 * 1000;
 
 /** Pushes reminders to the OS notification panel (tray) and in-app bell. */
 export default function NotificationSync() {
   const { t } = useTranslation();
-  const { todayStr, settings } = useCommitTrack();
+  const { todayStr, settings } = usePerovo();
   const { notifications } = useCommitIntel();
   const digestRan = useRef(false);
   const periodicRegistered = useRef(false);
   const lastSnapshotKey = useRef("");
+
+  useEffect(() => {
+    const unsub = listenForForegroundMessages(() => {});
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (settings.remindersEnabled === false) return;

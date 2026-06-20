@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.js";
@@ -37,7 +37,7 @@ export default function HomeOverviewCard() {
     getEffectiveLendingStatus,
     todayStr,
     monthlySnapshots,
-  } = useCommitTrack();
+  } = usePerovo();
   const intel = useCommitIntel();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const experienceMode = getExperienceMode(settings);
@@ -190,7 +190,7 @@ export default function HomeOverviewCard() {
         statusLine={statusLine}
         privacyMode={privacyMode}
         onTogglePrivacy={togglePrivacyMode}
-        onClick={() => navigate("/analytics")}
+        onClick={() => navigate("/money/insights")}
       />
       {isFamily ? (
         <HouseholdDependentsEditorModal open={editHouseholdOpen} onClose={() => setEditHouseholdOpen(false)} />

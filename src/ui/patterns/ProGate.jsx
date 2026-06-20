@@ -1,15 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { Card, Button, Body, Caption } from "../index.js";
-import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../context/PerovoContext.jsx";
 import { isFeatureUnlocked, POWER_FEATURES } from "../../constants/subscriptionTiers.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
+import { getEffectiveDevTier, isForceShowAll, IS_DEV } from "../../utils/devOverride.js";
 
 /**
  * @param {{ featureId: string, children: import('react').ReactNode, fallback?: import('react').ReactNode }} props
  */
 export function ProGate({ featureId, children, fallback = null }) {
-  const { settings } = useCommitTrack();
-  const tier = settings.subscriptionTier || "free";
+  const { settings } = usePerovo();
+  if (IS_DEV && isForceShowAll()) return children;
+  const tier = getEffectiveDevTier(settings.subscriptionTier);
   if (isFeatureUnlocked(featureId, tier)) return children;
   if (fallback) return fallback;
   return <ProUpgradeNudge featureId={featureId} />;

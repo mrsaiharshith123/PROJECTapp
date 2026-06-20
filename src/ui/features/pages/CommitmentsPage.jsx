@@ -14,7 +14,7 @@ import CommitmentsPaymentModal from "../../features/commitments/CommitmentsPayme
 import { useCommitmentsBillData } from "../../features/commitments/useCommitmentsBillData.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
 import {
   isCurrentCyclePaid,
@@ -22,6 +22,9 @@ import {
 } from "../../../utils/commitmentPayments.js";
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
+import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
+import { exportCommitmentsToExcel } from "../../../utils/excelExport.js";
+import { Button } from "../../primitives/Button.jsx";
 
 const Commitments = () => {
   const navigate = useNavigate();
@@ -40,7 +43,7 @@ const Commitments = () => {
     dailySpends,
     todayStr,
     settings,
-  } = useCommitTrack();
+  } = usePerovo();
 
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState(() =>
@@ -62,6 +65,7 @@ const Commitments = () => {
   const [pageTab, setPageTab] = useState(() =>
     searchParams.get("tab") === "spend" ? "spend" : "bills",
   );
+  const [celebration, setCelebration] = useState(null);
 
   const openBankImport = () => {
     if (!tierHasFeature("bank_import", settings)) {
@@ -114,6 +118,18 @@ const Commitments = () => {
     const amt = suggestedCyclePaymentAmount(paymentFor, todayStr, sortedCommitments);
     if (amt <= 0) return;
     addCommitmentPayment(paymentFor.id, { amount: amt, date: payDate });
+    const completedEmi = paymentFor.category === "EMI" || paymentFor.category === "Loan";
+    const isLastPayment =
+      paymentFor.repeatType === "none" ||
+      (paymentFor.repaymentSchedule || []).every((r) => r.paymentStatus === "paid");
+    if (completedEmi && isLastPayment) {
+      setCelebration({
+        type: "confetti",
+        message: t("celebration.loanPaidOff", { name: paymentFor.name }),
+      });
+    } else {
+      setCelebration({ type: "checkmark", message: t("celebration.paymentRecorded") });
+    }
     setPaymentFor(null);
   };
 
@@ -152,6 +168,9 @@ const Commitments = () => {
         </>
       ) : (
         <>
+          <Button type="button" variant="ghost" size="sm" onClick={() => exportCommitmentsToExcel(commitments)}>
+            {t("export.excel.commitments")}
+          </Button>
           <button
             type="button"
             className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
@@ -259,6 +278,15 @@ const Commitments = () => {
           commitment={editing}
           onClose={() => setEditing(null)}
           onSave={(id, patch) => updateCommitment(id, patch)}
+        />
+      )}
+
+      {celebration && (
+        <CelebrationOverlay
+          type={celebration.type}
+          show
+          message={celebration.message}
+          onComplete={() => setCelebration(null)}
         />
       )}
     </PageShell>

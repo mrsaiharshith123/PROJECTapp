@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { Card, Caption, Heading } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Caption, Heading } from "../../index.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { buildCashflowCalendar } from "../../../engines/cashflowCalendar.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { cashflowDaysForTier } from "../../../utils/tierAccess.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const PRESSURE_CLASS = {
   salary: "ct-cashflow-day ct-cashflow-salary",
@@ -17,7 +18,7 @@ const PRESSURE_CLASS = {
 
 export default function CashflowCalendarStrip() {
   const { t } = useTranslation();
-  const { commitments, settings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { commitments, settings, getEffectiveStatus, todayStr } = usePerovo();
   const [selected, setSelected] = useState(null);
   const daysAhead = cashflowDaysForTier(settings);
 
@@ -37,9 +38,17 @@ export default function CashflowCalendarStrip() {
   const active = selected ? cal.days.find((d) => d.date === selected) : null;
 
   return (
-    <Card className="ct-stack">
-      <Heading level={3}>{t("tier.cashflow.title", { days: daysAhead })}</Heading>
-      <Caption className="block">{t("tier.cashflow.subtitle")}</Caption>
+    <section className="ct-stack">
+      <div className="ct-row gap-3 items-start">
+        <span className="ct-icon-tile teal" aria-hidden>
+          <CtIcon name="calendar" size={22} />
+        </span>
+        <div>
+          <Heading level={3}>{t("tier.cashflow.title", { days: daysAhead })}</Heading>
+          <Caption className="block">{t("tier.cashflow.subtitle")}</Caption>
+        </div>
+      </div>
+
       <div className="ct-cashflow-strip" role="list">
         {cal.days.map((d) => (
           <button
@@ -51,20 +60,25 @@ export default function CashflowCalendarStrip() {
             onClick={() => setSelected(selected === d.date ? null : d.date)}
           >
             <span className="ct-cashflow-day-label">{d.label}</span>
-            {d.amount > 0 && <span className="ct-cashflow-day-amt">{formatInr(d.amount)}</span>}
+            {d.amount > 0 ? <span className="ct-cashflow-day-amt ct-numeral">{formatInr(d.amount)}</span> : null}
           </button>
         ))}
       </div>
-      {active && active.items.length > 0 && (
-        <div className="ct-inset ct-stack-sm">
-          <Caption className="font-semibold">{active.label}</Caption>
-          {active.items.map((it) => (
-            <Caption key={`${active.date}-${it.name}`} className="block">
-              {it.name} — {formatInr(it.amount)}
-            </Caption>
-          ))}
+
+      {active && active.items.length > 0 ? (
+        <div className="ct-hero-card pressure ct-stack-sm">
+          <div className="ct-hero-glow teal" aria-hidden />
+          <p className="ct-hero-label relative">{active.label}</p>
+          <p className="ct-hero-number ct-numeral relative">{formatInr(active.amount)}</p>
+          <div className="relative ct-stack-sm">
+            {active.items.map((it) => (
+              <Caption key={`${active.date}-${it.name}`} className="block">
+                {it.name} — <span className="ct-numeral">{formatInr(it.amount)}</span>
+              </Caption>
+            ))}
+          </div>
         </div>
-      )}
-    </Card>
+      ) : null}
+    </section>
   );
 }

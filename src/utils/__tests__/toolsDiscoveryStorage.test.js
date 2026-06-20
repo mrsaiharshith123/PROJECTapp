@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { dismissToolsNudge, isToolsNudgeDismissed } from "../toolsDiscoveryStorage.js";
 
-const STORAGE_KEY = "committrack_tools_nudge_dismissed";
-const SESSION_KEY = "committrack_tools_nudge_session";
+const STORAGE_KEY = "perovo_tools_nudge_dismissed";
+const SESSION_KEY = "perovo_tools_nudge_session";
 
 function mockStorage() {
   const store = new Map();

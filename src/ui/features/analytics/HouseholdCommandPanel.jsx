@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";
 import { useFamilyCommandIntel } from "../../../hooks/useFamilyCommandIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { fetchUserHouseholdRoom } from "../../../services/household/householdRoomService.js";
 import { getLocalHouseholdRoomById } from "../../../engines/householdRoomLocal.js";
 import { householdMemberLimit } from "../../../engines/householdRoom.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, Heading, Caption, Body, Badge, Button, InfoTip, GuideButton } from "../../index.js";
+import { Heading, Caption, Body, Badge, Button, InfoTip } from "../../index.js";
 import { insightToneClass } from "../../tokens/severity.js";
 import HouseholdSetupModal from "../modals/HouseholdSetupModal.jsx";
 import HouseholdDependentsEditorModal from "../modals/HouseholdDependentsEditorModal.jsx";
@@ -25,17 +25,41 @@ const TIER_KEYS = {
   fragile: "family.command.tierFragile",
 };
 
+function localRoomMatchesSettings(settings, local) {
+  const memberLimit = local.memberLimit || settings.householdMemberLimit;
+  return (
+    JSON.stringify(settings.householdRoomMembers || []) === JSON.stringify(local.members || []) &&
+    settings.householdInviteCode === local.inviteCode &&
+    settings.householdMemberLimit === memberLimit
+  );
+}
+
+function remoteRoomMatchesSettings(settings, remote) {
+  const memberLimit = remote.memberLimit || settings.householdMemberLimit;
+  return (
+    String(settings.householdRoomId || "") === String(remote.roomId || "") &&
+    settings.householdInviteCode === remote.inviteCode &&
+    settings.householdRoomName === remote.roomName &&
+    settings.householdRoomRole === remote.role &&
+    JSON.stringify(settings.householdRoomMembers || []) === JSON.stringify(remote.members || []) &&
+    settings.householdMemberLimit === memberLimit &&
+    settings.householdShareSpends === remote.shareSpends &&
+    settings.householdShareBillDetail === remote.shareBillDetail
+  );
+}
+
 /** Unified household hub + command center — room, members, stability, outlook. */
 export default function HouseholdCommandPanel() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const cmd = useFamilyCommandIntel();
   const stable = useStabilityIntel();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { user, isLoggedIn } = useAuth();
   const [setupOpen, setSetupOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const syncedRef = useRef("");
 
   const isFamily = isSalariedFamily(settings);
   const roomId = settings.householdRoomId || "";
@@ -45,35 +69,46 @@ export default function HouseholdCommandPanel() {
   const roomLabel = settings.householdRoomName || t("household.room.defaultName");
 
   useEffect(() => {
-    if (!isFamily || !roomId) return;
+    if (!isFamily || !roomId) {
+      syncedRef.current = "";
+      return;
+    }
+
+    const syncKey = `${roomId}:${isLoggedIn ? user?.id || "" : "guest"}`;
     if (settings.householdRoomLocal || String(roomId).startsWith("local-")) {
       const local = getLocalHouseholdRoomById(roomId);
-      if (local?.members) {
+      if (local?.members && !localRoomMatchesSettings(settings, local)) {
         updateSettings({
           householdRoomMembers: local.members,
           householdInviteCode: local.inviteCode,
           householdMemberLimit: local.memberLimit || settings.householdMemberLimit,
         });
       }
+      syncedRef.current = syncKey;
       return;
     }
     if (!isLoggedIn || !user?.id) return;
+    if (syncedRef.current === syncKey) return;
+
     let cancelled = false;
     (async () => {
       setSyncing(true);
       try {
         const remote = await fetchUserHouseholdRoom(user.id);
         if (cancelled || !remote) return;
-        updateSettings({
-          householdRoomId: remote.roomId,
-          householdInviteCode: remote.inviteCode,
-          householdRoomName: remote.roomName,
-          householdRoomRole: remote.role,
-          householdRoomMembers: remote.members,
-          householdMemberLimit: remote.memberLimit || settings.householdMemberLimit,
-          householdShareSpends: remote.shareSpends,
-          householdShareBillDetail: remote.shareBillDetail,
-        });
+        if (!remoteRoomMatchesSettings(settings, remote)) {
+          updateSettings({
+            householdRoomId: remote.roomId,
+            householdInviteCode: remote.inviteCode,
+            householdRoomName: remote.roomName,
+            householdRoomRole: remote.role,
+            householdRoomMembers: remote.members,
+            householdMemberLimit: remote.memberLimit || settings.householdMemberLimit,
+            householdShareSpends: remote.shareSpends,
+            householdShareBillDetail: remote.shareBillDetail,
+          });
+        }
+        syncedRef.current = syncKey;
       } finally {
         if (!cancelled) setSyncing(false);
       }
@@ -99,7 +134,9 @@ export default function HouseholdCommandPanel() {
 
   return (
     <>
-      <Card variant="glow" className="ct-family-command ct-household-hub ct-stack">
+      <div className="ct-hero-card survival ct-family-command ct-household-hub ct-stack relative">
+        <div className="ct-hero-glow teal" aria-hidden />
+        <div className="relative ct-stack">
         <div className="ct-row-between gap-2 flex-wrap items-start">
           <div className="ct-row gap-2 items-start flex-wrap min-w-0">
             <div className="min-w-0">
@@ -126,7 +163,7 @@ export default function HouseholdCommandPanel() {
         </div>
 
         {!roomId ? (
-          <div className="ct-hero-inset ct-stack-sm">
+          <div className="ct-stat-tile indigo ct-stack-sm">
             <Caption className="block">{t("household.hub.notLinked")}</Caption>
             <div className="ct-row gap-2 flex-wrap">
               <Button type="button" variant="primary" size="sm" className="!w-auto" onClick={() => setSetupOpen(true)}>
@@ -144,44 +181,36 @@ export default function HouseholdCommandPanel() {
         )}
 
         <div className="ct-grid-2 gap-2">
-          <div className="ct-hero-inset ct-hero-inset-financial" data-guide="free-cash">
-            <Caption className="block">{t("family.command.householdFree")}</Caption>
-            <Body
-              className={`ct-amount-lg ct-numeral ${household.combinedFreeCash < 0 ? "ct-text-danger" : "ct-text-success"}`}
-            >
-              {formatInr(countedFreeCash)}
-            </Body>
+          <div className={`ct-stat-tile ${household.combinedFreeCash < 0 ? "danger" : "teal"}`} data-guide="free-cash">
+            <p className="ct-stat-label">{t("family.command.householdFree")}</p>
+            <p className="ct-stat-value ct-numeral">{formatInr(countedFreeCash)}</p>
           </div>
-          <div className="ct-hero-inset ct-hero-inset-financial" data-guide="survival-months">
-            <Caption className="block">{t("home.strip.familyRunway")}</Caption>
-            <Body className="ct-amount-lg ct-numeral">
-              {runwayMonths != null ? `${runwayMonths}m` : "—"}
-            </Body>
+          <div className="ct-stat-tile indigo" data-guide="survival-months">
+            <p className="ct-stat-label">{t("home.strip.familyRunway")}</p>
+            <p className="ct-stat-value ct-numeral">{runwayMonths != null ? `${runwayMonths}m` : "—"}</p>
           </div>
         </div>
 
         <div className="ct-grid-2 gap-2">
-          <div className="ct-hero-inset ct-hero-inset-financial">
-            <Caption className="block">{t("family.command.obligations")}</Caption>
-            <Body className="ct-numeral font-semibold">{formatInr(countedBurden)}</Body>
+          <div className="ct-stat-tile danger">
+            <p className="ct-stat-label">{t("family.command.obligations")}</p>
+            <p className="ct-stat-value ct-numeral">{formatInr(countedBurden)}</p>
           </div>
-          <div className="ct-hero-inset ct-hero-inset-financial">
-            <Caption className="block">{t("family.command.dependents")}</Caption>
-            <Body className="ct-numeral font-semibold">{dependentCount}</Body>
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-label">{t("family.command.dependents")}</p>
+            <p className="ct-stat-value ct-numeral">{dependentCount}</p>
           </div>
-          <div className="ct-hero-inset ct-hero-inset-financial">
-            <Caption className="block">{t("family.command.emergency")}</Caption>
-            <Body className="ct-numeral font-semibold">
-              {emergencyPct != null ? `${emergencyPct}%` : "—"}
-            </Body>
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-label">{t("family.command.emergency")}</p>
+            <p className="ct-stat-value ct-numeral">{emergencyPct != null ? `${emergencyPct}%` : "—"}</p>
           </div>
           {dependency.incomeConcentrationPct != null ? (
-            <div className="ct-hero-inset ct-hero-inset-financial">
-              <Caption className="block">
+            <div className="ct-stat-tile indigo">
+              <p className="ct-stat-label">
                 {t("family.command.incomeShare")}
                 <InfoTip textKey="family.command.incomeShareHint" />
-              </Caption>
-              <Body className="ct-numeral font-semibold">{dependency.incomeConcentrationPct}%</Body>
+              </p>
+              <p className="ct-stat-value ct-numeral">{dependency.incomeConcentrationPct}%</p>
             </div>
           ) : null}
         </div>
@@ -193,36 +222,16 @@ export default function HouseholdCommandPanel() {
                 {t("household.commandHub.roomSection")}
                 <InfoTip textKey="household.hub.privacyNote" />
               </Heading>
-              <GuideButton
-                labelKey="guide.household.roomsLabel"
-                steps={[
-                  {
-                    selector: "[data-guide='room-invite-code']",
-                    titleKey: "guide.household.inviteTitle",
-                    textKey: "guide.household.inviteText",
-                  },
-                  {
-                    selector: "[data-guide='room-share-toggle']",
-                    titleKey: "guide.household.shareTitle",
-                    textKey: "guide.household.shareText",
-                  },
-                  {
-                    selector: "[data-guide='household-outlook']",
-                    titleKey: "guide.household.outlookTitle",
-                    textKey: "guide.household.outlookText",
-                  },
-                ]}
-              />
               {syncing ? <Caption>{t("common.loading")}</Caption> : null}
             </div>
 
             {isOwner && settings.householdInviteCode ? (
-              <div className="ct-hero-inset ct-stack-sm" data-guide="room-invite-code">
-                <Caption className="block">
+              <div className="ct-stat-tile indigo ct-stack-sm" data-guide="room-invite-code">
+                <p className="ct-stat-label">
                   {t("household.hub.inviteCode")}
                   <InfoTip textKey="household.hub.inviteHint" />
-                </Caption>
-                <Body className="ct-numeral font-bold tracking-widest">{settings.householdInviteCode}</Body>
+                </p>
+                <p className="ct-stat-value ct-numeral tracking-widest">{settings.householdInviteCode}</p>
               </div>
             ) : null}
 
@@ -275,7 +284,7 @@ export default function HouseholdCommandPanel() {
               <div className="ct-stack-sm">
                 <Caption className="block font-semibold opacity-90">{t("family.command.riskyMonths")}</Caption>
                 {forecast.heavyMonths.slice(0, 2).map((m) => (
-                  <Caption key={m.monthKey} className="block">
+                  <Caption key={m.monthKey} className="block ct-numeral">
                     {m.label} · {formatInr(Math.round(m.amount))}
                   </Caption>
                 ))}
@@ -307,7 +316,8 @@ export default function HouseholdCommandPanel() {
             )}
           </div>
         )}
-      </Card>
+        </div>
+      </div>
 
       <HouseholdSetupModal open={setupOpen} onClose={() => setSetupOpen(false)} />
       <HouseholdDependentsEditorModal open={editOpen} onClose={() => setEditOpen(false)} />

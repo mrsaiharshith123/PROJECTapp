@@ -1,19 +1,25 @@
 import { useRef, useState } from "react";
-import { Modal } from "../../../ui";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Modal, Button, inputClassName } from "../../../ui";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import LendingDetailDashboard from "../lending/LendingDetailDashboard.jsx";
 import { todayYmd } from "../../../utils/dates.js";
+
+const RELATIONSHIP_TAGS = ["friend", "family", "business", "other"];
+const DISPUTE_STATUSES = ["none", "open", "resolved"];
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 const MAX_PROOF_BYTES = 400_000;
 
 export default function LendingDetailModal({ lending, onClose }) {
-  const { updateLending, addLendingPayment } = useCommitTrack();
+  const { t } = useTranslation();
+  const { updateLending, addLendingPayment } = usePerovo();
   const fileRef = useRef(null);
   const [agreementDraft, setAgreementDraft] = useState(lending.agreementText || "");
 
   const addProof = (file) => {
     if (!file || file.size > MAX_PROOF_BYTES) {
-      alert("Image must be under 400KB for local storage.");
+      alert(t("lending.proof.sizeLimit"));
       return;
     }
     const reader = new FileReader();
@@ -55,35 +61,33 @@ export default function LendingDetailModal({ lending, onClose }) {
           fileRef={fileRef}
           onAddProof={addProof}
         />
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 ct-row gap-2">
           <select
-            className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            className={fieldClass}
             value={lending.relationshipTag || "Other"}
             onChange={(e) => updateLending(lending.id, { relationshipTag: e.target.value })}
           >
-            {["Friend", "Family", "Business", "Other"].map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {RELATIONSHIP_TAGS.map((tag) => (
+              <option key={tag} value={tag.charAt(0).toUpperCase() + tag.slice(1)}>
+                {t(`lending.relationship.${tag}`)}
               </option>
             ))}
           </select>
           <select
-            className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm"
+            className={fieldClass}
             value={lending.disputeStatus || "none"}
             onChange={(e) => updateLending(lending.id, { disputeStatus: e.target.value })}
           >
-            <option value="none">No dispute</option>
-            <option value="open">Open dispute</option>
-            <option value="resolved">Resolved</option>
+            {DISPUTE_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {t(`lending.dispute.${status}`)}
+              </option>
+            ))}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="w-full mt-3 py-2.5 text-sm font-semibold border border-gray-200 rounded-xl"
-        >
-          Close
-        </button>
+        <Button type="button" variant="outline" className="w-full mt-3" onClick={onClose}>
+          {t("common.close")}
+        </Button>
       </div>
     </Modal>
   );

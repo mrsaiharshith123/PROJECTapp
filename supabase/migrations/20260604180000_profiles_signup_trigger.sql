@@ -40,8 +40,8 @@ begin
 end;
 $$;
 
-drop trigger if exists on_auth_user_created_committrack on auth.users;
-create trigger on_auth_user_created_committrack
+drop trigger if exists on_auth_user_created_perovo on auth.users;
+create trigger on_auth_user_created_perovo
   after insert on auth.users
   for each row
   execute function public.handle_new_auth_user();

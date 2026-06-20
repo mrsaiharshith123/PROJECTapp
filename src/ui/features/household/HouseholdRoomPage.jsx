@@ -11,14 +11,15 @@ import {
   Stack,
   SectionLoader,
   InfoTip,
-  GuideButton,
   CtIcon,
+  CelebrationOverlay,
 } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { normalizeInviteCode } from "../../../engines/householdRoom.js";
+import RoomChatPanel from "./RoomChatPanel.jsx";
 import {
   createHouseholdRoom,
   joinHouseholdRoom,
@@ -58,7 +59,7 @@ function clearRoomSettings(updateSettings) {
 export default function HouseholdRoomPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { user, isLoggedIn } = useAuth();
 
   const canLoad = isLoggedIn && Boolean(user?.id);
@@ -72,6 +73,8 @@ export default function HouseholdRoomPage() {
   const [memberLimit, setMemberLimit] = useState(4);
   const [inviteCode, setInviteCode] = useState("");
   const [leaveConfirm, setLeaveConfirm] = useState(false);
+  const [joinCelebration, setJoinCelebration] = useState(false);
+  const [roomTab, setRoomTab] = useState("activity");
 
   const isFamily = isSalariedFamily(settings);
 
@@ -210,6 +213,8 @@ export default function HouseholdRoomPage() {
         members: result.members,
         local: result.local,
       });
+      setJoinCelebration(true);
+      setTimeout(() => setJoinCelebration(false), 2500);
     } finally {
       setBusy(false);
     }
@@ -257,6 +262,7 @@ export default function HouseholdRoomPage() {
   const showLoader = canLoad && !roomLoaded;
 
   return (
+    <>
     <div className="ct-page">
       <PageHeader
         title={t("household.room.pageTitle")}
@@ -323,34 +329,45 @@ export default function HouseholdRoomPage() {
         </Stack>
       ) : (
         <Stack gap="md" className="ct-list-animate">
+          <div className="ct-row gap-2" role="tablist">
+            <Button
+              type="button"
+              variant={roomTab === "activity" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => setRoomTab("activity")}
+            >
+              {t("household.room.tabActivity")}
+            </Button>
+            <Button
+              type="button"
+              variant={roomTab === "chat" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => setRoomTab("chat")}
+            >
+              {t("household.room.tabChat")}
+            </Button>
+          </div>
+
+          {roomTab === "chat" ? (
+            <Card>
+              <RoomChatPanel />
+            </Card>
+          ) : (
+            <>
           <Card className="ct-household-room-active">
             <div className="ct-row-between gap-2 flex-wrap items-start">
               <Heading level={3} className="!text-lg">
                 {room.roomName || t("household.room.defaultName")}
               </Heading>
-              <GuideButton
-                labelKey="guide.household.roomsLabel"
-                steps={[
-                  {
-                    selector: "[data-guide='room-invite-code']",
-                    titleKey: "guide.household.inviteTitle",
-                    textKey: "guide.household.inviteText",
-                  },
-                  {
-                    selector: "[data-guide='room-members']",
-                    titleKey: "household.hub.members",
-                    textKey: "household.hub.privacyNote",
-                  },
-                ]}
-              />
             </div>
             <Caption className="block mt-1">
               {t("household.room.memberCount", { count: members.length, limit })}
             </Caption>
 
             {isOwner && room.inviteCode ? (
-              <div className="mt-4" data-guide="room-invite-code">
-                <Caption className="block mb-2 font-semibold">
+              <div className="mt-4 ct-hero-card lending ct-household-invite-hero" data-guide="room-invite-code">
+                <div className="ct-hero-glow" aria-hidden />
+                <Caption className="block mb-2 font-semibold relative">
                   {t("household.room.shareCodeBanner")}
                   <InfoTip textKey="household.hub.inviteHint" />
                 </Caption>
@@ -367,7 +384,7 @@ export default function HouseholdRoomPage() {
                 </Caption>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="primary"
                   className="mt-3 w-full"
                   onClick={() => handleWhatsAppShare(room.inviteCode)}
                 >
@@ -419,8 +436,19 @@ export default function HouseholdRoomPage() {
               </Card>
             )}
           </div>
+            </>
+          )}
         </Stack>
       )}
     </div>
+    {joinCelebration ? (
+      <CelebrationOverlay
+        type="coins"
+        show
+        message={t("celebration.householdJoined")}
+        onComplete={() => setJoinCelebration(false)}
+      />
+    ) : null}
+    </>
   );
 }

@@ -6,17 +6,21 @@ import {
 } from "../../../engines/incomeTaxEstimate.js";
 import { computeAdvanceTaxSchedule, advanceTaxCommitmentDrafts } from "../../../engines/advanceTax.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatInr, INR } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body, Heading } from "../../primitives/Text.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { ProGate } from "../../patterns/ProGate.jsx";
+import { Button } from "../../primitives/Button.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
+import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 
 function HraCalculatorTab() {
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const profileIncome = combinedMonthlyIncome(settings);
   const defaultAnnual = profileIncome > 0 ? Math.round(profileIncome * 12) : "";
 
@@ -77,7 +81,8 @@ function HraCalculatorTab() {
 export default function IncomeTaxPanel() {
   const { t } = useTranslation();
   const [panelTab, setPanelTab] = useState("tax");
-  const { settings, commitments, getEffectiveStatus, addCommitment, todayStr } = useCommitTrack();
+  const { settings, commitments, getEffectiveStatus, addCommitment, todayStr, lendings } = usePerovo();
+  const intel = useCommitIntel();
   const profileIncome = combinedMonthlyIncome(settings);
   const defaultAnnual = profileIncome > 0 ? Math.round(profileIncome * 12) : "";
 
@@ -146,7 +151,31 @@ export default function IncomeTaxPanel() {
         <>
       <div className="ct-row-between flex-wrap gap-2">
         <Badge tone="info">{t("tax.badge")}</Badge>
-        {profileIncome > 0 && <Caption>{t("tax.profileSalaryHint")}</Caption>}
+        <div className="ct-row gap-2 items-center flex-wrap">
+          {profileIncome > 0 && <Caption>{t("tax.profileSalaryHint")}</Caption>}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              exportAnnualReportToExcel({
+                commitments,
+                lendings,
+                snapshots: [
+                  {
+                    month: todayStr.slice(0, 7),
+                    pressureScore: intel.stability?.score,
+                    monthlyBurden: intel.stability?.monthlyBurden,
+                    freeMoney: intel.stability?.freeMoney,
+                    overdueCount: commitments.filter((c) => getEffectiveStatus(c) === "overdue").length,
+                  },
+                ],
+              })
+            }
+          >
+            {t("export.excel.annual")}
+          </Button>
+        </div>
       </div>
 
       <SegmentedControl
@@ -215,13 +244,12 @@ export default function IncomeTaxPanel() {
       )}
 
       {annualGross > 0 && (
-        <div className="ct-insight-accent ct-stack-sm">
-          <Heading level={3} className="!text-base">
-            {t("tax.aboutTaxYear", { amount: formatInr(result.totalTax) })}
-          </Heading>
-          <Body className="!text-sm">
-            {t("tax.takeHomeMonthly", { amount: formatInr(result.takeHomeMonthly) })}
-          </Body>
+        <ToolAnswerHero
+          tone="sim"
+          label={t("tax.estimatedTax")}
+          value={formatInr(result.totalTax)}
+          subtitle={t("tax.takeHomeMonthly", { amount: formatInr(result.takeHomeMonthly) })}
+        >
           <Caption>
             {t("tax.effectiveRate", {
               rate: result.effectiveRatePercent,
@@ -234,7 +262,7 @@ export default function IncomeTaxPanel() {
               {line}
             </Caption>
           ))}
-        </div>
+        </ToolAnswerHero>
       )}
 
       {annualGross > 0 && (

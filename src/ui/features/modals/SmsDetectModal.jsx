@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Modal, Card, Button, Caption, Body, inputClassName } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { parseSmsForDebit } from "../../../engines/smsParser.js";
 import { matchDebitToCommitment } from "../../../engines/smsCommitmentMatcher.js";
 import { isSmsAutoDetectSupported } from "../../../services/smsAutoDetect.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { formatInr } from "../../../constants/symbols.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function SmsDetectModal({ open, onClose }) {
   const { t } = useTranslation();
-  const { commitments, getEffectiveStatus, addCommitmentPayment } = useCommitTrack();
+  const { commitments, getEffectiveStatus, addCommitmentPayment } = usePerovo();
   const [sms, setSms] = useState("");
   const [error, setError] = useState("");
   const [match, setMatch] = useState(null);
   const [debit, setDebit] = useState(null);
-  const fieldClass = inputClassName();
 
   const reset = () => {
     setError("");
@@ -25,13 +28,13 @@ export default function SmsDetectModal({ open, onClose }) {
     reset();
     const parsed = parseSmsForDebit(sms);
     if (!parsed) {
-      setError("The text does not match the expected format for a bank debit SMS.");
+      setError(t("sms.detect.errorFormat"));
       return;
     }
     setDebit(parsed);
     const m = matchDebitToCommitment(parsed, commitments, getEffectiveStatus);
     if (!m) {
-      setError(`No matching commitment found for ₹${parsed.amount.toLocaleString("en-IN")}.`);
+      setError(t("sms.detect.noMatch", { amount: formatInr(parsed.amount) }));
       return;
     }
     setMatch(m);
@@ -42,7 +45,7 @@ export default function SmsDetectModal({ open, onClose }) {
     addCommitmentPayment(match.id, {
       amount: debit.amount,
       date: debit.date,
-      note: "Detected from SMS",
+      note: t("sms.detect.noteFromSms"),
     });
     setSms("");
     reset();
@@ -54,6 +57,13 @@ export default function SmsDetectModal({ open, onClose }) {
   return (
     <Modal onClose={onClose} title={t("bills.detectSms")}>
       <div className="ct-stack">
+        <div className="ct-row gap-3 items-start">
+          <span className="ct-icon-tile primary" aria-hidden>
+            <CtIcon name="device-mobile" size={22} />
+          </span>
+          <Caption>{t("sms.pastePlaceholder")}</Caption>
+        </div>
+
         <textarea
           className={`${fieldClass} min-h-[100px] w-full`}
           value={sms}
@@ -63,28 +73,35 @@ export default function SmsDetectModal({ open, onClose }) {
           }}
           placeholder={t("sms.pastePlaceholder")}
         />
-        {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
-        {match && debit && (
-          <Card variant="flat" className="ct-stack-sm">
-            <Body className="font-semibold">
-              Mark {match.name} (₹{debit.amount.toLocaleString("en-IN")}) as paid on {debit.date}?
+        {error ? <Caption className="block text-[var(--ct-danger)]">{error}</Caption> : null}
+
+        {match && debit ? (
+          <Card variant="flat" className="ct-hero-card lending ct-stack-sm">
+            <div className="ct-hero-glow" aria-hidden />
+            <Body className="font-semibold relative">
+              {t("sms.detect.confirm", {
+                name: match.name,
+                amount: formatInr(debit.amount),
+                date: debit.date,
+              })}
             </Body>
-            <div className="ct-row">
+            <div className="ct-row relative">
               <Button type="button" variant="primary" className="flex-1" onClick={handleConfirm}>
-                Yes, mark paid
+                {t("sms.detect.yesMarkPaid")}
               </Button>
               <Button type="button" variant="outline" className="flex-1" onClick={() => { reset(); onClose(); }}>
-                Cancel
+                {t("common.cancel")}
               </Button>
             </div>
           </Card>
-        )}
+        ) : null}
+
         <Button type="button" variant="primary" onClick={handleDetect}>
-          Detect payment
+          {t("sms.detect.cta")}
         </Button>
-        {!isSmsAutoDetectSupported() && (
-          <Caption className="block opacity-80">On-device auto-read SMS is not available in this browser yet.</Caption>
-        )}
+        {!isSmsAutoDetectSupported() ? (
+          <Caption className="block opacity-80">{t("sms.detect.deviceUnsupported")}</Caption>
+        ) : null}
       </div>
     </Modal>
   );

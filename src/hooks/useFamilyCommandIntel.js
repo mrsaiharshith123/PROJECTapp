@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { useStabilityIntel } from "./useStabilityIntel.js";
 import { buildFamilyCommandCenter } from "../engines/familyCommandCenter.js";
@@ -7,7 +7,7 @@ import { isSalariedFamily } from "../constants/modeExperience.js";
 
 /** Family Financial OS snapshot for Home command center. */
 export function useFamilyCommandIntel() {
-  const ctx = useCommitTrack();
+  const ctx = usePerovo();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
 

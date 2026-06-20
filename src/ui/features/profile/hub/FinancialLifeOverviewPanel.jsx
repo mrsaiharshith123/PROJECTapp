@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { mergeFinancialLifeItems } from "../../../../utils/mergeFinancialLifeItems.js";
-import { Eyebrow } from "../../../primitives/Text.jsx";
+import { SettingsGroup, SettingsGroupContent } from "../SettingsGroup.jsx";
 
 /**
  * Compact journey patterns — avoids duplicating hero chip metrics (emergency, pressure).
@@ -27,20 +27,22 @@ export default function FinancialLifeOverviewPanel({ hub, insights, household = 
   };
 
   return (
-    <div className="ct-nw-journey-compact">
-      <Eyebrow className="mb-1.5">
-        {household ? t("profileHub.journeyTitleHousehold") : t("profileHub.journeyTitle")}
-      </Eyebrow>
-      <ul className="ct-nw-journey-list">
-        {items.map((item) => (
-          <li
-            key={item.id || item.key}
-            className={`ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
-          >
-            {t(item.key, item.params || {})}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <SettingsGroup
+      title={household ? t("profileHub.journeyTitleHousehold") : t("profileHub.journeyTitle")}
+      icon="lightning"
+    >
+      <SettingsGroupContent className="!pt-2">
+        <ul className="ct-nw-journey-list">
+          {items.map((item) => (
+            <li
+              key={item.id || item.key}
+              className={`ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
+            >
+              {t(item.key, item.params || {})}
+            </li>
+          ))}
+        </ul>
+      </SettingsGroupContent>
+    </SettingsGroup>
   );
 }

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { useCommitTrack } from "./CommitTrackContext.jsx";
+import { usePerovo } from "./PerovoContext.jsx";
 import { isSalariedFamily } from "../constants/modeExperience.js";
 import {
   loadWealthState,
@@ -61,7 +61,7 @@ function withSnapshots(prev, profileEntries) {
 }
 
 export function NetWorthProvider({ children }) {
-  const { settings, activeProfileId } = useCommitTrack();
+  const { settings, activeProfileId } = usePerovo();
   const [state, setState] = useState(() => loadWealthState());
   const profileId = isSalariedFamily(settings)
     ? null

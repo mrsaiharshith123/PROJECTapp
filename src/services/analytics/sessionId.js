@@ -1,4 +1,4 @@
-const SESSION_KEY = "committrack_analytics_session";
+const SESSION_KEY = "perovo_analytics_session";
 
 /**
  * @returns {string}

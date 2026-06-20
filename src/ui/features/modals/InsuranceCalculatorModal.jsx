@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Modal } from "../../../ui";
+import { Modal, Button, Caption, inputClassName } from "../../../ui";
 import ToolSourcePicker from "../tools/ToolSourcePicker.jsx";
 import { analyzeInsuranceWorth, insuranceParamsFromBill } from "../../../engines/insuranceCalculator.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateRepeatType } from "../../../i18n/domainLabels.js";
 import { translateInsuranceVerdictDetail } from "../../../i18n/toolLabels.js";
+import { formatInr } from "../../../constants/symbols.js";
 
-const fieldClass =
-  "w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 text-sm";
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 function InsuranceShell({ embedded, title, onClose, children }) {
   if (embedded) return <div className="ct-stack">{children}</div>;
@@ -121,15 +121,15 @@ export default function InsuranceCalculatorModal({
     });
   }, [form, fromBill, todayStr]);
 
-  const labelClass = "text-xs font-semibold text-gray-800 dark:text-slate-200";
-  const verdictClass =
+  const labelClass = "ct-field-label";
+  const verdictTone =
     analysis?.verdict === "positive"
-      ? "bg-emerald-100 dark:bg-emerald-950/50 border-emerald-300 text-emerald-950"
+      ? "wealth"
       : analysis?.verdict === "negative"
-        ? "bg-red-100 dark:bg-red-950/50 border-red-300 text-red-950"
+        ? "survival"
         : analysis?.verdict === "mild"
-          ? "bg-amber-100 dark:bg-amber-950/50 border-amber-300 text-amber-950"
-          : "bg-slate-100 dark:bg-slate-800 border-slate-300 text-slate-900";
+          ? "festival"
+          : "pressure";
 
   if (step === "pick") {
     return (
@@ -156,15 +156,15 @@ export default function InsuranceCalculatorModal({
   if (step === "manualSetup") {
     return (
       <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
-        <div className="space-y-3">
-          <button type="button" onClick={() => setStep("pick")} className="text-xs font-semibold text-indigo-600">
+        <div className="ct-stack-sm">
+          <Button type="button" variant="ghost" size="sm" className="!px-0" onClick={() => setStep("pick")}>
             ← {t("insurance.calculator.back")}
-          </button>
+          </Button>
           <div>
             <label className={labelClass}>{t("insurance.calculator.premiumAmount")}</label>
             <input
               type="number"
-              className={fieldClass}
+              className={`${fieldClass} ct-numeral`}
               value={manualPremium}
               onChange={(e) => setManualPremium(e.target.value)}
             />
@@ -181,13 +181,9 @@ export default function InsuranceCalculatorModal({
               <option value="yearly">{t("repeat.yearly")}</option>
             </select>
           </div>
-          <button
-            type="button"
-            onClick={applyManualPremium}
-            className="w-full py-3 rounded-xl bg-teal-600 text-white text-sm font-semibold"
-          >
+          <Button type="button" variant="primary" className="w-full" onClick={applyManualPremium}>
             {t("common.continue")}
-          </button>
+          </Button>
         </div>
       </InsuranceShell>
     );
@@ -197,25 +193,28 @@ export default function InsuranceCalculatorModal({
     <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
       {step === "calc" && fromBill && (
         <div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            className="!px-0"
             onClick={() => {
               setFromBill(null);
               setStep("pick");
             }}
-            className="text-xs font-semibold text-indigo-700 dark:text-indigo-300"
           >
             ← {t("insurance.calculator.otherPolicies")}
-          </button>
+          </Button>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 p-3 space-y-2 text-sm mt-3">
-            <p className="font-semibold text-gray-900 dark:text-slate-50">{fromBill.displayName}</p>
-            <p className="text-gray-700 dark:text-slate-300">
+          <div className="ct-hero-card wealth ct-stack-sm mt-3">
+            <div className="ct-hero-glow teal" aria-hidden />
+            <p className="font-semibold relative">{fromBill.displayName}</p>
+            <Caption className="block relative">
               {t("insurance.calculator.premiumLine", {
-                amount: `₹${fromBill.premiumAmount.toLocaleString()}`,
+                amount: formatInr(fromBill.premiumAmount),
                 repeat: fromBill.repeatLabel,
               })}
-            </p>
+            </Caption>
           </div>
 
           <div className="mt-3">
@@ -229,8 +228,8 @@ export default function InsuranceCalculatorModal({
             />
           </div>
 
-          <div className="rounded-xl border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/40 p-4 space-y-3 mt-3">
-            <p className="text-sm font-semibold text-indigo-950 dark:text-indigo-100">{t("insurance.calculator.fromDocument")}</p>
+          <div className="ct-inset ct-stack-sm mt-3">
+            <p className={labelClass}>{t("insurance.calculator.fromDocument")}</p>
             <div>
               <label className={labelClass}>{t("insurance.calculator.sumAssured")}</label>
               <input
@@ -273,22 +272,18 @@ export default function InsuranceCalculatorModal({
           </div>
 
           {analysis && Number(form.insuranceMaturityBenefit) > 0 && (
-            <div className="space-y-3 pt-3">
-              <p className={`text-sm font-semibold rounded-xl border px-3 py-2.5 ${verdictClass}`}>
-                {t(`insurance.verdict.${analysis.verdict || "unknown"}`)}
-              </p>
-              <p className="text-xs text-gray-700 dark:text-slate-300">{translateInsuranceVerdictDetail(t, analysis)}</p>
+            <div className="ct-stack-sm pt-3">
+              <div className={`ct-hero-card ${verdictTone}`}>
+                <p className="ct-hero-label relative">{t(`insurance.verdict.${analysis.verdict || "unknown"}`)}</p>
+              </div>
+              <Caption className="block">{translateInsuranceVerdictDetail(t, analysis)}</Caption>
             </div>
           )}
 
           {!embedded && (
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-2.5 mt-4 text-sm font-semibold bg-slate-200 dark:bg-slate-700 rounded-xl"
-            >
+            <Button type="button" variant="outline" className="w-full mt-4" onClick={onClose}>
               {t("common.done")}
-            </button>
+            </Button>
           )}
         </div>
       )}

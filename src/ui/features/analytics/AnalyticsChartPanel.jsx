@@ -7,7 +7,6 @@ import { getChartTheme } from "../../tokens/chartTheme.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { variableSpendDrilldown } from "../../../utils/analyticsSpendSeries.js";
 import { translateTxnLifeCategory } from "../../../i18n/toolLabels.js";
-import { Card } from "../../primitives/Card.jsx";
 import { Heading, Caption, Body } from "../../primitives/Text.jsx";
 import { Button } from "../../primitives/Button.jsx";
 import { FlexibleDataChart } from "./charts/FlexibleDataChart.jsx";
@@ -18,7 +17,7 @@ function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
   if (!drilldown || drilldown.total <= 0) return null;
 
   return (
-    <Card variant="flat" className="ct-stack ct-insight-accent">
+    <div className="ct-stat-tile indigo ct-stack">
       <div className="ct-row-between gap-2">
         <div>
           <Heading level={4}>{t("charts.drilldownTitle", { month: monthLabel })}</Heading>
@@ -38,7 +37,7 @@ function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
             {drilldown.merchants.map((m) => (
               <li key={m.name} className="ct-row-between ct-caption">
                 <span className="truncate pr-2">{m.name}</span>
-                <span className="font-semibold shrink-0">
+                <span className="ct-stat-value ct-numeral shrink-0">
                   {formatInr(m.amount)}
                   {m.count > 1 ? ` · ${m.count}×` : ""}
                 </span>
@@ -55,7 +54,7 @@ function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
             {drilldown.categories.map((c) => (
               <li key={c.lifeCategory} className="ct-row-between ct-caption">
                 <span>{c.name}</span>
-                <span className="font-semibold shrink-0">{formatInr(c.amount)}</span>
+                <span className="ct-stat-value ct-numeral shrink-0">{formatInr(c.amount)}</span>
               </li>
             ))}
           </ul>
@@ -72,13 +71,13 @@ function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
                   {e.label}
                   <span className="opacity-70"> · {translateTxnLifeCategory(t, e.lifeCategory)}</span>
                 </span>
-                <span className="font-semibold shrink-0">{formatInr(e.amount)}</span>
+                <span className="ct-stat-value ct-numeral shrink-0">{formatInr(e.amount)}</span>
               </li>
             ))}
           </ul>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -159,9 +158,10 @@ export default function AnalyticsChartPanel({
   );
 
   const chartPayload = useMemo(() => {
+    const dueColor = chartColors.series.accent;
     const variableBarColor = chartColors.series.warning;
-    const dueColor = chartColors.series.accentSoft;
     const freeColor = chartColors.series.success;
+    const billsColor = chartColors.series.accentSoft;
 
     switch (activeId) {
       case "forecast":
@@ -198,7 +198,7 @@ export default function AnalyticsChartPanel({
           data: paymentsData,
           xKey: "month",
           seriesKeys: [
-            { key: "billsPaid", name: t("charts.billsPaid"), color: dueColor },
+            { key: "billsPaid", name: t("charts.billsPaid"), color: billsColor },
             { key: "variableLogged", name: t("charts.variableLogged"), color: variableBarColor },
           ],
           clickableSeriesKeys: ["variableLogged"],
@@ -223,58 +223,63 @@ export default function AnalyticsChartPanel({
   const showTapHint = activeId === "forecast" || activeId === "payments";
 
   return (
-    <Card className="ct-chart-single ct-stack">
-      <Heading level={2}>{t("charts.title")}</Heading>
+    <div className="ct-hero-card pressure ct-chart-single ct-stack relative">
+      <div className="ct-hero-glow" aria-hidden />
+      <div className="relative">
+        <Heading level={2} className="!text-base !font-semibold">
+          {t("charts.title")}
+        </Heading>
 
-      <div className="ct-row-between items-center gap-2">
-        <Caption className="font-semibold">{translateChartView(t, activeId)}</Caption>
-        <div className="ct-chart-swipe-dots" role="tablist" aria-label={t("charts.swipeHint")}>
-          {views.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              role="tab"
-              aria-selected={v.id === activeId}
-              aria-label={translateChartView(t, v.id)}
-              className={`ct-chart-swipe-dot${v.id === activeId ? " ct-chart-swipe-dot-active" : ""}`}
-              onClick={() => onViewChange(v.id)}
-            />
-          ))}
+        <div className="ct-row-between items-center gap-2 mt-2">
+          <Caption className="font-semibold">{translateChartView(t, activeId)}</Caption>
+          <div className="ct-chart-swipe-dots" role="tablist" aria-label={t("charts.swipeHint")}>
+            {views.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                role="tab"
+                aria-selected={v.id === activeId}
+                aria-label={translateChartView(t, v.id)}
+                className={`ct-chart-swipe-dot${v.id === activeId ? " ct-chart-swipe-dot-active" : ""}`}
+                onClick={() => onViewChange(v.id)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="ct-row-between" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
-        <Caption>{showTapHint ? t("charts.tapBarHint") : t("charts.swipeHint")}</Caption>
-        <ChartTypeSelect value={chartType} onChange={setChartType} allowed={allowedTypes} />
-      </div>
+        <div className="ct-row-between mt-2" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
+          <Caption>{showTapHint ? t("charts.tapBarHint") : t("charts.swipeHint")}</Caption>
+          <ChartTypeSelect value={chartType} onChange={setChartType} allowed={allowedTypes} />
+        </div>
 
-      <div
-        className="ct-chart-plot ct-chart-swipe-area"
-        style={{ height: plotHeight }}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        <FlexibleDataChart
-          data={chartPayload.data}
-          chartType={chartType}
-          theme={theme}
-          xKey={chartPayload.xKey}
-          valueKey={"valueKey" in chartPayload ? chartPayload.valueKey : undefined}
-          seriesKeys={"seriesKeys" in chartPayload ? chartPayload.seriesKeys : undefined}
-          onSeriesClick={"onSeriesClick" in chartPayload ? chartPayload.onSeriesClick : undefined}
-          clickableSeriesKeys={"clickableSeriesKeys" in chartPayload ? chartPayload.clickableSeriesKeys : undefined}
-          emptyMessage={chartPayload.emptyMessage}
-          scoreChart={"scoreChart" in chartPayload ? chartPayload.scoreChart : false}
-        />
-      </div>
+        <div
+          className="ct-chart-plot ct-chart-swipe-area"
+          style={{ height: plotHeight }}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <FlexibleDataChart
+            data={chartPayload.data}
+            chartType={chartType}
+            theme={theme}
+            xKey={chartPayload.xKey}
+            valueKey={"valueKey" in chartPayload ? chartPayload.valueKey : undefined}
+            seriesKeys={"seriesKeys" in chartPayload ? chartPayload.seriesKeys : undefined}
+            onSeriesClick={"onSeriesClick" in chartPayload ? chartPayload.onSeriesClick : undefined}
+            clickableSeriesKeys={"clickableSeriesKeys" in chartPayload ? chartPayload.clickableSeriesKeys : undefined}
+            emptyMessage={chartPayload.emptyMessage}
+            scoreChart={"scoreChart" in chartPayload ? chartPayload.scoreChart : false}
+          />
+        </div>
 
-      {drillMonth && (
-        <VariableSpendDrilldown
-          monthLabel={drillMonth.monthLabel}
-          drilldown={drilldown}
-          onClose={() => setDrillMonth(null)}
-        />
-      )}
-    </Card>
+        {drillMonth && (
+          <VariableSpendDrilldown
+            monthLabel={drillMonth.monthLabel}
+            drilldown={drilldown}
+            onClose={() => setDrillMonth(null)}
+          />
+        )}
+      </div>
+    </div>
   );
 }

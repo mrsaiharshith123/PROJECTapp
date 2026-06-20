@@ -1,4 +1,4 @@
-import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, LineChart, Line, Area, YAxis, XAxis, Tooltip, CartesianGrid } from "recharts";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { formatInr } from "../../constants/symbols.js";
 import { salarySpendBarColor } from "../../utils/salarySpendBar.js";
@@ -21,6 +21,17 @@ function SpendTooltip({ active, payload, household = false }) {
   );
 }
 
+/** @param {any} props */
+function GlowingActiveDot({ cx, cy, stroke }) {
+  if (cx == null || cy == null) return null;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={7} fill={stroke} opacity={0.25} />
+      <circle cx={cx} cy={cy} r={4} stroke={stroke} strokeWidth={2} fill="#0d0e18" />
+    </g>
+  );
+}
+
 function spendYMax(data) {
   const values = data.map((d) => d.value);
   const maxValue = Math.max(...values, 0);
@@ -34,18 +45,26 @@ function spendYMax(data) {
  */
 export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBudget = false, household = false }) {
   const color =
-    overBudget || spendPct >= 100 ? "#ef4444" : salarySpendBarColor(spendPct);
+    overBudget || spendPct >= 100 ? "#f87171" : salarySpendBarColor(spendPct);
   if (!data?.length) return null;
 
   const yMax = spendYMax(data);
+  const gradientId = `spend-area-${household ? "h" : "s"}`;
 
   return (
     <div className="ct-hero-spend-chart" aria-hidden>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 4, left: 2, bottom: 14 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.18} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 10, fill: "var(--ct-text-muted, #94a3b8)" }}
+            tick={{ fontSize: 10, fill: "var(--ct-text-muted)" }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
@@ -53,13 +72,21 @@ export function MonthlySpendSparkline({ data, salary: _salary, spendPct, overBud
           />
           <YAxis domain={[0, yMax]} hide />
           <Tooltip content={(props) => <SpendTooltip {...props} household={household} />} cursor={false} />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="none"
+            fill={`url(#${gradientId})`}
+            animationDuration={800}
+            animationEasing="ease-out"
+          />
           <Line
             type="monotone"
             dataKey="value"
             stroke={color}
             strokeWidth={2.5}
             dot={false}
-            activeDot={{ r: 4, stroke: color, fill: "#0f172a" }}
+            activeDot={(props) => <GlowingActiveDot {...props} stroke={color} />}
             animationDuration={800}
             animationEasing="ease-out"
           />

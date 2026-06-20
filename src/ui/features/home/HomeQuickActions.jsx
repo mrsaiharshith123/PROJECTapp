@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isSalariedFamily, familyTextKey } from "../../../constants/modeExperience.js";
 import {
@@ -25,17 +25,17 @@ const HOME_QUICK_ACTION_DEFS = {
   bills: {
     icon: "receipt",
     labelKey: "nav.bills",
-    run: ({ navigate }) => navigate("/commitments"),
+    run: ({ navigate }) => navigate("/money/bills"),
   },
   log_spend: {
     icon: "fork-knife",
     labelKey: "bills.actionLogSpend",
-    run: ({ navigate }) => navigate("/commitments?tab=spend"),
+    run: ({ navigate }) => navigate("/money/bills?tab=spend"),
   },
   lending: {
     icon: "handshake",
-    labelKey: "nav.lending",
-    run: ({ navigate }) => navigate("/lending"),
+    labelKey: "money.tab.lending",
+    run: ({ navigate }) => navigate("/money/lending"),
   },
   income: {
     icon: "currency-inr",
@@ -44,8 +44,8 @@ const HOME_QUICK_ACTION_DEFS = {
   },
   analytics: {
     icon: "chart-bar",
-    labelKey: "nav.analytics",
-    run: ({ navigate }) => navigate("/analytics"),
+    labelKey: "money.tab.insights",
+    run: ({ navigate }) => navigate("/money/insights"),
   },
   paycheck: {
     icon: "currency-inr",
@@ -99,7 +99,7 @@ const HOME_QUICK_ACTION_DEFS = {
  */
 export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
   const navigate = useNavigate();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { t } = useTranslation();
   const isFamily = isSalariedFamily(settings);
   const [reorderMode, setReorderMode] = useState(false);
@@ -157,12 +157,14 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
         <QuickAction
           icon="calendar"
           label={t("home.actionCalendar")}
+          tone="amber"
           onClick={onOpenCalendar}
           disabled={reorderMode}
         />
         <QuickAction
           icon="calculator"
           label={t("tools.mathCalc.short")}
+          tone="violet"
           onClick={() => setMathCalcOpen(true)}
           disabled={reorderMode}
         />
@@ -197,6 +199,13 @@ export default function HomeQuickActions({ onOpenCalendar, scrollToTools }) {
                 icon={icon}
                 label={t(labelKey)}
                 primary={id === "add_bill"}
+                tone={
+                  id === "log_spend"
+                    ? "teal"
+                    : id === "bills"
+                      ? "amber"
+                      : undefined
+                }
                 onClick={reorderMode ? undefined : () => def.run(runCtx)}
                 disabled={reorderMode}
               />

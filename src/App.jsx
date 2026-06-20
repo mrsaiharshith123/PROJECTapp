@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
-import { CommitTrackProvider, useCommitTrack } from "./context/CommitTrackContext.jsx";
+import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
@@ -22,6 +22,7 @@ import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
 import { I18nProvider } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
+import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -30,6 +31,8 @@ const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
+const MoneyShell = lazy(() => import("./ui/features/pages/MoneyShellPage.jsx"));
+const Plan = lazy(() => import("./ui/features/pages/PlanPage.jsx"));
 const ProfileWealthAnalytics = lazy(() => import("./ui/features/pages/ProfileWealthAnalyticsPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
@@ -37,6 +40,7 @@ const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
+const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
 
 function AuthGateShell() {
   return (
@@ -82,18 +86,26 @@ function MainShell() {
       <MainContent>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
+            <Route path="/money" element={<MoneyShell />}>
+              <Route index element={<Navigate to="bills" replace />} />
+              <Route path="bills" element={<Commitments />} />
+              <Route
+                path="lending"
+                element={
+                  <ModeRoute path="/money/lending">
+                    <Lending />
+                  </ModeRoute>
+                }
+              />
+              <Route path="insights" element={<Analytics />} />
+            </Route>
+            <Route path="/commitments" element={<Navigate to="/money/bills" replace />} />
+            <Route path="/lending" element={<Navigate to="/money/lending" replace />} />
+            <Route path="/analytics" element={<Navigate to="/money/insights" replace />} />
+            <Route path="/plan" element={<Plan />} />
+            <Route path="/tools" element={<Navigate to="/plan" replace />} />
             <Route path="/" element={<Home />} />
-            <Route path="/commitments" element={<Commitments />} />
             <Route path="/add" element={<Add />} />
-            <Route
-              path="/lending"
-              element={
-                <ModeRoute path="/lending">
-                  <Lending />
-                </ModeRoute>
-              }
-            />
-            <Route path="/analytics" element={<Analytics />} />
             <Route path="/paycheck" element={<Paycheck />} />
             <Route path="/family-room" element={<HouseholdRoom />} />
             <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
@@ -109,6 +121,7 @@ function MainShell() {
                 </RequireAdmin>
               }
             />
+            {import.meta.env.DEV ? <Route path="/dev" element={<DevPanel />} /> : null}
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/auth" element={<Navigate to="/profile" replace />} />
@@ -116,20 +129,21 @@ function MainShell() {
           </Routes>
         </Suspense>
       </MainContent>
+      {import.meta.env.DEV ? <DevFloatingButton /> : null}
     </Screen>
   );
 }
 
 /** Signed-in only; onboarding until profile setup complete. */
 function AppShell() {
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
   const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id) return;
     const meta = user.user_metadata || {};
-    const key = `committrack_auth_seeded_${user.id}`;
+    const key = `perovo_auth_seeded_${user.id}`;
     if (localStorage.getItem(key) === "1") return;
 
     const patch = {};
@@ -140,7 +154,14 @@ function AppShell() {
       patch.monthlyIncome = Number(meta.monthly_income);
     }
     if (meta.user_mode) patch.userMode = String(meta.user_mode);
-    if (meta.household_scope) patch.householdScope = meta.household_scope === "family" ? "family" : "single";
+    // Local-first: only seed household scope when not already chosen on this device.
+    if (
+      meta.household_scope &&
+      settings.householdScope !== "family" &&
+      settings.householdScope !== "single"
+    ) {
+      patch.householdScope = meta.household_scope === "family" ? "family" : "single";
+    }
     if (profile?.onboarding_complete === true && !settings.onboardingComplete) {
       patch.onboardingComplete = true;
     }
@@ -156,7 +177,7 @@ function AppShell() {
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id || !setupComplete) return;
-    const key = `committrack_profile_seeded_${user.id}`;
+    const key = `perovo_profile_seeded_${user.id}`;
     if (localStorage.getItem(key) === "1") return;
     if (profile?.monthly_income != null || profile?.user_mode || profile?.onboarding_complete === true) {
       localStorage.setItem(key, "1");
@@ -211,7 +232,7 @@ function App() {
   return (
     <BrowserRouter basename={routerBasename()}>
       <AuthProvider>
-        <CommitTrackProvider>
+        <PerovoProvider>
           <NetWorthProvider>
           <I18nProvider>
             <BrandDocumentSync />
@@ -232,7 +253,7 @@ function App() {
             </ErrorBoundary>
           </I18nProvider>
           </NetWorthProvider>
-        </CommitTrackProvider>
+        </PerovoProvider>
       </AuthProvider>
     </BrowserRouter>
   );

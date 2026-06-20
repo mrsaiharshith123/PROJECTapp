@@ -1,4 +1,4 @@
--- CommitTrack Cloud Sync — one encrypted-at-rest JSON snapshot per user (RLS isolated).
+-- Perovo Cloud Sync — one encrypted-at-rest JSON snapshot per user (RLS isolated).
 -- Apply via Supabase SQL editor or: supabase db push
 
 create table if not exists public.user_finance_snapshots (
@@ -22,4 +22,4 @@ create policy "Users manage own finance snapshot"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
-comment on table public.user_finance_snapshots is 'CommitTrack optional cloud continuity — full local snapshot per user';
+comment on table public.user_finance_snapshots is 'Perovo optional cloud continuity — full local snapshot per user';

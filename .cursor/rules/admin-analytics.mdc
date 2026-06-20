@@ -12,14 +12,14 @@ Full handbook: `docs/architecture/AdminAnalytics.md`
 
 ## Product surface
 
-- **Dashboard** — `/admin` inside CommitTrack (`src/ui/features/pages/AdminPage.jsx`, `src/ui/features/admin/`). No separate admin site.
+- **Dashboard** — `/admin` inside Perovo (`src/ui/features/pages/AdminPage.jsx`, `src/ui/features/admin/`). No separate admin site.
 - **Profile entry** — `ProfileAdminEntry.jsx` below Control center; **render only when `isAdmin`**; hidden for all other users. Do not add admin to `Navbar.jsx`.
 - **Route guard** — `RequireAdmin` + server RPC `admin_product_overview()` — never expose cross-user data without admin check.
 
 ## Access control
 
 - **Flag** — `profiles.is_admin = true` only.
-- **Grant** — Supabase SQL Editor: `SELECT grant_committrack_admin('<uuid>');` (after migration `20260606020000_fix_admin_grant_trigger.sql`).
+- **Grant** — Supabase SQL Editor: `SELECT grant_perovo_admin('<uuid>');` (after migration `20260606020000_fix_admin_grant_trigger.sql`).
 - **Client** — `AuthContext` exposes `isAdmin`; cannot self-promote (DB trigger blocks API updates).
 
 ## Tracking

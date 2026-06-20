@@ -14,7 +14,7 @@ import { Heading, Caption } from "../primitives/Text.jsx";
 export function ChartShell({ title, hint, children, height = 240, className = "", compact = false }) {
   const showHead = Boolean(title || hint);
   return (
-    <Card variant={compact ? "flat" : "default"} className={`ct-chart-card ${className}`.trim()}>
+    <Card variant={compact ? "flat" : "default"} className={`ct-chart-card ct-chart-card-modern ${className}`.trim()}>
       {showHead ? (
         <div className="ct-chart-card-head">
           {title ? <Heading level={compact ? 4 : 3}>{title}</Heading> : null}

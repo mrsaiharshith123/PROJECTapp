@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { inputClassName } from "../../";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { recordConsent } from "../../../utils/dpdpConsent.js";
 import { getOnboardingExperience } from "../../../guidance/index.js";
@@ -17,6 +17,7 @@ import {
   OnboardingFocusStep,
   OnboardingBasicsStep,
   OnboardingBillsStep,
+  OnboardingProgress,
 } from "../onboarding/OnboardingStepPanels.jsx";
 
 function experienceIdFromSettings(settings) {
@@ -29,7 +30,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const replay = searchParams.get("replay") === "1";
-  const { settings, updateSettings, addCommitment } = useCommitTrack();
+  const { settings, updateSettings, addCommitment } = usePerovo();
   const { saveProfile, profile, user } = useAuth();
   const [step, setStep] = useState(0);
   const [experienceId, setExperienceId] = useState(() => experienceIdFromSettings(settings));
@@ -153,8 +154,15 @@ export default function Onboarding() {
     finish();
   };
 
+  const wrapStep = (panel) => (
+  <>
+    <OnboardingProgress step={step} total={4} />
+    {panel}
+  </>
+);
+
   if (step === 0) {
-    return (
+    return wrapStep(
       <OnboardingModeStep
         replay={replay}
         experienceId={experienceId}
@@ -163,22 +171,22 @@ export default function Onboarding() {
         onCancel={() => navigate(-1)}
         userId={user?.id}
         onRecordConsent={recordConsent}
-      />
+      />,
     );
   }
 
   if (step === 1) {
-    return (
+    return wrapStep(
       <OnboardingFocusStep
         experience={experience}
         onBack={() => setStep(0)}
         onContinue={() => setStep(2)}
-      />
+      />,
     );
   }
 
   if (step === 2) {
-    return (
+    return wrapStep(
       <OnboardingBasicsStep
         replay={replay}
         displayName={displayName}
@@ -193,12 +201,12 @@ export default function Onboarding() {
         fieldClass={fieldClass}
         onBack={() => setStep(1)}
         onContinue={goToBillsStep}
-      />
+      />,
     );
   }
 
   if (step === 3) {
-    return (
+    return wrapStep(
       <OnboardingBillsStep
         selectedLabels={selectedLabels}
         amounts={amounts}
@@ -208,7 +216,7 @@ export default function Onboarding() {
         onBack={() => setStep(2)}
         onSkip={finish}
         onFinishSelected={addSelectedAndFinish}
-      />
+      />,
     );
   }
 

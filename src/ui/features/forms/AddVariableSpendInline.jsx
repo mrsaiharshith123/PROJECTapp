@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { TRANSACTION_LIFE_CATEGORIES, getTransactionLifeCategoryMeta } from "../../../constants/transactionCategories.js";
 import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
@@ -19,7 +19,7 @@ const LIFE_CATEGORY_ICON = {
 
 /** Inline variable spend on Add page — same data path as Bills → Variable spend. */
 export default function AddVariableSpendInline({ onSaved }) {
-  const { addDailySpend, allDailySpends, todayStr, settings } = useCommitTrack();
+  const { addDailySpend, allDailySpends, todayStr, settings } = usePerovo();
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");

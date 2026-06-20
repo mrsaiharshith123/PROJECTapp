@@ -35,7 +35,7 @@ export function runSyncAudit() {
         errors.push({
           kind: "google-backup-removed",
           file: r,
-          message: `Legacy Google Drive backup reference (${needle}) — use CommitTrack Cloud (services/sync)`,
+          message: `Legacy Google Drive backup reference (${needle}) — use Perovo Cloud (services/sync)`,
         });
       }
     }

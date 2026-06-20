@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { cn } from "../utils/cn.js";
-import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../context/PerovoContext.jsx";
 import PlansModal from "../features/profile/PlansModal.jsx";
 
 const TIER_LABEL = { free: "Free", pro: "Pro", power: "Power" };
@@ -12,7 +12,7 @@ const TIER_LABEL = { free: "Free", pro: "Pro", power: "Power" };
  */
 export function PlansButton({ className = "" }) {
   const location = useLocation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const tier = settings.subscriptionTier || "free";
   const [open, setOpen] = useState(() => location.hash === "#upgrade");
 

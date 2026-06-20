@@ -2,10 +2,13 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useProfileScoreGuide } from "../../../hooks/useProfileScoreGuide.js";
+import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
+import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { joinEngineMessages } from "../../../i18n/engineLabels.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, PageHeader, Body, Caption, InfoTip, Badge } from "../../index.js";
+import { Card, PageHeader, Body, Caption, InfoTip } from "../../index.js";
+import { MetricCard } from "../../patterns/MetricCard.jsx";
 
 function formatDue(dateStr) {
   if (!dateStr) return "";
@@ -19,10 +22,17 @@ function formatDue(dateStr) {
   }
 }
 
+function chipVariant(tone) {
+  if (tone === "ok") return "teal";
+  if (tone === "mid") return "amber";
+  return "danger";
+}
+
 export default function ProfileScoresDetailPage() {
   const { t } = useTranslation();
   const { privacyMode } = useNetWorth();
   const guide = useProfileScoreGuide();
+  const perovo = usePerovoScore();
   const lendingTrust = guide.detailScores.find((s) => s.id === "lending-trust");
 
   return (
@@ -31,55 +41,52 @@ export default function ProfileScoresDetailPage() {
         {t("profileHub.scoresBack")}
       </Link>
       <PageHeader
-        title={t("profileHub.scoresDetailTitle")}
-        subtitle={t("profileHub.scoresDetailSubtitle")}
+        title={t("perovoScore.title")}
+        subtitle={t("perovoScore.detailSubtitle")}
       />
 
-      <Card variant="flat" className="ct-stack-sm">
-        <Body className="ct-body-strong">{t("scores.pillars.title")}</Body>
-        <Caption className="block">{t("scores.pillars.pressure")}</Caption>
-        <Caption className="block">{t("scores.pillars.health")}</Caption>
-        <Caption className="block">{t("scores.pillars.life")}</Caption>
-      </Card>
-
-      <div className="ct-profile-hero-chips ct-profile-hero-chips-status ct-profile-hero-chips-4">
-        {guide.heroChips.map((chip) => (
-          <div key={chip.id} className={`ct-profile-chip ct-profile-chip-${chip.tone}`}>
-            <Caption className="block ct-profile-chip-label">{t(chip.labelKey)}</Caption>
-            {privacyMode ? (
-              <span className="ct-profile-chip-value">•••</span>
-            ) : chip.pressureLabel ? (
-              <>
-                <span className="ct-profile-chip-value">
-                  {translatePressureLabel(t, chip.pressureLabel)}
-                </span>
-                {chip.detailValue != null ? (
-                  <Caption className="block ct-profile-chip-sub opacity-75">
-                    {chip.detailValue}/100
-                  </Caption>
-                ) : null}
-              </>
-            ) : (
-              <span className="ct-profile-chip-value">{chip.value}</span>
-            )}
-          </div>
-        ))}
-        {lendingTrust ? (
-          <div className="ct-profile-chip ct-profile-chip-ok">
-            <Caption className="block ct-profile-chip-label">{t(lendingTrust.titleKey)}</Caption>
-            <span className="ct-profile-chip-value">
-              {privacyMode
-                ? "•••"
-                : lendingTrust.emptyKey
-                  ? t(lendingTrust.emptyKey)
-                  : lendingTrust.value}
-            </span>
-          </div>
+      <div className="ct-hero-card pressure relative">
+        <div className="ct-hero-glow" aria-hidden />
+        <p className="ct-hero-label">{t("perovoScore.title")}</p>
+        <p className="ct-hero-number ct-numeral relative">
+          {privacyMode ? "•••" : perovo.score}
+          {!privacyMode ? <span className="text-lg font-normal opacity-75">/100</span> : null}
+        </p>
+        {!privacyMode ? (
+          <Caption className="block relative opacity-90">{t(`perovoScore.tier.${perovo.tier.id}`)}</Caption>
         ) : null}
       </div>
 
+      <div className="ct-grid-2 gap-2">
+        {PEROVO_PILLARS.map((pillar) => {
+          const data = perovo.pillars[pillar.id];
+          return (
+            <MetricCard
+              key={pillar.id}
+              label={t(`perovoScore.pillar.${pillar.id}`)}
+              value={privacyMode ? "•••" : data?.score ?? 0}
+              trend={privacyMode ? null : data?.trend ?? null}
+              icon={pillar.icon}
+              tone={pillar.tone}
+            />
+          );
+        })}
+      </div>
+
+      <div className="ct-stack-sm px-1">
+        <Body className="ct-body-strong text-sm">{t("scores.pillars.title")}</Body>
+        <Caption className="block">{t("scores.pillars.cashflow")}</Caption>
+        <Caption className="block">{t("scores.pillars.savings")}</Caption>
+        <Caption className="block">{t("scores.pillars.debt")}</Caption>
+        <Caption className="block">{t("scores.pillars.protection")}</Caption>
+      </div>
+
+      <Body className="ct-body-strong text-sm">{t("profileHub.scoresDetailTitle")}</Body>
+
       <Caption className="block">
-        {t("profileHub.scoresFreeCash", { amount: guide.formatFreeMoney })}
+        {t("profileHub.scoresFreeCash", {
+          amount: privacyMode ? "•••" : guide.formatFreeMoney,
+        })}
       </Caption>
 
       {guide.narrative &&
@@ -101,13 +108,14 @@ export default function ProfileScoresDetailPage() {
         )}
 
       {guide.focusFirst && (
-        <Card className="ct-insight-accent ct-stack-sm">
-          <Body className="ct-body-strong">{t("profileHub.scoreFix.payFirst")}</Body>
-          <Caption className="block font-semibold">{guide.focusFirst.name}</Caption>
-          <Caption className="block opacity-80">
+        <div className="ct-hero-card survival relative ct-stack-sm">
+          <div className="ct-hero-glow amber" aria-hidden />
+          <Body className="ct-body-strong relative">{t("profileHub.scoreFix.payFirst")}</Body>
+          <Caption className="block font-semibold relative">{guide.focusFirst.name}</Caption>
+          <Caption className="block opacity-80 relative">
             {guide.focusFirst.message || t("profileHub.scoreFix.payFirstHint")}
           </Caption>
-        </Card>
+        </div>
       )}
 
       <div className="ct-stack">
@@ -119,21 +127,25 @@ export default function ProfileScoresDetailPage() {
                 {score.helpKey ? <InfoTip text={t(score.helpKey)} /> : null}
               </Body>
               {score.id === "pressure" && !score.emptyKey ? (
-                <div className="text-right ct-stack-sm">
-                  <Badge tone={score.tone || "neutral"}>
+                <div className={`ct-stat-tile ${chipVariant(score.tone === "success" ? "ok" : score.tone === "warning" ? "mid" : "risk")} shrink-0 text-right min-w-[7rem]`}>
+                  <p className="ct-stat-label">{t("pulse.pressureHint")}</p>
+                  <p className="ct-stat-value">
                     {score.statusLabel ? translatePressureLabel(t, score.statusLabel) : score.value}
-                  </Badge>
-                  <Caption className="block ct-numeral opacity-80">{score.value}</Caption>
-                  <Caption className="block opacity-75">{t("pulse.pressureHint")}</Caption>
+                  </p>
+                  <p className="ct-stat-label mt-0.5 ct-numeral">{score.value}</p>
                 </div>
               ) : score.id === "health" && score.statusKey && !score.emptyKey ? (
-                <div className="text-right ct-stack-sm">
-                  <Badge tone={score.tone || "neutral"}>{t(score.statusKey)}</Badge>
-                  <Caption className="block ct-numeral opacity-80">{score.value}</Caption>
-                  <Caption className="block opacity-75">{t("scores.health.hint")}</Caption>
+                <div className={`ct-stat-tile ${chipVariant(guide.primary.health.tone)} shrink-0 text-right min-w-[7rem]`}>
+                  <p className="ct-stat-label">{t("scores.health.hint")}</p>
+                  <p className="ct-stat-value">{t(score.statusKey)}</p>
+                  <p className="ct-stat-label mt-0.5 ct-numeral">{score.value}</p>
                 </div>
               ) : (
-                <Badge tone="neutral">{score.emptyKey ? t(score.emptyKey) : score.value}</Badge>
+                <div className="ct-stat-tile indigo shrink-0 text-right min-w-[7rem]">
+                  <p className="ct-stat-value ct-numeral">
+                    {score.emptyKey ? t(score.emptyKey) : score.value}
+                  </p>
+                </div>
               )}
             </div>
             {score.id !== "pressure" && score.id !== "health" && (score.statusKey || score.statusLabel) && (
@@ -147,11 +159,12 @@ export default function ProfileScoresDetailPage() {
               </Caption>
             )}
             {score.subScores?.length > 0 && (
-              <div className="ct-row gap-3 flex-wrap">
+              <div className="ct-grid-2 gap-2">
                 {score.subScores.map((sub) => (
-                  <Caption key={sub.labelKey} className="block">
-                    {t(sub.labelKey)}: <span className="font-semibold">{sub.value}</span>
-                  </Caption>
+                  <div key={sub.labelKey} className="ct-stat-tile">
+                    <p className="ct-stat-label">{t(sub.labelKey)}</p>
+                    <p className="ct-stat-value ct-numeral">{sub.value}</p>
+                  </div>
                 ))}
               </div>
             )}
@@ -206,7 +219,6 @@ export default function ProfileScoresDetailPage() {
       <Caption className="block text-center opacity-75">
         {t("help.healthScore")}
       </Caption>
-
     </div>
   );
 }

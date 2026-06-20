@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { applyColorScheme } from "../utils/theme.js";
 
 /** Keeps document theme in sync with settings, OS (system), and tab restore. */
 export default function ThemeSync() {
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const preference = settings.colorScheme || "system";
 
   useEffect(() => {

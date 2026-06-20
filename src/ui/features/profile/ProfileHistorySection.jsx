@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
-import { Card } from "../../../ui";
+import { Caption, Body, Button } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../modals/CommitmentEditModal.jsx";
-import { useCopy } from "../../../i18n/useCopy.js";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isHistoryBill } from "../../../utils/billLifecycle.js";
 import { recentCommitmentPaymentEvents } from "../../../utils/profileStats.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
+import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
 
-function formatDate(dateStr) {
+function formatDate(dateStr, locale) {
   if (!dateStr) return "—";
-  return new Date(`${dateStr}T12:00:00`).toLocaleDateString("en-IN", {
+  return new Date(`${dateStr}T12:00:00`).toLocaleDateString(locale === "en" ? "en-IN" : locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -23,7 +25,7 @@ export default function ProfileHistorySection({
   removeCommitmentPayment,
   updateCommitment,
 }) {
-  const copy = useCopy();
+  const { t, locale } = useTranslation();
   const [editing, setEditing] = useState(null);
   const [showPayments, setShowPayments] = useState(true);
   const [showBills, setShowBills] = useState(true);
@@ -34,86 +36,89 @@ export default function ProfileHistorySection({
       commitments
         .filter((c) => isHistoryBill(c, getEffectiveStatus, todayStr))
         .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)),
-    [commitments, getEffectiveStatus, todayStr]
+    [commitments, getEffectiveStatus, todayStr],
   );
 
   return (
     <>
-      <Card className="space-y-3">
-        <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">History & corrections</p>
+      <SettingsGroup title={t("profile.history")} icon="arrows-clockwise" description={t("profile.sectionHistoryHint")}>
+        <SettingsGroupContent className="ct-stack-sm">
+          <button
+            type="button"
+            onClick={() => setShowPayments((v) => !v)}
+            className="ct-settings-row ct-settings-row-static"
+          >
+            <span className="ct-icon-tile ct-icon-tile-sm teal">
+              <CtIcon name="receipt" size={18} weight="duotone" />
+            </span>
+            <span className="ct-settings-row-label flex-1">
+              {t("profile.history.recordedPayments", { count: payments.length })}
+            </span>
+            <CtIcon name={showPayments ? "eye" : "eye-slash"} size={14} className="ct-settings-row-caret" />
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setShowPayments((v) => !v)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-slate-400"
-        >
-          <span>Recorded payments ({payments.length})</span>
-          <span aria-hidden>{showPayments ? "▲" : "▼"}</span>
-        </button>
-        {showPayments && (
-          <ul className="space-y-2">
-            {payments.length === 0 && <li className="text-xs text-gray-500">No payment records yet.</li>}
-            {payments.map((row) => (
-              <li
-                key={row.id}
-                className="rounded-xl border border-gray-100 dark:border-slate-700 px-3 py-2 flex items-center gap-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{row.name}</p>
-                  <p className="text-[11px] text-gray-500">{formatDate(row.date)}</p>
-                </div>
-                <span className="text-sm font-semibold">₹{Number(row.amount).toLocaleString("en-IN")}</span>
-                <button
-                  type="button"
-                  onClick={() => removeCommitmentPayment(row.commitmentId, row.paymentIndex)}
-                  className="px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 rounded-lg"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+          {showPayments && (
+            <ul className="ct-stack-sm">
+              {payments.length === 0 && <Caption>{t("profile.history.noPayments")}</Caption>}
+              {payments.map((row) => (
+                <li key={row.id} className="ct-hero-inset ct-row-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Body className="font-semibold truncate !text-sm">{row.name}</Body>
+                    <Caption>{formatDate(row.date, locale)}</Caption>
+                  </div>
+                  <span className="text-sm font-semibold shrink-0">₹{Number(row.amount).toLocaleString("en-IN")}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="!w-auto shrink-0"
+                    onClick={() => removeCommitmentPayment(row.commitmentId, row.paymentIndex)}
+                  >
+                    {t("profile.history.removePayment")}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
 
-        <button
-          type="button"
-          onClick={() => setShowBills((v) => !v)}
-          className="w-full flex items-center justify-between text-xs font-semibold text-gray-600 dark:text-slate-400"
-        >
-          <span>Ended / paid {copy.bills.toLowerCase()} ({endedBills.length})</span>
-          <span aria-hidden>{showBills ? "▲" : "▼"}</span>
-        </button>
-        {showBills && (
-          <ul className="space-y-2">
-            {endedBills.length === 0 && <li className="text-xs text-gray-500">No ended bills in history.</li>}
-            {endedBills.map((bill) => (
-              <li key={bill.id} className="rounded-xl border border-gray-100 dark:border-slate-700 px-3 py-2.5">
-                <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{getBillDisplayName(bill)}</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
-                  {(bill.payments || []).length} payment record{(bill.payments || []).length === 1 ? "" : "s"}
-                  {bill.endDate ? ` · ended ${formatDate(bill.endDate)}` : ""}
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(bill)}
-                    className="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 rounded-lg"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteCommitment(bill.id)}
-                    className="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+          <button
+            type="button"
+            onClick={() => setShowBills((v) => !v)}
+            className="ct-settings-row ct-settings-row-static"
+          >
+            <span className="ct-icon-tile ct-icon-tile-sm violet">
+              <CtIcon name="package" size={18} weight="duotone" />
+            </span>
+            <span className="ct-settings-row-label flex-1">
+              {t("profile.history.endedBills", { bills: t("nav.bills"), count: endedBills.length })}
+            </span>
+            <CtIcon name={showBills ? "eye" : "eye-slash"} size={14} className="ct-settings-row-caret" />
+          </button>
+
+          {showBills && (
+            <ul className="ct-stack-sm">
+              {endedBills.length === 0 && <Caption>{t("profile.history.noEndedBills")}</Caption>}
+              {endedBills.map((bill) => (
+                <li key={bill.id} className="ct-hero-inset ct-stack-sm">
+                  <Body className="font-semibold truncate !text-sm">{getBillDisplayName(bill)}</Body>
+                  <Caption>
+                    {t("profile.history.paymentRecords", { count: (bill.payments || []).length })}
+                    {bill.endDate ? t("profile.history.endedOn", { date: formatDate(bill.endDate, locale) }) : ""}
+                  </Caption>
+                  <div className="ct-row gap-2">
+                    <Button type="button" variant="outline" size="sm" className="!w-auto" onClick={() => setEditing(bill)}>
+                      {t("common.edit")}
+                    </Button>
+                    <Button type="button" variant="danger" size="sm" className="!w-auto" onClick={() => deleteCommitment(bill.id)}>
+                      {t("common.delete")}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SettingsGroupContent>
+      </SettingsGroup>
 
       {editing && (
         <CommitmentEditModal

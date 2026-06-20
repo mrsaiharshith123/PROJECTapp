@@ -4,16 +4,17 @@ import { computePpfProjection } from "../../../engines/ppfTracker.js";
 import { computeNpsProjection, computeRetirementMix } from "../../../engines/npsPlanner.js";
 import { computeGratuityEstimate } from "../../../engines/gratuityEstimate.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { Caption, Body, Heading } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** @param {{ onProjectedChange?: (n: number) => void }} props */
 function EpfTrackerTab({ onProjectedChange }) {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const profileIncome = combinedMonthlyIncome(settings);
   const [basic, setBasic] = useState(
     String(settings.epfBasicSalary || (profileIncome ? estimateBasicFromGross(profileIncome) : "")),
@@ -135,7 +136,7 @@ function PpfTrackerTab({ onProjectedChange }) {
 /** @param {{ onProjectedChange?: (n: number) => void }} props */
 function NpsTrackerTab({ onProjectedChange }) {
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const income = combinedMonthlyIncome(settings);
   const defaultBasic = income ? estimateBasicFromGross(income) : 0;
   const defaultEmployee = defaultBasic ? Math.round(defaultBasic * 0.1) : "";
@@ -194,7 +195,7 @@ function NpsTrackerTab({ onProjectedChange }) {
 
 function GratuityTab() {
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const income = combinedMonthlyIncome(settings);
 
   const [salary, setSalary] = useState(income ? String(income) : "");
@@ -265,15 +266,12 @@ export default function RetirementPlannerPanel() {
       {tab === "nps" && <NpsTrackerTab onProjectedChange={setMixNps} />}
       {tab === "gratuity" && <GratuityTab />}
       {mix.total > 0 && tab !== "gratuity" && (
-        <div className="ct-inset ct-stack-sm">
-          <Caption className="font-semibold block">{t("tools.retirement.mixTitle")}</Caption>
-          <Caption className="block">{mix.message}</Caption>
-          {mix.shares.map((s) => (
-            <Caption key={s.id} className="block">
-              {s.label}: {s.percent}%
-            </Caption>
-          ))}
-        </div>
+        <ToolAnswerHero
+          tone="sim"
+          label={t("tools.retirement.mixTitle")}
+          value={formatInr(mix.total)}
+          subtitle={mix.message}
+        />
       )}
     </div>
   );

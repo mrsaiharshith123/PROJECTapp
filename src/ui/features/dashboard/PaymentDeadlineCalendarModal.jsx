@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { addMonths, subMonths } from "date-fns";
 import { Modal, Button, Caption, Body, Badge } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   buildMonthCalendarGrid,
   collectPaymentDeadlines,
@@ -19,7 +19,7 @@ const WEEKDAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 export default function PaymentDeadlineCalendarModal({ open, onClose }) {
   const { t } = useTranslation();
   const { commitments, lendings, getEffectiveStatus, getEffectiveLendingStatus, todayStr } =
-    useCommitTrack();
+    usePerovo();
   const [viewMonth, setViewMonth] = useState(() => {
     if (todayStr) {
       const [y, m] = todayStr.split("-").map(Number);

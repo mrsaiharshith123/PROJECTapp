@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Modal, fieldInputClass } from "../../../ui";
+import { useEffect, useRef, useState } from "react";
+import { Modal, fieldInputClass, Button } from "../../../ui";
 import {
   categoryShowsInterestRate,
   categoryShowsInsuranceFields,
@@ -26,10 +26,11 @@ import {
   defaultDueDateFromStart,
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { searchFund } from "../../../services/market/amfiNav.js";
 
 function formFromCommitment(c, todayStr) {
   const startDate = c.startDate || c.dueDate || "";
@@ -50,6 +51,8 @@ function formFromCommitment(c, todayStr) {
     insurancePolicyId: c.insurancePolicyId || "",
     insuredPersonName: c.insuredPersonName || "",
     insuranceCompany: c.insuranceCompany || "",
+    schemeCode: c.schemeCode || "",
+    schemeName: c.schemeName || "",
     ...chitFieldsFromCommitment(c),
   };
 }
@@ -57,11 +60,27 @@ function formFromCommitment(c, todayStr) {
 export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const { t } = useTranslation();
   const copy = useCopy();
-  const { todayStr, settings } = useCommitTrack();
+  const { todayStr, settings } = usePerovo();
   const salariedFamily = isSalariedFamily(settings);
   const billCategories = getCategoriesForUserMode(settings);
   const [form, setForm] = useState(() => formFromCommitment(commitment, todayStr));
   const [errors, setErrors] = useState(/** @type {Record<string, string>} */ ({}));
+  const [fundQuery, setFundQuery] = useState(() => formFromCommitment(commitment, todayStr).schemeName || "");
+  const [fundHits, setFundHits] = useState([]);
+  const fundDebounce = useRef(null);
+  const visibleFundHits =
+    form.category === "SIP" && fundQuery.length >= 3 ? fundHits : [];
+
+  useEffect(() => {
+    if (form.category !== "SIP" || fundQuery.length < 3) {
+      return undefined;
+    }
+    clearTimeout(fundDebounce.current);
+    fundDebounce.current = setTimeout(() => {
+      searchFund(fundQuery).then(setFundHits);
+    }, 300);
+    return () => clearTimeout(fundDebounce.current);
+  }, [fundQuery, form.category]);
 
   const patchForm = (patch) => {
     setForm((f) => {
@@ -90,28 +109,28 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const isSubscription = form.category === "Subscription";
   const isOther = form.category === "Other";
 
-  const fieldClass = (field) => fieldInputClass(Boolean(errors[field]));
+  const fieldClass = (field) => `${fieldInputClass(Boolean(errors[field]))} ct-input-tint`;
 
   const validate = () => {
     const errs = {};
     if (showInsurance) {
-      if (!insuranceBillHasIdentity(form)) errs.insurancePolicyId = "Enter policy ID, company, or insured person";
+      if (!insuranceBillHasIdentity(form)) errs.insurancePolicyId = t("commitment.edit.error.insuranceIdentity");
     } else if (!form.name.trim()) {
-      errs.name = "Name is required";
+      errs.name = t("commitment.edit.error.nameRequired");
     }
     if (showChit) {
       if (!chitFundHasRequiredFields(form)) {
-        if (!form.chitValue || Number(form.chitValue) <= 0) errs.chitValue = "Enter chit value";
-        if (!form.chitMonths || Number(form.chitMonths) < 1) errs.chitMonths = "Enter months";
+        if (!form.chitValue || Number(form.chitValue) <= 0) errs.chitValue = t("commitment.edit.error.chitValue");
+        if (!form.chitMonths || Number(form.chitMonths) < 1) errs.chitMonths = t("commitment.edit.error.chitMonths");
       }
     } else if (!form.amount || Number.isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
-      errs.amount = "Enter a valid amount";
+      errs.amount = t("commitment.edit.error.amountRequired");
     }
-    if (!form.startDate) errs.startDate = "Start date is required";
+    if (!form.startDate) errs.startDate = t("commitment.edit.error.startDateRequired");
     if (form.endDate && form.startDate && form.endDate < form.startDate) {
-      errs.endDate = "End date must be on or after start date";
+      errs.endDate = t("commitment.edit.error.endDateOrder");
     }
-    if (!form.dueDate) errs.dueDate = "Next payment due is required";
+    if (!form.dueDate) errs.dueDate = t("commitment.edit.error.dueDateRequired");
     return errs;
   };
 
@@ -138,6 +157,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
       repeatType: showChit ? "monthly" : form.repeatType,
       priority: isOther ? form.priority : inferPriorityFromCategory(form.category),
       notes: form.notes.trim(),
+      schemeCode: form.category === "SIP" ? String(form.schemeCode || "") : "",
+      schemeName: form.category === "SIP" ? String(form.schemeName || "") : "",
       annualInterestRate:
         showInterest && form.annualInterestRate !== ""
           ? Math.min(60, Math.max(0, Number(form.annualInterestRate) || 0))
@@ -173,28 +194,19 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
       title={copy.editBill}
       onClose={onClose}
       footer={
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-2.5 text-sm font-semibold text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            className="flex-1 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700"
-            style={{ fontFamily: "'Sora', sans-serif" }}
-          >
-            Save
-          </button>
+        <div className="ct-row gap-2 w-full">
+          <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button type="button" variant="primary" className="flex-1" onClick={handleSave}>
+            {t("common.save")}
+          </Button>
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="ct-stack">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Name</label>
+          <label className="ct-field-label">{t("commitment.edit.name")}</label>
           <input
             className={fieldClass("name")}
             value={form.name}
@@ -203,8 +215,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-            {showChit ? "This month's installment (₹)" : "Amount (₹)"}
+          <label className="ct-field-label">
+            {showChit ? t("commitment.edit.installment") : t("commitment.edit.amount")}
           </label>
           <input
             type="number"
@@ -217,13 +229,13 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
           {showChit && form.chitInstallmentMode !== "custom" && (
             <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
-              From chit value and month. Choose &quot;fixed amount&quot; in chit details to edit manually.
+              {t("commitment.edit.chitInstallmentHint")}
             </p>
           )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Start date</label>
+            <label className="ct-field-label">{t("commitment.edit.startDate")}</label>
             <input
               type="date"
               className={fieldClass("startDate")}
@@ -233,8 +245,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-              End date <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="ct-field-label">
+              {t("commitment.edit.endDate")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="date"
@@ -247,7 +259,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Next payment due</label>
+          <label className="ct-field-label">{t("commitment.edit.nextDue")}</label>
           <input
             type="date"
             className={fieldClass("dueDate")}
@@ -257,7 +269,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Category</label>
+          <label className="ct-field-label">{t("commitment.edit.category")}</label>
           <select
             className={fieldClass("category")}
             value={form.category}
@@ -276,9 +288,43 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             ))}
           </select>
         </div>
+        {form.category === "SIP" ? (
+          <div>
+            <label className="ct-field-label">
+              {t("commitment.sip.fundSearch")}
+            </label>
+            <input
+              className={fieldClass("scheme")}
+              value={fundQuery}
+              onChange={(e) => setFundQuery(e.target.value)}
+            />
+            {visibleFundHits.length > 0 ? (
+              <ul className="ct-stack-sm mt-1 max-h-32 overflow-y-auto">
+                {visibleFundHits.map((hit) => (
+                  <li key={hit.schemeCode}>
+                    <button
+                      type="button"
+                      className="ct-link text-left text-sm"
+                      onClick={() => {
+                        patchForm({ schemeCode: hit.schemeCode, schemeName: hit.schemeName });
+                        setFundQuery(hit.schemeName);
+                        setFundHits([]);
+                      }}
+                    >
+                      {hit.schemeName}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="text-xs text-gray-500 mt-1">
+              {form.schemeCode ? t("commitment.sip.fundNavHint") : t("commitment.sip.fundEmpty")}
+            </p>
+          </div>
+        ) : null}
         {!showChit && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Repeat</label>
+            <label className="ct-field-label">{t("commitment.edit.repeat")}</label>
             <select
               className={fieldClass("repeat")}
               value={form.repeatType}
@@ -294,7 +340,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         )}
         {isOther && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Priority</label>
+            <label className="ct-field-label">{t("commitment.edit.priority")}</label>
             <select
               className={fieldClass("priority")}
               value={form.priority}
@@ -330,8 +376,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
 
         {showInterest && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-              Annual interest % <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="ct-field-label">
+              {t("commitment.edit.interestOptional")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="number"
@@ -347,8 +393,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         )}
         {isSubscription && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-              Trial ends <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="ct-field-label">
+              {t("commitment.edit.trialEnds")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="date"
@@ -360,8 +406,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         )}
         {salariedFamily && (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
-              Who pays this bill? <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="ct-field-label">
+              {t("commitment.edit.householdPayer")} <span className="ct-text-muted font-normal">{t("commitment.edit.householdPayerOptional")}</span>
               <InfoTip text={CALC_HELP.householdPayerBillTag} />
             </label>
             <select
@@ -369,15 +415,15 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               value={form.householdPayer || ""}
               onChange={(e) => patchForm({ householdPayer: e.target.value })}
             >
-              <option value="">Not tagged — counts in household total only</option>
-              <option value="primary">Primary income / main earner</option>
-              <option value="secondary">Second income / partner</option>
-              <option value="shared">Shared / joint</option>
+              <option value="">{t("commitment.edit.payerUntagged")}</option>
+              <option value="primary">{t("commitment.edit.payerPrimary")}</option>
+              <option value="secondary">{t("commitment.edit.payerSecondary")}</option>
+              <option value="shared">{t("commitment.edit.payerShared")}</option>
             </select>
           </div>
         )}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1.5">Notes</label>
+          <label className="ct-field-label">{t("commitment.edit.notes")}</label>
           <textarea
             className={`${fieldClass("notes")} min-h-[80px] resize-y`}
             value={form.notes}

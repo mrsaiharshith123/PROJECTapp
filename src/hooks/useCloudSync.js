@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { hasPaidBackupTier } from "../constants/subscriptionTiers.js";
 import {
   canUseCloudSync,
@@ -13,7 +13,7 @@ import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
 
 export function useCloudSync() {
   const { user, isLoggedIn } = useAuth();
-  const track = useCommitTrack();
+  const track = usePerovo();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");

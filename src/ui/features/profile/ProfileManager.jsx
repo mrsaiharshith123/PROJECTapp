@@ -1,14 +1,26 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Button, Caption, inputClassName } from "../../index.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
 const COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 
+const COLOR_HEX = {
+  indigo: "#6366f1",
+  violet: "#8b5cf6",
+  emerald: "#10b981",
+  amber: "#f59e0b",
+  rose: "#f43f5e",
+  sky: "#0ea5e9",
+};
+
+const profileInputClass = inputClassName();
+
 export default function ProfileManager() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const defaultProfile = { id: "default", label: t("profile.defaultProfileLabel"), color: "indigo" };
   const profiles = settings.profiles || [defaultProfile];
   const [newLabel, setNewLabel] = useState("");
@@ -52,47 +64,31 @@ export default function ProfileManager() {
   };
 
   return (
-    <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-slate-700">
-      <p className="text-xs font-semibold text-gray-600 dark:text-slate-300">{t("profile.profilesTitle")}</p>
-      <ul className="space-y-2">
+    <div className="ct-stack-sm">
+      <Caption className="font-semibold block">{t("profile.profilesTitle")}</Caption>
+      <ul className="ct-stack-sm">
         {profiles.map((p) => (
-          <li
-            key={p.id}
-            className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-100 dark:border-slate-700 px-3 py-2"
-          >
+          <li key={p.id} className="ct-hero-inset ct-row flex-wrap items-center gap-2">
             <span
-              className={`w-2.5 h-2.5 rounded-full bg-${p.color}-500 shrink-0`}
-              style={{
-                backgroundColor:
-                  p.color === "indigo"
-                    ? "#6366f1"
-                    : p.color === "violet"
-                      ? "#8b5cf6"
-                      : p.color === "emerald"
-                        ? "#10b981"
-                        : p.color === "amber"
-                          ? "#f59e0b"
-                          : p.color === "rose"
-                            ? "#f43f5e"
-                            : "#0ea5e9",
-              }}
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: COLOR_HEX[p.color] || COLOR_HEX.indigo }}
             />
             {editingId === p.id ? (
               <input
-                className="flex-1 min-w-0 px-2 py-1 rounded-lg border border-gray-200 text-sm"
+                className={`${profileInputClass} flex-1 min-w-0 !py-1.5 !text-sm`}
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 onBlur={commitRename}
               />
             ) : (
-              <span className="flex-1 text-sm font-medium text-gray-800 dark:text-slate-100">{p.label}</span>
+              <span className="flex-1 text-sm font-medium text-[var(--ct-text)]">{p.label}</span>
             )}
             {p.id !== "default" && editingId !== p.id && (
               <>
-                <button type="button" onClick={() => startRename(p)} className="text-xs text-indigo-600 font-semibold">
+                <button type="button" onClick={() => startRename(p)} className="ct-link !text-xs">
                   {t("profile.rename")}
                 </button>
-                <button type="button" onClick={() => removeProfile(p.id)} className="text-xs text-red-500 font-semibold">
+                <button type="button" onClick={() => removeProfile(p.id)} className="ct-link !text-xs text-[var(--ct-danger-text)]">
                   {t("common.delete")}
                 </button>
               </>
@@ -103,35 +99,30 @@ export default function ProfileManager() {
       {!canAddProfile && profiles.length <= 1 && (
         <TierLimitBanner title={t("tier.limit.profilesTitle")} message={t("tier.limit.profilesMessage")} />
       )}
-      <div className="flex flex-wrap gap-2">
+      <div className="ct-row flex-wrap gap-2">
         <input
-          className="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+          className={`${profileInputClass} flex-1 min-w-0 !text-sm`}
           placeholder={t("profile.newProfileName")}
           value={newLabel}
           onChange={(e) => setNewLabel(e.target.value)}
         />
         <select
-          className="px-2 py-2 rounded-xl border border-gray-200 text-sm"
+          className={`${profileInputClass} !w-auto !text-sm`}
           value={newColor}
           onChange={(e) => setNewColor(e.target.value)}
         >
           {COLORS.map((c) => (
             <option key={c} value={c}>
-              {c}
+              {t(`profile.color.${c}`)}
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={addProfile}
-          disabled={!canAddProfile}
-          className="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold disabled:opacity-50"
-        >
+        <Button type="button" size="sm" onClick={addProfile} disabled={!canAddProfile} className="!w-auto">
           {t("common.add")}
-        </button>
+        </Button>
       </div>
       <select
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm"
+        className={profileInputClass}
         value={settings.activeProfileId || "default"}
         onChange={(e) => updateSettings({ activeProfileId: e.target.value })}
       >
@@ -141,7 +132,7 @@ export default function ProfileManager() {
           </option>
         ))}
       </select>
-      <p className="text-[11px] text-gray-400">{t("profile.newBillsHint")}</p>
+      <Caption className="block opacity-80">{t("profile.newBillsHint")}</Caption>
     </div>
   );
 }

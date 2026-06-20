@@ -47,8 +47,17 @@ interface RazorpayConstructor {
 
 interface Window {
   Razorpay?: RazorpayConstructor;
-  __commitTrackDev?: {
+  __PEROVO_EMBEDDED__?: boolean;
+  Capacitor?: { isNativePlatform?: () => boolean };
+  __perovoDev?: {
     simulatePayment?: (tier: "pro" | "power") => Promise<{ paymentId: string; tier: "pro" | "power" }>;
     resetSubscription?: () => { tier: "free" };
+    setOverride?: (patch: Record<string, unknown>) => void;
+    clearOverride?: () => void;
+    getOverride?: () => Record<string, unknown> | null;
+    preset?: (name: string) => void;
+    force?: (on?: boolean) => void;
+    clear?: () => void;
+    help?: () => void;
   };
 }

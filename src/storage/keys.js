@@ -2,11 +2,11 @@
 export const STORAGE_KEYS = {
   commitments: "commitments",
   lendings: "lendings",
-  settings: "committrack_settings",
-  monthlySnapshots: "committrack_monthly_snapshots",
-  goals: "committrack_goals",
-  dailySpends: "committrack_daily_spends",
-  schemaVersion: "committrack_schema_version",
-  syncMeta: "committrack_sync_meta",
-  wealth: "committrack_wealth",
+  settings: "perovo_settings",
+  monthlySnapshots: "perovo_monthly_snapshots",
+  goals: "perovo_goals",
+  dailySpends: "perovo_daily_spends",
+  schemaVersion: "perovo_schema_version",
+  syncMeta: "perovo_sync_meta",
+  wealth: "perovo_wealth",
 };

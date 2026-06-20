@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-const DISMISS_KEY = "committrack_pwa_install_dismissed";
+import { isEmbeddedApp } from "../utils/embeddedApp.js";
+
+const DISMISS_KEY = "perovo_pwa_install_dismissed";
 
 function readStandalone() {
   if (typeof window === "undefined") return false;
@@ -19,6 +21,7 @@ function readAndroid() {
 }
 
 export function usePwaInstall() {
+  const embedded = isEmbeddedApp();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [dismissed, setDismissed] = useState(() => {
     try {
@@ -40,10 +43,11 @@ export function usePwaInstall() {
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstall);
   }, []);
 
-  const canInstall = Boolean(deferredPrompt) && !isStandalone && !dismissed;
-  const showIosHint = isIos && !isStandalone && !dismissed;
-  const showAndroidHint = isAndroid && !canInstall && !isStandalone && !dismissed;
-  const showInstallUi = !isStandalone && !dismissed && (canInstall || showIosHint || showAndroidHint);
+  const canInstall = !embedded && Boolean(deferredPrompt) && !isStandalone && !dismissed;
+  const showIosHint = !embedded && isIos && !isStandalone && !dismissed;
+  const showAndroidHint = !embedded && isAndroid && !canInstall && !isStandalone && !dismissed;
+  const showInstallUi =
+    !embedded && !isStandalone && !dismissed && (canInstall || showIosHint || showAndroidHint);
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return false;

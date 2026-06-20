@@ -8,18 +8,19 @@ import {
 } from "../../../engines/prepayment.js";
 import { totalMonthlyBurden } from "../../../engines/burden.js";
 import { comparePayoffStrategies } from "../../../engines/payoffOptimizer.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatInr, INR, ARROW, EM_DASH } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
 
 function DebtOrderPanel() {
   const { t } = useTranslation();
-  const { commitments, getEffectiveStatus } = useCommitTrack();
+  const { commitments, getEffectiveStatus } = usePerovo();
   const [payoffExtra, setPayoffExtra] = useState("");
   const payoff = useMemo(() => {
     const x = Number(payoffExtra) || 0;
@@ -91,7 +92,7 @@ export default function LoanToolsPanel() {
     getEffectiveStatus,
     getEffectiveLendingStatus,
     todayStr,
-  } = useCommitTrack();
+  } = usePerovo();
   const tabs = useMemo(
     () => [
       { id: "extra", label: t("tools.loan.tabExtra") },
@@ -174,12 +175,15 @@ export default function LoanToolsPanel() {
           </div>
           {sim && (
             <>
-              <div className="ct-insight-accent ct-stack-sm">
-                <Body className="!text-sm">
-                  <span className="font-semibold">{t("tools.loan.monthsSaved")}</span> {sim.monthsSaved} ({sim.baselineMonths}{" "}
-                  {ARROW} {sim.acceleratedMonths})
-                </Body>
-                <Caption>{t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}</Caption>
+              <ToolAnswerHero
+                tone="sim"
+                label={t("tools.loan.monthsSaved")}
+                value={String(sim.monthsSaved)}
+                subtitle={t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}
+              >
+                <Caption>
+                  {sim.baselineMonths} {ARROW} {sim.acceleratedMonths}
+                </Caption>
                 {stressDelta && (
                   <Caption className="block">
                     {t("charts.stressAfterPayoff", {
@@ -208,7 +212,7 @@ export default function LoanToolsPanel() {
                     )}
                   </>
                 )}
-              </div>
+              </ToolAnswerHero>
               {paidSeries && paidSeries.rows.length > 0 && (
               <ToolComparisonChart
                 data={sampleLoanChartRows(paidSeries.rows)}

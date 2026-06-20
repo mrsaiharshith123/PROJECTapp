@@ -18,8 +18,8 @@ npm install -g @bubblewrap/cli
 
 ```bash
 keytool -genkeypair -v \
-  -keystore committrack.keystore \
-  -alias committrack \
+  -keystore perovo.keystore \
+  -alias perovo \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000
@@ -28,7 +28,7 @@ keytool -genkeypair -v \
 Get the SHA-256 fingerprint:
 
 ```bash
-keytool -list -v -keystore committrack.keystore
+keytool -list -v -keystore perovo.keystore
 ```
 
 Paste the fingerprint into `public/.well-known/assetlinks.json`
@@ -37,11 +37,11 @@ Paste the fingerprint into `public/.well-known/assetlinks.json`
 
 The file at `public/.well-known/assetlinks.json` must be accessible at:
 
-`https://committrack.app/.well-known/assetlinks.json`
+`https://perovo.app/.well-known/assetlinks.json`
 
 Verify:
 
-`https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://committrack.app&relation=delegate_permission/common.handle_all_urls`
+`https://digitalassetlinks.googleapis.com/v1/statements:list?source.web.site=https://perovo.app&relation=delegate_permission/common.handle_all_urls`
 
 ### 4. Build the APK
 
@@ -62,7 +62,7 @@ Upload the generated `app-release-signed.apk` or `.aab` to:
 
 https://play.google.com/console
 
-- App name: CommitTrack
+- App name: Perovo
 - Category: Finance
 - Content rating: Everyone
 - Target audience: 18+

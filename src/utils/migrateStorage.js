@@ -25,8 +25,61 @@ import { resolveAccountCreatedAt } from "./accountOrigin.js";
 
 const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 
-export const SCHEMA_VERSION_KEY = "committrack_schema_version";
-export const CURRENT_SCHEMA_VERSION = 11;
+export const SCHEMA_VERSION_KEY = "perovo_schema_version";
+export const CURRENT_SCHEMA_VERSION = 12;
+
+/** Copy legacy perovo_* localStorage keys to perovo_* (one-time). */
+export function migrateLegacyStorageKeys() {
+  const pairs = [
+    ["perovo_settings", STORAGE_KEYS.settings],
+    ["perovo_monthly_snapshots", STORAGE_KEYS.monthlySnapshots],
+    ["perovo_goals", STORAGE_KEYS.goals],
+    ["perovo_daily_spends", STORAGE_KEYS.dailySpends],
+    ["perovo_schema_version", STORAGE_KEYS.schemaVersion],
+    ["perovo_sync_meta", STORAGE_KEYS.syncMeta],
+    ["perovo_wealth", STORAGE_KEYS.wealth],
+    ["perovo_pwa_install_dismissed", "perovo_pwa_install_dismissed"],
+    ["perovo_notif_permission_asked", "perovo_notif_permission_asked"],
+    ["perovo_last_notif_digest", "perovo_last_notif_digest"],
+    ["perovo_device_id", "perovo_device_id"],
+    ["perovo_tools_nudge_dismissed", "perovo_tools_nudge_dismissed"],
+    ["perovo_tools_nudge_session", "perovo_tools_nudge_session"],
+    ["perovo_analytics_session", "perovo_analytics_session"],
+    ["perovo_signup_pending", "perovo_signup_pending"],
+  ];
+  try {
+    for (const [oldKey, newKey] of pairs) {
+      const val = localStorage.getItem(oldKey);
+      if (val === null) continue;
+      if (localStorage.getItem(newKey) === null) localStorage.setItem(newKey, val);
+      localStorage.removeItem(oldKey);
+    }
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      if (key.startsWith("perovo_auth_seeded_")) {
+        const val = localStorage.getItem(key);
+        const next = key.replace("perovo_auth_seeded_", "perovo_auth_seeded_");
+        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
+        localStorage.removeItem(key);
+      }
+      if (key.startsWith("perovo_profile_seeded_")) {
+        const val = localStorage.getItem(key);
+        const next = key.replace("perovo_profile_seeded_", "perovo_profile_seeded_");
+        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
+        localStorage.removeItem(key);
+      }
+      if (key.startsWith("perovo_offer_")) {
+        const val = localStorage.getItem(key);
+        const next = key.replace("perovo_offer_", "perovo_offer_");
+        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
+        localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 function normalizeCategory(raw) {
   const s = String(raw || "").trim();
@@ -172,6 +225,14 @@ export function normalizeCommitment(raw) {
       : "shared",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
+    schemeCode: String(raw.schemeCode || ""),
+    schemeName: String(raw.schemeName || ""),
+    consumerNumber: String(raw.consumerNumber || ""),
+    billerId: String(raw.billerId || ""),
+    currentNav: raw.currentNav != null && !Number.isNaN(Number(raw.currentNav)) ? Number(raw.currentNav) : null,
+    navFetchedAt: raw.navFetchedAt ? String(raw.navFetchedAt).slice(0, 10) : "",
+    navDate: raw.navDate ? String(raw.navDate).slice(0, 10) : raw.navFetchedAt ? String(raw.navFetchedAt).slice(0, 10) : "",
+    unitsHeld: raw.unitsHeld != null ? Math.max(0, Number(raw.unitsHeld) || 0) : 0,
   };
 }
 
@@ -348,7 +409,7 @@ export function loadLendingsFromStorage() {
 
 export function loadMonthlySnapshotsFromStorage() {
   try {
-    const raw = localStorage.getItem("committrack_monthly_snapshots");
+    const raw = localStorage.getItem("perovo_monthly_snapshots");
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) return arr.filter((s) => s && typeof s.month === "string").slice(-48);
@@ -361,7 +422,7 @@ export function loadMonthlySnapshotsFromStorage() {
 
 export function saveMonthlySnapshotsToStorage(snapshots) {
   try {
-    localStorage.setItem("committrack_monthly_snapshots", JSON.stringify(snapshots.slice(-48)));
+    localStorage.setItem("perovo_monthly_snapshots", JSON.stringify(snapshots.slice(-48)));
   } catch {
     /* ignore */
   }
@@ -397,7 +458,7 @@ export function normalizeGoal(raw) {
 
 export function loadGoalsFromStorage() {
   try {
-    const raw = localStorage.getItem("committrack_goals");
+    const raw = localStorage.getItem("perovo_goals");
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) return mapNormalized(arr, normalizeGoal);
@@ -429,7 +490,7 @@ export function migrateLegacySavedTowardGoals(settings, goals) {
 
   try {
     saveGoalsToStorage(nextGoals);
-    localStorage.setItem("committrack_settings", JSON.stringify(nextSettings));
+    localStorage.setItem("perovo_settings", JSON.stringify(nextSettings));
   } catch {
     /* ignore */
   }
@@ -464,6 +525,7 @@ export function invalidateInitialAppStateCache() {
 
 export function loadInitialAppState() {
   if (cachedInitialAppState) return cachedInitialAppState;
+  migrateLegacyStorageKeys();
   let settings = loadSettingsFromStorage();
   const commitments = loadCommitmentsFromStorage();
   const lendings = loadLendingsFromStorage();
@@ -504,7 +566,7 @@ export function loadFullAppStateForSync() {
 
 export function saveGoalsToStorage(goals) {
   try {
-    localStorage.setItem("committrack_goals", JSON.stringify(goals));
+    localStorage.setItem("perovo_goals", JSON.stringify(goals));
   } catch {
     /* ignore */
   }
@@ -552,6 +614,8 @@ const DEFAULT_SETTINGS = {
   avatarSource: "auto",
   profileImageDataUrl: "",
   liquidSavings: 0,
+  goldRatePerGram: null,
+  goldRateLastFetched: null,
   /** City id from constants/cityLivingCosts.js — set during onboarding or account */
   userCity: "",
   dependents: 0,
@@ -595,7 +659,7 @@ const DEFAULT_SETTINGS = {
 
 export function loadSettingsFromStorage() {
   try {
-    const raw = localStorage.getItem("committrack_settings");
+    const raw = localStorage.getItem("perovo_settings");
     if (raw) {
       const o = JSON.parse(raw);
       if (!o || typeof o !== "object" || Array.isArray(o)) {
@@ -646,6 +710,11 @@ export function loadSettingsFromStorage() {
             ? o.profileImageDataUrl
             : "",
         liquidSavings: Math.max(0, Number(o.liquidSavings) || 0),
+        goldRatePerGram:
+          o.goldRatePerGram != null && !Number.isNaN(Number(o.goldRatePerGram))
+            ? Math.max(0, Number(o.goldRatePerGram))
+            : null,
+        goldRateLastFetched: o.goldRateLastFetched ? String(o.goldRateLastFetched) : null,
         userCity: typeof o.userCity === "string" ? String(o.userCity) : "",
         dependents: Math.max(0, Math.min(12, Math.floor(Number(o.dependents) || 0))),
         profiles: normalizeProfiles(o.profiles),
@@ -728,8 +797,8 @@ export function clearAllLocalData() {
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
       if (
-        key?.startsWith("committrack_auth_seeded_") ||
-        key?.startsWith("committrack_profile_seeded_")
+        key?.startsWith("perovo_auth_seeded_") ||
+        key?.startsWith("perovo_profile_seeded_")
       ) {
         localStorage.removeItem(key);
       }

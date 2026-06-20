@@ -58,7 +58,7 @@ export function buildAgreementShareMessage(lending, settings = {}) {
   const lender = lending.lenderFullName || settings?.displayName || "Your lender";
   const purpose = lending.loanPurpose || "personal loan";
   const name = lending.borrowerFullName || lending.personName || "there";
-  return `Hi ${name}, ${lender} has created a loan agreement for ${amount} (${purpose}) on CommitTrack. Please review the terms and confirm. Your repayment schedule and due dates are included. — Managed via CommitTrack`;
+  return `Hi ${name}, ${lender} has created a loan agreement for ${amount} (${purpose}) on Perovo. Please review the terms and confirm. Your repayment schedule and due dates are included. — Managed via Perovo`;
 }
 
 /** @param {object} lending @param {object} [settings] */
@@ -67,7 +67,7 @@ export function buildDealConfirmedMessage(lending, settings = {}) {
   const firstDue = (lending.repaymentSchedule || [])[0]?.dueDate || "soon";
   const name = lending.borrowerFullName || lending.personName || "there";
   const lender = lending.lenderFullName || settings?.displayName || "Lender";
-  return `Hi ${name}, our loan agreement for ${amount} is confirmed. First payment due: ${firstDue}. You can track this in CommitTrack. — ${lender}`;
+  return `Hi ${name}, our loan agreement for ${amount} is confirmed. First payment due: ${firstDue}. You can track this in Perovo. — ${lender}`;
 }
 
 /** @param {object} lending @param {object} [settings] @param {number} escalationLevel */
@@ -77,5 +77,5 @@ export function buildEscalationMessage(lending, settings = {}, escalationLevel =
   const lender = lending.lenderFullName || settings?.displayName || "the lender";
   if (escalationLevel === 1) return buildReminderMessage(lending, settings);
   if (escalationLevel === 2) return buildFinalNoticeMessage(lending, settings);
-  return `FINAL NOTICE: Dear ${name}, this is your last reminder. Outstanding: ${amount}. A formal legal notice under CPC Order XXXVII has been prepared. Immediate payment is required. — ${lender} via CommitTrack`;
+  return `FINAL NOTICE: Dear ${name}, this is your last reminder. Outstanding: ${amount}. A formal legal notice under CPC Order XXXVII has been prepared. Immediate payment is required. — ${lender} via Perovo`;
 }

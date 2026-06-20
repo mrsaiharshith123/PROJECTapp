@@ -29,7 +29,7 @@ const TARGET_CODES = {
 };
 
 const PROPER_NOUNS = [
-  "Daloy Tech", "Tadsaya", "Pro", "Power", "Free", "iPhone", "iPad", "Android",
+  "Tadsaya", "Tadsaya", "Pro", "Power", "Free", "iPhone", "iPad", "Android",
   "Chrome", "Safari", "Supabase", "JSON", "PAN", "EMI", "CTC", "PF", "SMS", "WhatsApp",
 ];
 
@@ -237,10 +237,10 @@ async function translateLocale(locale, enMessages, keys, { rebuild = false } = {
       let raw = await translateWithGoogle(masked.slice(0, 480), apiTarget);
       if (locale === "ks") raw = adaptKashmiriFromUrdu(raw);
       let value = unprotectText(raw, tokens);
-      if (key === "brand.appName" && /^CommitTrack$/i.test(value)) {
+      if (key === "brand.appName" && /^Perovo$/i.test(value)) {
         let brand = await translateWithGoogle("Commit Track", apiTarget);
         if (locale === "ks") brand = adaptKashmiriFromUrdu(brand);
-        if (brand && !/^CommitTrack$/i.test(brand)) value = brand;
+        if (brand && !/^Perovo$/i.test(brand)) value = brand;
       }
       const fallback = locale === "ks" ? adaptKashmiriFromUrdu(unprotectText(raw, tokens)) : enValue;
       return { key, value: isCorruptedTranslation(value) ? fallback : value };

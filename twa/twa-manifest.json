@@ -14,8 +14,8 @@
   "appVersion": "1",
   "appVersionCode": 1,
   "signingKey": {
-    "path": "./committrack.keystore",
-    "alias": "committrack"
+    "path": "./perovo.keystore",
+    "alias": "perovo"
   },
   "splashScreenFadeOutDuration": 300,
   "enableSiteSettingsShortcut": true,

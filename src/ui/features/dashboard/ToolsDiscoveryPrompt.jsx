@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { dismissToolsNudge, isToolsNudgeDismissed } from "../../../utils/toolsDiscoveryStorage.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { FAB_CHANGE_EVENT } from "../../../constants/fabEvents.js";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
@@ -23,6 +24,13 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
   const [ready, setReady] = useState(false);
   const [scrolling, setScrolling] = useState(false);
   const [toolsReached, setToolsReached] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
+
+  useEffect(() => {
+    const onFabChange = (e) => setFabOpen(Boolean(e.detail?.open));
+    window.addEventListener(FAB_CHANGE_EVENT, onFabChange);
+    return () => window.removeEventListener(FAB_CHANGE_EVENT, onFabChange);
+  }, []);
 
   useEffect(() => {
     if (dismissed || blocked) return;
@@ -104,7 +112,7 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
   if (dismissed) return null;
 
   const visible =
-    ready && !blocked && !scrolling && (variant === "analytics" || !toolsReached);
+    ready && !blocked && !fabOpen && !scrolling && (variant === "analytics" || !toolsReached);
 
   return createPortal(
     <div

@@ -6,10 +6,15 @@ import { VitePWA } from "vite-plugin-pwa";
 /** GitHub Pages project site: https://user.github.io/PROJECTapp/ */
 const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
 const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
+const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
 
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
+  server: {
+    host: true,
+    port: 5173,
+  },
   build: {
     rollupOptions: {
       output: {
@@ -25,7 +30,9 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    VitePWA({
+    ...(!embeddedApp
+      ? [
+          VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon-32.png", "pwa-192.png", "pwa-512.png", "brand/**/*"],
       manifest: {
@@ -79,5 +86,7 @@ export default defineConfig({
         navigateFallback: "index.html",
       },
     }),
+        ]
+      : []),
   ],
 });

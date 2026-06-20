@@ -3,8 +3,8 @@ import { writeNotificationSnapshot } from "./notificationSnapshotStore.js";
 import { pickDigestNotifications } from "./scheduler.js";
 import { wasBrowserNotificationSent } from "./notificationDelivery.js";
 
-const SYNC_TAG = "committrack-reminders";
-const PERIODIC_TAG = "committrack-reminders";
+const SYNC_TAG = "perovo-reminders";
+const PERIODIC_TAG = "perovo-reminders";
 
 /**
  * Save unread reminders for the service worker and request a background flush.

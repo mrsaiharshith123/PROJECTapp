@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useCommitIntel } from "./useCommitIntel.js";
 import { useStabilityIntel } from "./useStabilityIntel.js";
 import { useCloudSync } from "./useCloudSync.js";
@@ -10,7 +10,7 @@ import { isActiveBill } from "../utils/billLifecycle.js";
 
 /** Profile hub metrics — composes existing intel without new engines. */
 export function useProfileHubIntel() {
-  const ctx = useCommitTrack();
+  const ctx = usePerovo();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const sync = useCloudSync();

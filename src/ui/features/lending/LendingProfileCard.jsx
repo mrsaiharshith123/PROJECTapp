@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
@@ -23,7 +23,7 @@ import { cn } from "../../utils/cn.js";
  */
 export default function LendingProfileCard({ totals, trustScore, dealCount }) {
   const { t } = useTranslation();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const [shareHint, setShareHint] = useState("");
 
@@ -62,15 +62,14 @@ export default function LendingProfileCard({ totals, trustScore, dealCount }) {
   ];
 
   return (
-    <section className="ct-nw-hero ct-lending-profile-hero ct-reveal">
-      <div className="ct-nw-hero-glow" aria-hidden />
+    <section className="ct-hero-card lending ct-lending-profile-hero ct-reveal">
+      <div className="ct-hero-glow" aria-hidden />
 
       <div className="ct-row-between gap-2 flex-wrap relative">
         <div className="text-left">
           <Eyebrow>{t("lending.profile.eyebrow")}</Eyebrow>
-          <Caption className="block mt-0.5 font-semibold text-[var(--ct-text)]">
-            {t("lending.profile.title")}
-          </Caption>
+          <p className="ct-hero-label mt-2">{t("lending.profile.youAreOwed")}</p>
+          <p className="ct-hero-number">{privacyMode ? "••••" : formatInr(totals.lentOutstanding)}</p>
           <Caption className="block mt-0.5 opacity-80">{t("lending.profile.subtitle")}</Caption>
         </div>
         <div className="ct-row gap-1.5 shrink-0">

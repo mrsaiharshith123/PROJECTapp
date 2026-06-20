@@ -1,6 +1,6 @@
 import { STORAGE_KEYS } from "../../storage/keys.js";
 
-const DEVICE_KEY = "committrack_device_id";
+const DEVICE_KEY = "perovo_device_id";
 
 function readDeviceId() {
   try {

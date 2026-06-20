@@ -31,7 +31,7 @@ function WealthEntryForm({ kind, entry, onClose, onSave }) {
   const [form, setForm] = useState(() => entryToForm(entry, kind));
 
   const categories = form.kind === "asset" ? ASSET_CATEGORIES : LIABILITY_CATEGORIES;
-  const fieldClass = inputClassName();
+  const fieldClass = `${inputClassName()} ct-input-tint`;
 
   const submit = () => {
     if (!form.name.trim() || !form.value) return;

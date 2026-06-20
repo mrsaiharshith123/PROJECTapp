@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Caption, Body, Heading, Button, Modal } from "../../index.js";
+import { Caption, Body, Button, Modal } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { buildAnnualReportData, formatAnnualReportPlainText } from "../../../engines/annualReport.js";
@@ -16,6 +17,7 @@ import { previewImportCounts } from "../../../utils/dataImport.js";
 import { clearAllLocalData } from "../../../utils/migrateStorage.js";
 import { deleteAccountData } from "../../../services/supabase/auth.js";
 import ProfileCloudSyncSection from "./ProfileCloudSyncSection.jsx";
+import { SettingsGroup, SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
 
 /**
  * Account backup (Supabase), JSON export, import, and annual report — one place.
@@ -29,7 +31,7 @@ export default function ProfileBackupSection({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const ctx = useCommitTrack();
+  const ctx = usePerovo();
   const wealth = useNetWorth();
   const { user } = useAuth();
   const { importAppData } = ctx;
@@ -196,29 +198,31 @@ export default function ProfileBackupSection({
     <div className="ct-stack">
       <ProfileCloudSyncSection />
 
-      <Card className="ct-stack">
-        <div>
-          <Heading level={3}>{t("backup.fileTitle")}</Heading>
-          <Caption className="mt-1 block">{t("backup.fileSubtitle")}</Caption>
-        </div>
-
-        <button type="button" className="ct-list-row w-full text-left" onClick={exportJson}>
-          <Body className="font-semibold">{t("backup.exportJson")}</Body>
-          <Caption className="block mt-0.5">{t("backup.exportJsonHint")}</Caption>
-        </button>
-
+      <SettingsGroup title={t("backup.fileTitle")} icon="file-text" description={t("backup.fileSubtitle")}>
+        <SettingsGroupRow
+          icon="file-text"
+          iconColor="teal"
+          label={t("backup.exportJson")}
+          hint={t("backup.exportJsonHint")}
+          onClick={exportJson}
+        />
         <ProGate featureId="ca_share">
-          <button type="button" className="ct-list-row w-full text-left" onClick={exportCaSummary}>
-            <Body className="font-semibold">{t("caExport.download")}</Body>
-            <Caption className="block mt-0.5">{t("caExport.hint")}</Caption>
-          </button>
-          <button type="button" className="ct-list-row w-full text-left" onClick={exportCaJson}>
-            <Body className="font-semibold">{t("caExport.downloadJson")}</Body>
-            <Caption className="block mt-0.5">{t("caExport.hintJson")}</Caption>
-          </button>
+          <SettingsGroupRow
+            icon="file-text"
+            iconColor="violet"
+            label={t("caExport.download")}
+            hint={t("caExport.hint")}
+            onClick={exportCaSummary}
+          />
+          <SettingsGroupRow
+            icon="clipboard-text"
+            iconColor="violet"
+            label={t("caExport.downloadJson")}
+            hint={t("caExport.hintJson")}
+            onClick={exportCaJson}
+          />
         </ProGate>
-
-        <div className="ct-stack">
+        <SettingsGroupContent className="ct-stack">
           <Body className="font-semibold !text-sm">{t("backup.importJson")}</Body>
           <select className="ct-field w-full" value={mode} onChange={(e) => setMode(e.target.value)}>
             <option value="merge">{t("backup.importMerge")}</option>
@@ -242,20 +246,16 @@ export default function ProfileBackupSection({
           )}
           {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
           {result && <Caption className="block text-[var(--ct-success)]">{result}</Caption>}
-        </div>
-      </Card>
+        </SettingsGroupContent>
+      </SettingsGroup>
 
-      <Card className="ct-stack">
-        <div>
-          <Heading level={3}>{t("backup.deleteTitle")}</Heading>
-          <Caption className="mt-1 block">
-            {t("backup.deleteSubtitle", { cloud: user?.id ? t("backup.deleteCloud") : "" })}
-          </Caption>
-        </div>
-        <Button type="button" variant="danger" onClick={() => setConfirmDelete(true)}>
-          {t("backup.deleteAll")}
-        </Button>
-      </Card>
+      <SettingsGroup title={t("backup.deleteTitle")} icon="warning" description={t("backup.deleteSubtitle", { cloud: user?.id ? t("backup.deleteCloud") : "" })}>
+        <SettingsGroupContent>
+          <Button type="button" variant="danger" onClick={() => setConfirmDelete(true)}>
+            {t("backup.deleteAll")}
+          </Button>
+        </SettingsGroupContent>
+      </SettingsGroup>
 
       {confirmDelete && (
         <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && setConfirmDelete(false)}>
@@ -290,19 +290,25 @@ export default function ProfileBackupSection({
         </Modal>
       )}
 
-      <div className="ct-plan-row">
-        <div className="min-w-0 flex-1">
-          <Heading level={4}>{t("backup.annualReport")}</Heading>
-          <Caption className="block">
-            {tierHasFeature("health_report", settings)
-              ? t("backup.annualReportHintPro")
-              : t("backup.annualReportHintFree")}
-          </Caption>
-        </div>
-        <Button type="button" variant="primary" size="sm" onClick={handleAnnualReport}>
-          {t("common.generate")}
-        </Button>
-      </div>
+      <SettingsGroup title={t("backup.annualReport")} icon="chart-bar" description={tierHasFeature("health_report", settings) ? t("backup.annualReportHintPro") : t("backup.annualReportHintFree")}>
+        <SettingsGroupContent>
+          <div className="ct-row-between gap-2">
+            <div className="min-w-0 flex-1">
+              <span className="ct-icon-tile ct-icon-tile-sm amber inline-flex mr-2 align-middle">
+                <CtIcon name="chart-line-up" size={18} weight="duotone" />
+              </span>
+              <Caption className="inline align-middle">
+                {tierHasFeature("health_report", settings)
+                  ? t("backup.annualReportHintPro")
+                  : t("backup.annualReportHintFree")}
+              </Caption>
+            </div>
+            <Button type="button" variant="primary" size="sm" onClick={handleAnnualReport} className="!w-auto shrink-0">
+              {t("common.generate")}
+            </Button>
+          </div>
+        </SettingsGroupContent>
+      </SettingsGroup>
     </div>
   );
 }

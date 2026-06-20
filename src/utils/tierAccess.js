@@ -1,10 +1,11 @@
 import { format, parseISO } from "date-fns";
 import { FREE_TIER_LIMITS, PRO_CASHFLOW_DAYS } from "../constants/tierLimits.js";
 import { isFeatureUnlocked } from "../constants/subscriptionTiers.js";
+import { getEffectiveDevTier } from "./devOverride.js";
 
 /** @param {{ subscriptionTier?: string } | null | undefined} settings */
 export function getTier(settings) {
-  return settings?.subscriptionTier || "free";
+  return getEffectiveDevTier(settings?.subscriptionTier);
 }
 
 /** @param {string} featureId @param {{ subscriptionTier?: string } | null | undefined} settings */

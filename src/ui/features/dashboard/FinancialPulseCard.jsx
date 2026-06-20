@@ -4,7 +4,7 @@ import { formatInr } from "../../../constants/symbols.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { lifeScoreSharePlainText, openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
 import { Card } from "../../primitives/Card.jsx";
@@ -12,7 +12,6 @@ import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { TabContent } from "../../patterns/TabContent.jsx";
-import { GuideButton } from "../../patterns/GuideButton.jsx";
 import { PressureRing } from "../../patterns/PressureRing.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
 import { Heading, Caption } from "../../primitives/Text.jsx";
@@ -82,7 +81,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
   const { t } = useTranslation();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const microTipKey = pickMicroTip(microTipSeed);
   const showPressure = showSalariedStabilityCards(settings);
   const isFamily = isSalariedFamily(settings);
@@ -115,24 +114,6 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
   const visibleTabs = tabDefs.filter((t) => t.id !== "pressure" || showPressure);
 
-  const pulseGuideSteps = [
-    {
-      selector: "[data-guide='pressure-score']",
-      titleKey: "guide.pulse.pressureTitle",
-      textKey: "guide.pulse.pressureText",
-    },
-    {
-      selector: "[data-guide='free-cash']",
-      titleKey: "guide.pulse.freeCashTitle",
-      textKey: "guide.pulse.freeCashText",
-    },
-    {
-      selector: "[data-guide='survival-months']",
-      titleKey: "guide.pulse.survivalTitle",
-      textKey: "guide.pulse.survivalText",
-    },
-  ];
-
   const groupedEntries = family?.grouped
     ? Object.entries(family.grouped)
         .filter(([, v]) => v > 0)
@@ -140,14 +121,14 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
     : [];
 
   return (
-    <Card className="ct-stack">
-      <div className="ct-row-between" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
+    <Card className="ct-stack ct-hero-card survival ct-pulse-modern">
+      <div className="ct-hero-glow amber" aria-hidden />
+      <div className="ct-row-between relative" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
         <Heading level={2}>
           {t("pulse.title")}
           <ConceptHelp conceptId="stability" />
         </Heading>
         <div className="ct-row gap-2 items-center flex-wrap shrink-0">
-          <GuideButton labelKey="guide.pulse.label" steps={pulseGuideSteps} />
           <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
         </div>
       </div>
@@ -203,7 +184,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               <Badge tone={pressureTone(intel.stability.score) || intel.stability.tone}>
                 {translatePressureLabel(t, pressureIntel?.emotionalLabel || intel.stability.label)}
               </Badge>
-              <PressureRing score={intel.stability.score ?? 0} size={72} />
+              <PressureRing score={intel.stability.score ?? 0} size={72} variant="conic" />
             </div>
           </div>
           {advancedPressure && pressureIntel?.emotionalHintKey && (
@@ -215,9 +196,34 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </Caption>
           )}
 
+          {stable.survival?.scenarios ? (
+            <div className="ct-inset ct-stack-sm">
+              <Caption className="font-semibold block">{t("tier.survival.title")}</Caption>
+              {[
+                { key: "baseline", label: t("tier.survival.baseline"), data: stable.survival.scenarios.baseline, fill: "" },
+                { key: "stressed", label: t("tier.survival.stressed"), data: stable.survival.scenarios.stressed, fill: "stressed" },
+                { key: "critical", label: t("tier.survival.critical"), data: stable.survival.scenarios.critical, fill: "critical" },
+              ].map((row) => {
+                const months = row.data?.runwayMonths ?? 0;
+                const pct = Math.min(100, (months / 12) * 100);
+                return (
+                  <div key={row.key} className="ct-survival-scenario-row">
+                    <span className="ct-survival-scenario-label">{row.label}</span>
+                    <div className="ct-survival-scenario-bar">
+                      <div className={`ct-survival-scenario-fill ${row.fill}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="ct-survival-scenario-months">
+                      {t("netWorth.liquidity.months", { count: months })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+
           {emergency && emergency.recommended > 0 && (
             <Surface className="ct-stack-sm">
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 inline-flex items-center">
+              <p className="text-xs font-semibold text-[var(--ct-text)] inline-flex items-center">
                 {t("pulse.emergencyReserve")}
                 <InfoTip text={CALC_HELP.emergencyReserve} />
               </p>

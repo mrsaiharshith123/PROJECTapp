@@ -14,6 +14,8 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateRepeatType } from "../../../i18n/domainLabels.js";
 import { translateBillProgressLabel } from "../../../i18n/billLabels.js";
 
+import { formatInr } from "../../../constants/symbols.js";
+
 function formatDate(dateStr) {
   if (!dateStr) return "—";
   return new Date(dateStr + "T12:00:00").toLocaleDateString("en-IN", {
@@ -80,6 +82,27 @@ export default function BillDetailModal({
       }
     >
       <div className="ct-stack">
+        <div className="ct-hero-card survival ct-bill-detail-hero">
+          <div className="ct-hero-glow amber" aria-hidden />
+          <p className="ct-hero-label">{statusLabel}</p>
+          <p className="ct-hero-number">{formatInr(amount)}</p>
+          {bill.dueDate ? (
+            <Caption className="block relative mt-1">
+              {t("bill.detail.nextDue", { date: formatDate(bill.dueDate) })}
+            </Caption>
+          ) : null}
+          <div className="ct-bill-detail-actions relative">
+            <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(bill)}>
+              {t("common.edit")}
+            </Button>
+            {canPay ? (
+              <Button type="button" variant="ghost" size="sm" onClick={() => onAddPayment(bill)}>
+                {t("bill.detail.remind")}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
         <div className="ct-row-wrap">
           <CategoryChip categoryId={bill.category} />
           <PriorityBadge priorityId={bill.priority} />

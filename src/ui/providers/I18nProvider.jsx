@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useCommitTrack } from "../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../context/PerovoContext.jsx";
 import { getLanguageMeta, isRtlLanguage, normalizeAppLanguage } from "../../i18n/languages.js";
 import { enMessages, loadMessages, translate, invalidateMessageCache } from "../../i18n/translate.js";
 
@@ -9,7 +9,7 @@ import { enMessages, loadMessages, translate, invalidateMessageCache } from "../
 const I18nContext = createContext(null);
 
 export function I18nProvider({ children }) {
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const locale = normalizeAppLanguage(settings.appLanguage);
   const [messages, setMessages] = useState(null);
 

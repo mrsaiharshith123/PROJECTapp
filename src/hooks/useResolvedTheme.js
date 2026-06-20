@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 
 function resolveFromPreference(preference, systemPrefersDark) {
   if (preference === "light") return "light";
@@ -9,7 +9,7 @@ function resolveFromPreference(preference, systemPrefersDark) {
 
 /** @returns {"light" | "dark"} */
 export function useResolvedTheme() {
-  const { settings } = useCommitTrack();
+  const { settings } = usePerovo();
   const preference = settings.colorScheme || "system";
 
   const [systemPrefersDark, setSystemPrefersDark] = useState(

@@ -1,4 +1,4 @@
--- CommitTrack account profile (per auth user) — name, mode, KYC fields.
+-- Perovo account profile (per auth user) — name, mode, KYC fields.
 -- Apply via Supabase SQL editor or: supabase db push
 
 create table if not exists public.profiles (
@@ -24,4 +24,4 @@ create policy "Users manage own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
-comment on table public.profiles is 'CommitTrack account metadata linked to auth.users';
+comment on table public.profiles is 'Perovo account metadata linked to auth.users';

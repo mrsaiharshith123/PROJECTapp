@@ -6,7 +6,7 @@ alter table public.profiles
   add column if not exists last_active_at timestamptz,
   add column if not exists created_at timestamptz not null default now();
 
-comment on column public.profiles.is_admin is 'Internal CommitTrack admin — set only via Supabase dashboard/SQL';
+comment on column public.profiles.is_admin is 'Internal Perovo admin — set only via Supabase dashboard/SQL';
 comment on column public.profiles.last_active_at is 'Last product heartbeat (privacy-safe activity signal)';
 
 create table if not exists public.app_events (
@@ -41,7 +41,7 @@ create policy "Users read own events"
   using (auth.uid() = user_id);
 
 -- Security definer helper — avoids RLS infinite recursion on profiles subqueries.
-create or replace function public.is_committrack_admin()
+create or replace function public.is_perovo_admin()
 returns boolean
 language sql
 security definer
@@ -54,21 +54,21 @@ as $$
   );
 $$;
 
-grant execute on function public.is_committrack_admin() to authenticated;
+grant execute on function public.is_perovo_admin() to authenticated;
 
 drop policy if exists "Admins read all events" on public.app_events;
 create policy "Admins read all events"
   on public.app_events
   for select
   to authenticated
-  using (public.is_committrack_admin());
+  using (public.is_perovo_admin());
 
 drop policy if exists "Admins read all profiles" on public.profiles;
 create policy "Admins read all profiles"
   on public.profiles
   for select
   to authenticated
-  using (public.is_committrack_admin());
+  using (public.is_perovo_admin());
 
 -- Block self-promotion from the app API; SQL Editor (auth.uid() null) may grant admin.
 create or replace function public.profiles_guard_admin_column()
@@ -89,7 +89,7 @@ begin
 end;
 $$;
 
-create or replace function public.grant_committrack_admin(target_user_id uuid)
+create or replace function public.grant_perovo_admin(target_user_id uuid)
 returns void
 language plpgsql
 security definer

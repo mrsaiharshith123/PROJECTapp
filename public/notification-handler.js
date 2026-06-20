@@ -1,10 +1,10 @@
 /** Service worker: OS tray notifications + background reminder checks */
 
-const DB_NAME = "committrack-notifications";
+const DB_NAME = "perovo-notifications";
 const DB_VERSION = 1;
 const STORE = "snapshot";
 const SENT_STORE = "sent";
-const SYNC_TAG = "committrack-reminders";
+const SYNC_TAG = "perovo-reminders";
 const MAX_SHOW = 5;
 
 function openDb() {

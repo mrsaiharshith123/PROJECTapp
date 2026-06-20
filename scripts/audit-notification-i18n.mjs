@@ -17,10 +17,10 @@ function main() {
   const hits = [];
   const lines = text.split("\n");
   lines.forEach((line, i) => {
-    if (/message\s*:\s*[`'"]/.test(line) && /Overdue|Due soon|Upcoming|CommitTrack/.test(line)) {
+    if (/message\s*:\s*[`'"]/.test(line) && /Overdue|Due soon|Upcoming|Perovo/.test(line)) {
       hits.push({ line: i + 1, snippet: line.trim().slice(0, 90) });
     }
-    if (/title\s*:\s*[`'"]CommitTrack/.test(line)) {
+    if (/title\s*:\s*[`'"]Perovo/.test(line)) {
       hits.push({ line: i + 1, snippet: line.trim().slice(0, 90) });
     }
   });

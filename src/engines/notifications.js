@@ -138,7 +138,7 @@ export function buildSmartPressureNotifications({
         urgency: "critical",
         createdAt: now,
         read: false,
-        href: "/lending",
+        href: "/money/lending",
         actionKey: "notifications.lendingMarkPaid",
       });
     }
@@ -235,7 +235,7 @@ export function buildContextualReminderFeed({
       suffixParams,
       osBodyKey: "notifications.reminder.osBody",
       osBodyParams: { name: r.name, amount: amt > 0 ? amt.toLocaleString("en-IN") : "" },
-      href: r.href || "/commitments",
+      href: r.href || "/money/bills",
       actionKey: dueToday ? "notifications.payBillToday" : "notifications.viewBills",
     };
   });

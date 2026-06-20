@@ -1,7 +1,7 @@
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { computeHouseholdMetrics, computeFamilyEmergencyTarget } from "../../../engines/householdEntity.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
@@ -49,7 +49,7 @@ function HouseholdRunwayCard({ survival }) {
 /** Household / family experience — shared expenses, education, renewals. */
 export default function FamilyModeDashboard() {
   const { t } = useTranslation();
-  const { settings, commitments, getEffectiveStatus, todayStr, allGoals } = useCommitTrack();
+  const { settings, commitments, getEffectiveStatus, todayStr, allGoals } = usePerovo();
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
   const family = stable.family;
@@ -66,6 +66,9 @@ export default function FamilyModeDashboard() {
   const countedIncome = useCountUp(Math.max(0, Math.round(household.combinedIncome ?? 0)), 900);
 
   if (!family) return <HouseholdRunwayCard survival={stable.survival} />;
+
+  const pressureScore = intel.stability?.score ?? 0;
+  const runwayMonths = stable.survival?.survivalMonths ?? 0;
 
   const emergencyTarget = computeFamilyEmergencyTarget(settings, commitments, getEffectiveStatus);
   const liquidSavings = Math.max(0, Number(settings.liquidSavings) || 0);
@@ -117,6 +120,25 @@ export default function FamilyModeDashboard() {
         metrics={heroMetrics}
         tip={t("family.dashboard.tip")}
         />
+      </div>
+
+      <div className="ct-hero-card survival ct-household-outlook-card ct-animate-fade-up" style={{ animationDelay: "40ms" }}>
+        <div className="ct-hero-glow amber" aria-hidden />
+        <Heading level={3} className="!text-base relative">{t("family.dashboard.outlook")}</Heading>
+        <div className="ct-grid-3 gap-2 mt-3 relative">
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-label">{t("pulse.pressure")}</p>
+            <p className="ct-stat-value">{pressureScore}</p>
+          </div>
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-label">{t("family.dashboard.householdRunway")}</p>
+            <p className="ct-stat-value">{t("netWorth.liquidity.months", { count: runwayMonths })}</p>
+          </div>
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-label">{t("family.emergency.fundTitle")}</p>
+            <p className="ct-stat-value">{emergencyPct}%</p>
+          </div>
+        </div>
       </div>
 
       <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>

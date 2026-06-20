@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { todayYmd } from "../utils/dates.js";
 import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
@@ -28,13 +28,15 @@ import {
   unregisterDevSubscriptionTools,
 } from "../utils/devSubscriptionTools.js";
 import { filterDailySpendsByProfile } from "../utils/dailySpends.js";
-import { sortCommitments } from "./commitTrackSort.js";
-import { useCommitTrackCrud } from "./useCommitTrackCrud.js";
+import { sortCommitments } from "./perovoSort.js";
+import { usePerovoCrud } from "./usePerovoCrud.js";
+import { fetchFundNav } from "../services/market/amfiNav.js";
+import { fetchGoldPricePerGram } from "../services/market/goldPrice.js";
 
-/** @type {import('react').Context<import('../types/context.js').CommitTrackContextValue | null>} */
-const CommitTrackContext = createContext(/** @type {import('../types/context.js').CommitTrackContextValue | null} */ (null));
+/** @type {import('react').Context<import('../types/context.js').PerovoContextValue | null>} */
+const PerovoContext = createContext(/** @type {import('../types/context.js').PerovoContextValue | null} */ (null));
 
-export function CommitTrackProvider({ children }) {
+export function PerovoProvider({ children }) {
   const { user } = useAuth();
   const [commitments, setCommitments] = useState(() =>
     refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
@@ -71,7 +73,7 @@ export function CommitTrackProvider({ children }) {
           if (tier === (prev.subscriptionTier || "free")) return prev;
           const next = { ...prev, subscriptionTier: tier };
           try {
-            localStorage.setItem("committrack_settings", JSON.stringify(next));
+            localStorage.setItem("perovo_settings", JSON.stringify(next));
             invalidateInitialAppStateCache();
           } catch {
             /* ignore */
@@ -120,7 +122,7 @@ export function CommitTrackProvider({ children }) {
     setSettings((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       try {
-        localStorage.setItem("committrack_settings", JSON.stringify(next));
+        localStorage.setItem("perovo_settings", JSON.stringify(next));
         invalidateInitialAppStateCache();
         emitLocalDataChanged();
       } catch {
@@ -179,7 +181,7 @@ export function CommitTrackProvider({ children }) {
     });
   }, [commitments, settings.monthlyIncome, settings.activeProfileId, todayStr, persistSnapshots]);
 
-  const crud = useCommitTrackCrud({
+  const crud = usePerovoCrud({
     commitments,
     settings,
     todayStr,
@@ -192,12 +194,96 @@ export function CommitTrackProvider({ children }) {
     setSupplementalNotifications,
   });
 
-  const { updateSettings } = crud;
+  const { updateSettings, updateCommitment } = crud;
 
   useEffect(() => {
     registerDevSubscriptionTools({ updateSettings, userId: user?.id ?? null });
     return () => unregisterDevSubscriptionTools();
   }, [updateSettings, user?.id]);
+
+  useEffect(() => {
+    const last = settings.goldRateLastFetched ? new Date(settings.goldRateLastFetched).getTime() : 0;
+    const stale = !last || Date.now() - last > 24 * 60 * 60 * 1000;
+    if (!stale) return;
+    let cancelled = false;
+    fetchGoldPricePerGram().then((result) => {
+      if (cancelled || !result) return;
+      if (
+        settings.goldRatePerGram === result.perGram &&
+        settings.goldRateLastFetched === result.date
+      ) {
+        return;
+      }
+      updateSettings({ goldRatePerGram: result.perGram, goldRateLastFetched: result.date });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [settings.goldRateLastFetched, settings.goldRatePerGram, updateSettings]);
+
+  const commitmentsRef = useRef(commitments);
+  useEffect(() => {
+    commitmentsRef.current = commitments;
+  }, [commitments]);
+
+  const navStaleSig = useMemo(
+    () =>
+      commitments
+        .filter((c) => {
+          if (!c.schemeCode) return false;
+          const fetched = c.navFetchedAt ? String(c.navFetchedAt).slice(0, 10) : "";
+          return fetched !== todayStr;
+        })
+        .map((c) => String(c.id))
+        .sort()
+        .join(","),
+    [commitments, todayStr],
+  );
+
+  const navRefreshRef = useRef({ sig: "", inFlight: false });
+
+  useEffect(() => {
+    if (!navStaleSig) {
+      navRefreshRef.current = { sig: "", inFlight: false };
+      return;
+    }
+    if (navRefreshRef.current.inFlight && navRefreshRef.current.sig === navStaleSig) return;
+
+    navRefreshRef.current = { sig: navStaleSig, inFlight: true };
+    let cancelled = false;
+    const ids = navStaleSig.split(",").filter(Boolean);
+
+    (async () => {
+      try {
+        for (const id of ids) {
+          const c = commitmentsRef.current.find((row) => String(row.id) === id);
+          if (!c?.schemeCode) continue;
+          const fetched = c.navFetchedAt ? String(c.navFetchedAt).slice(0, 10) : "";
+          if (fetched === todayStr) continue;
+          const nav = await fetchFundNav(c.schemeCode);
+          if (cancelled || !nav) continue;
+          updateCommitment(c.id, { currentNav: nav.nav, navFetchedAt: todayStr });
+        }
+      } finally {
+        if (!cancelled) navRefreshRef.current.inFlight = false;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      navRefreshRef.current.inFlight = false;
+    };
+  }, [navStaleSig, todayStr, updateCommitment]);
+
+  const getEffectiveStatusForCtx = useCallback(
+    (c) => getEffectiveStatus(c, todayStr, commitments),
+    [todayStr, commitments],
+  );
+
+  const getEffectiveLendingStatusForCtx = useCallback(
+    (l) => getEffectiveLendingStatus(l, todayStr),
+    [todayStr],
+  );
 
   const activeProfileId = settings.activeProfileId || "default";
 
@@ -272,8 +358,8 @@ export function CommitTrackProvider({ children }) {
       settings,
       monthlySnapshots,
       todayStr,
-      getEffectiveStatus: (c) => getEffectiveStatus(c, todayStr, commitments),
-      getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
+      getEffectiveStatus: getEffectiveStatusForCtx,
+      getEffectiveLendingStatus: getEffectiveLendingStatusForCtx,
       ...crud,
       supplementalNotifications,
       importAppData,
@@ -292,17 +378,19 @@ export function CommitTrackProvider({ children }) {
       settings,
       monthlySnapshots,
       todayStr,
+      getEffectiveStatusForCtx,
+      getEffectiveLendingStatusForCtx,
       crud,
       supplementalNotifications,
       importAppData,
     ]
   );
 
-  return <CommitTrackContext.Provider value={value}>{children}</CommitTrackContext.Provider>;
+  return <PerovoContext.Provider value={value}>{children}</PerovoContext.Provider>;
 }
 
-export function useCommitTrack() {
-  const ctx = useContext(CommitTrackContext);
-  if (!ctx) throw new Error("useCommitTrack must be used within CommitTrackProvider");
+export function usePerovo() {
+  const ctx = useContext(PerovoContext);
+  if (!ctx) throw new Error("usePerovo must be used within PerovoProvider");
   return ctx;
 }

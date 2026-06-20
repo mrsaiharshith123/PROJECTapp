@@ -3,6 +3,9 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption } from "../../primitives/Text.jsx";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
+import { formatInr } from "../../../constants/symbols.js";
 import ExpenseSimulatorForm from "./ExpenseSimulatorForm.jsx";
 import UnifiedScenariosPanel from "./UnifiedScenariosPanel.jsx";
 
@@ -21,9 +24,16 @@ export default function MoneyPlannerPanel() {
   const { t } = useTranslation();
   const tabs = usePlannerTabs();
   const [tab, setTab] = useState("afford");
+  const intel = useCommitIntel();
+  const safeSpend = Math.max(0, Math.round(intel.stability?.freeMoney ?? 0));
 
   return (
     <div className="ct-stack">
+      <ToolAnswerHero
+        tone="pressure"
+        label={t("tools.planner.safeSpendLabel")}
+        value={formatInr(safeSpend)}
+      />
       <Caption>{t("tools.planner.intro")}</Caption>
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "afford" && <ExpenseSimulatorForm />}

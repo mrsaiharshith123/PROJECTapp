@@ -19,7 +19,7 @@ function createStorage() {
 }
 
 describe("loadSettingsFromStorage — removed modes", () => {
-  const key = "committrack_settings";
+  const key = "perovo_settings";
 
   beforeEach(() => {
     vi.stubGlobal("localStorage", createStorage());

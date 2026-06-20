@@ -1,19 +1,20 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { differenceInCalendarDays, parseISO } from "date-fns";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { pickMicroTip } from "../../../guidance/index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Eyebrow } from "../../primitives/Text.jsx";
 
 /**
- * Home insights glance — titled card with tip and compact alert chips.
+ * Home insights glance — tinted tiles with semantic icon colors.
  * @param {{ seed?: number }} props
  */
 export default function HomeInsightsSection({ seed = 0 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { commitments, lendings, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { commitments, lendings, getEffectiveStatus, todayStr } = usePerovo();
 
   const tipKey = pickMicroTip(seed);
 
@@ -39,41 +40,66 @@ export default function HomeInsightsSection({ seed = 0 }) {
     return { overdueCount: overdue, dueSoonCount: soon, lendingOverdueCount: lendingOverdue };
   }, [commitments, lendings, getEffectiveStatus, todayStr]);
 
-  const hasAlerts = overdueCount > 0 || dueSoonCount > 0 || lendingOverdueCount > 0;
+  const alerts = [
+    overdueCount > 0
+      ? {
+          key: "overdue",
+          tone: "danger",
+          icon: "warning",
+          label: t("home.insight.overdue", { count: overdueCount }),
+          to: "/money/bills",
+        }
+      : null,
+    dueSoonCount > 0
+      ? {
+          key: "soon",
+          tone: "amber",
+          icon: "hourglass",
+          label: t("home.insight.dueSoon", { count: dueSoonCount }),
+          to: "/money/bills",
+        }
+      : null,
+    lendingOverdueCount > 0
+      ? {
+          key: "lending",
+          tone: "amber",
+          icon: "handshake",
+          label: t("home.attention.lendingOverdue", { count: lendingOverdueCount }),
+          to: "/money/lending",
+        }
+      : null,
+  ].filter(Boolean);
 
   return (
-    <section className="ct-home-insight-card">
-      <Eyebrow className="ct-home-insight-heading">{t("home.insight")}</Eyebrow>
-      <p className="ct-home-insight-tip">{t(tipKey)}</p>
-      {hasAlerts ? (
-        <div className="ct-home-insight-alerts">
-          {overdueCount > 0 ? (
+    <section className="ct-stack-sm">
+      <div className="ct-stat-tile indigo !p-3">
+        <div className="ct-row gap-3 items-start">
+          <span className="ct-icon-tile violet shrink-0" aria-hidden>
+            <CtIcon name="lightning" size={18} />
+          </span>
+          <div className="min-w-0">
+            <Eyebrow className="!mb-1">{t("home.insight")}</Eyebrow>
+            <p className="text-sm leading-snug opacity-90">{t(tipKey)}</p>
+          </div>
+        </div>
+      </div>
+      {alerts.length > 0 ? (
+        <div className="ct-grid-2 gap-2">
+          {alerts.map((a) => (
             <button
+              key={a.key}
               type="button"
-              className="ct-home-insight-chip ct-home-insight-chip-danger"
-              onClick={() => navigate("/commitments")}
+              className={`ct-stat-tile ${a.tone} !p-3 text-left w-full`}
+              onClick={() => navigate(a.to)}
             >
-              {t("home.insight.overdue", { count: overdueCount })}
+              <div className="ct-row gap-2 items-center">
+                <span className={`ct-icon-tile-sm ${a.tone}`} aria-hidden>
+                  <CtIcon name={a.icon} size={16} />
+                </span>
+                <span className="text-xs font-semibold leading-snug">{a.label}</span>
+              </div>
             </button>
-          ) : null}
-          {dueSoonCount > 0 ? (
-            <button
-              type="button"
-              className="ct-home-insight-chip ct-home-insight-chip-warn"
-              onClick={() => navigate("/commitments")}
-            >
-              {t("home.insight.dueSoon", { count: dueSoonCount })}
-            </button>
-          ) : null}
-          {lendingOverdueCount > 0 ? (
-            <button
-              type="button"
-              className="ct-home-insight-chip ct-home-insight-chip-warn"
-              onClick={() => navigate("/lending")}
-            >
-              {t("home.attention.lendingOverdue", { count: lendingOverdueCount })}
-            </button>
-          ) : null}
+          ))}
         </div>
       ) : null}
     </section>

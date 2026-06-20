@@ -13,6 +13,7 @@ const PANEL_LABEL_KEYS = {
   "personal-account": "settings.row.emailPassword",
   "personal-appearance": "settings.row.appearance",
   "personal-money": "settings.row.incomeSalary",
+  "household-mode": "settings.row.householdMode",
   "history": "settings.row.paymentHistory",
   "security-sessions": "settings.row.sessions",
   backup: "settings.row.dataBackup",
@@ -87,79 +88,35 @@ export default function ProfileSettingsSheet({
             <Caption className="block">{t("profileHub.settingsSubtitle")}</Caption>
 
             <SettingsGroup title={t("settings.group.account")} icon="user-circle">
-              <SettingsGroupRow
-                icon="user"
-                label={t("settings.row.personalDetails")}
-                onClick={() => openPanel("personal-identity")}
-              />
-              <SettingsGroupRow
-                icon="lock"
-                label={t("settings.row.emailPassword")}
-                onClick={() => openPanel("personal-account")}
-              />
-              <SettingsGroupRow
-                icon="target"
-                label={t("settings.row.subscription")}
-                onClick={() => setPlansOpen(true)}
-              />
-              <SettingsGroupRow
-                icon="palette"
-                label={t("settings.row.appearance")}
-                onClick={() => openPanel("personal-appearance")}
-              />
+              <SettingsGroupRow iconColor="violet" icon="user" label={t("settings.row.personalDetails")} onClick={() => openPanel("personal-identity")} />
+              <SettingsGroupRow iconColor="violet" icon="lock" label={t("settings.row.emailPassword")} onClick={() => openPanel("personal-account")} />
+              <SettingsGroupRow iconColor="violet" icon="target" label={t("settings.row.subscription")} onClick={() => setPlansOpen(true)} />
+              <SettingsGroupRow iconColor="violet" icon="palette" label={t("settings.row.appearance")} onClick={() => openPanel("personal-appearance")} />
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.money")} icon="wallet">
-              <SettingsGroupRow
-                icon="currency-inr"
-                label={t("settings.row.incomeSalary")}
-                onClick={() => openPanel("personal-money")}
-              />
-              <SettingsGroupRow
-                icon="users-three"
-                label={t("settings.row.householdMode")}
-                value={householdValue}
-                onClick={() => openPanel("personal-money")}
-              />
-              <SettingsGroupRow
-                icon="push-pin"
-                label={t("settings.row.city")}
-                onClick={() => openPanel("personal-account")}
-              />
-              <SettingsGroupRow
-                icon="arrows-clockwise"
-                label={t("settings.row.paymentHistory")}
-                onClick={() => openPanel("history")}
-              />
+              <SettingsGroupRow iconColor="teal" icon="currency-inr" label={t("settings.row.incomeSalary")} onClick={() => openPanel("personal-money")} />
+              <SettingsGroupRow iconColor="teal" icon="users-three" label={t("settings.row.householdMode")} value={householdValue} onClick={() => openPanel("household-mode")} />
+              <SettingsGroupRow iconColor="teal" icon="push-pin" label={t("settings.row.city")} onClick={() => openPanel("personal-account")} />
+              <SettingsGroupRow iconColor="teal" icon="arrows-clockwise" label={t("settings.row.paymentHistory")} onClick={() => openPanel("history")} />
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.privacy")} icon="shield">
-              <SettingsGroupRow
-                icon="eye-slash"
-                label={t("settings.row.privacyMode")}
-                value={privacyValue}
-                onClick={() => onTogglePrivacyMode?.()}
-              />
-              <SettingsGroupRow
-                icon="device-mobile"
-                label={t("settings.row.sessions")}
-                onClick={() => openPanel("security-sessions")}
-              />
-              <SettingsGroupRow
-                icon="cloud"
-                label={t("settings.row.dataBackup")}
-                onClick={() => openPanel("backup")}
-              />
+              <SettingsGroupRow iconColor="teal" icon="eye-slash" label={t("settings.row.privacyMode")} value={privacyValue} onClick={() => onTogglePrivacyMode?.()} />
+              <SettingsGroupRow iconColor="teal" icon="device-mobile" label={t("settings.row.sessions")} onClick={() => openPanel("security-sessions")} />
+              <SettingsGroupRow iconColor="teal" icon="cloud" label={t("settings.row.dataBackup")} onClick={() => openPanel("backup")} />
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.notifications")} icon="bell">
               <SettingsGroupRow
                 icon="bell"
+                iconColor="amber"
                 label={t("settings.row.reminders")}
                 onClick={() => openPanel("notifications")}
               />
               <SettingsGroupRow
                 icon="lightning"
+                iconColor="amber"
                 label={t("settings.row.smartNotifications")}
                 value={smartNotifValue}
                 onClick={() => openPanel("notifications")}
@@ -167,22 +124,24 @@ export default function ProfileSettingsSheet({
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.support")} icon="chat-circle">
-              <SettingsGroupRow icon="book-open" label={t("settings.row.help")} onClick={() => openPanel("guide")} />
+              <SettingsGroupRow icon="book-open" iconColor="violet" label={t("settings.row.help")} onClick={() => openPanel("guide")} />
               <SettingsGroupRow
                 icon="file-text"
+                iconColor="teal"
                 label={t("settings.row.privacyPolicy")}
                 onClick={() => {
                   handleClose();
                   navigate("/privacy");
                 }}
               />
-              <SettingsGroupRow icon="scroll" label={t("settings.row.about", { appName: t("brand.appName") })} onClick={() => openPanel("support")} />
+              <SettingsGroupRow icon="scroll" iconColor="slate" label={t("settings.row.about", { appName: t("brand.appName") })} onClick={() => openPanel("support")} />
             </SettingsGroup>
 
             <SettingsGroup title={t("settings.group.danger")} icon="warning">
               {isLoggedIn ? (
                 <SettingsGroupRow
                   icon="arrows-clockwise"
+                  iconColor="red"
                   label={t("settings.row.signOut")}
                   danger
                   disabled={signingOut}
@@ -191,6 +150,7 @@ export default function ProfileSettingsSheet({
               ) : null}
               <SettingsGroupRow
                 icon="warning"
+                iconColor="red"
                 label={t("settings.row.deleteData")}
                 danger
                 onClick={() => onDeleteData?.()}

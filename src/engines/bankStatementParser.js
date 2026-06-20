@@ -6,13 +6,129 @@
 /** @typedef {{ date: string, amount: number, description: string, type: 'debit'|'credit', bank?: string }} BankStatementRow */
 
 const BANK_MARKERS = [
-  { id: "hdfc", pattern: /HDFC\s*Bank/i },
-  { id: "sbi", pattern: /State\s*Bank\s*of\s*India|SBI/i },
-  { id: "icici", pattern: /ICICI\s*Bank/i },
-  { id: "axis", pattern: /Axis\s*Bank/i },
-  { id: "kotak", pattern: /Kotak\s*Mahindra/i },
-  { id: "pnb", pattern: /Punjab\s*National\s*Bank|PNB/i },
+  { id: "hdfc", pattern: /HDFC\s*Bank|HDFC0/i },
+  { id: "sbi", pattern: /State\s*Bank\s*of\s*India|\bSBI\b|SBIN0/i },
+  { id: "icici", pattern: /ICICI\s*Bank|ICIC0/i },
+  { id: "axis", pattern: /Axis\s*Bank|UTIB0/i },
+  { id: "kotak", pattern: /Kotak(?:\s*Mahindra)?|KKBK0/i },
+  { id: "pnb", pattern: /Punjab\s*National\s*Bank|\bPNB\b|PUNB0/i },
+  { id: "bob", pattern: /Bank\s*of\s*Baroda|BARB0/i },
 ];
+
+/** @typedef {"hdfc"|"sbi"|"icici"|"axis"|"kotak"|"pnb"|"bob"|"generic"} BankFormatId */
+/** @typedef {"high"|"medium"|"low"} ParseConfidence */
+
+/**
+ * Identify bank from statement header / IFSC hints.
+ * @param {string} text
+ * @returns {BankFormatId}
+ */
+export function detectBankFormat(text) {
+  const sample = String(text || "").slice(0, 8000);
+  for (const b of BANK_MARKERS) {
+    if (b.pattern.test(sample)) return /** @type {BankFormatId} */ (b.id);
+  }
+  return "generic";
+}
+
+/** @type {Record<string, { dateCol: number, narrationCol: number, debitCol?: number, creditCol?: number, withdrawalCol?: number, depositCol?: number, dateFormat?: string }>} */
+export const BANK_FORMATS = {
+  hdfc: { dateCol: 0, narrationCol: 1, debitCol: 3, creditCol: 4, dateFormat: "dd/MM/yy" },
+  sbi: { dateCol: 0, narrationCol: 2, debitCol: 3, creditCol: 4, dateFormat: "dd MMM yyyy" },
+  icici: { dateCol: 0, narrationCol: 1, withdrawalCol: 3, depositCol: 4, dateFormat: "dd-MM-yyyy" },
+  axis: { dateCol: 0, narrationCol: 1, debitCol: 2, creditCol: 3, dateFormat: "dd-MM-yyyy" },
+  kotak: { dateCol: 0, narrationCol: 1, debitCol: 2, creditCol: 3, dateFormat: "dd-MM-yyyy" },
+  pnb: { dateCol: 0, narrationCol: 1, debitCol: 2, creditCol: 3, dateFormat: "dd/MM/yyyy" },
+  bob: { dateCol: 0, narrationCol: 1, debitCol: 2, creditCol: 3, dateFormat: "dd-MM-yyyy" },
+  generic: { dateCol: 0, narrationCol: 1, debitCol: 2, creditCol: 3, dateFormat: "dd/MM/yyyy" },
+};
+
+/**
+ * @param {number} rowCount
+ * @param {BankFormatId} bankDetected
+ * @returns {ParseConfidence}
+ */
+export function computeParseConfidence(rowCount, bankDetected) {
+  if (bankDetected !== "generic" && rowCount >= 5) return "high";
+  if (rowCount >= 3) return "medium";
+  return "low";
+}
+
+function splitStatementColumns(line) {
+  if (line.includes("\t")) return line.split("\t").map((c) => c.trim());
+  if (/\s{2,}/.test(line)) return line.split(/\s{2,}/).map((c) => c.trim());
+  if (line.includes("|")) return line.split("|").map((c) => c.trim());
+  return line.split(",").map((c) => c.trim());
+}
+
+/**
+ * @param {string} line
+ * @param {typeof BANK_FORMATS[string]} fmt
+ * @param {string} bank
+ * @returns {Omit<BankStatementRow, "bank"> | null}
+ */
+function parseStructuredLine(line, fmt, bank) {
+  const cols = splitStatementColumns(line.trim());
+  if (cols.length < 3) return null;
+
+  const dateStr = parseDateToken(cols[fmt.dateCol] || "");
+  if (!dateStr) return null;
+
+  const desc = (cols[fmt.narrationCol] || cols[1] || "").slice(0, 120);
+  const debitCol = fmt.debitCol ?? fmt.withdrawalCol ?? 2;
+  const creditCol = fmt.creditCol ?? fmt.depositCol ?? 3;
+  const debit = parseAmountToken(cols[debitCol] || "");
+  const credit = parseAmountToken(cols[creditCol] || "");
+
+  if (debit > 0) {
+    return { date: dateStr, amount: debit, description: desc || "Debit", type: "debit" };
+  }
+  if (credit > 0) {
+    return { date: dateStr, amount: credit, description: desc || "Credit", type: "credit" };
+  }
+  void bank;
+  return null;
+}
+
+/**
+ * @param {string[]} lines
+ * @param {BankFormatId} bankId
+ */
+function parseWithBankFormat(lines, bankId) {
+  const fmt = BANK_FORMATS[bankId] || BANK_FORMATS.generic;
+  const rows = [];
+  for (const line of lines) {
+    const row = parseStructuredLine(line, fmt, bankId);
+    if (row) rows.push({ ...row, bank: bankId });
+  }
+  return rows;
+}
+
+/**
+ * Try generic line parsers and return the strategy with the most valid rows.
+ * @param {string[]} lines
+ */
+function parseGenericBestEffort(lines) {
+  const strategies = [
+    (l) => parseDrCrLine(l),
+    (l) => parseGenericLine(l),
+    (l) => {
+      const row = parseStructuredLine(l, BANK_FORMATS.generic, "generic");
+      return row;
+    },
+  ];
+
+  let best = [];
+  for (const fn of strategies) {
+    const attempt = [];
+    for (const line of lines) {
+      const row = fn(line);
+      if (row) attempt.push({ ...row, bank: "generic" });
+    }
+    if (attempt.length > best.length) best = attempt;
+  }
+  return best;
+}
 
 const DATE_PATTERNS = [
   /(\d{2}[/-]\d{2}[/-]\d{4})/,
@@ -20,13 +136,6 @@ const DATE_PATTERNS = [
   /(\d{4}-\d{2}-\d{2})/,
   /(\d{2}\.\d{2}\.\d{4})/,
 ];
-
-function detectBank(text) {
-  for (const b of BANK_MARKERS) {
-    if (b.pattern.test(text)) return b.id;
-  }
-  return "generic";
-}
 
 function parseDateToken(raw) {
   const s = String(raw || "").trim();
@@ -199,10 +308,17 @@ function dedupeRows(rows) {
 /**
  * @param {string} text
  * @param {{ filename?: string }} [options]
- * @returns {{ rows: BankStatementRow[], bank: string, warnings: string[] }}
+ * @returns {{
+ *   rows: BankStatementRow[],
+ *   bank: string,
+ *   bankDetected: BankFormatId,
+ *   confidence: ParseConfidence,
+ *   rowCount: number,
+ *   warnings: string[]
+ * }}
  */
 export function parseBankStatementText(text, options = {}) {
-  const bank = detectBank(text);
+  const bankDetected = detectBankFormat(text);
   const warnings = [];
   const filename = String(options.filename || "").toLowerCase();
 
@@ -213,31 +329,52 @@ export function parseBankStatementText(text, options = {}) {
     if (rows.length > 0) warnings.push(`Parsed ${rows.length} rows from CSV format.`);
   }
 
-  if (rows.length === 0) {
-    const lines = String(text || "")
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.length >= 8);
+  const lines = String(text || "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length >= 8);
 
-    for (const line of lines) {
-      const row = parseGenericLine(line);
-      if (!row) continue;
-      rows.push({ ...row, bank });
+  if (rows.length === 0 && bankDetected !== "generic") {
+    rows = parseWithBankFormat(lines, bankDetected);
+    if (rows.length > 0) {
+      warnings.push(`Parsed ${rows.length} rows using ${bankDetected.toUpperCase()} column layout.`);
     }
-  } else {
-    rows = rows.map((r) => ({ ...r, bank }));
+  }
+
+  if (rows.length === 0) {
+    rows = parseGenericBestEffort(lines);
+    if (rows.length > 0 && bankDetected !== "generic") {
+      warnings.push(`Used generic fallback for ${bankDetected.toUpperCase()} statement.`);
+    }
+  }
+
+  if (rows.length > 0 && !rows[0].bank) {
+    rows = rows.map((r) => ({ ...r, bank: bankDetected }));
   }
 
   rows = dedupeRows(rows);
+
+  const confidence = computeParseConfidence(rows.length, bankDetected);
 
   if (rows.length === 0) {
     warnings.push(
       "No transactions detected — for scanned PDFs, export CSV from net banking or ensure text-based PDF.",
     );
+  } else if (confidence === "low") {
+    warnings.push(
+      "We could not read this statement format well. You can still add transactions manually.",
+    );
   }
 
   rows.sort((a, b) => a.date.localeCompare(b.date));
-  return { rows, bank, warnings };
+  return {
+    rows,
+    bank: bankDetected,
+    bankDetected,
+    confidence,
+    rowCount: rows.length,
+    warnings,
+  };
 }
 
 /** Recurring merchant patterns → commitment category hints. */

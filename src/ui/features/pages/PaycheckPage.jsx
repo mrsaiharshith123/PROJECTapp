@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Card, PageShell, Heading, Caption, Body } from "../../index.js";
+import { PageShell, Heading, Caption, Body } from "../../index.js";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import PaycheckTimelinePanel from "../paycheck/PaycheckTimelinePanel.jsx";
 import SafeToSpendCard from "../paycheck/SafeToSpendCard.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { buildPaycheckTimeline } from "../../../engines/paycheckTimeline.js";
@@ -18,7 +18,7 @@ import { formatInr } from "../../../constants/symbols.js";
 
 export default function PaycheckPage() {
   const { t } = useTranslation();
-  const { commitments, settings, getEffectiveStatus, dailySpends, todayStr } = useCommitTrack();
+  const { commitments, settings, getEffectiveStatus, dailySpends, todayStr } = usePerovo();
   const isFamily = isSalariedFamily(settings);
   const income = combinedMonthlyIncome(settings);
   const analyticsCopy = getAnalyticsCopy(settings);
@@ -77,18 +77,17 @@ export default function PaycheckPage() {
     >
 
       {!settings.salaryCreditDay && (
-        <Card className="ct-stack-sm">
-          <Body className="font-semibold">{t("paycheck.setSalaryDayTitle")}</Body>
-          <Caption className="block">{t("paycheck.setSalaryDayHint")}</Caption>
-          <Link to="/profile" state={{ openSection: "personal-money" }} className="ct-link text-sm font-semibold">
+        <div className="ct-hero-card survival relative ct-stack-sm">
+          <div className="ct-hero-glow amber" aria-hidden />
+          <Body className="font-semibold relative">{t("paycheck.setSalaryDayTitle")}</Body>
+          <Caption className="block relative">{t("paycheck.setSalaryDayHint")}</Caption>
+          <Link to="/profile" state={{ openSection: "personal-money" }} className="ct-link text-sm font-semibold relative">
             {t("paycheck.setSalaryDayCta")}
           </Link>
-        </Card>
+        </div>
       )}
 
       <CashflowCalendarStrip />
-
-      <PaycheckTimelinePanel timeline={timeline} />
 
       <SafeToSpendCard
         bufferAfterBills={timeline.bufferAfterBills}
@@ -97,7 +96,9 @@ export default function PaycheckPage() {
         scope={isFamily ? "household" : "personal"}
       />
 
-      <Card className="ct-stack">
+      <PaycheckTimelinePanel timeline={timeline} />
+
+      <section className="ct-stack">
         <Heading level={3}>{t("analytics.paycheckBurden")}</Heading>
         <Caption className="block mt-1">{t("analytics.paycheckSubtitle")}</Caption>
         <PaycheckBreakdown
@@ -109,7 +110,7 @@ export default function PaycheckPage() {
           creditCard={cardPressure}
           sensitivityRows={sensitivityRows}
         />
-      </Card>
+      </section>
     </PageShell>
   );
 }

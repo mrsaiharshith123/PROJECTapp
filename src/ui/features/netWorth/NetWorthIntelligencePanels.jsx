@@ -7,8 +7,16 @@ import { runWealthSimulation } from "../../../engines/netWorth/simulation.js";
 import { getApplicableWealthScenarios } from "../../../engines/scenarioCatalog.js";
 import { useMemo, useState } from "react";
 
-export function LiquidityPanel({ liquidity, privacyMode }) {
+export function LiquidityPanel({ liquidity, privacyMode, totalAssets = 0 }) {
   const { t } = useTranslation();
+  const cash = liquidity.pureLiquid || 0;
+  const invest = (liquidity.semiLiquid || 0) + (liquidity.highRisk || 0);
+  const locked = Math.max(0, (totalAssets || 0) - cash - invest);
+  const sum = cash + invest + locked || 1;
+  const cashPct = (cash / sum) * 100;
+  const investPct = (invest / sum) * 100;
+  const lockedPct = (locked / sum) * 100;
+
   return (
     <Card className="ct-nw-panel ct-animate-fade-up">
       <div className="ct-row-between">
@@ -21,6 +29,29 @@ export function LiquidityPanel({ liquidity, privacyMode }) {
           {t("netWorth.liquidity.months", { count: liquidity.survivalMonths })}
         </Body>
       </div>
+      {!privacyMode && totalAssets > 0 ? (
+        <>
+          <div className="ct-liquidity-tier-bar" aria-hidden>
+            <span className="ct-liquidity-tier-seg-cash" style={{ width: `${cashPct}%` }} />
+            <span className="ct-liquidity-tier-seg-invest" style={{ width: `${investPct}%` }} />
+            <span className="ct-liquidity-tier-seg-locked" style={{ width: `${lockedPct}%` }} />
+          </div>
+          <div className="ct-grid-3 gap-2 mt-2">
+            <div className="ct-stat-tile teal">
+              <p className="ct-stat-label">{t("netWorth.liquidity.cash")}</p>
+              <p className="ct-stat-value text-sm">{formatInr(cash)}</p>
+            </div>
+            <div className="ct-stat-tile indigo">
+              <p className="ct-stat-label">{t("netWorth.liquidity.investments")}</p>
+              <p className="ct-stat-value text-sm">{formatInr(invest)}</p>
+            </div>
+            <div className="ct-stat-tile amber">
+              <p className="ct-stat-label">{t("netWorth.liquidity.locked")}</p>
+              <p className="ct-stat-value text-sm">{formatInr(locked)}</p>
+            </div>
+          </div>
+        </>
+      ) : null}
       <Caption className="mt-3 block">
         {t(`netWorth.liquidity.strength.${liquidity.emergencyLiquidityStrength}`)}
       </Caption>
@@ -132,6 +163,10 @@ export function SimulationPanel({ simulationBase }) {
   const [activeId, setActiveId] = useState(() => scenarios[0]?.id || "");
   const scenario = scenarios.find((s) => s.id === activeId) || scenarios[0];
   const result = scenario ? runWealthSimulation(simulationBase, scenario) : null;
+  const maxDelta = useMemo(
+    () => Math.max(...scenarios.map((s) => Math.abs(runWealthSimulation(simulationBase, s)?.deltaNetWorth || 0)), 1),
+    [scenarios, simulationBase],
+  );
 
   if (!scenarios.length) {
     return (
@@ -141,49 +176,50 @@ export function SimulationPanel({ simulationBase }) {
     );
   }
 
+  const projected = result?.projectedNetWorth ?? 0;
+
   return (
-    <Card className="ct-nw-panel">
-      <Heading level={3}>{t("netWorth.sim.title")}</Heading>
-      <Caption className="mt-1 block">{t("netWorth.sim.subtitle")}</Caption>
-      <div className="ct-row flex-wrap gap-2 mt-3">
-        {scenarios.map((s) => (
+    <div className="ct-stack">
+      <div className="ct-hero-card sim">
+        <div className="ct-hero-glow" aria-hidden />
+        <p className="ct-hero-label">{t("netWorth.sim.title")}</p>
+        <p className="ct-hero-number">{formatInr(projected)}</p>
+        <Caption className="block relative mt-1">{t("netWorth.sim.subtitle")}</Caption>
+      </div>
+      {scenarios.map((s) => {
+        const sim = runWealthSimulation(simulationBase, s);
+        const delta = sim?.deltaNetWorth ?? 0;
+        const impactPct = Math.min(100, Math.round((Math.abs(delta) / maxDelta) * 100));
+        const active = activeId === s.id;
+        return (
           <button
             key={s.id}
             type="button"
-            className={`ct-chip ${activeId === s.id ? "ct-chip-active" : ""}`}
+            className={`ct-sim-scenario-row w-full text-left ${active ? "active" : ""}`}
             onClick={() => setActiveId(s.id)}
           >
-            {t(s.labelKey)}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-[var(--ct-text)]">{t(s.labelKey)}</p>
+              <p className={`text-xs ct-numeral mt-0.5 ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                {delta >= 0 ? "+" : ""}
+                {formatInr(delta)}
+              </p>
+              <div className="ct-sim-impact-bar">
+                <div
+                  className={`ct-sim-impact-fill ${delta >= 0 ? "positive" : "negative"}`}
+                  style={{ width: `${impactPct}%` }}
+                />
+              </div>
+            </div>
+            {active && result ? (
+              <div className="text-right shrink-0">
+                <Caption>{t("netWorth.sim.projectedNw")}</Caption>
+                <Body className="ct-numeral font-bold text-sm">{formatInr(result.projectedNetWorth)}</Body>
+              </div>
+            ) : null}
           </button>
-        ))}
-      </div>
-      {result && (
-      <div className="ct-nw-sim-result mt-4">
-        <div className="ct-grid-2 gap-3">
-          <div>
-            <Caption>{t("netWorth.sim.projectedNw")}</Caption>
-            <Body className="ct-numeral font-bold">{formatInr(result.projectedNetWorth)}</Body>
-          </div>
-          <div>
-            <Caption>{t("netWorth.sim.delta")}</Caption>
-            <Body className={`ct-numeral font-bold ${result.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}>
-              {result.deltaNetWorth >= 0 ? "+" : ""}
-              {formatInr(result.deltaNetWorth)}
-            </Body>
-          </div>
-          <div>
-            <Caption>{t("netWorth.sim.survival")}</Caption>
-            <Body className="font-bold">
-              {t("netWorth.liquidity.months", { count: result.survivabilityMonths })}
-            </Body>
-          </div>
-          <div>
-            <Caption>{t("netWorth.sim.stability")}</Caption>
-            <Body className="font-bold">{t(result.stabilityKey)}</Body>
-          </div>
-        </div>
-      </div>
-      )}
-    </Card>
+        );
+      })}
+    </div>
   );
 }

@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { askFinancialAdvisor, buildContextData } from "../../../services/financialAdvisor.js";
 import { isFeatureUnlocked } from "../../../constants/subscriptionTiers.js";
+import { getTier } from "../../../utils/tierAccess.js";
 import { getCityLabel, matchCityFromText, normalizeCityId } from "../../../constants/cityLivingCosts.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   ProGate,
   Card,
@@ -17,6 +19,7 @@ import {
   Heading,
   CtIcon,
 } from "../../index.js";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
 const SUGGESTED_CHIPS = [
   "Can I afford a ₹10,000 EMI?",
@@ -26,7 +29,8 @@ const SUGGESTED_CHIPS = [
 ];
 
 export default function FinancialAdvisorTool() {
-  const { commitments, settings, updateSettings } = useCommitTrack();
+  const { t } = useTranslation();
+  const { commitments, settings, updateSettings } = usePerovo();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const income = combinedMonthlyIncome(settings);
@@ -48,7 +52,7 @@ export default function FinancialAdvisorTool() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, awaitingCity]);
 
-  if (!isFeatureUnlocked("ai_advisor", settings.subscriptionTier)) {
+  if (!isFeatureUnlocked("ai_advisor", getTier(settings))) {
     return <ProGate featureId="ai_advisor">{null}</ProGate>;
   }
 
@@ -139,10 +143,16 @@ export default function FinancialAdvisorTool() {
 
   return (
     <Card className="ct-stack ct-advisor-tool">
+      <ToolAnswerHero
+        tone="wealth"
+        label={t("tools.advisor.heroLabel")}
+        value={t("tools.advisor.heroScore", { score: Math.round(intel.health?.score ?? 0) })}
+        subtitle={intel.health?.label}
+      />
       <div className="ct-row" style={{ gap: "0.5rem", alignItems: "center" }}>
         <CtIcon name="chat-dots" context="tile" size={22} />
         <Heading level={3} className="!text-base">
-          Ask your finances
+          {t("tools.advisor.title")}
         </Heading>
       </div>
 
@@ -214,7 +224,7 @@ export default function FinancialAdvisorTool() {
           Ask
         </Button>
       </div>
-      <Caption className="block">Educational only. Not financial advice.</Caption>
+      <Caption className="block">{t("tools.advisor.disclaimer")}</Caption>
     </Card>
   );
 }

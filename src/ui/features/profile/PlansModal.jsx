@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Badge, Caption, Heading, Body, ToneSurface, SegmentedControl } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { cn } from "../../utils/cn.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import {
   effectiveAnnualMonthlyInr,
@@ -24,7 +25,7 @@ import { formatInr } from "../../../constants/symbols.js";
 export default function PlansModal({ open, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { settings, updateSettings } = useCommitTrack();
+  const { settings, updateSettings } = usePerovo();
   const { user } = useAuth();
   const current = settings.subscriptionTier || "free";
   const [paying, setPaying] = useState(null);
@@ -231,8 +232,8 @@ function PlanTierCard({
   return (
     <article className={cardClass}>
       <div className="ct-plan-card-top">
-        <div className="ct-plan-card-icon" aria-hidden>
-          <CtIcon name={isFree ? "wallet" : plan.tier === "power" ? "users-three" : "lightning"} size={18} />
+        <div className={cn("ct-icon-tile ct-icon-tile-sm", isFree ? "slate" : plan.tier === "power" ? "teal" : "violet")} aria-hidden>
+          <CtIcon name={isFree ? "wallet" : plan.tier === "power" ? "users-three" : "lightning"} size={18} weight="duotone" />
         </div>
         {plan.featured && !isCurrent && (
           <Badge tone="info" className="ct-plan-card-badge">

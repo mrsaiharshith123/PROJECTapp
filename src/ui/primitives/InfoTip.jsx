@@ -1,5 +1,4 @@
 import { useId, useState } from "react";
-import { Info } from "@phosphor-icons/react";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 
 /**
@@ -25,7 +24,7 @@ export function InfoTip({ text, textKey, label, labelKey = "help.infoLabel" }) {
         className="ct-info-tip-btn"
         title={tipLabel}
       >
-        <Info size={14} weight="fill" />
+        i
       </button>
       {open && (
         <>

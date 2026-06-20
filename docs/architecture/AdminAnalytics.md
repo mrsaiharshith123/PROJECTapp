@@ -1,6 +1,6 @@
 # Admin intelligence & product analytics
 
-Built-in **product intelligence** for CommitTrack operators — not a separate admin site. Growth, retention, module usage, and onboarding funnel metrics live at `/admin` inside the same PWA.
+Built-in **product intelligence** for Perovo operators — not a separate admin site. Growth, retention, module usage, and onboarding funnel metrics live at `/admin` inside the same PWA.
 
 ## Who can access it
 
@@ -72,9 +72,9 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 
 | Migration | Purpose |
 |-----------|---------|
-| `20260606000000_admin_analytics.sql` | `is_admin`, `last_active_at`, `created_at` on `profiles`; `app_events` table; RLS; `is_committrack_admin()`; `admin_product_overview()` RPC; activity triggers |
+| `20260606000000_admin_analytics.sql` | `is_admin`, `last_active_at`, `created_at` on `profiles`; `app_events` table; RLS; `is_perovo_admin()`; `admin_product_overview()` RPC; activity triggers |
 | `20260606010000_fix_admin_rls_recursion.sql` | Fix login break — security-definer admin check; policies no longer recurse on `profiles` |
-| `20260606020000_fix_admin_grant_trigger.sql` | Allow SQL Editor to grant admin; `grant_committrack_admin(uuid)` helper |
+| `20260606020000_fix_admin_grant_trigger.sql` | Allow SQL Editor to grant admin; `grant_perovo_admin(uuid)` helper |
 | `20260606030000_daily_spends_table_from_snapshot.sql` | Creates `public.daily_spends` + RLS and materializes `payload.dailySpends` from `user_finance_snapshots` |
 | `20260610020000_admin_user_management.sql` | Admin RPCs: `admin_list_users`, `admin_update_user`, `admin_set_user_admin`, `admin_delete_user`; admins may grant `is_admin` from the app |
 
@@ -89,8 +89,8 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 ### RLS summary
 
 - Users insert/read **own** `app_events` only.
-- Admins read **all** `app_events` and **all** `profiles` via `is_committrack_admin()`.
-- `profiles_guard_admin_column` trigger: non-admins cannot flip `is_admin`; CommitTrack admins and SQL Editor can.
+- Admins read **all** `app_events` and **all** `profiles` via `is_perovo_admin()`.
+- `profiles_guard_admin_column` trigger: non-admins cannot flip `is_admin`; Perovo admins and SQL Editor can.
 
 ### Granting admin
 
@@ -99,7 +99,7 @@ Apply migrations **in order** (SQL Editor or `supabase db push`):
 **First admin (SQL Editor only):**
 
 ```sql
-SELECT grant_committrack_admin('<user-uuid>');
+SELECT grant_perovo_admin('<user-uuid>');
 ```
 
 Find the user UUID in **Authentication → Users**. Sign out and back in so the client reloads `profile.is_admin`.

@@ -1,4 +1,4 @@
-const LAST_DIGEST_KEY = "committrack_last_notif_digest";
+const LAST_DIGEST_KEY = "perovo_last_notif_digest";
 
 /** Once per calendar day per device. */
 export function shouldRunDailyDigest(todayStr) {

@@ -39,7 +39,7 @@ if (!data?.audits) {
   process.exit(1);
 }
 
-console.log("\nCommitTrack governance summary\n");
+console.log("\nPerovo governance summary\n");
 console.log(`  Generated: ${data.generatedAt || "live"}`);
 console.log(`  Mode:      ${data.mode || "?"}`);
 console.log(

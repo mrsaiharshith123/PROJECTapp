@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { isInDefault, daysSinceOldestOverdue, generateDefaultNoticeHtml } from "../../../engines/lendingRecovery.js";
 import {
   buildAgreementShareMessage,
@@ -10,13 +10,14 @@ import {
 import LegalDetailsModal from "../modals/LegalDetailsModal.jsx";
 import { Button, Body, ToneSurface } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 /**
  * @param {{ lending: object, settings: object, onScrollToEsign?: () => void }} props
  */
 export default function LendingActionFlow({ lending, settings, onScrollToEsign }) {
   const { t } = useTranslation();
-  const { updateLending } = useCommitTrack();
+  const { updateLending } = usePerovo();
   const [legalOpen, setLegalOpen] = useState(false);
 
   const confirmed = lending.esignStatus === "completed" || lending.lenderOtpVerifiedAt || lending.lenderConfirmedAt;
@@ -54,33 +55,42 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
 
   if (overdue) {
     return (
-      <div className="ct-stack-sm">
-        <ToneSurface tone="danger">
-          <Body className="!text-sm">{t("lending.flow.overdueTitle", { days: overdueDays })}</Body>
-        </ToneSurface>
-        {overdueDays <= 30 && lastLevel < 1 ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => openWhatsApp(1)}>
-            {t("lending.flow.reminderFriendly")}
-          </Button>
-        ) : null}
-        {overdueDays >= 8 && overdueDays <= 30 && lastLevel < 2 ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => openWhatsApp(2)}>
-            {t("lending.flow.reminderFirm")}
-          </Button>
-        ) : null}
-        {overdueDays > 30 ? (
-          <Button type="button" variant="primary" size="sm" onClick={() => openWhatsApp(3)}>
-            {t("lending.flow.reminderFinal")}
-          </Button>
-        ) : null}
+      <div className="ct-next-action-card danger">
+        <div className="ct-row gap-2 items-start">
+          <span className="ct-icon-tile danger shrink-0" aria-hidden>
+            <CtIcon name="warning" size={18} context="status" />
+          </span>
+          <div>
+            <Body className="!text-sm font-semibold">{t("lending.detail.nextAction")}</Body>
+            <Body className="!text-sm mt-1">{t("lending.flow.overdueTitle", { days: overdueDays })}</Body>
+          </div>
+        </div>
+        <div className="ct-stack-sm mt-3">
+          {overdueDays <= 30 && lastLevel < 1 ? (
+            <Button type="button" variant="outline" size="sm" onClick={() => openWhatsApp(1)}>
+              {t("lending.flow.reminderFriendly")}
+            </Button>
+          ) : null}
+          {overdueDays >= 8 && overdueDays <= 30 && lastLevel < 2 ? (
+            <Button type="button" variant="outline" size="sm" onClick={() => openWhatsApp(2)}>
+              {t("lending.flow.reminderFirm")}
+            </Button>
+          ) : null}
+          {overdueDays > 30 ? (
+            <Button type="button" size="sm" className="ct-btn-escalation" onClick={() => openWhatsApp(3)}>
+              {t("lending.flow.reminderFinal")}
+            </Button>
+          ) : null}
+        </div>
       </div>
     );
   }
 
   if (confirmed) {
     return (
-      <ToneSurface tone="success">
-        <Body className="!text-sm">{t("lending.flow.confirmed")}</Body>
+      <div className="ct-next-action-card success">
+        <Body className="!text-sm font-semibold">{t("lending.detail.nextAction")}</Body>
+        <Body className="!text-sm mt-1">{t("lending.flow.confirmed")}</Body>
         <Button
           type="button"
           variant="outline"
@@ -95,14 +105,15 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
         >
           {t("lending.flow.dealWhatsapp")}
         </Button>
-      </ToneSurface>
+      </div>
     );
   }
 
   return (
     <>
-      <ToneSurface tone="info">
-        <Body className="!text-sm">{t("lending.flow.readyToShare")}</Body>
+      <div className="ct-next-action-card">
+        <Body className="!text-sm font-semibold">{t("lending.detail.nextAction")}</Body>
+        <Body className="!text-sm mt-1">{t("lending.flow.readyToShare")}</Body>
         <div className="ct-row-wrap gap-2 mt-2">
           <Button
             type="button"
@@ -121,7 +132,7 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
             {t("lending.flow.startEsign")}
           </Button>
         </div>
-      </ToneSurface>
+      </div>
       <LegalDetailsModal lending={lending} open={legalOpen} onClose={() => setLegalOpen(false)} />
     </>
   );

@@ -1,4 +1,5 @@
 import { Component } from "react";
+import * as Sentry from "@sentry/react";
 import { log } from "../../utils/logger.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 
@@ -32,6 +33,9 @@ export default class ErrorBoundary extends Component {
       message: error instanceof Error ? error.message : String(error),
       componentStack: info?.componentStack?.slice(0, 200),
     });
+    if (import.meta.env.VITE_SENTRY_DSN) {
+      Sentry.captureException(error, { extra: { componentStack: info?.componentStack } });
+    }
   }
 
   render() {

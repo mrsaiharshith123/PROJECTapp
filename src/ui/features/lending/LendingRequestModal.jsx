@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Modal } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Modal, Button, Caption, Body, ToneSurface, inputClassName } from "../../index.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   buildAgreementText,
   borrowerTrustSnapshot,
@@ -12,10 +12,13 @@ import { INR } from "../../../constants/symbols.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function LendingRequestModal({ onClose }) {
   const { t } = useTranslation();
-  const { lendings, settings, addLending } = useCommitTrack();
+  const { lendings, settings, addLending } = usePerovo();
   const [step, setStep] = useState("details");
   const [borrowerName, setBorrowerName] = useState(settings.displayName || "");
   const [lenderName, setLenderName] = useState("");
@@ -31,7 +34,7 @@ export default function LendingRequestModal({ onClose }) {
 
   const trust = useMemo(
     () => borrowerTrustSnapshot(lendings, borrowerName.trim() || "You"),
-    [lendings, borrowerName]
+    [lendings, borrowerName],
   );
 
   const agreementText = useMemo(
@@ -45,7 +48,7 @@ export default function LendingRequestModal({ onClose }) {
         collateral: collateral.trim(),
         purpose: purpose.trim(),
       }),
-    [borrowerName, lenderName, amount, interestRate, dueDate, collateral, purpose]
+    [borrowerName, lenderName, amount, interestRate, dueDate, collateral, purpose],
   );
 
   const goAgreement = () => {
@@ -94,13 +97,13 @@ export default function LendingRequestModal({ onClose }) {
           borrowerSignedAt: signedAt,
           collateralDescription: collateral.trim(),
         },
-      })
+      }),
     );
 
     const url = buildOfferShareUrl(offer);
     setShareUrl(url);
     try {
-      localStorage.setItem(`committrack_offer_${offerId}`, encodeOfferPayload(offer));
+      localStorage.setItem(`perovo_offer_${offerId}`, encodeOfferPayload(offer));
     } catch {
       /* ignore */
     }
@@ -123,150 +126,136 @@ export default function LendingRequestModal({ onClose }) {
       onClose={onClose}
       footer={
         step === "details" ? (
-          <button
-            type="button"
-            className="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
-            onClick={goAgreement}
-          >
-            Next: review agreement
-          </button>
+          <Button type="button" variant="primary" className="w-full" onClick={goAgreement}>
+            {t("lending.request.nextAgreement")}
+          </Button>
         ) : step === "agreement" ? (
-          <button
+          <Button
             type="button"
-            className="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold disabled:opacity-50"
+            variant="primary"
+            className="w-full"
             disabled={!signName.trim() || !agree}
             onClick={finishAndShare}
           >
-            Sign & create link
-          </button>
+            {t("lending.request.signCreate")}
+          </Button>
         ) : (
-          <button type="button" className="w-full py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold" onClick={onClose}>
-            Done
-          </button>
+          <Button type="button" variant="primary" className="w-full" onClick={onClose}>
+            {t("lending.request.done")}
+          </Button>
         )
       }
     >
       {step === "details" && (
-        <div className="space-y-3 text-sm">
-          <p className="text-xs text-gray-500">
-            Fill what you need. You will sign first, then send a link. The lender sees your trust score before accepting.
-          </p>
+        <div className="ct-stack">
+          <Caption className="block">{t("lending.request.intro")}</Caption>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Your name (borrower)</label>
-            <input
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-              value={borrowerName}
-              onChange={(e) => setBorrowerName(e.target.value)}
-            />
+            <label className="ct-field-label">{t("lending.request.borrowerName")}</label>
+            <input className={fieldClass} value={borrowerName} onChange={(e) => setBorrowerName(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Lender name (optional now)</label>
+            <label className="ct-field-label">{t("lending.request.lenderName")}</label>
             <input
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+              className={fieldClass}
               value={lenderName}
               onChange={(e) => setLenderName(e.target.value)}
               placeholder={t("lending.form.phLender")}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Amount ({INR})</label>
+            <label className="ct-field-label">{t("lending.request.amount", { currency: INR })}</label>
             <input
               type="number"
               min="1"
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+              className={`${fieldClass} ct-numeral`}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="ct-grid-2">
             <div>
-              <label className="text-xs font-semibold text-gray-600">Interest % per year</label>
+              <label className="ct-field-label">{t("lending.request.interest")}</label>
               <input
                 type="number"
                 min="0"
                 max="60"
-                className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+                className={`${fieldClass} ct-numeral`}
                 value={interestRate}
                 onChange={(e) => setInterestRate(e.target.value)}
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-600">Pay back by</label>
-              <input
-                type="date"
-                className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
+              <label className="ct-field-label">{t("lending.request.payBackBy")}</label>
+              <input type="date" className={fieldClass} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">What is the money for?</label>
+            <label className="ct-field-label">{t("lending.request.purpose")}</label>
             <input
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+              className={fieldClass}
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder={t("lending.form.phPurpose")}
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Collateral (optional)</label>
+            <label className="ct-field-label">{t("lending.request.collateral")}</label>
             <textarea
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm min-h-[72px]"
+              className={`${fieldClass} min-h-[72px]`}
               value={collateral}
               onChange={(e) => setCollateral(e.target.value)}
               placeholder={t("lending.form.phCollateral")}
             />
           </div>
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs">
-            <p className="font-semibold text-slate-700">Your trust score (on this phone): {trust.score}/100</p>
-            <p className="text-slate-600 mt-1">{trust.summary}</p>
-            <p className="text-slate-500 mt-1">Late payments lower the score. This travels with the link.</p>
+          <div className="ct-stat-tile indigo !p-3">
+            <div className="ct-row gap-2 items-start">
+              <span className="ct-icon-tile indigo shrink-0" aria-hidden>
+                <CtIcon name="shield" size={18} context="status" />
+              </span>
+              <div>
+                <Body className="!text-sm font-semibold">
+                  {t("lending.request.trustTitle", { score: trust.score })}
+                </Body>
+                <Caption className="block mt-1">{trust.summary}</Caption>
+                <Caption className="block mt-1 opacity-80">{t("lending.request.trustHint")}</Caption>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {step === "agreement" && (
-        <div className="space-y-3 text-sm">
-          <pre className="text-xs whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-xl p-3 max-h-48 overflow-y-auto">
-            {agreementText}
-          </pre>
-          <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-100 rounded-lg p-2">{LEGAL_DISCLAIMER}</p>
+        <div className="ct-stack">
+          <pre className="ct-inset text-xs whitespace-pre-wrap max-h-48 overflow-y-auto !p-3">{agreementText}</pre>
+          <ToneSurface tone="warning">
+            <Caption className="block">{LEGAL_DISCLAIMER}</Caption>
+          </ToneSurface>
           <div>
-            <label className="text-xs font-semibold text-gray-600">Type your full name to sign (borrower)</label>
+            <label className="ct-field-label">{t("lending.request.signBorrower")}</label>
             <input
-              className="mt-1 w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm"
+              className={fieldClass}
               value={signName}
               onChange={(e) => setSignName(e.target.value)}
               placeholder={t("lending.form.phSignName")}
             />
           </div>
-          <label className="flex items-start gap-2 text-xs text-gray-700">
+          <label className="ct-row gap-2 items-start ct-caption">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
-            I have read the agreement and sign as the borrower.
+            {t("lending.request.agreeBorrower")}
           </label>
         </div>
       )}
 
       {step === "share" && (
-        <div className="space-y-3 text-sm">
-          <p className="text-emerald-700 font-medium">Link ready. Send it to your lender.</p>
-          <p className="text-xs text-gray-500">
-            They open it in Perovo, see your trust score, sign, and accept. Your borrowed entry is saved here and
-            cannot be deleted until paid or you both agree to cancel.
-          </p>
-          <input
-            readOnly
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-xs"
-            value={shareUrl}
-          />
-          <button
-            type="button"
-            onClick={copyLink}
-            className="w-full py-2.5 rounded-xl border border-indigo-200 text-indigo-700 text-sm font-semibold"
-          >
-            {copied ? "Copied!" : "Copy link"}
-          </button>
+        <div className="ct-stack">
+          <div className="ct-stat-tile teal !p-3">
+            <Body className="!text-sm font-semibold ct-text-success">{t("lending.request.linkReady")}</Body>
+            <Caption className="block mt-1">{t("lending.request.shareHint")}</Caption>
+          </div>
+          <input readOnly className={`${fieldClass} text-xs`} value={shareUrl} />
+          <Button type="button" variant="outline" className="w-full" onClick={copyLink}>
+            {copied ? t("lending.request.copied") : t("lending.request.copyLink")}
+          </Button>
         </div>
       )}
     </Modal>

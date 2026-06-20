@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ToolTile } from "../ToolTile.jsx";
 import { Modal } from "../../primitives/Modal.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   getToolsForMode,
   getDashboardToolsHeadingKey,
@@ -20,6 +20,8 @@ import FinancialAdvisorTool from "../tools/FinancialAdvisorTool.jsx";
 import InsuranceCalculatorModal from "../modals/InsuranceCalculatorModal.jsx";
 import InvestSavingsPanel from "../tools/InvestSavingsPanel.jsx";
 import GoalsToolPanel from "../tools/GoalsToolPanel.jsx";
+import AccountConnectTool from "../tools/AccountConnectTool.jsx";
+import PayBillsTool from "../tools/PayBillsTool.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -28,7 +30,7 @@ import { useDragReorder } from "../../hooks/useDragReorder.js";
 /** Calculator widgets + modals — embedded on Home dashboard. */
 export default function DashboardTools() {
   const { t } = useTranslation();
-  const { commitments, settings, getEffectiveStatus, todayStr, updateSettings } = useCommitTrack();
+  const { commitments, settings, getEffectiveStatus, todayStr, updateSettings } = usePerovo();
   const toolMode = getExperienceMode(settings);
   const widgets = useMemo(() => {
     const defaultToolList = getToolsForMode(settings);
@@ -96,7 +98,7 @@ export default function DashboardTools() {
           </button>
         </div>
       </div>
-      <div className="ct-grid-2">
+      <div className="ct-grid-3">
         {widgets.map((widget) =>
           reorderTools ? (
             <div
@@ -197,6 +199,18 @@ export default function DashboardTools() {
       {activeTool === "goals" && (
         <Modal title={modalTitle} onClose={closeTool}>
           <GoalsToolPanel />
+        </Modal>
+      )}
+
+      {activeTool === "accountConnect" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <AccountConnectTool />
+        </Modal>
+      )}
+
+      {activeTool === "payBills" && (
+        <Modal title={modalTitle} onClose={closeTool}>
+          <PayBillsTool />
         </Modal>
       )}
 

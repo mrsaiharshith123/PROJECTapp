@@ -1,44 +1,44 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getCategoryById } from "../../../constants/categories.js";
 import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { computeBiggestOpenCategory, computeHighestRecurring } from "../../../utils/billInsightStats.js";
-import { Card } from "../../primitives/Card.jsx";
-import { Caption, Body } from "../../primitives/Text.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
 /**
- * @param {{ eyebrow: string, title?: import('react').ReactNode, detail?: string, empty?: string, icon?: string }} props
+ * @param {{ eyebrow: string, title?: import('react').ReactNode, detail?: string, empty?: string, icon?: string, variant?: string, iconTone?: string }} props
  */
-function InsightStatCard({ eyebrow, title, detail, empty, icon }) {
+function InsightStatCard({ eyebrow, title, detail, empty, icon, variant = "indigo", iconTone = "violet" }) {
   return (
-    <Card>
-      <Caption className="font-semibold uppercase tracking-wide mb-1">{eyebrow}</Caption>
-      {title ? (
-        <>
-          <p className="ct-display ct-numeral text-lg flex items-center gap-2">
-            {icon ? (
-              <span className="inline-flex shrink-0" aria-hidden>
-                <CtIcon name={icon} size={20} />
-              </span>
-            ) : null}
-            {title}
-          </p>
-          {detail ? <Body className="!text-sm mt-1">{detail}</Body> : null}
-        </>
-      ) : (
-        <Body className="!text-sm">{empty}</Body>
-      )}
-    </Card>
+    <div className={`ct-stat-tile ${variant}`}>
+      <div className="ct-row gap-2 items-start">
+        {icon ? (
+          <span className={`ct-icon-tile ct-icon-tile-sm ${iconTone} shrink-0`} aria-hidden>
+            <CtIcon name={icon} size={18} />
+          </span>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <p className="ct-stat-label">{eyebrow}</p>
+          {title ? (
+            <>
+              <p className="ct-stat-value truncate">{title}</p>
+              {detail ? <p className="ct-stat-label mt-0.5 ct-numeral">{detail}</p> : null}
+            </>
+          ) : (
+            <p className="ct-stat-label mt-0.5">{empty}</p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 /** Open-balance category + highest recurring bill — analytics context only. */
 export default function BillInsightsCards() {
   const { t } = useTranslation();
-  const { commitments, getEffectiveStatus } = useCommitTrack();
+  const { commitments, getEffectiveStatus } = usePerovo();
 
   const biggestCategory = useMemo(
     () => computeBiggestOpenCategory(commitments, getEffectiveStatus),
@@ -51,9 +51,11 @@ export default function BillInsightsCards() {
   );
 
   return (
-    <div className="ct-grid-2">
+    <div className="ct-grid-2 gap-2">
       <InsightStatCard
         eyebrow={t("home.biggestCategory")}
+        variant="indigo"
+        iconTone="violet"
         icon={biggestCategory ? getCategoryById(biggestCategory.name).icon : undefined}
         title={biggestCategory ? getCategoryById(biggestCategory.name).label : undefined}
         detail={biggestCategory ? t("home.openAmount", { amount: formatInr(biggestCategory.value) }) : undefined}
@@ -61,6 +63,9 @@ export default function BillInsightsCards() {
       />
       <InsightStatCard
         eyebrow={t("home.highestRecurring")}
+        variant="amber"
+        iconTone="amber"
+        icon="arrows-clockwise"
         title={highestRecurring?.name}
         detail={
           highestRecurring

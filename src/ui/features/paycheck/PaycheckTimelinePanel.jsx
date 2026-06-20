@@ -1,4 +1,4 @@
-import { Card, Heading, Caption, Body } from "../../index.js";
+import { Heading, Caption } from "../../index.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
@@ -10,17 +10,17 @@ export default function PaycheckTimelinePanel({ timeline }) {
   if (!timeline?.days?.length) return null;
 
   return (
-    <Card className="ct-stack">
+    <section className="ct-stack">
       <Heading level={3}>{t("paycheck.timelineTitle")}</Heading>
       <Caption className="block">{t("paycheck.timelineSubtitle")}</Caption>
-      <div className="ct-grid-2 mt-2">
-        <div className="ct-inset">
-          <Caption>{t("paycheck.duesAfterSalary")}</Caption>
-          <Body className="font-semibold ct-numeral">{formatInr(timeline.totalDueBeforeNextSalary)}</Body>
+      <div className="ct-grid-2 gap-2 mt-2">
+        <div className="ct-stat-tile amber">
+          <p className="ct-stat-label">{t("paycheck.duesAfterSalary")}</p>
+          <p className="ct-stat-value ct-numeral">{formatInr(timeline.totalDueBeforeNextSalary)}</p>
         </div>
-        <div className="ct-inset">
-          <Caption>{t("paycheck.bufferAfterBills")}</Caption>
-          <Body className="font-semibold ct-numeral">{formatInr(timeline.bufferAfterBills)}</Body>
+        <div className="ct-stat-tile teal">
+          <p className="ct-stat-label">{t("paycheck.bufferAfterBills")}</p>
+          <p className="ct-stat-value ct-numeral">{formatInr(timeline.bufferAfterBills)}</p>
         </div>
       </div>
       <ul className="ct-stack-sm mt-2">
@@ -35,6 +35,6 @@ export default function PaycheckTimelinePanel({ timeline }) {
           </li>
         ))}
       </ul>
-    </Card>
+    </section>
   );
 }

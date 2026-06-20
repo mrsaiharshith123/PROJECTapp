@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { InstallAppBanner, ToneSurface, Body, Caption, Button, Modal } from "../../index.js";
 import { resolveUserMode, getIncomeLabelKey } from "../../../constants/modeExperience.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -18,6 +18,7 @@ import ProfileSettingsSheet from "../profile/hub/ProfileSettingsSheet.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
 import ProfileSecuritySection from "../profile/ProfileSecuritySection.jsx";
+import HouseholdModeSection from "../profile/HouseholdModeSection.jsx";
 
 /** @param {string | undefined} fromNav @returns {string | null} */
 function resolveSettingsSection(fromNav) {
@@ -53,7 +54,7 @@ const Profile = () => {
     deleteCommitment,
     removeCommitmentPayment,
     todayStr,
-  } = useCommitTrack();
+  } = usePerovo();
   const { t } = useTranslation();
 
   const initialSettingsSection = resolveSettingsSection(location.state?.openSection);
@@ -138,6 +139,8 @@ const Profile = () => {
               part="money"
             />
           );
+        case "household-mode":
+          return <HouseholdModeSection settings={settings} updateSettings={updateSettings} />;
         case "personal-appearance":
           return <ProfilePersonalSection settings={settings} updateSettings={updateSettings} part="appearance" />;
         case "personal-account":

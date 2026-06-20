@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Card, Caption, Body, Heading, Button } from "../../index.js";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { Caption, Button } from "../../index.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { isEmbeddedApp } from "../../../utils/embeddedApp.js";
 import {
   getNotificationPermission,
   requestNotificationPermission,
@@ -10,11 +11,13 @@ import {
   registerPeriodicReminderSync,
   requestServiceWorkerReminderFlush,
 } from "../../../services/notifications/index.js";
+import { SettingsGroup, SettingsGroupContent, SettingsGroupToggleRow } from "./SettingsGroup.jsx";
 
 export default function ProfileNotificationsSection({ settings, updateSettings }) {
   const { t } = useTranslation();
-  const { pushInAppNotification } = useCommitTrack();
+  const { pushInAppNotification } = usePerovo();
   const supported = isNotificationSupported();
+  const embedded = isEmbeddedApp();
   const [, setPermRefresh] = useState(0);
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -60,51 +63,52 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
   };
 
   return (
-    <Card className="ct-stack">
-      <div>
-        <Heading level={3}>{t("notifications.title")}</Heading>
-        <Caption className="block mt-1">{t("notifications.subtitle")}</Caption>
-      </div>
-
-      <label className="ct-row-between py-2">
-        <Body className="!text-sm">{t("notifications.billReminders")}</Body>
-        <input
-          type="checkbox"
-          checked={settings.remindersEnabled !== false}
-          onChange={(e) => updateSettings({ remindersEnabled: e.target.checked })}
-          className="ct-checkbox"
-        />
-      </label>
+    <SettingsGroup title={t("notifications.title")} icon="bell" description={t("notifications.subtitle")}>
+      <SettingsGroupToggleRow
+        icon="bell"
+        iconColor="amber"
+        label={t("notifications.billReminders")}
+        checked={settings.remindersEnabled !== false}
+        onChange={(e) => updateSettings({ remindersEnabled: e.target.checked })}
+      />
 
       {supported ? (
-        <div className="ct-surface-inset ct-stack-sm !p-3 rounded-[var(--ct-radius)]">
-          <Caption>
-            {t("notifications.permission")}: <span className="font-semibold capitalize">{perm}</span>
-          </Caption>
-          <div className="ct-row-wrap">
-            {perm !== "granted" && (
-              <Button type="button" size="sm" disabled={busy} onClick={handleEnable}>
-                {t("notifications.enableAlerts")}
-              </Button>
-            )}
-            <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleTest}>
-              {busy ? t("common.sending") : t("notifications.sendTest")}
-            </Button>
-          </div>
-          {status && (
-            <Caption className={status.type === "ok" ? "text-[var(--ct-success)]" : "text-[var(--ct-warning)]"}>
-              {status.text}
+        <SettingsGroupContent className="ct-stack-sm">
+          <div className="ct-hero-inset ct-stack-sm !p-3 rounded-[var(--ct-radius)]">
+            <Caption>
+              {t("notifications.permission")}: <span className="font-semibold capitalize">{perm}</span>
             </Caption>
-          )}
-          <Caption className="block opacity-80 leading-relaxed">{t("notifications.installHint")}</Caption>
-        </div>
+            <div className="ct-row-wrap">
+              {perm !== "granted" && (
+                <Button type="button" size="sm" disabled={busy} onClick={handleEnable}>
+                  {t("notifications.enableAlerts")}
+                </Button>
+              )}
+              <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleTest}>
+                {busy ? t("common.sending") : t("notifications.sendTest")}
+              </Button>
+            </div>
+            {status && (
+              <Caption className={status.type === "ok" ? "text-[var(--ct-success)]" : "text-[var(--ct-warning)]"}>
+                {status.text}
+              </Caption>
+            )}
+            {!embedded ? (
+              <Caption className="block opacity-80 leading-relaxed">{t("notifications.installHint")}</Caption>
+            ) : null}
+          </div>
+        </SettingsGroupContent>
       ) : (
-        <Caption>{t("notifications.unsupported")}</Caption>
+        <SettingsGroupContent>
+          <Caption>{t("notifications.unsupported")}</Caption>
+        </SettingsGroupContent>
       )}
 
-      <Button type="button" variant="ghost" className="w-full" onClick={() => updateSettings({ readNotificationIds: [] })}>
-        {t("notifications.markRead")}
-      </Button>
-    </Card>
+      <SettingsGroupContent className="!pt-0">
+        <Button type="button" variant="ghost" className="w-full" onClick={() => updateSettings({ readNotificationIds: [] })}>
+          {t("notifications.markRead")}
+        </Button>
+      </SettingsGroupContent>
+    </SettingsGroup>
   );
 }

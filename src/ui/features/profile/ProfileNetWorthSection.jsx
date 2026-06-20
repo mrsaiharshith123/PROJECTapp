@@ -6,7 +6,7 @@ import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { useProfileHubIntel } from "../../../hooks/useProfileHubIntel.js";
 import FinancialLifeOverviewPanel from "./hub/FinancialLifeOverviewPanel.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { partitionWealth } from "../../../engines/netWorth/core.js";
 import { deriveWealthFromCommitments } from "../../../engines/netWorth/commitmentWealth.js";
@@ -20,7 +20,7 @@ export default function ProfileNetWorthSection() {
   const { t } = useTranslation();
   const intel = useNetWorthIntel();
   const hub = useProfileHubIntel();
-  const { commitments, getEffectiveStatus, todayStr, settings } = useCommitTrack();
+  const { commitments, getEffectiveStatus, todayStr, settings } = usePerovo();
   const isFamily = isSalariedFamily(settings);
   const { addEntry, updateEntry, deleteEntry, privacyMode } = useNetWorth();
   const [tab, setTab] = useState("overview");
@@ -37,7 +37,7 @@ export default function ProfileNetWorthSection() {
   );
 
   const billSourceLabel = isFamily ? t("netWorth.fromBillsHousehold") : t("netWorth.fromBills");
-  const openBill = (commitmentId) => navigate("/commitments", { state: { openBillId: commitmentId } });
+  const openBill = (commitmentId) => navigate("/money/bills", { state: { openBillId: commitmentId } });
 
   const openAdd = (kind) => setModal({ kind });
   const openEdit = (entry) => setModal({ kind: entry.kind, entry });
@@ -46,7 +46,7 @@ export default function ProfileNetWorthSection() {
   const hasLiabilities = liabilities.length > 0 || fromBills.liabilities.length > 0;
 
   return (
-    <div className="ct-stack ct-nw-embedded">
+    <div className="ct-stack ct-nw-embedded ct-profile-settings-panel">
       <SegmentedControl
         options={[
           { id: "overview", label: isFamily ? t("netWorth.tab.overviewHousehold") : t("netWorth.tab.overview") },

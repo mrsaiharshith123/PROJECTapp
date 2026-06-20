@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { generateCommitmentInsights } from "../engines/intelligence.js";
 import {
   overlappingDueDatesInsight,
@@ -29,6 +29,7 @@ import {
 } from "../services/transactions/index.js";
 import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
 import { memoIntel, buildIntelCacheKey } from "../utils/intelMemo.js";
+import { applyDevOverrideToCommitIntel, useDevOverrideTick } from "../utils/devOverride.js";
 
 export function useCommitIntel() {
   const {
@@ -40,9 +41,11 @@ export function useCommitIntel() {
     todayStr,
     getEffectiveStatus,
     supplementalNotifications,
-  } = useCommitTrack();
+  } = usePerovo();
 
-  return useMemo(() => {
+  const devTick = useDevOverrideTick();
+
+  const rawIntel = useMemo(() => {
     const openSum = commitments.reduce((s, c) => s + (Number(c.remainingAmount) || 0), 0);
     const cacheKey = buildIntelCacheKey([
       commitments.length,
@@ -56,7 +59,7 @@ export function useCommitIntel() {
       settings.readNotificationIds?.length,
     ]);
 
-    return memoIntel(cacheKey, () => {
+    const intel = memoIntel(cacheKey, () => {
     const income = combinedMonthlyIncome(settings);
     const burdenRatio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
     const cash = freeMoneyAfterBurden(commitments, income, getEffectiveStatus, {
@@ -197,6 +200,7 @@ export function useCommitIntel() {
       transactionRhythmNote,
     };
     });
+    return intel;
   }, [
     commitments,
     lendings,
@@ -207,4 +211,6 @@ export function useCommitIntel() {
     todayStr,
     getEffectiveStatus,
   ]);
+
+  return useMemo(() => applyDevOverrideToCommitIntel(rawIntel), [rawIntel, devTick]);
 }

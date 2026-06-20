@@ -95,7 +95,7 @@ export default function RoomActivityFeed({ roomId, maxItems = 10 }) {
             const icon = iconFor(ev.event_type);
             return (
               <div key={ev.id} className="ct-row gap-2 items-start py-1">
-                <span className={`ct-icon-box ct-icon-tone-${icon.tone}`}>
+                <span className={`ct-icon-tile ct-icon-tile-sm ${icon.tone === "danger" ? "danger" : icon.tone === "success" ? "teal" : icon.tone === "warning" ? "amber" : "indigo"}`}>
                   <CtIcon name={icon.name} size={18} context="status" />
                 </span>
                 <div className="min-w-0 flex-1">

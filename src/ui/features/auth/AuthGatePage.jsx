@@ -3,7 +3,7 @@ import { Card, Button, inputClassName, FormField, Caption, Heading, Body, Passwo
 import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import InstallAppBanner from "../InstallAppBanner.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatAuthError } from "../../../utils/authErrors.js";
 import { isValidIndianPhone, normalizeIndianPhone } from "../../../utils/phone.js";
 import { isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
@@ -36,7 +36,9 @@ function AuthAmbient() {
 function AuthBrandHero() {
   return (
     <header className="ct-auth-hero">
-      <PerovoBrand layout="column" iconSize="lg" wordmarkSize="lg" className="ct-auth-brand-lockup" />
+      <div className="ct-auth-logo-tile" aria-hidden>
+        <PerovoBrand layout="column" iconSize="lg" wordmarkSize="lg" className="ct-auth-brand-lockup" />
+      </div>
     </header>
   );
 }
@@ -44,7 +46,7 @@ function AuthBrandHero() {
 export default function AuthGatePage() {
   const { t } = useTranslation();
   const { signIn, signUp, resetPassword, updatePassword, authNotice, clearAuthNotice } = useAuth();
-  const { updateSettings } = useCommitTrack();
+  const { updateSettings } = usePerovo();
   const [mode, setMode] = useState(() => (isRecoverySession() ? "reset" : "signin"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

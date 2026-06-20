@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { analyzeBond, compareBondAlternatives } from "../../../engines/bondAnalyzer.js";
-import { formatInr } from "../../../constants/symbols.js";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBondRecommendation } from "../../../i18n/toolLabels.js";
+import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { formatInr } from "../../../constants/symbols.js";
 
 const fieldClass =
   "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
@@ -40,13 +41,6 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
       }),
     [form, monthlyIncome],
   );
-
-  const verdictClass =
-    result.recommendation === "Good"
-      ? "bg-emerald-100 text-emerald-800"
-      : result.recommendation === "Not good"
-        ? "bg-red-100 text-red-700"
-        : "bg-amber-100 text-amber-800";
 
   const setField = (k, v) => setForm((s) => ({ ...s, [k]: v }));
 
@@ -145,31 +139,29 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
           </div>
         </div>
 
-        <div className={`rounded-xl px-3 py-2 text-sm font-semibold ${verdictClass}`}>
-          {translateBondRecommendation(t, result.recommendation)}
-        </div>
-        <p className="text-xs text-gray-600">{t(result.detailKey || "bond.detail.borderline")}</p>
+        <ToolAnswerHero
+          tone="sim"
+          label={translateBondRecommendation(t, result.recommendation)}
+          value={`${result.ytmPct.toFixed(2)}%`}
+          subtitle={t(result.detailKey || "bond.detail.borderline")}
+        />
 
         <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[11px] text-gray-500">{t("bond.ytm")}</p>
-            <p className="font-semibold">{result.ytmPct.toFixed(2)}%</p>
+          <div className="ct-stat-tile">
+            <p className="ct-stat-label">{t("bond.annualYield")}</p>
+            <p className="ct-stat-value text-sm">{result.annualYieldPct.toFixed(2)}%</p>
           </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[11px] text-gray-500">{t("bond.annualYield")}</p>
-            <p className="font-semibold">{result.annualYieldPct.toFixed(2)}%</p>
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-label">{t("bond.postTaxYield")}</p>
+            <p className="ct-stat-value text-sm">{result.postTaxYieldPct.toFixed(2)}%</p>
           </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[11px] text-gray-500">{t("bond.postTaxYield")}</p>
-            <p className="font-semibold">{result.postTaxYieldPct.toFixed(2)}%</p>
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-label">{t("bond.realReturn")}</p>
+            <p className="ct-stat-value text-sm">{result.realReturnPct.toFixed(2)}%</p>
           </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[11px] text-gray-500">{t("bond.realReturn")}</p>
-            <p className="font-semibold">{result.realReturnPct.toFixed(2)}%</p>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <p className="text-[11px] text-gray-500">{t("bond.monthlySetAside")}</p>
-            <p className="font-semibold">{formatInr(Math.round(result.monthlySetAside))}</p>
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-label">{t("bond.monthlySetAside")}</p>
+            <p className="ct-stat-value text-sm">{formatInr(Math.round(result.monthlySetAside))}</p>
           </div>
         </div>
         {result.affordabilityPct != null && (

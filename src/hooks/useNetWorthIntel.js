@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../context/CommitTrackContext.jsx";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { useNetWorth } from "../context/NetWorthContext.jsx";
 import { partitionWealth } from "../engines/netWorth/core.js";
 import { computeLiquidityIntelligence } from "../engines/netWorth/liquidity.js";
@@ -12,7 +12,7 @@ import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 
 export function useNetWorthIntel() {
   const wealth = useNetWorth();
-  const track = useCommitTrack();
+  const track = usePerovo();
 
   return useMemo(() => {
     const income = combinedMonthlyIncome(track.settings);

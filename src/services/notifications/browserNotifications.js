@@ -1,6 +1,6 @@
 import { assetUrl } from "../../utils/basePath.js";
 
-const PERM_KEY = "committrack_notif_permission_asked";
+const PERM_KEY = "perovo_notif_permission_asked";
 const SW_READY_MS = 4000;
 
 export function absoluteNotificationIconUrl() {
@@ -32,6 +32,20 @@ export async function requestNotificationPermission() {
   if (Notification.permission === "granted") return "granted";
   if (Notification.permission === "denied") return "denied";
   const result = await Notification.requestPermission();
+  if (result === "granted") {
+    import("./fcmService.js")
+      .then(({ requestFcmToken }) => requestFcmToken())
+      .then((token) => {
+        if (token) {
+          try {
+            localStorage.setItem("perovo_fcm_token", token);
+          } catch {
+            /* ignore */
+          }
+        }
+      })
+      .catch(() => {});
+  }
   return result;
 }
 
@@ -68,7 +82,7 @@ export async function getActiveServiceWorkerRegistration() {
 function showViaWindowNotification(title, body, tag) {
   const n = new Notification(title, {
     body,
-    tag: tag || "committrack",
+    tag: tag || "perovo",
     icon: absoluteNotificationIconUrl(),
   });
   n.onclick = () => {
@@ -91,7 +105,7 @@ export async function showLocalNotification(payload) {
   const icon = absoluteNotificationIconUrl();
   const options = {
     body,
-    tag: tag || "committrack",
+    tag: tag || "perovo",
     data,
     icon,
     badge: icon,
@@ -144,7 +158,7 @@ export async function sendTestNotification() {
   const ok = await showLocalNotification({
     title: "Perovo",
     body: "Notifications are working. Due and overdue bills will alert you here.",
-    tag: "committrack-test",
+    tag: "perovo-test",
     data: { type: "test" },
   });
   return { ok, reason: ok ? null : "show_failed" };

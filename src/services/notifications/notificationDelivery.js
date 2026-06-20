@@ -1,4 +1,4 @@
-const SENT_PREFIX = "committrack_browser_sent_";
+const SENT_PREFIX = "perovo_browser_sent_";
 
 /** Avoid re-firing the same browser alert many times per day. */
 export function wasBrowserNotificationSent(id, todayStr) {

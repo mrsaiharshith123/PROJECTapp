@@ -9,8 +9,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const CTX = path.join(ROOT, "src/context/CommitTrackContext.jsx");
-const CRUD = path.join(ROOT, "src/context/useCommitTrackCrud.js");
+const CTX = path.join(ROOT, "src/context/PerovoContext.jsx");
+const CRUD = path.join(ROOT, "src/context/usePerovoCrud.js");
 const JSON_OUT = process.argv.includes("--json");
 
 function main() {
@@ -27,13 +27,13 @@ function main() {
 
   for (const f of filters) {
     if (!ctx.includes(f.fn)) {
-      hits.push({ note: `CommitTrackContext missing ${f.fn} for ${f.label}` });
+      hits.push({ note: `PerovoContext missing ${f.fn} for ${f.label}` });
     }
   }
 
   for (const entity of ["profileId: raw.profileId", "settings.activeProfileId"]) {
     if (!crud.includes("profileId")) {
-      hits.push({ note: "useCommitTrackCrud should set profileId on new records" });
+      hits.push({ note: "usePerovoCrud should set profileId on new records" });
       break;
     }
   }

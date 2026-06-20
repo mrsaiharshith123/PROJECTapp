@@ -1,12 +1,13 @@
 import { useMemo } from "react";
-import { useCommitTrack } from "../../../context/CommitTrackContext.jsx";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   computeHouseholdSpendBreakdown,
   computeHouseholdCategorySpend,
 } from "../../../engines/householdSpendBreakdown.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, Heading, Caption, Body } from "../../index.js";
+import { Heading, Caption, Body } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const MEMBER_LABEL_KEYS = {
   self: "household.member.self",
@@ -18,7 +19,7 @@ const MEMBER_LABEL_KEYS = {
 /** Who spends more + household categories — Analytics house view. */
 export default function HouseholdSpendPanel() {
   const { t } = useTranslation();
-  const { commitments, dailySpends, getEffectiveStatus, todayStr } = useCommitTrack();
+  const { commitments, dailySpends, getEffectiveStatus, todayStr } = usePerovo();
 
   const memberRows = useMemo(
     () =>
@@ -38,40 +39,67 @@ export default function HouseholdSpendPanel() {
   return (
     <div className="ct-stack">
       {memberRows.length > 0 && (
-        <Card className="ct-stack">
-          <Heading level={3}>{t("analytics.household.spendByPerson")}</Heading>
-          <Caption className="block">{t("analytics.household.spendByPersonHint")}</Caption>
-          {memberRows.map((row, index) => (
-            <div key={row.id} className="ct-row-between gap-2 py-2 border-b border-[var(--ct-border)] last:border-0">
-              <div>
-                <Body className="font-semibold">
-                  {index === 0 ? `${t("analytics.household.topSpender")} · ` : ""}
-                  {t(MEMBER_LABEL_KEYS[row.id] || "household.member.shared")}
-                </Body>
-                <Caption>
-                  {t("analytics.household.billsAndVariable", {
-                    bills: formatInr(row.bills),
-                    variable: formatInr(row.variable),
-                  })}
-                </Caption>
-              </div>
-              <Body className="ct-numeral font-bold">{formatInr(row.total)}</Body>
+        <div className="ct-hero-card lending ct-stack relative">
+          <div className="ct-hero-glow teal" aria-hidden />
+          <div className="ct-row gap-3 items-start relative">
+            <span className="ct-icon-tile violet shrink-0" aria-hidden>
+              <CtIcon name="users-three" size={22} />
+            </span>
+            <div className="min-w-0">
+              <Heading level={3} className="!text-base !font-semibold">
+                {t("analytics.household.spendByPerson")}
+              </Heading>
+              <Caption className="block mt-0.5">{t("analytics.household.spendByPersonHint")}</Caption>
             </div>
-          ))}
-        </Card>
+          </div>
+          <div className="relative ct-stack-sm">
+            {memberRows.map((row, index) => (
+              <div
+                key={row.id}
+                className={`ct-stat-tile ${index === 0 ? "teal" : "indigo"} ct-row-between gap-2 items-center`}
+              >
+                <div className="min-w-0">
+                  <Body className="font-semibold text-sm">
+                    {index === 0 ? `${t("analytics.household.topSpender")} · ` : ""}
+                    {t(MEMBER_LABEL_KEYS[row.id] || "household.member.shared")}
+                  </Body>
+                  <Caption className="block ct-numeral">
+                    {t("analytics.household.billsAndVariable", {
+                      bills: formatInr(row.bills),
+                      variable: formatInr(row.variable),
+                    })}
+                  </Caption>
+                </div>
+                <p className="ct-stat-value ct-numeral shrink-0">{formatInr(row.total)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {categoryRows.length > 0 && (
-        <Card className="ct-stack">
-          <Heading level={3}>{t("analytics.household.spendByCategory")}</Heading>
-          <Caption className="block">{t("analytics.household.spendByCategoryHint")}</Caption>
-          {categoryRows.map((row) => (
-            <div key={row.category} className="ct-row-between gap-2 py-2 border-b border-[var(--ct-border)] last:border-0">
-              <Body className="font-semibold">{row.category}</Body>
-              <Body className="ct-numeral font-semibold">{formatInr(Math.round(row.amount))}</Body>
+        <div className="ct-hero-card pressure ct-stack relative">
+          <div className="ct-hero-glow" aria-hidden />
+          <div className="ct-row gap-3 items-start relative">
+            <span className="ct-icon-tile amber shrink-0" aria-hidden>
+              <CtIcon name="chart-bar" size={22} />
+            </span>
+            <div className="min-w-0">
+              <Heading level={3} className="!text-base !font-semibold">
+                {t("analytics.household.spendByCategory")}
+              </Heading>
+              <Caption className="block mt-0.5">{t("analytics.household.spendByCategoryHint")}</Caption>
             </div>
-          ))}
-        </Card>
+          </div>
+          <div className="relative ct-stack-sm">
+            {categoryRows.map((row) => (
+              <div key={row.category} className="ct-stat-tile indigo ct-row-between gap-2 items-center">
+                <Body className="font-semibold text-sm truncate">{row.category}</Body>
+                <p className="ct-stat-value ct-numeral shrink-0">{formatInr(Math.round(row.amount))}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

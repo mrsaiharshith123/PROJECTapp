@@ -27,7 +27,7 @@ export type AuthContextValue = {
   clearAuthNotice: () => void;
 };
 
-export type CommitTrackContextValue = {
+export type PerovoContextValue = {
   commitments: AuthProfile[];
   allCommitments: AuthProfile[];
   sortedCommitments: AuthProfile[];
