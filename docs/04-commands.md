@@ -119,6 +119,9 @@ Full guide: [MOBILE.md](./MOBILE.md).
 | `npm run ship -- --no-apk "msg"` | Commit and push only (skip APK build + release) |
 | `npm run ship -- --release-only` | Upload existing `releases/Perovo-dev-latest.apk` to GitHub Releases (no commit) |
 | `npm run gh:login` | GitHub CLI login (works when `gh` is not on PATH yet — Windows) |
+| `npm run site:mode` | Customer mode status + live toggle URLs (`?app=1` / `?app=0`) |
+| `npm run site:customer-on` | Local preview: landing page (writes `.env.local`) |
+| `npm run site:customer-off` | Local preview: full app (writes `.env.local`) |
 | `npm run git:ship` | Alias for `npm run ship` |
 
 ### Dev-only (local `npm run dev`)

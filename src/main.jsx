@@ -6,6 +6,7 @@ import "./index.css";
 import "./ui/styles/index.css";
 import { bootstrapThemeFromStorage } from "./utils/theme.js";
 import { applyUiThemeToDocument } from "./utils/applyUiTheme.js";
+import { bootstrapCustomerModeFromUrl } from "./utils/embeddedApp.js";
 import App from "./App.jsx";
 import { log } from "./utils/logger.js";
 
@@ -42,6 +43,7 @@ if (import.meta.env.PROD && import.meta.env.VITE_EMBEDDED_APP !== "1") {
   registerSW({ immediate: true });
 }
 
+bootstrapCustomerModeFromUrl();
 bootstrapThemeFromStorage();
 applyUiThemeToDocument();
 log.app.info("Perovo starting", { mode: import.meta.env.MODE });

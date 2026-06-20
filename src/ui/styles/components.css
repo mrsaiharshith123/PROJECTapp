@@ -1647,6 +1647,20 @@ html[data-ui="ct"] .ct-landing-link {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+html[data-ui="ct"] .ct-customer-mode-banner {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--ct-life-grad-soft);
+  border-bottom: 1px solid var(--ct-border-accent);
+  text-align: center;
+}
 
 /* ── Info tip ── */
 html[data-ui="ct"] .ct-info-tip-btn {

@@ -98,6 +98,11 @@ export default function WebLandingPage() {
           <Link to="/privacy" className="ct-landing-link">
             {t("privacy.title")}
           </Link>
+          <p className="mt-3">
+            <a href="?app=1" className="ct-landing-link">
+              {t("webLanding.devAccess")}
+            </a>
+          </p>
           <Caption className="block mt-2">{t("brand.byTadsaya")}</Caption>
         </footer>
       </div>

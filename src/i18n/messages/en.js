@@ -23,6 +23,9 @@ export default {
   "webLanding.downloadHint":
     "Enable “Install unknown apps” for your browser or file manager if Android blocks the install. Developer build — not from Play Store yet.",
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
+  "webLanding.devAccess": "Developer access — open full app",
+  "webLanding.devBanner": "Developer mode — full app (customer landing is off).",
+  "webLanding.devBannerBack": "Show landing page",
 
   "nav.home": "Home",
   "nav.bills": "Money",

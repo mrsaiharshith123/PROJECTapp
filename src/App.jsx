@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
-import { isMarketingWeb } from "./utils/embeddedApp.js";
+import { isCustomerModeEnabled } from "./utils/embeddedApp.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -21,9 +21,10 @@ import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
-import { I18nProvider } from "./i18n/index.js";
+import { I18nProvider, useTranslation } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
+import CustomerModeBanner from "./ui/features/CustomerModeBanner.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -78,6 +79,7 @@ function OnboardingShell() {
 function MainShell() {
   return (
     <Screen>
+      <CustomerModeBanner />
       <ThemeSync />
       <CloudSyncBridge />
       <HouseholdRoomBridge />
@@ -230,12 +232,21 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function MarketingFallback() {
+  const { t } = useTranslation();
+  return (
+    <div className="ct-load-scene ct-load-scene-full ct-landing" role="status" aria-live="polite" aria-busy="true">
+      <p className="ct-load-message">{t("common.loading")}</p>
+    </div>
+  );
+}
+
 function MarketingShell() {
   return (
     <BrowserRouter basename={routerBasename()}>
       <I18nProvider>
         <ErrorBoundary>
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={<MarketingFallback />}>
             <Routes>
               <Route path="/privacy" element={<Privacy />} />
               <Route path="*" element={<WebLanding />} />
@@ -248,7 +259,7 @@ function MarketingShell() {
 }
 
 function App() {
-  if (isMarketingWeb()) {
+  if (isCustomerModeEnabled()) {
     return <MarketingShell />;
   }
 
