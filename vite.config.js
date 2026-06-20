@@ -75,8 +75,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff2}"],
+        globIgnores: ["**/apk/**"],
         navigateFallback: `${basePath}index.html`,
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /\/apk\//],
         importScripts: ["notification-handler.js"],
       },
       devOptions: {

@@ -24,13 +24,7 @@ function parseAuthCallbackParams() {
   };
 }
 
-function apkDownloadUrl() {
-  const configured = import.meta.env.VITE_APK_DOWNLOAD_URL;
-  if (configured) return configured;
-  return "https://github.com/mrsaiharshith123/PROJECTapp/releases/latest/download/Perovo-dev-latest.apk";
-}
-
-/**
+import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
  * Landing page after Supabase email verification (GitHub Pages + app builds).
  * Route: /auth/confirm — must stay registered in MarketingShell for production web.
  */
@@ -99,7 +93,7 @@ export default function AuthConfirmPage() {
     return () => sub.subscription.unsubscribe();
   }, [t]);
 
-  const downloadUrl = apkDownloadUrl();
+  const downloadUrl = getApkDownloadUrl();
 
   return (
     <div className="ct-screen ct-landing ct-auth-confirm">
@@ -134,7 +128,11 @@ export default function AuthConfirmPage() {
               <Body className="ct-auth-confirm-body">{t("auth.confirmSuccessBody")}</Body>
               {marketing ? (
                 <>
-                  <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary">
+                  <a
+                    href={downloadUrl}
+                    {...apkDownloadLinkProps(downloadUrl)}
+                    className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
+                  >
                     {t("webLanding.downloadButton")}
                   </a>
                   <Caption className="ct-auth-confirm-hint">{t("auth.confirmOpenAppHint")}</Caption>

@@ -34,6 +34,12 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
 
+      - name: Bundle release APK for same-origin download
+        run: |
+          mkdir -p dist/apk
+          curl -fsSL -L -o dist/apk/Perovo-dev-latest.apk \
+            "https://github.com/${{ github.repository }}/releases/latest/download/Perovo-dev-latest.apk"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { brandIconForTheme } from "../../brand/brandAssets.js";
 import { assetUrl } from "../../../utils/basePath.js";
+import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
 import { useDocumentTheme } from "../../../hooks/useDocumentTheme.js";
 import MarketingThemeSync from "../../../app/MarketingThemeSync.jsx";
 import { LandingBrandLockup } from "../../brand/LandingBrandLockup.jsx";
@@ -20,16 +21,10 @@ const FEATURES = [
 
 const STATS = ["languages", "pillars", "offline"];
 
-function apkDownloadUrl() {
-  const configured = import.meta.env.VITE_APK_DOWNLOAD_URL;
-  if (configured) return configured;
-  return "https://github.com/mrsaiharshith123/PROJECTapp/releases/latest/download/Perovo-dev-latest.apk";
-}
-
 export default function WebLandingPage() {
   const { t } = useTranslation();
   const theme = useDocumentTheme();
-  const downloadUrl = apkDownloadUrl();
+  const downloadUrl = getApkDownloadUrl();
   const favicon = assetUrl(`brand/${brandIconForTheme(theme)}`);
 
   useEffect(() => {
@@ -55,7 +50,11 @@ export default function WebLandingPage() {
           <Body className="ct-landing-lede">{t("webLanding.lede")}</Body>
 
           <div className="ct-landing-hero-cta">
-            <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary">
+            <a
+              href={downloadUrl}
+              {...apkDownloadLinkProps(downloadUrl)}
+              className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
+            >
               {t("webLanding.downloadButton")}
             </a>
             <a href="#features" className="ct-btn ct-btn-outline ct-btn-lg">
@@ -98,7 +97,11 @@ export default function WebLandingPage() {
             {t("webLanding.downloadTitle")}
           </Heading>
           <Body className="ct-landing-cta-body">{t("webLanding.downloadBody")}</Body>
-          <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary">
+          <a
+            href={downloadUrl}
+            {...apkDownloadLinkProps(downloadUrl)}
+            className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary"
+          >
             {t("webLanding.downloadButton")}
           </a>
           <Caption className="ct-landing-cta-hint">{t("webLanding.downloadHint")}</Caption>
