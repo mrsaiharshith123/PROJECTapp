@@ -10,6 +10,7 @@ import { Card } from "../../primitives/Card.jsx";
 import { getSupabaseClient } from "../../../services/supabase/auth.js";
 import { isCustomerModeEnabled } from "../../../utils/embeddedApp.js";
 import { formatAuthError } from "../../../utils/authErrors.js";
+import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
 
 function parseAuthCallbackParams() {
   const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
@@ -24,7 +25,7 @@ function parseAuthCallbackParams() {
   };
 }
 
-import { getApkDownloadUrl, apkDownloadLinkProps } from "../../../utils/apkDownload.js";
+/**
  * Landing page after Supabase email verification (GitHub Pages + app builds).
  * Route: /auth/confirm — must stay registered in MarketingShell for production web.
  */
