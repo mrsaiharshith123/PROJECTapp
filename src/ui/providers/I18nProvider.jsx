@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePerovo } from "../../context/PerovoContext.jsx";
+import { loadSettingsFromStorage } from "../../utils/migrateStorage.js";
 import { getLanguageMeta, isRtlLanguage, normalizeAppLanguage } from "../../i18n/languages.js";
 import { enMessages, loadMessages, translate, invalidateMessageCache } from "../../i18n/translate.js";
 
@@ -8,9 +9,11 @@ import { enMessages, loadMessages, translate, invalidateMessageCache } from "../
 /** @type {import('react').Context<I18nContextValue | null>} */
 const I18nContext = createContext(null);
 
-export function I18nProvider({ children }) {
-  const { settings } = usePerovo();
-  const locale = normalizeAppLanguage(settings.appLanguage);
+function localeFromStorage() {
+  return normalizeAppLanguage(loadSettingsFromStorage()?.appLanguage);
+}
+
+function I18nProviderCore({ children, locale }) {
   const [messages, setMessages] = useState(null);
 
   useEffect(() => {
@@ -51,6 +54,23 @@ export function I18nProvider({ children }) {
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+function I18nProviderWithPerovo({ children }) {
+  const { settings } = usePerovo();
+  const locale = normalizeAppLanguage(settings.appLanguage);
+  return <I18nProviderCore locale={locale}>{children}</I18nProviderCore>;
+}
+
+/**
+ * @param {{ children: import('react').ReactNode, standalone?: boolean }} props
+ * standalone — landing page without PerovoProvider (language from local storage)
+ */
+export function I18nProvider({ children, standalone = false }) {
+  if (standalone) {
+    return <I18nProviderCore locale={localeFromStorage()}>{children}</I18nProviderCore>;
+  }
+  return <I18nProviderWithPerovo>{children}</I18nProviderWithPerovo>;
 }
 
 /** @returns {I18nContextValue} */

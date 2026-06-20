@@ -12,14 +12,39 @@
     <meta name="apple-mobile-web-app-title" content="Perovo" />
     <link rel="apple-touch-icon" href="pwa-192.png" />
     <title>Perovo</title>
+    <script>
+      (function () {
+        var theme = "light";
+        try {
+          var raw = localStorage.getItem("perovo_settings");
+          if (raw) {
+            var o = JSON.parse(raw);
+            if (o && o.colorScheme === "dark") theme = "dark";
+            else if (o && o.colorScheme === "light") theme = "light";
+            else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
+          } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            theme = "dark";
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        var root = document.documentElement;
+        root.dataset.theme = theme;
+        root.classList.toggle("dark", theme === "dark");
+        root.style.colorScheme = theme;
+        var bg = theme === "dark" ? "#0d0e18" : "#eef0f8";
+        root.style.background = bg;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#0d0d17" : "#eef1f8");
+      })();
+    </script>
     <style>
-      /* Empty root until React mounts — branded PageLoader renders immediately (no duplicate HTML spinner). */
       html,
       body,
       #root {
         margin: 0;
         min-height: 100dvh;
-        background: #0d0e18;
+        background: inherit;
       }
     </style>
   </head>

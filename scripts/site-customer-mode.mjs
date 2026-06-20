@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Toggle customer mode (landing vs full app) for local preview and live site.
+ * Localhost only — toggle customer landing vs full dev app in `npm run dev`.
  *
- *   npm run site:mode              # status + live URLs
- *   npm run site:mode -- on        # landing page (default for GitHub Pages)
- *   npm run site:mode -- off       # full app in browser
+ *   npm run site:mode           # status
+ *   npm run site:customer-on    # localhost shows landing page
+ *   npm run site:customer-off     # localhost shows full app (default)
  *
- * Live site (no redeploy): open the printed URL or use ?app=1 / ?app=0
+ * Restart `npm run dev` after changing.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -15,7 +15,6 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ENV_LOCAL = path.join(ROOT, ".env.local");
 const KEY = "VITE_CUSTOMER_MODE";
-const SITE = process.env.PEROVO_SITE_URL || "https://mrsaiharshith123.github.io/PROJECTapp";
 
 const arg = (process.argv[2] || "status").toLowerCase();
 
@@ -29,38 +28,39 @@ function readEnvLocal() {
   return out;
 }
 
-function writeCustomerMode(value) {
+function writeEnvLocal(value) {
   const lines = fs.existsSync(ENV_LOCAL) ? fs.readFileSync(ENV_LOCAL, "utf8").split(/\r?\n/) : [];
   const kept = lines.filter((l) => l && !l.startsWith(`${KEY}=`));
-  kept.push(`${KEY}=${value}`);
-  fs.writeFileSync(ENV_LOCAL, `${kept.join("\n").trim()}\n`, "utf8");
+  if (value !== null) kept.push(`${KEY}=${value}`);
+  const body = kept.length ? `${kept.join("\n").trim()}\n` : "";
+  if (body) fs.writeFileSync(ENV_LOCAL, body, "utf8");
+  else if (fs.existsSync(ENV_LOCAL)) fs.unlinkSync(ENV_LOCAL);
 }
 
-function printLiveUrls() {
-  console.log("\nLive site (saved in browser localStorage):");
-  console.log(`  Landing (customer on):  ${SITE}/?app=0`);
-  console.log(`  Full app (customer off): ${SITE}/?app=1`);
-  console.log("\nAfter ?app=1, reload without the query — stays in app mode until cleared.");
-  console.log("Clear override: DevTools → Application → Local Storage → delete perovo_customer_mode");
+function remindRestart() {
+  console.log("\n↻ Restart the dev server: stop `npm run dev`, then run it again.");
+  console.log("  http://localhost:5173");
 }
 
 if (arg === "on" || arg === "landing" || arg === "customer") {
-  writeCustomerMode("1");
-  console.log("✓ Local .env.local → VITE_CUSTOMER_MODE=1 (landing page on `npm run preview`)");
-  printLiveUrls();
+  writeEnvLocal("1");
+  console.log("✓ Customer mode ON — localhost will show the landing page.");
+  remindRestart();
   process.exit(0);
 }
 
 if (arg === "off" || arg === "app" || arg === "dev") {
-  writeCustomerMode("0");
-  console.log("✓ Local .env.local → VITE_CUSTOMER_MODE=0 (full app on `npm run preview`)");
-  printLiveUrls();
+  writeEnvLocal(null);
+  console.log("✓ Customer mode OFF — localhost shows the full dev app (default).");
+  remindRestart();
   process.exit(0);
 }
 
 const local = readEnvLocal()[KEY];
-console.log("Perovo — customer mode\n");
-console.log(`  Local preview (.env.local): ${local === "0" ? "OFF (full app)" : local === "1" ? "ON (landing)" : "(not set — landing in production, app in dev)"}`);
-console.log(`  npm run site:mode -- on   → landing for preview`);
-console.log(`  npm run site:mode -- off  → full app for preview`);
-printLiveUrls();
+console.log("Perovo — customer mode (localhost only)\n");
+console.log(
+  `  Current: ${local === "1" ? "ON (landing page)" : "OFF (full app — default)"}`,
+);
+console.log("\n  npm run site:customer-on   → preview landing on localhost");
+console.log("  npm run site:customer-off  → back to full dev app");
+console.log("\n  GitHub Pages is always landing-only — this does not affect the live site.");

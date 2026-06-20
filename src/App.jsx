@@ -21,10 +21,11 @@ import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
-import { I18nProvider, useTranslation } from "./i18n/index.js";
+import { I18nProvider } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
-import CustomerModeBanner from "./ui/features/CustomerModeBanner.jsx";
+import WebLandingPage from "./ui/features/pages/WebLandingPage.jsx";
+import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
 
 const Home = lazy(() => import("./ui/features/pages/HomePage.jsx"));
 const Commitments = lazy(() => import("./ui/features/pages/CommitmentsPage.jsx"));
@@ -43,7 +44,6 @@ const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
-const WebLanding = lazy(() => import("./ui/features/pages/WebLandingPage.jsx"));
 
 function AuthGateShell() {
   return (
@@ -79,7 +79,6 @@ function OnboardingShell() {
 function MainShell() {
   return (
     <Screen>
-      <CustomerModeBanner />
       <ThemeSync />
       <CloudSyncBridge />
       <HouseholdRoomBridge />
@@ -232,26 +231,15 @@ function RequireAuth({ children }) {
   return children;
 }
 
-function MarketingFallback() {
-  const { t } = useTranslation();
-  return (
-    <div className="ct-load-scene ct-load-scene-full ct-landing" role="status" aria-live="polite" aria-busy="true">
-      <p className="ct-load-message">{t("common.loading")}</p>
-    </div>
-  );
-}
-
 function MarketingShell() {
   return (
     <BrowserRouter basename={routerBasename()}>
-      <I18nProvider>
+      <I18nProvider standalone>
         <ErrorBoundary>
-          <Suspense fallback={<MarketingFallback />}>
-            <Routes>
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="*" element={<WebLanding />} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="*" element={<WebLandingPage />} />
+          </Routes>
         </ErrorBoundary>
       </I18nProvider>
     </BrowserRouter>

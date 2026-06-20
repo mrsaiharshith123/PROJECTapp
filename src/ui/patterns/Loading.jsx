@@ -98,7 +98,7 @@ export function PageLoader({ message, hint = true }) {
           ) : (
             <>
               <span className="ct-load-message-prefix">{t("common.loadingAppPrefix")}</span>
-              <PerovoWordmark variant="nameOnly" size="sm" alt={t("brand.appName")} />
+              <PerovoWordmark size="xs" alt={t("brand.appName")} />
               <span className="ct-load-message-suffix" aria-hidden>
                 …
               </span>

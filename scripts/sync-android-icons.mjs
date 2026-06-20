@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const androidRes = path.join(ROOT, "android", "app", "src", "main", "res");
-const source = path.join(ROOT, "public", "brand", "icon-light-lg.png");
+const source = path.join(ROOT, "public", "brand", "icon-light.png");
 
 const DENSITIES = {
   "mipmap-mdpi": 48,
@@ -25,7 +25,7 @@ if (!fs.existsSync(androidRes)) {
 }
 
 if (!fs.existsSync(source)) {
-  console.warn("Skip Android icons: public/brand/icon-light-lg.png missing");
+  console.warn("Skip Android icons: public/brand/icon-light.png missing");
   process.exit(0);
 }
 
@@ -46,4 +46,4 @@ for (const [folder, px] of Object.entries(DENSITIES)) {
   }
 }
 
-console.log("Synced Android launcher icons from brand/icon-light-lg.png");
+console.log("Synced Android launcher icons from brand/icon-light.png");

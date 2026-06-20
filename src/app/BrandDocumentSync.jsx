@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import { useResolvedTheme } from "../hooks/useResolvedTheme.js";
+import { brandIconForTheme } from "../ui/brand/brandAssets.js";
 import { assetUrl } from "../utils/basePath.js";
 
 /**
@@ -29,7 +30,7 @@ export default function BrandDocumentSync() {
 
     document.title = t("brand.appName");
 
-    const tabIcon = theme === "dark" ? assetUrl("brand/icon-dark.png") : assetUrl("brand/icon-light.png");
+    const tabIcon = assetUrl(`brand/${brandIconForTheme(theme)}`);
     upsertLink("icon", { href: tabIcon, type: "image/png" });
     upsertLink("apple-touch-icon", { href: assetUrl("pwa-192.png") });
 

@@ -1,17 +1,24 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { brandIconForTheme } from "../../brand/brandAssets.js";
 import { assetUrl } from "../../../utils/basePath.js";
-import { Body, Caption, Heading, Card, Stack } from "../../index.js";
+import { useDocumentTheme } from "../../../hooks/useDocumentTheme.js";
+import MarketingThemeSync from "../../../app/MarketingThemeSync.jsx";
+import { LandingBrandLockup } from "../../brand/LandingBrandLockup.jsx";
+import { CtIcon } from "../../icons/CtIcon.jsx";
+import { Body, Caption, Heading } from "../../primitives/Text.jsx";
 
-const FEATURE_IDS = [
-  "webLanding.feature.score",
-  "webLanding.feature.bills",
-  "webLanding.feature.lending",
-  "webLanding.feature.local",
-  "webLanding.feature.languages",
-  "webLanding.feature.insights",
+const FEATURES = [
+  { key: "score", icon: "chart-line-up" },
+  { key: "bills", icon: "wallet" },
+  { key: "lending", icon: "handshake" },
+  { key: "local", icon: "shield" },
+  { key: "languages", icon: "book-open" },
+  { key: "insights", icon: "chart-bar" },
 ];
+
+const STATS = ["languages", "pillars", "offline"];
 
 function apkDownloadUrl() {
   const configured = import.meta.env.VITE_APK_DOWNLOAD_URL;
@@ -21,76 +28,80 @@ function apkDownloadUrl() {
 
 export default function WebLandingPage() {
   const { t } = useTranslation();
+  const theme = useDocumentTheme();
   const downloadUrl = apkDownloadUrl();
-  const iconUrl = assetUrl("brand/icon-light-lg.png");
-  const wordmarkUrl = assetUrl("brand/wordmark-light.png");
+  const favicon = assetUrl(`brand/${brandIconForTheme(theme)}`);
 
   useEffect(() => {
     document.title = t("brand.appName");
     const icon = document.querySelector('link[rel="icon"]');
-    if (icon) icon.setAttribute("href", iconUrl);
-  }, [t, iconUrl]);
+    if (icon) icon.setAttribute("href", favicon);
+  }, [t, favicon]);
 
   return (
     <div className="ct-screen ct-landing">
-      <div className="ct-auth-ambient" aria-hidden>
-        <div className="ct-auth-grid" />
-        <div className="ct-auth-orb ct-auth-orb-a" />
-        <div className="ct-auth-orb ct-auth-orb-b" />
-        <div className="ct-auth-shine" />
+      <MarketingThemeSync />
+      <div className="ct-landing-ambient" aria-hidden>
+        <div className="ct-landing-orb ct-landing-orb-a" />
+        <div className="ct-landing-orb ct-landing-orb-b" />
+        <div className="ct-landing-grid" />
       </div>
 
       <div className="ct-landing-inner">
         <header className="ct-landing-hero">
-          <div className="ct-landing-logo-ring">
-            <img
-              src={iconUrl}
-              alt={t("brand.appName")}
-              width={96}
-              height={96}
-              className="ct-perovo-logo"
-              draggable={false}
-            />
-          </div>
-          <img
-            src={wordmarkUrl}
-            alt={t("brand.appName")}
-            height={56}
-            className="ct-perovo-wordmark ct-perovo-wordmark-lg ct-landing-brand"
-            draggable={false}
-          />
-          <Heading level={1} className="ct-landing-headline">
-            {t("brand.tagline")}
-          </Heading>
+          <LandingBrandLockup />
+          <span className="ct-landing-badge">{t("webLanding.heroBadge")}</span>
+          <h1 className="ct-landing-display">{t("webLanding.heroTitle")}</h1>
           <Body className="ct-landing-lede">{t("webLanding.lede")}</Body>
+
+          <div className="ct-landing-hero-cta">
+            <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary">
+              {t("webLanding.downloadButton")}
+            </a>
+            <a href="#features" className="ct-btn ct-btn-outline ct-btn-lg">
+              {t("webLanding.ctaFeatures")}
+            </a>
+          </div>
+
+          <ul className="ct-landing-stats">
+            {STATS.map((id) => (
+              <li key={id} className="ct-landing-stat">
+                <span className="ct-landing-stat-value">{t(`webLanding.stat.${id}.value`)}</span>
+                <span className="ct-landing-stat-label">{t(`webLanding.stat.${id}.label`)}</span>
+              </li>
+            ))}
+          </ul>
         </header>
 
-        <section className="ct-landing-section" aria-labelledby="landing-features">
+        <section id="features" className="ct-landing-section" aria-labelledby="landing-features">
           <Heading level={2} id="landing-features" className="ct-landing-section-title">
             {t("webLanding.featuresTitle")}
           </Heading>
-          <ul className="ct-landing-features">
-            {FEATURE_IDS.map((key) => (
-              <li key={key}>
-                <Card className="ct-landing-feature-card">
-                  <Body>{t(key)}</Body>
-                </Card>
+          <ul className="ct-landing-feature-grid">
+            {FEATURES.map(({ key, icon }) => (
+              <li key={key} className="ct-landing-feature-tile">
+                <span className="ct-landing-feature-icon" aria-hidden>
+                  <CtIcon name={icon} size={22} weight="duotone" />
+                </span>
+                <Heading level={2} className="ct-landing-feature-title">
+                  {t(`webLanding.feature.${key}.title`)}
+                </Heading>
+                <Body className="ct-landing-feature-desc">{t(`webLanding.feature.${key}.desc`)}</Body>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="ct-landing-section ct-landing-download" aria-labelledby="landing-download">
-          <Heading level={2} id="landing-download" className="ct-landing-section-title">
+        <section className="ct-landing-cta-panel" aria-labelledby="landing-download">
+          <div className="ct-landing-cta-glow" aria-hidden />
+          <Heading level={2} id="landing-download" className="ct-landing-cta-title">
             {t("webLanding.downloadTitle")}
           </Heading>
-          <Body>{t("webLanding.downloadBody")}</Body>
-          <Stack className="ct-landing-actions">
-            <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-download-btn">
-              {t("webLanding.downloadButton")}
-            </a>
-            <Caption>{t("webLanding.downloadHint")}</Caption>
-          </Stack>
+          <Body className="ct-landing-cta-body">{t("webLanding.downloadBody")}</Body>
+          <a href={downloadUrl} download className="ct-btn ct-btn-primary ct-btn-lg ct-landing-cta-primary">
+            {t("webLanding.downloadButton")}
+          </a>
+          <Caption className="ct-landing-cta-hint">{t("webLanding.downloadHint")}</Caption>
         </section>
 
         <footer className="ct-landing-footer">
@@ -98,11 +109,6 @@ export default function WebLandingPage() {
           <Link to="/privacy" className="ct-landing-link">
             {t("privacy.title")}
           </Link>
-          <p className="mt-3">
-            <a href="?app=1" className="ct-landing-link">
-              {t("webLanding.devAccess")}
-            </a>
-          </p>
           <Caption className="block mt-2">{t("brand.byTadsaya")}</Caption>
         </footer>
       </div>

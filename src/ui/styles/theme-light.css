@@ -173,6 +173,70 @@ html[data-ui="ct"][data-theme="light"] .ct-attention-row.warning {
 html[data-ui="ct"][data-theme="light"] .ct-icon-tile.primary {
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.22);
 }
-html[data-ui="ct"][data-theme="light"] .ct-settings-group-modern {
+html[data-ui="ct"] .ct-settings-group-modern {
   background: rgba(15, 23, 42, 0.03);
+}
+
+/* Category chips — readable on light surfaces */
+html[data-ui="ct"][data-theme="light"] .ct-cat-rose {
+  color: #be123c;
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.22);
+}
+html[data-ui="ct"][data-theme="light"] .ct-cat-sky {
+  color: #0369a1;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+html[data-ui="ct"][data-theme="light"] .ct-cat-teal {
+  color: #0f766e;
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.22);
+}
+html[data-ui="ct"][data-theme="light"] .ct-cat-orange {
+  color: #c2410c;
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.22);
+}
+html[data-ui="ct"][data-theme="light"] .ct-cat-lime {
+  color: #4d7c0f;
+  background: rgba(132, 204, 22, 0.12);
+  border-color: rgba(132, 204, 22, 0.22);
+}
+
+/* Landing — softer ambient in light mode */
+html[data-ui="ct"][data-theme="light"] .ct-landing-orb-a {
+  opacity: 0.35;
+  background: radial-gradient(circle, rgba(109, 74, 255, 0.28), transparent 68%);
+}
+html[data-ui="ct"][data-theme="light"] .ct-landing-orb-b {
+  opacity: 0.3;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.22), transparent 70%);
+}
+html[data-ui="ct"][data-theme="light"] .ct-landing-grid {
+  background-image:
+    linear-gradient(rgba(109, 74, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 74, 255, 0.05) 1px, transparent 1px);
+}
+html[data-ui="ct"][data-theme="light"] .ct-landing-display {
+  background: linear-gradient(135deg, #12121f 0%, #6d4aff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Settings / profile surfaces that used dark-only white overlays */
+html[data-ui="ct"][data-theme="light"] .ct-settings-icon-slate {
+  background: var(--ct-life-inset-bg);
+  color: var(--ct-text-muted);
+}
+html[data-ui="ct"][data-theme="light"] .ct-tier-badge-free {
+  background: var(--ct-life-inset-bg);
+}
+html[data-ui="ct"][data-theme="light"] .ct-settings-group-modern .ct-settings-row,
+html[data-ui="ct"][data-theme="light"] .ct-profile-accordion-trigger {
+  background: transparent;
+}
+html[data-ui="ct"][data-theme="light"] .ct-load-scene-card,
+html[data-ui="ct"][data-theme="light"] .ct-auth-card {
+  box-shadow: var(--ct-shadow-card);
 }

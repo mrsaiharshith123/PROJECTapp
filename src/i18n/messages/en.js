@@ -7,15 +7,34 @@ export default {
   "brand.familySuffix": "Family",
   "brand.proSuffix": "Pro member",
 
+  "webLanding.heroBadge": "Local-first · Built for India",
+  "webLanding.heroTitle": "Your money. One clear score.",
   "webLanding.lede":
-    "Track bills, lending, and your Perovo Score — on your phone, with your data staying on your device. Install the Android app to get started.",
-  "webLanding.featuresTitle": "What you get",
-  "webLanding.feature.score": "One Perovo Score (0–100) with four clear pillars — stability, control, runway, and growth.",
-  "webLanding.feature.bills": "Bills, EMIs, rent, and subscriptions in one Money hub with due-date pressure and health.",
-  "webLanding.feature.lending": "Record lending with promissory notes, reminders, and optional e-sign flows.",
-  "webLanding.feature.local": "Local-first — works offline. Optional cloud backup when you sign in.",
-  "webLanding.feature.languages": "Full app in 23 Indian languages — pick yours in Settings.",
-  "webLanding.feature.insights": "Insights and analytics tuned for salaried and family households.",
+    "Track bills, lending, and your Perovo Score on your phone — with your data staying on your device. Install the Android app to get started.",
+  "webLanding.ctaFeatures": "See what you get",
+  "webLanding.stat.languages.value": "23",
+  "webLanding.stat.languages.label": "Indian languages",
+  "webLanding.stat.pillars.value": "4",
+  "webLanding.stat.pillars.label": "Score pillars",
+  "webLanding.stat.offline.value": "100%",
+  "webLanding.stat.offline.label": "Works offline",
+  "webLanding.featuresTitle": "Everything in one app",
+  "webLanding.feature.score.title": "Perovo Score",
+  "webLanding.feature.score.desc":
+    "One score (0–100) with four clear pillars — stability, control, runway, and growth.",
+  "webLanding.feature.bills.title": "Money hub",
+  "webLanding.feature.bills.desc":
+    "Bills, EMIs, rent, and subscriptions with due-date pressure and health at a glance.",
+  "webLanding.feature.lending.title": "Lending & notes",
+  "webLanding.feature.lending.desc":
+    "Record lending with promissory notes, reminders, and optional e-sign flows.",
+  "webLanding.feature.local.title": "Local-first",
+  "webLanding.feature.local.desc":
+    "Works offline on your device. Optional cloud backup when you sign in.",
+  "webLanding.feature.languages.title": "23 languages",
+  "webLanding.feature.languages.desc": "Full app in Indian languages — pick yours in Settings.",
+  "webLanding.feature.insights.title": "Smart insights",
+  "webLanding.feature.insights.desc": "Analytics tuned for salaried and family households.",
   "webLanding.downloadTitle": "Download for Android",
   "webLanding.downloadBody":
     "The web site is for information only. Install the app to use Perovo — bills, scores, and backups run on your device.",
@@ -23,9 +42,6 @@ export default {
   "webLanding.downloadHint":
     "Enable “Install unknown apps” for your browser or file manager if Android blocks the install. Developer build — not from Play Store yet.",
   "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
-  "webLanding.devAccess": "Developer access — open full app",
-  "webLanding.devBanner": "Developer mode — full app (customer landing is off).",
-  "webLanding.devBannerBack": "Show landing page",
 
   "nav.home": "Home",
   "nav.bills": "Money",
