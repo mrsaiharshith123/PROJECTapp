@@ -29,15 +29,69 @@ function run(label, command, args, opts = {}) {
   }
 }
 
-function resolveJdkHome() {
-  if (process.env.JAVA_HOME) return process.env.JAVA_HOME;
-  const candidates = [
-    "C:\\Program Files\\Microsoft\\jdk-21.0.11.10-hotspot",
-    "C:\\Program Files\\Microsoft\\jdk-21.0.11-hotspot",
+function javaMajorVersion(jdkHome) {
+  const javaExe = path.join(jdkHome, "bin", isWin ? "java.exe" : "java");
+  if (!fs.existsSync(javaExe)) return 0;
+  const r = spawnSync(javaExe, ["-version"], { encoding: "utf8" });
+  const out = `${r.stderr || ""}${r.stdout || ""}`;
+  const quoted = out.match(/version "([^"]+)"/);
+  const raw = quoted?.[1] || out.match(/(\d+)/)?.[1] || "0";
+  const n = Number.parseInt(String(raw).split(".")[0], 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function discoverJdkCandidates() {
+  /** @type {string[]} */
+  const found = [];
+  const pushDir = (dir) => {
+    if (!dir || !fs.existsSync(dir)) return;
+    if (fs.existsSync(path.join(dir, "bin", isWin ? "java.exe" : "java"))) found.push(dir);
+  };
+
+  pushDir(process.env.JAVA_HOME);
+  pushDir(process.env.JDK_HOME);
+
+  const scanRoots = [
+    "C:\\Program Files\\Microsoft",
+    "C:\\Program Files\\Java",
     "C:\\Program Files\\Android\\Android Studio\\jbr",
   ];
-  for (const p of candidates) {
-    if (fs.existsSync(path.join(p, "bin", "java.exe"))) return p;
+  for (const root of scanRoots) {
+    if (!fs.existsSync(root)) continue;
+    try {
+      for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const name = entry.name.toLowerCase();
+        if (name.includes("jdk-21") || name.includes("jdk-17") || name === "jbr") {
+          pushDir(path.join(root, entry.name));
+        }
+      }
+    } catch {
+      /* ignore unreadable roots */
+    }
+  }
+
+  return [...new Set(found)];
+}
+
+/** Capacitor 7 / AGP need JDK 21 for compile; AGP itself needs at least 17. Avoid JDK 22+ (Gradle jlink issues). */
+function resolveJdkHome() {
+  const candidates = discoverJdkCandidates();
+  const ranked = candidates
+    .map((home) => ({ home, major: javaMajorVersion(home) }))
+    .filter((c) => c.major >= 17 && c.major <= 21)
+    .sort((a, b) => {
+      if (a.major === 21 && b.major !== 21) return -1;
+      if (b.major === 21 && a.major !== 21) return 1;
+      return b.major - a.major;
+    });
+
+  if (ranked.length > 0) return ranked[0].home;
+
+  const envHome = process.env.JAVA_HOME;
+  if (envHome) {
+    const major = javaMajorVersion(envHome);
+    if (major >= 17 && major <= 21) return envHome;
   }
   return null;
 }
@@ -48,7 +102,13 @@ function hasAndroidSdk() {
 
 console.log("Perovo — developer APK (Capacitor, offline bundle)\n");
 
-run("Production web build", "npm", ["run", "build"]);
+run("Production web build (embedded, root base)", "npm", ["run", "build"], {
+  env: {
+    ...process.env,
+    VITE_BASE_PATH: "/",
+    VITE_EMBEDDED_APP: "1",
+  },
+});
 
 const androidDir = path.join(ROOT, "android");
 if (!fs.existsSync(androidDir)) {
@@ -57,6 +117,8 @@ if (!fs.existsSync(androidDir)) {
 }
 
 run("Capacitor sync android", "npx", ["cap", "sync", "android"]);
+
+run("Sync Android launcher icons", "node", ["scripts/sync-android-icons.mjs"]);
 
 const jdkHome = resolveJdkHome();
 if (jdkHome) {
@@ -84,7 +146,10 @@ if (!fs.existsSync(gradlew)) {
   process.exit(1);
 }
 
-run("Gradle assembleDebug", gradlew, ["assembleDebug"], { cwd: androidDir });
+run("Gradle assembleDebug", gradlew, ["assembleDebug"], {
+  cwd: androidDir,
+  env: { ...process.env, JAVA_HOME: jdkHome || process.env.JAVA_HOME },
+});
 
 const apkSrc = path.join(androidDir, "app", "build", "outputs", "apk", "debug", "app-debug.apk");
 if (!fs.existsSync(apkSrc)) {

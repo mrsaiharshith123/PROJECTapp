@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
+import { isMarketingWeb } from "./utils/embeddedApp.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -41,6 +42,7 @@ const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
+const WebLanding = lazy(() => import("./ui/features/pages/WebLandingPage.jsx"));
 
 function AuthGateShell() {
   return (
@@ -228,7 +230,29 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function MarketingShell() {
+  return (
+    <BrowserRouter basename={routerBasename()}>
+      <I18nProvider>
+        <BrandDocumentSync />
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="*" element={<WebLanding />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </I18nProvider>
+    </BrowserRouter>
+  );
+}
+
 function App() {
+  if (isMarketingWeb()) {
+    return <MarketingShell />;
+  }
+
   return (
     <BrowserRouter basename={routerBasename()}>
       <AuthProvider>

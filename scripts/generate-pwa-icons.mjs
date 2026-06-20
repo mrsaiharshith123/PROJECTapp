@@ -4,9 +4,14 @@ import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = path.join(root, "public");
+const brandLightLg = path.join(publicDir, "brand", "icon-light-lg.png");
 const brandLight = path.join(publicDir, "brand", "icon-light.png");
 const svgPath = path.join(publicDir, "favicon.svg");
-const source = fs.existsSync(brandLight) ? brandLight : svgPath;
+const source = fs.existsSync(brandLightLg)
+  ? brandLightLg
+  : fs.existsSync(brandLight)
+    ? brandLight
+    : svgPath;
 
 if (!fs.existsSync(source)) {
   console.warn("Skip PWA icons: no brand/icon-light-lg.png or favicon.svg");

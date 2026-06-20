@@ -7,6 +7,23 @@ export default {
   "brand.familySuffix": "Family",
   "brand.proSuffix": "Pro member",
 
+  "webLanding.lede":
+    "Track bills, lending, and your Perovo Score — on your phone, with your data staying on your device. Install the Android app to get started.",
+  "webLanding.featuresTitle": "What you get",
+  "webLanding.feature.score": "One Perovo Score (0–100) with four clear pillars — stability, control, runway, and growth.",
+  "webLanding.feature.bills": "Bills, EMIs, rent, and subscriptions in one Money hub with due-date pressure and health.",
+  "webLanding.feature.lending": "Record lending with promissory notes, reminders, and optional e-sign flows.",
+  "webLanding.feature.local": "Local-first — works offline. Optional cloud backup when you sign in.",
+  "webLanding.feature.languages": "Full app in 23 Indian languages — pick yours in Settings.",
+  "webLanding.feature.insights": "Insights and analytics tuned for salaried and family households.",
+  "webLanding.downloadTitle": "Download for Android",
+  "webLanding.downloadBody":
+    "The web site is for information only. Install the app to use Perovo — bills, scores, and backups run on your device.",
+  "webLanding.downloadButton": "Download Android APK",
+  "webLanding.downloadHint":
+    "Enable “Install unknown apps” for your browser or file manager if Android blocks the install. Developer build — not from Play Store yet.",
+  "webLanding.footerNote": "Perovo is built by Tadsaya. Data stays on your device unless you turn on cloud backup.",
+
   "nav.home": "Home",
   "nav.bills": "Money",
   "nav.plan": "Plan",
