@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { useAuth } from "../../../../context/AuthContext.jsx";
 import { isSalariedFamily } from "../../../../constants/modeExperience.js";
 import { isEmbeddedApp } from "../../../../utils/embeddedApp.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
@@ -23,7 +22,6 @@ export default function ProfileSettingsGroups({
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAdmin } = useAuth();
   const isFamily = isSalariedFamily(settings);
   const householdValue = isFamily ? t("settings.value.family") : t("settings.value.single");
   const privacyValue = privacyMode ? t("settings.value.on") : t("settings.value.off");
@@ -93,9 +91,6 @@ export default function ProfileSettingsGroups({
         <ProfileUpdateAppRow />
         <SettingsGroupRow iconColor="violet" icon="book-open" label={t("settings.row.help")} onClick={() => navigate("/you/support")} />
         <SettingsGroupRow iconColor="slate" icon="info" label={t("settings.row.about", { appName: t("brand.appName") })} onClick={() => navigate("/you/about")} />
-        {isAdmin ? (
-          <SettingsGroupRow iconColor="slate" icon="shield" label={t("profileHub.adminTile")} onClick={() => navigate("/admin")} />
-        ) : null}
       </SettingsGroup>
     </div>
   );

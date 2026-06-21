@@ -7,6 +7,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
 import ProfileQuickStatsStrip from "../profile/hub/ProfileQuickStatsStrip.jsx";
 import ProfileUpgradeRow from "../profile/hub/ProfileUpgradeRow.jsx";
+import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
 
@@ -106,6 +107,8 @@ const Profile = () => {
       <ProfileQuickStatsStrip />
 
       <ProfileUpgradeRow settings={settings} />
+
+      <ProfileAdminEntry />
 
       <ProfileSettingsGroups
         settings={settings}

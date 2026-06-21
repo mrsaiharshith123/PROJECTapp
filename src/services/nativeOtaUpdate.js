@@ -13,8 +13,8 @@ export async function notifyNativeAppReady() {
   try {
     const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
     await CapacitorUpdater.notifyAppReady();
-  } catch {
-    /* web preview / plugin not synced yet */
+  } catch (err) {
+    console.warn("notifyAppReady failed", err);
   }
 }
 
