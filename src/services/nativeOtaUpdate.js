@@ -18,6 +18,13 @@ export async function notifyNativeAppReady() {
   }
 }
 
+/** Roll back to the built-in APK bundle (recovery from failed OTA). */
+export async function resetNativeOtaBundle() {
+  if (!canUseNativeOta()) return;
+  const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+  await CapacitorUpdater.reset();
+}
+
 /**
  * @typedef {{ phase: string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} OtaProgress
  * @typedef {{ version: string, bundleUrl?: string, bundleSize?: number }} OtaManifest

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useUpdateTestTranslation } from "../app/UpdateTestShellI18n.jsx";
 import { applyAppUpdate, checkForAppUpdate } from "../services/appUpdate.js";
+import { resetNativeOtaBundle } from "../services/nativeOtaUpdate.js";
 
 /** Update flow for the minimal update test shell. */
 export function useUpdateTestShellAction() {
@@ -49,5 +50,18 @@ export function useUpdateTestShellAction() {
     }
   }, [t]);
 
-  return { status, busy, runUpdate, progressOpen, progress };
+  const runReset = useCallback(async () => {
+    setBusy(true);
+    setStatus(t("updateTestShell.resetting"));
+    try {
+      await resetNativeOtaBundle();
+      setStatus(t("updateTestShell.resetDone"));
+    } catch {
+      setStatus(t("support.updateAppError"));
+    } finally {
+      setBusy(false);
+    }
+  }, [t]);
+
+  return { status, busy, runUpdate, runReset, progressOpen, progress };
 }

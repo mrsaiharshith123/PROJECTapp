@@ -97,7 +97,11 @@ export default defineConfig({
         : {
             entryFileNames: "assets/[name]-[hash].js",
             manualChunks(id) {
-              if (!id.includes("node_modules")) return;
+              const norm = id.replace(/\\/g, "/");
+              if (norm.includes("/src/i18n/") || norm.includes("/ui/providers/I18nProvider")) {
+                return "i18n";
+              }
+              if (!norm.includes("node_modules")) return;
               if (id.includes("recharts") || id.includes("d3-")) return "charts";
               if (id.includes("@supabase")) return "supabase";
               if (id.includes("react-router") || id.includes("react-dom") || id.includes("/react/")) return "react-vendor";

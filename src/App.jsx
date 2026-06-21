@@ -22,6 +22,7 @@ import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
+import BootShell from "./boot/BootShell.jsx";
 import { I18nProvider, PerovoLocaleSync } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
@@ -233,7 +234,7 @@ function AppShell() {
   }, [isLoggedIn, user, profile, settings, saveProfile, setupComplete]);
 
   if (!isReady || (isLoggedIn && !profileResolved)) {
-    return <PageLoader />;
+    return <BootShell />;
   }
 
   if (!isLoggedIn) {
@@ -253,7 +254,7 @@ function AppShell() {
 
 function RequireAuth({ children }) {
   const { isReady, isLoggedIn } = useAuth();
-  if (!isReady) return <PageLoader />;
+  if (!isReady) return <BootShell />;
   if (!isLoggedIn) return <Navigate to="/auth" replace />;
   return children;
 }
@@ -285,14 +286,13 @@ function App() {
 
   return (
     <BrowserRouter basename={routerBasename()}>
-      <I18nProvider>
-        <AuthProvider>
-          <PerovoProvider>
-            <PerovoLocaleSync />
-            <NetWorthProvider>
+      <AuthProvider>
+        <PerovoProvider>
+          <PerovoLocaleSync />
+          <NetWorthProvider>
             <BrandDocumentSync />
             <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
+              <Suspense fallback={<BootShell />}>
                 <Routes>
                   <Route path="/auth/confirm" element={<AuthConfirmPage />} />
                   <Route
@@ -307,10 +307,9 @@ function App() {
                 </Routes>
               </Suspense>
             </ErrorBoundary>
-            </NetWorthProvider>
-          </PerovoProvider>
-        </AuthProvider>
-      </I18nProvider>
+          </NetWorthProvider>
+        </PerovoProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

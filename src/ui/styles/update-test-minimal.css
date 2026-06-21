@@ -91,6 +91,13 @@ html[data-ui="ct"] .ct-update-test-btn:disabled {
   cursor: wait;
 }
 
+html[data-ui="ct"] .ct-update-test-btn-secondary {
+  margin-top: 0.65rem;
+  color: var(--ct-text-secondary);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 html[data-ui="ct"] .ct-update-test-status {
   margin: 1rem 0 0;
   font-size: 0.8125rem;

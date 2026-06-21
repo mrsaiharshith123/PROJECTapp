@@ -2,7 +2,7 @@ import { useUpdateTestTranslation } from "../../app/UpdateTestShellI18n.jsx";
 import { UpdateTestShellUpdateProvider } from "./UpdateTestShellUpdateProvider.jsx";
 import { getLocalAppVersion } from "../../services/appUpdate.js";
 
-function UpdateTestShellView({ status, busy, runUpdate }) {
+function UpdateTestShellView({ status, busy, runUpdate, runReset }) {
   const { t } = useUpdateTestTranslation();
   const version = getLocalAppVersion();
 
@@ -17,6 +17,9 @@ function UpdateTestShellView({ status, busy, runUpdate }) {
         <p className="ct-update-test-version">{t("updateTestShell.version", { version })}</p>
         <button type="button" className="ct-update-test-btn" onClick={runUpdate} disabled={busy}>
           {busy ? t("support.updateAppApplying") : t("updateTestShell.button")}
+        </button>
+        <button type="button" className="ct-update-test-btn ct-update-test-btn-secondary" onClick={runReset} disabled={busy}>
+          {t("updateTestShell.reset")}
         </button>
         {status ? <p className="ct-update-test-status">{status}</p> : null}
       </div>

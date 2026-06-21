@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/react";
 import posthog from "posthog-js";
 import "./index.css";
 import "./ui/styles/index.css";
+import { I18nProvider } from "./i18n/index.js";
 import App from "./App.jsx";
 import { log } from "./utils/logger.js";
 
@@ -44,7 +45,9 @@ log.app.info("Perovo starting", { mode: import.meta.env.MODE });
 
 const app = (
   <StrictMode>
-    <App />
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   </StrictMode>
 );
 

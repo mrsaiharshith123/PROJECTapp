@@ -103,14 +103,16 @@ export function I18nProvider({ children, standalone = false }) {
 export function useTranslation() {
   const ctx = useContext(I18nContext);
   if (!ctx) {
-    throw new Error("useTranslation must be used within I18nProvider");
+    if (import.meta.env.DEV) {
+      console.warn("useTranslation: missing I18nProvider — using English fallback");
+    }
+    return fallbackTranslation();
   }
   return ctx;
 }
 
-/** Boot loaders — English fallback if provider is not mounted yet (OTA / duplicate React edge cases). */
+/** @deprecated use useTranslation — kept for explicit boot-safe call sites */
 // eslint-disable-next-line react-refresh/only-export-components -- hook paired with provider
 export function useTranslationOptional() {
-  const ctx = useContext(I18nContext);
-  return ctx || fallbackTranslation();
+  return useTranslation();
 }

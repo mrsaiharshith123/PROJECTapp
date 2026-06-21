@@ -15,4 +15,7 @@ export default {
   "support.updateAppProgressPercent": "{percent}% complete",
   "support.updateAppBundleMissing": "Update bundle not on the server yet. Deploy with npm run ship first.",
   "support.updateAppError": "Could not check for updates. Try again on Wi‑Fi.",
+  "updateTestShell.reset": "Reset to built-in app",
+  "updateTestShell.resetting": "Resetting…",
+  "updateTestShell.resetDone": "Reset — reopen the app if it does not reload.",
 };
