@@ -306,7 +306,7 @@ const Add = () => {
     navigate("/money/lending");
   };
 
-  const fieldClass = (field) => fieldInputClass(Boolean(errors[field]));
+  const fieldClass = (field) => `${fieldInputClass(Boolean(errors[field]))} ct-input-tint`;
 
   const formTitle =
     addKind === "bill"

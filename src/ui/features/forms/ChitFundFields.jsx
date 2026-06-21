@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import {
   buildChitInstallmentSchedule,
@@ -204,9 +205,9 @@ export default function ChitFundFields({ values, errors, fieldClass, onChange, t
           <summary className="cursor-pointer font-semibold ct-text-warning">
             View full decreasing schedule
           </summary>
-          <ul className="mt-2 max-h-40 overflow-y-auto space-y-0.5 ">
+          <ul className="mt-2 max-h-40 overflow-y-auto ct-stack-sm">
             {schedule.map((row) => (
-              <li key={row.month} className={row.month === m ? "font-bold text-indigo-700" : ""}>
+              <li key={row.month} className={row.month === m ? "font-bold ct-text-accent" : ""}>
                 Month {row.month}: {formatInr(row.installment)}
               </li>
             ))}
@@ -227,7 +228,7 @@ export default function ChitFundFields({ values, errors, fieldClass, onChange, t
       {values.chitTaken && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ct-inset p-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1">
+            <label className="ct-field-label block mb-1">
               Taken in month #
             </label>
             <input
@@ -240,7 +241,7 @@ export default function ChitFundFields({ values, errors, fieldClass, onChange, t
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1 inline-flex items-center">
+            <label className="ct-field-label block mb-1 inline-flex items-center">
               Cash received (₹)
               <InfoTip text={CALC_HELP.chitPayoutReceived} />
             </label>
@@ -254,7 +255,7 @@ export default function ChitFundFields({ values, errors, fieldClass, onChange, t
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-gray-600 dark:text-slate-300 mb-1 inline-flex items-center">
+            <label className="ct-field-label block mb-1 inline-flex items-center">
               Auction discount (₹) — auto from cash received
               <InfoTip text={CALC_HELP.chitDiscount} />
             </label>
@@ -266,15 +267,15 @@ export default function ChitFundFields({ values, errors, fieldClass, onChange, t
               className={fieldClass("chitTakenDiscount")}
             />
             {payoutPreview != null && discountPreview > 0 && (
-              <p className="text-[10px] text-gray-600 dark:text-slate-400 mt-1">
+              <Caption className="block mt-1 opacity-75">
                 You received {formatInr(payoutPreview)} — discount about {formatInr(discountPreview)} (
                 foreman {foremanPct}% included). Full pot was {formatInr(V)}.
-              </p>
+              </Caption>
             )}
             {payoutPreview != null && V > 0 && (
-              <p className="text-[10px] ct-text-accent mt-0.5">
+              <Caption className="block ct-text-accent mt-0.5">
                 Check: {formatInr(chitPayout(V, discountPreview, foremanPct))} matches received (rounded).
-              </p>
+              </Caption>
             )}
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: **21 June 2026** (OTA v1.0.3 live, Money Wealth tab, dedup kills 3–6, Plan wealth sim).
+Last reviewed: **21 June 2026** (v1.0.4 — UI token sweep, gap analysis phases complete).
 
 Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/qa-findings.md`](./qa-findings.md)
 
@@ -14,6 +14,7 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 | Salaried **family** household (`householdScope: family`) | Full accounting / ERP / banking |
 | **Household rooms** (invite code, local-first + optional Supabase) | Live multi-device join without migration |
 | Local-first commitments + pressure + lending | Mass-market spend tracking (Walnut-style) |
+| **Account Aggregator bank sync** | Deferred to post-V1 (no schema/UI yet) |
 
 **Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` / `tierAccess.js`. Free caps: 5 lending, 2 chits, 3 goals, 50 spends/mo, 5 splits/mo (3 people), 30-day cashflow.
 
@@ -30,98 +31,103 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 | Net worth deep-links | ✅ | `/net-worth`, `/profile/analytics` → `/money/wealth` |
 | Legacy redirects | ✅ | `/commitments`, `/lending`, `/tools` → Money or Plan |
 
-## Shipped — Home (H1–H6 partial)
+## Shipped — Home (H1–H6)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
 | Conic pressure hero + Perovo Score | ✅ | `home/HomePressureHero.jsx`, `PressureRing.jsx` |
-| Safe-to-spend in hero caption | ✅ | `HomePressureHero.jsx` (no duplicate SafeToSpendCard on Home) |
+| Safe-to-spend in hero caption | ✅ | `HomePressureHero.jsx` |
 | Needs Attention (single overdue block) | ✅ | `home/HomeNeedsAttention.jsx` |
 | Four quick actions | ✅ | `home/HomeQuickActions.jsx` |
 | Tools entry row → Plan | ✅ | `home/HomeToolsEntry.jsx` |
-| Design tokens (partial) | ✅ | `tokens.css`, `components.css` — `ct-hero-card`, `ct-stat-tile`, gradients |
+| Design tokens | ✅ | `tokens.css`, `components.css` |
 
-## Shipped — Money (M1–M5 + analytics partial)
+## Shipped — Money + Add (M1–M5)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Bills / Spends / Lending shells | ✅ | `CommitmentsPage`, `SpendsPage`, `LendingPage` under Money |
-| Insights (4th pill) | ✅ | `AnalyticsPage.jsx` embedded at `/money/insights` |
-| **Wealth (5th pill)** | ✅ | `MoneyWealthPage.jsx` — `WealthAnalyticsSection` + `ProfileNetWorthSection` |
-| Asset/liability ledger | ✅ | `ProfileNetWorthSection.jsx`, `WealthEntryCard` / `WealthEntryModal` |
+| Bills / Spends / Lending shells | ✅ | Under Money shell |
+| Insights (4th pill) | ✅ | `AnalyticsPage.jsx` at `/money/insights` |
+| Wealth (5th pill) | ✅ | `MoneyWealthPage.jsx` |
+| Add 2-step flow + scan tile | ✅ | `AddPage.jsx`, `AddTypePicker.jsx` |
+| Bills hero + filter chips | ✅ | `BillsHeroSummary.jsx`, `CommitmentsBillsTab.jsx` |
 
-## Shipped — Plan (S2–S6 partial)
+## Shipped — Plan (S2–S6)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
 | Goals hero + tool grid | ✅ | `PlanGoalsSection.jsx`, `PlanCalculatorsSection.jsx`, `PlanGrowthSection.jsx` |
-| Tools as bottom sheets | ✅ | `PlanToolSheet.jsx`, `planToolPanels.jsx` |
-| **Wealth simulation (10-yr)** | ✅ | Plan Growth → `PlanWealthSimulationPanel` → `SimulationPanel` |
-| Scenarios (quick what-if) | ✅ | Plan Growth → `UnifiedScenariosPanel` (separate from wealth sim) |
+| Tools as bottom sheets | ✅ | `PlanToolSheet.jsx` |
+| Wealth simulation (10-yr) | ✅ | `PlanWealthSimulationPanel` → `SimulationPanel` |
+| Scenarios (quick what-if) | ✅ | `UnifiedScenariosPanel` |
 
 ## Shipped — You tab (Y1–Y4)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Identity hero (net worth, score, goals) | ✅ | `profile/hub/ProfileFinancialHero.jsx` — NW → `/money/wealth` |
-| Inline settings groups (no sheet) | ✅ | `ProfileSettingsGroups.jsx` |
-| Admin entry (admin-only) | ✅ | `ProfileAdminEntry.jsx` |
-| Sub-page push navigation | ✅ | `/you/personal` … `/you/plans` |
-| Metric dedup links | ✅ | `MetricOwnerLink.jsx`, slim `ProfileQuickStatsStrip.jsx` |
+| Identity hero + vital stats | ✅ | `ProfileFinancialHero.jsx` |
+| Settings colored rows | ✅ | `ProfileSettingsGroups.jsx` |
+| Admin entry | ✅ | `ProfileAdminEntry.jsx` |
+| Sub-page push navigation | ✅ | `/you/*` |
 
 ## Shipped — Admin (A1–A2)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Command bar + KPI strip | ✅ | `AdminPage.jsx`, `AdminMetricCard.jsx` |
-| Revenue / adoption / health sections | ✅ | `AdminPage.jsx`, `adminExport.js` |
+| Command bar + KPI strip | ✅ | `AdminPage.jsx` |
+| Revenue / adoption / health | ✅ | Admin sections + export |
 | User detail drawer | ✅ | `AdminUserDetailDrawer.jsx` |
 
-## Shipped — OTA updates (Capacitor)
+## Shipped — OTA (Capacitor)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Capgo notify-first boot | ✅ | `capgo-notify-only.js`, Vite plugin |
-| Relative OTA asset paths | ✅ | `build-ota-bundle.mjs` (`VITE_BASE_PATH=./`) |
-| I18n boot crash fix | ✅ | `useTranslation` fallback; `I18nProvider` in `renderApp.jsx`; `BootShell` |
-| OTA reset on test shell | ✅ | `resetNativeOtaBundle`, Update test Reset button |
-| **Live deploy** | ✅ | **v1.0.3** on GitHub Pages + `app-bundle.zip` |
+| Capgo notify-first + relative paths | ✅ | `capgo-notify-only.js`, `build-ota-bundle.mjs` |
+| I18n boot fix + BootShell | ✅ | `renderApp.jsx`, `I18nProvider.jsx` |
+| Live **v1.0.4** | ✅ | GitHub Pages + `app-bundle.zip` |
 
-## Shipped — duplication kills (partial)
+## Shipped — duplication kills (KILL 1–6)
 
-| Kill | Status | Notes |
-|------|--------|-------|
-| KILL 1–2 Home money + attention | ✅ | Safe-to-spend in hero; single Needs Attention |
-| KILL 3 Pressure on secondary screens | ✅ | Insights: score tiles only (no `FinancialPulseCard`); scores detail links Home; wealth tab links Home for pressure |
-| KILL 4 Net worth fragmentation | ✅ | Primary: `/money/wealth`; You hero links there; `/net-worth` redirects |
-| KILL 5 Overdue duplication | ✅ | Removed `SchoolFeeCard` from Insights; pulse card removed from Insights |
-| KILL 6 Survival duplication | ✅ | Money planner what-if → link to Insights |
+| Kill | Status |
+|------|--------|
+| Home money + attention duplicates | ✅ |
+| Pressure on secondary screens | ✅ MetricOwnerLink pattern |
+| Net worth fragmentation | ✅ `/money/wealth` primary |
+| Overdue duplication | ✅ Single owners on Home + Bills |
+| Survival duplication | ✅ Insights owner; planner links |
+| Family dashboard outlook | ✅ Links to Home / Insights |
 
-## Shipped — core product (unchanged highlights)
+## Shipped — UI completion sweep (Phase 8)
 
-| Area | Status | Key paths |
-|------|--------|-----------|
-| Household rooms | ✅ | `householdRoom*.js`, `HouseholdRoomBridge.jsx` |
-| Bill OCR + permissions | ✅ | `BillScannerTool.jsx`, `nativePermissions.js` |
-| Lending + legal agreements | ✅ | `lendingAgreement.js`, `LendingPage.jsx` |
-| Razorpay + server verify | ✅ | `razorpaySubscription.js`, edge `razorpay-checkout` |
-| i18n — 22 langs + English | ✅ | `src/i18n/` |
+| Area | Status |
+|------|--------|
+| Tools (Chit, Bond, Loan payoff) | ✅ `ct-*` tokens |
+| Forms + modals legacy Tailwind | ✅ Migrated |
+| Charts | ✅ `ct-chart-shell` |
+| Patterns (ToneSurface, CategoryChip) | ✅ Token classes |
+| FinancialPulseCard trim | ✅ MetricOwnerLink for survival |
 
-## Deferred / in progress
+## Shipped — QA fixes (automated pass)
 
-| Phase | Description |
-|-------|-------------|
-| UI completion sweep | Apply modern tokens to remaining feature files (~145-file pass) — tools/forms with legacy Tailwind |
-| Full i18n translate pass | Run `npm run i18n:translate:all` before non-English launch |
-| Account Aggregator bank sync | Not started |
-| Live Razorpay sandbox QA | QA-10 — manual payment test |
+| Area | Status |
+|------|--------|
+| Razorpay order failure toast | ✅ `plans.orderFailed` |
+| Engine unit tests | ✅ `npm run test:engines` |
+| i18n key parity | ✅ `npm run sync:i18n` + translate pass |
+
+## Explicitly deferred (post-V1)
+
+| Item | Reason |
+|------|--------|
+| Account Aggregator bank sync | No product schema; not in V1 scope |
+| Live Razorpay sandbox payment | Requires manual test with real sandbox keys on device |
+| Full WCAG audit (QA-15) | Run before public store launch |
 
 ## Tests & quality
 
-- **386+** unit tests (`npm test`); engine tests: `npm run test:engines`
+- **386+** unit tests (`npm test`)
 - Gate: `npm run audit`
-- QA framework: `docs/planning/perovo-QA-framework.md` (26 prompts)
-- Latest audit notes: `docs/qa-findings.md`
+- QA framework: `docs/planning/perovo-QA-framework.md`
 
 ## Related docs
 

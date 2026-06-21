@@ -80,7 +80,7 @@ export default function LendingDetailDashboard({
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
   const termsLocked = !canEditLending(lending);
-  const fieldClass = inputClassName();
+  const fieldClass = `${inputClassName()} ct-input-tint`;
   const trustStatusClass =
     dash.trustScore >= 80
       ? "ct-status-success"

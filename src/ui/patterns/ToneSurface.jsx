@@ -6,7 +6,7 @@ import { insightToneClass } from "../tokens/severity.js";
  */
 export function ToneSurface({ tone = "neutral", children, className = "" }) {
   return (
-    <div className={cn("px-3 py-2.5 text-sm leading-relaxed border", insightToneClass(tone), className)}>
+    <div className={cn(insightToneClass(tone), "text-sm leading-relaxed", className)}>
       {children}
     </div>
   );

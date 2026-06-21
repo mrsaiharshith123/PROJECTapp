@@ -9,7 +9,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
 import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
 
-const fieldClass = inputClassName();
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 /** Account sign-in & KYC — lives under Personal & money, not a top-level block. */
 export default function AccountSettingsBlock() {

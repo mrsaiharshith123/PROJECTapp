@@ -1691,6 +1691,7 @@ export default {
   "plans.paySuccess": "Your plan is now {tier}. Thank you for subscribing.",
   "plans.paySuccessVerified": "Your plan is now {tier}. Payment verified — thank you!",
   "plans.payFailed": "Payment could not be completed. Please try again.",
+  "plans.orderFailed": "Could not start checkout. Check Wi‑Fi and try again, or contact support.",
   "plans.simulateSuccess": "[Test] Simulated payment complete. Your plan is now {tier}.",
   "plans.simulateFailed": "Simulation failed.",
   "plans.simulateHint": "Simulation mode: no Razorpay checkout. Add VITE_RAZORPAY_KEY_ID=rzp_test_… to .env and restart dev to use test payments.",

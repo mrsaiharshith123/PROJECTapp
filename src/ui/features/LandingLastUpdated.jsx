@@ -33,7 +33,7 @@ export default function LandingLastUpdated({ className = "" }) {
   if (!info?.builtAt) return null;
 
   return (
-    <Caption className={className}>
+    <Caption className={`ct-caption ${className}`.trim()}>
       {t("webLanding.lastUpdated", {
         date: formatDeployTime(info.builtAt, locale),
         version: info.version || "—",

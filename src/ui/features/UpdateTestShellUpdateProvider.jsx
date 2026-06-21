@@ -5,9 +5,9 @@ import { useUpdateTestShellAction } from "../../hooks/useUpdateTestShellAction.j
 export function UpdateTestShellUpdateProvider({ children }) {
   const api = useUpdateTestShellAction();
   return (
-    <>
+    <div className="ct-stack">
       {children(api)}
       <UpdateProgressModal open={api.progressOpen} progress={api.progress} />
-    </>
+    </div>
   );
 }

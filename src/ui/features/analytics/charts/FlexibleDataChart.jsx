@@ -89,9 +89,11 @@ export function FlexibleDataChart({
 
   if (!data?.length) return <ChartEmpty message={emptyMessage} />;
 
+  const shell = (chart) => <div className="ct-chart-shell">{chart}</div>;
+
   const isRound = chartType === "pie" || chartType === "donut";
   if (isRound) {
-    return (
+    return shell(
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -114,14 +116,14 @@ export function FlexibleDataChart({
           <Tooltip formatter={(v) => rupeeTip(v)} {...t.tooltip} />
           <Legend {...t.legend} />
         </PieChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer>,
     );
   }
 
   const Chart = chartType === "line" ? LineChart : BarChart;
   const showDots = !hideDots && data.length <= 12;
 
-  return (
+  return shell(
     <ResponsiveContainer width="100%" height="100%">
       <Chart data={data} margin={{ top: 8, right: 8, left: 4, bottom: 20 }}>
         <CartesianGrid {...t.grid} />
@@ -189,6 +191,6 @@ export function FlexibleDataChart({
           );
         })}
       </Chart>
-    </ResponsiveContainer>
+    </ResponsiveContainer>,
   );
 }

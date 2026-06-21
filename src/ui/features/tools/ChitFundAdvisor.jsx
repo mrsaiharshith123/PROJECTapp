@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
+import { Caption } from "../../primitives/Text.jsx";
+import { inputClassName } from "../../primitives/Input.jsx";
 import ToolSourcePicker from "./ToolSourcePicker.jsx";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { adviseChitTakeMonth, buildChitInstallmentSchedule } from "../../../engines/chitFund.js";
@@ -8,9 +10,9 @@ import { formatInr } from "../../../constants/symbols.js";
 import { chitFieldsFromCommitment } from "../../../constants/chitFund.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 
-const fieldClass =
-  "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, todayStr, onBack }) {
   const { t } = useTranslation();
@@ -43,30 +45,30 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
   }, [params.chitValue, params.totalMonths]);
 
   return (
-    <div className="space-y-4 text-sm">
-      <button type="button" onClick={onBack} className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+    <div className="ct-stack text-sm">
+      <button type="button" onClick={onBack} className="ct-link !text-xs">
         ← {t("chit.advisor.chooseAnother")}
       </button>
 
-      <p className="text-xs text-gray-500 dark:text-slate-400">
+      <Caption className="block">
         {t("chit.advisor.intro")}
         <InfoTip text={CALC_HELP.chitAdvisor} />
-      </p>
+      </Caption>
 
       {advice.lossSuggestion && params.chitValue > 0 && (
-        <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800 p-3 space-y-2 text-xs">
-          <p className="font-semibold text-amber-900 dark:text-amber-100 inline-flex items-center">
+        <ToneSurface tone="warning" className="ct-stack-sm text-xs">
+          <p className="font-semibold inline-flex items-center">
             {t("chit.advisor.suggestedMaxLoss")}
             <InfoTip text={CALC_HELP.chitMaxLoss} />
           </p>
-          <p className="text-amber-800 dark:text-amber-200">
+          <p>
             {t("chit.advisor.upToLoss", {
               amount: formatInr(advice.maxLoss),
               percent: suggestedPct,
             })}
           </p>
           {advice.lossSuggestion.freeCash != null && (
-            <p className="text-amber-700/90 dark:text-amber-300/90">
+            <p className="opacity-90">
               {t("chit.advisor.freeAfterDues", {
                 free: formatInr(advice.lossSuggestion.freeCash),
                 debt: formatInr(advice.lossSuggestion.openDebt),
@@ -74,7 +76,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
             </p>
           )}
           {advice.lossSuggestion.reasons?.length > 0 && (
-            <ul className="list-disc list-inside text-amber-800/80 space-y-0.5">
+            <ul className="list-disc list-inside opacity-90 ct-stack-sm">
               {advice.lossSuggestion.reasons.map((r, i) => (
                 <li key={i}>{r}</li>
               ))}
@@ -83,7 +85,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
           <button
             type="button"
             onClick={() => setShowOverride((v) => !v)}
-            className="text-[11px] font-semibold text-amber-900 underline"
+            className="ct-link !text-[11px]"
           >
             {showOverride ? t("chit.advisor.useSuggestedCap") : t("chit.advisor.adjustCap")}
           </button>
@@ -98,13 +100,13 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
               placeholder={t("chit.advisor.phSuggestedPct", { percent: suggestedPct })}
             />
           )}
-        </div>
+        </ToneSurface>
       )}
 
       {advice.summary && (
-        <p className="rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 p-3 text-xs text-indigo-900 dark:text-indigo-100">
+        <ToneSurface tone="info" className="text-xs">
           {advice.summary}
-        </p>
+        </ToneSurface>
       )}
 
       {advice.best && (
@@ -122,8 +124,8 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
       {advice.rows.length > 0 && (
         <div className="overflow-x-auto max-h-48 overflow-y-auto">
           <table className="w-full text-[11px] border-collapse">
-            <thead className="sticky top-0 bg-white dark:bg-slate-900">
-              <tr className="text-left text-gray-500 border-b">
+            <thead className="sticky top-0 bg-[var(--ct-surface)]">
+              <tr className="text-left ct-caption border-b">
                 <th className="py-1 pr-2">{t("chit.advisor.colMo")}</th>
                 <th className="py-1 pr-2">{t("chit.advisor.colPay")}</th>
                 <th className="py-1 pr-2">{t("chit.advisor.colDisc")}</th>
@@ -137,7 +139,7 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
                 <tr
                   key={r.month}
                   className={
-                    advice.best?.month === r.month ? "bg-indigo-50/80 font-semibold" : "border-b border-gray-100"
+                    advice.best?.month === r.month ? "bg-[var(--ct-accent-soft)] font-semibold" : "border-b border-[var(--ct-border-subtle)]"
                   }
                 >
                   <td className="py-1.5 pr-2">{r.month}</td>
@@ -154,12 +156,12 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
       )}
 
       {schedule.length > 0 && schedule.length <= 30 && (
-        <p className="text-xs text-gray-500">
+        <Caption className="block">
           {t("chit.advisor.installmentsRange", {
             start: formatInr(schedule[0].installment),
             end: formatInr(schedule[schedule.length - 1].installment),
           })}
-        </p>
+        </Caption>
       )}
     </div>
   );
@@ -251,13 +253,13 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
 
   if (step === "manual" && !Number(manual.chitValue)) {
     return (
-      <div className="space-y-3">
-        <button type="button" onClick={() => setStep("pick")} className="text-xs font-semibold text-indigo-600">
+      <div className="ct-stack">
+        <button type="button" onClick={() => setStep("pick")} className="ct-link !text-xs">
           ← {t("chit.advisor.back")}
         </button>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="ct-grid-2">
           <div>
-            <label className="text-xs font-semibold">{t("chit.advisor.chitValue")}</label>
+            <label className="ct-field-label">{t("chit.advisor.chitValue")}</label>
             <input
               className={fieldClass}
               value={manual.chitValue}
@@ -265,7 +267,7 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">{t("chit.advisor.months")}</label>
+            <label className="ct-field-label">{t("chit.advisor.months")}</label>
             <input
               className={fieldClass}
               value={manual.chitMonths}
@@ -273,7 +275,7 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">{t("chit.advisor.currentMonth")}</label>
+            <label className="ct-field-label">{t("chit.advisor.currentMonth")}</label>
             <input
               className={fieldClass}
               value={manual.currentMonth}
@@ -281,7 +283,7 @@ export default function ChitFundAdvisor({ commitments, settings, getEffectiveSta
             />
           </div>
           <div>
-            <label className="text-xs font-semibold">{t("chit.advisor.startDate")}</label>
+            <label className="ct-field-label">{t("chit.advisor.startDate")}</label>
             <input
               type="date"
               className={fieldClass}

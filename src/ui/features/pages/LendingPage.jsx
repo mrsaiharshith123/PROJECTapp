@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Card, Caption, Button, fieldInputClass, EmptyState, inputClassName } from "../../";
+import { useState } from "react";
+import { Button, fieldInputClass, EmptyState, inputClassName } from "../../";
 import { exportLendingToExcel } from "../../../utils/excelExport.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -155,7 +155,7 @@ const Lending = () => {
     setPaymentFor(null);
   };
 
-  const fieldClass = (field) => fieldInputClass(Boolean(formErrors[field]));
+  const fieldClass = (field) => `${fieldInputClass(Boolean(formErrors[field]))} ct-input-tint`;
 
   const closeAdd = () => {
     setShowAdd(false);

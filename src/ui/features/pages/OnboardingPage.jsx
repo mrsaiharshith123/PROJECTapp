@@ -47,7 +47,7 @@ export default function Onboarding() {
   const [selectedLabels, setSelectedLabels] = useState(() => new Set());
   const [amounts, setAmounts] = useState(() => ({}));
   const [fieldError, setFieldError] = useState("");
-  const fieldClass = inputClassName();
+  const fieldClass = `${inputClassName()} ct-input-tint`;
 
   const experience = getOnboardingExperience(experienceId);
   void ONBOARDING_EXPERIENCES;

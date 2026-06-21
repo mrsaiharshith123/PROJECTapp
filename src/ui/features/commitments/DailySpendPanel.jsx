@@ -14,7 +14,6 @@ import {
   EmptyState,
   FilterChips,
   FilterChipsWithSearch,
-  StatCard,
   Badge,
 } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
@@ -107,13 +106,14 @@ export default function DailySpendPanel() {
       </div>
 
       <div className="ct-grid-2">
-        <StatCard variant="tile" value={formatInr(total)} label={t("bills.dailySpend.total")} />
-        <StatCard
-          variant="tile"
-          value={String(periodSpends.length)}
-          label={t("bills.dailySpend.entries")}
-          valueClassName="text-[var(--ct-accent-muted)]"
-        />
+        <div className="ct-stat-tile">
+          <p className="ct-stat-label">{t("bills.dailySpend.total")}</p>
+          <p className="ct-stat-value">{formatInr(total)}</p>
+        </div>
+        <div className="ct-stat-tile indigo">
+          <p className="ct-stat-label">{t("bills.dailySpend.entries")}</p>
+          <p className="ct-stat-value text-[var(--ct-accent-muted)]">{String(periodSpends.length)}</p>
+        </div>
       </div>
 
       <FilterChips options={periodOptions} value={period} onChange={setPeriod} />

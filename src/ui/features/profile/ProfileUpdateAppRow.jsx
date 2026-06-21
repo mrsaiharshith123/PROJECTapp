@@ -10,7 +10,7 @@ export default function ProfileUpdateAppRow() {
   const { status, busy, runUpdate, progressOpen, progress } = useAppUpdateAction();
 
   return (
-    <>
+    <div className="ct-stack-sm">
       <SettingsGroupRow
         icon="arrows-clockwise"
         iconColor="violet"
@@ -25,6 +25,6 @@ export default function ProfileUpdateAppRow() {
         </SettingsGroupContent>
       ) : null}
       <UpdateProgressModal open={progressOpen} progress={progress} />
-    </>
+    </div>
   );
 }

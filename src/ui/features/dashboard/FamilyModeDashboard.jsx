@@ -21,6 +21,7 @@ import RoomActivityFeed from "../household/RoomActivityFeed.jsx";
 import SharedGoalCard from "../household/SharedGoalCard.jsx";
 import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
 import { useCountUp } from "../../hooks/useCountUp.js";
+import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 
 function HouseholdRunwayCard({ survival }) {
   const { t } = useTranslation();
@@ -125,15 +126,13 @@ export default function FamilyModeDashboard() {
       <div className="ct-hero-card survival ct-household-outlook-card ct-animate-fade-up" style={{ animationDelay: "40ms" }}>
         <div className="ct-hero-glow amber" aria-hidden />
         <Heading level={3} className="!text-base relative">{t("family.dashboard.outlook")}</Heading>
-        <div className="ct-grid-3 gap-2 mt-3 relative">
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-label">{t("pulse.pressure")}</p>
-            <p className="ct-stat-value">{pressureScore}</p>
-          </div>
-          <div className="ct-stat-tile amber">
-            <p className="ct-stat-label">{t("family.dashboard.householdRunway")}</p>
-            <p className="ct-stat-value">{t("netWorth.liquidity.months", { count: runwayMonths })}</p>
-          </div>
+        <div className="ct-stack mt-3 relative">
+          <MetricOwnerLink label={t("pulse.pressure")} value={String(pressureScore)} to="/" />
+          <MetricOwnerLink
+            label={t("family.dashboard.householdRunway")}
+            value={t("netWorth.liquidity.months", { count: runwayMonths })}
+            to="/money/insights"
+          />
           <div className="ct-stat-tile teal">
             <p className="ct-stat-label">{t("family.emergency.fundTitle")}</p>
             <p className="ct-stat-value">{emergencyPct}%</p>

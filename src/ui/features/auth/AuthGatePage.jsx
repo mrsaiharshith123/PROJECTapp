@@ -12,7 +12,7 @@ import { markSignupPending } from "../../../utils/authSessionCleanup.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
 
-const fieldClass = inputClassName();
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 function isRecoverySession() {
   if (typeof window === "undefined") return false;

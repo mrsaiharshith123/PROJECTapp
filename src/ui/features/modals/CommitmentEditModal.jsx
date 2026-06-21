@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Modal, fieldInputClass, Button } from "../../../ui";
+import { Modal, fieldInputClass, Button, Caption } from "../../../ui";
 import {
   categoryShowsInterestRate,
   categoryShowsInsuranceFields,
@@ -317,9 +317,9 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
                 ))}
               </ul>
             ) : null}
-            <p className="text-xs text-gray-500 mt-1">
+            <Caption className="block mt-1">
               {form.schemeCode ? t("commitment.sip.fundNavHint") : t("commitment.sip.fundEmpty")}
-            </p>
+            </Caption>
           </div>
         ) : null}
         {!showChit && (

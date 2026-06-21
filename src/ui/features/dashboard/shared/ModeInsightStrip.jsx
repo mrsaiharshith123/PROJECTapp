@@ -8,7 +8,7 @@ export default function ModeInsightStrip({ insights = [], max = 4 }) {
   const list = insights.slice(0, max);
   if (!list.length) return null;
   return (
-    <ul className="ct-stack gap-2">
+    <ul className="ct-stack-sm">
       {list.map((ins) => (
         <li
           key={ins.id || ins.key || translateInsight(t, ins)}

@@ -140,10 +140,14 @@ async function createServerOrder(tier, billing, userId) {
 
   try {
     const data = await invokeCheckoutFunction(supabase, { action: "create-order", tier, billing });
-    if (!data?.orderId) return null;
+    if (!data?.orderId) {
+      throw new Error("order_create_failed");
+    }
     return { orderId: String(data.orderId), amount: Number(data.amount) };
-  } catch {
-    return null;
+  } catch (err) {
+    if (err instanceof Error && err.message === "order_create_failed") throw err;
+    const wrapped = new Error("order_create_failed", { cause: err });
+    throw wrapped;
   }
 }
 
@@ -208,7 +212,22 @@ export async function startSubscriptionCheckout({
     return;
   }
 
-  const serverOrder = userId ? await createServerOrder(tier, cycle, userId) : null;
+  const supabase = getSupabaseClient();
+  let serverOrder = null;
+  if (userId && supabase) {
+    try {
+      serverOrder = await createServerOrder(tier, cycle, userId);
+    } catch (err) {
+      onError(
+        err instanceof Error && err.message === "order_create_failed"
+          ? new Error("order_create_failed")
+          : err instanceof Error
+            ? err
+            : new Error(String(err)),
+      );
+      return;
+    }
+  }
 
   const planLabel = tier === "pro" ? "Pro" : "Power";
   const cycleLabel = cycle === "monthly" ? "Monthly" : "Annual";

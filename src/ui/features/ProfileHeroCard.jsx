@@ -2,7 +2,7 @@ import { Card } from "../primitives/Card.jsx";
 
 export function ProfileHeroCard({ children, className = "" }) {
   return (
-    <Card variant="hero" className={`text-center !pb-6 ${className}`.trim()}>
+    <Card variant="hero" className={`ct-hero-card text-center !pb-6 ${className}`.trim()}>
       {children}
     </Card>
   );

@@ -80,9 +80,10 @@ export default function PlansModal({ open, onClose }) {
       },
       onDismiss: () => setPaying(null),
       onError: (err) => {
+        const code = err?.message || "";
         setMsg({
           type: "error",
-          text: err?.message || t("plans.payFailed"),
+          text: code === "order_create_failed" ? t("plans.orderFailed") : err?.message || t("plans.payFailed"),
         });
         console.error("Razorpay:", err);
         setPaying(null);

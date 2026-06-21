@@ -13,6 +13,7 @@ import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { TabContent } from "../../patterns/TabContent.jsx";
 import { PressureRing } from "../../patterns/PressureRing.jsx";
+import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
 import { Heading, Caption } from "../../primitives/Text.jsx";
 import { Surface } from "../../primitives/Surface.jsx";
@@ -198,7 +199,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {stable.survival?.scenarios ? (
             <div className="ct-inset ct-stack-sm">
-              <Caption className="font-semibold block">{t("tier.survival.title")}</Caption>
+              <MetricOwnerLink label={t("tier.survival.title")} to="/money/insights" />
               {[
                 { key: "baseline", label: t("tier.survival.baseline"), data: stable.survival.scenarios.baseline, fill: "" },
                 { key: "stressed", label: t("tier.survival.stressed"), data: stable.survival.scenarios.stressed, fill: "stressed" },
@@ -227,10 +228,10 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                 {t("pulse.emergencyReserve")}
                 <InfoTip text={CALC_HELP.emergencyReserve} />
               </p>
-              <p className="text-xs text-gray-500">{t(emergency.messageKey)}</p>
-              <div className="h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <Caption className="block">{t(emergency.messageKey)}</Caption>
+              <div className="ct-progress-track">
                 <div
-                  className="h-full bg-emerald-500 rounded-full ct-bar-animated"
+                  className="ct-progress-fill ct-bar-animated"
                   style={{ width: `${Math.min(100, emergency.progressPercent)}%` }}
                 />
               </div>
@@ -244,9 +245,9 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
         <TabContent tabId="ahead" activeTab={tab}>
         <div className="ct-stack text-sm">
           <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
-            <p className="text-xs text-gray-500 dark:text-slate-400">
+            <Caption className="block">
               {t("pulse.aheadIntro")}
-            </p>
+            </Caption>
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
@@ -270,17 +271,17 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {ahead.dueWeeks?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-2">{t("pulse.dueNextWeeks")}</p>
+              <Caption className="block font-semibold mb-2">{t("pulse.dueNextWeeks")}</Caption>
               <div className="ct-grid-4">
                 {ahead.dueWeeks.map((w) => (
                   <div
                     key={w.week ?? w.label}
                     className="ct-inset p-2 text-xs"
                   >
-                    <p className="font-semibold text-gray-800 dark:text-slate-100">{w.label || t("pulse.weekN", { n: (w.week ?? 0) + 1 })}</p>
-                    <p className="text-gray-600 dark:text-slate-400 mt-0.5">{formatInr(w.amount || 0)}</p>
+                    <p className="font-semibold">{w.label || t("pulse.weekN", { n: (w.week ?? 0) + 1 })}</p>
+                    <Caption className="block mt-0.5">{formatInr(w.amount || 0)}</Caption>
                     {w.items?.length > 0 && (
-                      <ul className="mt-1 space-y-0.5 text-[11px] text-gray-500 dark:text-slate-400 truncate">
+                      <ul className="mt-1 ct-stack-sm text-[11px] truncate opacity-80">
                         {w.items.slice(0, 3).map((it) => (
                           <li key={`${it.name}-${it.dueDate}`} className="truncate" title={it.name}>
                             {it.name}
@@ -296,8 +297,8 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {ahead.forecastMonths?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.nextMonths")}</p>
-              <ul className="space-y-1 text-xs text-gray-600 dark:text-slate-300">
+              <Caption className="block font-semibold mb-1">{t("pulse.nextMonths")}</Caption>
+              <ul className="ct-stack-sm text-xs">
                 {ahead.forecastMonths.slice(0, aheadForecastLimit).map((m) => (
                   <li key={m.monthKey || m.month} className="flex justify-between gap-2">
                     <span>{m.month}</span>
@@ -312,12 +313,12 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {showHouseholdPulse && ahead.familyCalendar?.heavyMonths?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.householdHeavy")}</p>
-              <ul className="space-y-1">
+              <Caption className="block font-semibold mb-1">{t("pulse.householdHeavy")}</Caption>
+              <ul className="ct-stack-sm">
                 {ahead.familyCalendar.heavyMonths.map((m) => (
                   <li
                     key={m.monthKey}
-                    className="text-xs rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 px-2 py-1.5 text-amber-900 dark:text-amber-100"
+                    className="text-xs ct-insight-warning rounded-lg px-2 py-1.5"
                   >
                     {t("pulse.heavyDue", { label: m.label, amount: formatInr(m.amount) })}
                   </li>
@@ -328,8 +329,8 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {showHouseholdPulse && family?.heavyRenewals?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.largeRenewals")}</p>
-              <ul className="text-xs text-gray-600 dark:text-slate-300 space-y-0.5">
+              <Caption className="block font-semibold mb-1">{t("pulse.largeRenewals")}</Caption>
+              <ul className="text-xs ct-stack-sm">
                 {family.heavyRenewals.slice(0, 5).map((r) => (
                   <li key={`${r.name}-${r.dueDate}`}>
                     {r.name} — {formatInr(r.amount)}
@@ -351,12 +352,12 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {ahead.goalCapacity?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">{t("pulse.goalsVsFreeCash")}</p>
-              <ul className="space-y-1 text-xs text-gray-600 dark:text-slate-300">
+              <Caption className="block font-semibold mb-1">{t("pulse.goalsVsFreeCash")}</Caption>
+              <ul className="ct-stack-sm text-xs">
                 {ahead.goalCapacity.slice(0, 5).map((g) => (
                   <li key={g.id} className="flex justify-between gap-2">
                     <span className="truncate">{g.name}</span>
-                    <span className={`shrink-0 ${g.feasible ? "text-emerald-700 dark:text-emerald-400" : "text-amber-800 dark:text-amber-200"}`}>
+                    <span className={`shrink-0 ${g.feasible ? "ct-text-success" : "ct-text-warning"}`}>
                       {formatInr(g.neededPerMonth)}/mo
                     </span>
                   </li>
@@ -367,16 +368,16 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {ahead.billPriority?.plan?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-gray-700 dark:text-slate-200 mb-1">
+              <Caption className="block font-semibold mb-1">
                 {ahead.billPriority.coversAll
                   ? t("pulse.suggestedPayOrder")
                   : t("pulse.suggestedPayOrderShort", { amount: formatInr(ahead.billPriority.shortfall) })}
-              </p>
-              <ol className="space-y-1 text-xs text-gray-600 dark:text-slate-300 list-decimal list-inside">
+              </Caption>
+              <ol className="ct-stack-sm text-xs list-decimal list-inside">
                 {ahead.billPriority.plan.map((row) => (
                   <li key={row.id}>
                     {row.name}{" "}
-                    <span className={row.canPay ? "text-emerald-700 dark:text-emerald-400" : "text-amber-800 dark:text-amber-200"}>
+                    <span className={row.canPay ? "ct-text-success" : "ct-text-warning"}>
                       ({formatInr(row.amount)}
                       {row.canPay ? ` — ${t("pulse.withinFreeCash")}` : ` — ${t("pulse.exceedsFreeCash")}`})
                     </span>
@@ -403,16 +404,16 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
       <TabContent tabId="pressure" activeTab={tab}>
         {showPressure ? (
         <div className="ct-stack">
-          <p className="text-xs text-gray-500 dark:text-slate-400">
+          <Caption className="block">
             {showHouseholdPulse ? t("pulse.householdPressure") : t("pulse.mainPressure")}
             <InfoTip text={CALC_HELP.pressureWeight} />
-          </p>
+          </Caption>
 
           {showHouseholdPulse && groupedEntries.length > 0 ? (
-            <ol className="space-y-2">
+            <ol className="ct-stack-sm">
               {groupedEntries.map(([cat, amt], i) => (
                 <li key={cat} className="flex justify-between gap-2 text-sm">
-                  <span className="text-gray-700 dark:text-slate-300">
+                  <span>
                     {i + 1}. {cat}
                   </span>
                   <span className="font-semibold shrink-0">{formatInr(Math.round(amt))}</span>
@@ -421,13 +422,13 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </ol>
           ) : stress?.top?.length ? (
             <>
-              <p className="text-xs font-medium text-gray-700 dark:text-slate-200">{t("pulse.mainPressureList")}</p>
-              <ol className="space-y-2">
+              <Caption className="block font-medium">{t("pulse.mainPressureList")}</Caption>
+              <ol className="ct-stack-sm">
                 {stress.top.map((r, i) => (
                   <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
-                    <span className="text-gray-700 dark:text-slate-300 truncate">
+                    <span className="truncate">
                       {i + 1}. {r.name}
-                      <span className="text-gray-400 text-xs ml-1">({r.category})</span>
+                      <span className="ct-caption opacity-75 text-xs ml-1">({r.category})</span>
                     </span>
                     <span className="font-semibold shrink-0">{formatInr(Math.round(r.weight))}/mo</span>
                   </li>
@@ -435,7 +436,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               </ol>
             </>
           ) : (
-            <p className="text-sm text-gray-500">{t("pulse.noActiveBills")}</p>
+            <Caption className="block">{t("pulse.noActiveBills")}</Caption>
           )}
 
           {advancedPressure && pressureIntel?.forecastMessageKey && (
@@ -460,9 +461,9 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
       <TabContent tabId="tips" activeTab={tab}>
         <div className="ct-stack-sm">
           {tips.length === 0 ? (
-            <p className="text-sm text-gray-500">{t("pulse.noTips")}</p>
+            <Caption className="block">{t("pulse.noTips")}</Caption>
           ) : (
-            <ul className="space-y-2">
+            <ul className="ct-stack-sm">
               {tips.slice(0, 10).map((ins) => (
                 <li key={ins.id} className={`text-sm rounded-lg px-3 py-2 border ${insightToneClass(ins.tone)}`}>
                   <p>{translateInsight(t, ins)}</p>

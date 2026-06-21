@@ -16,7 +16,9 @@ import {
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import { Caption } from "../../primitives/Text.jsx";
+import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
+import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateBillStatus, translateCategory, translateLendingStatus } from "../../../i18n/domainLabels.js";
 
@@ -47,8 +49,7 @@ function debtPickerItemFromLending(l, getEffectiveLendingStatus, t) {
   };
 }
 
-const fieldClass =
-  "w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 text-sm";
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function LoanPayoffAdvisor({
   commitments,
@@ -151,22 +152,22 @@ export default function LoanPayoffAdvisor({
   }
 
   return (
-    <div className="space-y-4 text-sm">
+    <div className="ct-stack text-sm">
       <button
         type="button"
         onClick={() => {
           setTarget(null);
           setStep("pick");
         }}
-        className="text-xs font-semibold text-indigo-600 dark:text-indigo-300"
+        className="ct-link !text-xs"
       >
         ← {t("loan.advisor.chooseAnother")}
       </button>
 
       {step === "manual" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="ct-grid-2">
           <div className="sm:col-span-2">
-            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.loanName")}</label>
+            <label className="ct-field-label">{t("loan.advisor.loanName")}</label>
             <input
               className={fieldClass}
               value={manual.name}
@@ -175,7 +176,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.balanceLeft")}</label>
+            <label className="ct-field-label">{t("loan.advisor.balanceLeft")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -184,7 +185,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.regularPayment")}</label>
+            <label className="ct-field-label">{t("loan.advisor.regularPayment")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -193,7 +194,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-600">{t("loan.advisor.interestOptional")}</label>
+            <label className="ct-field-label">{t("loan.advisor.interestOptional")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -205,10 +206,10 @@ export default function LoanPayoffAdvisor({
       )}
 
       {step === "calc" && target && (
-        <div className="rounded-xl border border-violet-100 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/30 px-3 py-2">
-          <p className="font-semibold text-violet-900 dark:text-violet-100">{target.title}</p>
-          <p className="text-xs text-violet-800/90 dark:text-violet-200/90">{target.subtitle}</p>
-        </div>
+        <ToneSurface tone="info" className="text-xs">
+          <p className="font-semibold">{target.title}</p>
+          <p className="opacity-90">{target.subtitle}</p>
+        </ToneSurface>
       )}
 
       {showResults && (
@@ -261,18 +262,18 @@ export default function LoanPayoffAdvisor({
           )}
 
           {advice.debt?.emi > 0 && (
-            <div className="rounded-xl bg-violet-50/80 dark:bg-violet-950/40 border border-violet-100 dark:border-violet-800 p-3 space-y-1.5">
-              <p className="text-xs font-bold text-violet-900 dark:text-violet-100">
+            <ToneSurface tone="info" className="ct-stack-sm text-xs">
+              <p className="font-bold">
                 {t("loan.advisor.paymentPlanTitle")}
               </p>
-              <p className="text-xs leading-relaxed text-violet-900 dark:text-violet-100">
+              <p className="leading-relaxed">
                 {t("loan.advisor.emiEveryMonth", {
                   amount: formatInr(advice.debt.emi),
                   name: advice.debt.name,
                 })}
               </p>
               {advice.lightMonths.length > 0 && (
-                <p className="text-xs leading-relaxed text-emerald-800 dark:text-emerald-200">
+                <p className="leading-relaxed ct-text-success">
                   {t("loan.advisor.extraInMonths", {
                     schedule: advice.lightMonths
                       .slice(0, 4)
@@ -282,7 +283,7 @@ export default function LoanPayoffAdvisor({
                 </p>
               )}
               {advice.heavyMonths.length > 0 && (
-                <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                <p className="leading-relaxed ct-text-warning">
                   {t("loan.advisor.emiOnlyHeavy", {
                     months: advice.heavyMonths
                       .slice(0, 3)
@@ -291,14 +292,14 @@ export default function LoanPayoffAdvisor({
                   })}
                 </p>
               )}
-            </div>
+            </ToneSurface>
           )}
 
           {advice.rows.length > 0 && (
             <div className="overflow-x-auto -mx-1 max-h-64 overflow-y-auto">
               <table className="w-full text-[11px] border-collapse">
-                <thead className="sticky top-0 bg-white dark:bg-slate-900">
-                  <tr className="text-left text-gray-500 border-b">
+                <thead className="sticky top-0 bg-[var(--ct-surface)]">
+                  <tr className="text-left ct-caption border-b">
                     <th className="py-1 pr-2">{t("loan.advisor.colMonth")}</th>
                     <th className="py-1 pr-2">{t("loan.advisor.colEmi")}</th>
                     <th className="py-1 pr-2">{t("loan.advisor.colExtra")}</th>
@@ -311,11 +312,11 @@ export default function LoanPayoffAdvisor({
                   {advice.rows.map((r) => (
                     <tr
                       key={r.monthKey}
-                      className={`border-b border-gray-100 dark:border-slate-700 ${
+                      className={`border-b border-[var(--ct-border-subtle)] ${
                         advice.bestForExtra?.monthKey === r.monthKey
-                          ? "bg-emerald-50/80 dark:bg-emerald-950/20 font-semibold"
+                          ? "bg-[var(--ct-success-soft)] font-semibold"
                           : r.heavy
-                            ? "bg-red-50/50 dark:bg-red-950/20"
+                            ? "bg-[var(--ct-danger-soft)]"
                             : ""
                       }`}
                     >
