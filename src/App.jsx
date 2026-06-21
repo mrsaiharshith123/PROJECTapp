@@ -45,6 +45,18 @@ const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
+const YouPersonalPage = lazy(() => import("./ui/features/profile/pages/YouPersonalPage.jsx"));
+const YouAccountPage = lazy(() => import("./ui/features/profile/pages/YouAccountPage.jsx"));
+const YouMoneyPage = lazy(() => import("./ui/features/profile/pages/YouMoneyPage.jsx"));
+const YouHouseholdPage = lazy(() => import("./ui/features/profile/pages/YouHouseholdPage.jsx"));
+const YouAppearancePage = lazy(() => import("./ui/features/profile/pages/YouAppearancePage.jsx"));
+const YouSecurityPage = lazy(() => import("./ui/features/profile/pages/YouSecurityPage.jsx"));
+const YouBackupPage = lazy(() => import("./ui/features/profile/pages/YouBackupPage.jsx"));
+const YouNotificationsPage = lazy(() => import("./ui/features/profile/pages/YouNotificationsPage.jsx"));
+const YouHistoryPage = lazy(() => import("./ui/features/profile/pages/YouHistoryPage.jsx"));
+const YouSupportPage = lazy(() => import("./ui/features/profile/pages/YouSupportPage.jsx"));
+const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage.jsx"));
+const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
 const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
@@ -120,6 +132,18 @@ function MainShell() {
             <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/scores" element={<ProfileScoresDetail />} />
+            <Route path="/you/personal" element={<YouPersonalPage />} />
+            <Route path="/you/account" element={<YouAccountPage />} />
+            <Route path="/you/money" element={<YouMoneyPage />} />
+            <Route path="/you/household" element={<YouHouseholdPage />} />
+            <Route path="/you/appearance" element={<YouAppearancePage />} />
+            <Route path="/you/security" element={<YouSecurityPage />} />
+            <Route path="/you/backup" element={<YouBackupPage />} />
+            <Route path="/you/notifications" element={<YouNotificationsPage />} />
+            <Route path="/you/history" element={<YouHistoryPage />} />
+            <Route path="/you/support" element={<YouSupportPage />} />
+            <Route path="/you/about" element={<YouAboutPage />} />
+            <Route path="/you/plans" element={<YouPlansPage />} />
             <Route
               path="/admin"
               element={

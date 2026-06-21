@@ -1,11 +1,13 @@
 import { Heading, Caption, CtIcon } from "../../index.js";
 import { cn } from "../../utils/cn.js";
 
-/** @param {"violet"|"teal"|"amber"|"red"|"slate"} color @param {boolean} danger */
+/** @param {"violet"|"teal"|"amber"|"red"|"slate"|"gold"|"indigo"} color @param {boolean} danger */
 function tileColorClass(color, danger) {
   if (danger) return "danger";
   if (color === "red") return "danger";
   if (color === "slate") return "slate";
+  if (color === "gold") return "gold";
+  if (color === "indigo") return "indigo";
   return color;
 }
 
@@ -43,7 +45,7 @@ export function SettingsGroupContent({ children, className }) {
  *   hint?: string,
  *   onClick?: () => void,
  *   icon?: string,
- *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate",
+ *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate"|"gold"|"indigo",
  *   danger?: boolean,
  *   disabled?: boolean,
  *   rightElement?: import('react').ReactNode,
@@ -95,7 +97,7 @@ export function SettingsGroupRow({
 /**
  * @param {{
  *   icon?: string,
- *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate",
+ *   iconColor?: "violet"|"teal"|"amber"|"red"|"slate"|"gold"|"indigo",
  *   label: string,
  *   hint?: string,
  *   checked: boolean,

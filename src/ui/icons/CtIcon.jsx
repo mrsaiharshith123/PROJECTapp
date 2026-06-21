@@ -15,6 +15,7 @@
  *                     navigation, card headers, page headers
  */
 import {
+  ArrowLeft,
   ArrowsClockwise,
   Backpack,
   Bank,
@@ -60,6 +61,7 @@ import {
   Receipt,
   Scroll,
   Shield,
+  SignOut,
   ShoppingCart,
   Target,
   Television,
@@ -75,6 +77,7 @@ import { cn } from "../utils/cn.js";
 
 /** @type {Record<string, import('@phosphor-icons/react').Icon>} */
 const ICON_REGISTRY = {
+  "arrow-left": ArrowLeft,
   "arrows-clockwise": ArrowsClockwise,
   backpack: Backpack,
   bank: Bank,
@@ -120,6 +123,7 @@ const ICON_REGISTRY = {
   receipt: Receipt,
   scroll: Scroll,
   shield: Shield,
+  "sign-out": SignOut,
   "shopping-cart": ShoppingCart,
   target: Target,
   television: Television,

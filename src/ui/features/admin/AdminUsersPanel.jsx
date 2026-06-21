@@ -5,6 +5,18 @@ import { adminDeleteUser, adminSetUserAdmin, adminUpdateUser } from "../../../se
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Button, Caption, Heading, Body, inputClassName } from "../../index.js";
 import { Modal } from "../../primitives/Modal.jsx";
+import AdminUserDetailDrawer from "./AdminUserDetailDrawer.jsx";
+
+function userInitials(user) {
+  const name = String(user.display_name || user.email || "U").trim();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function tierBadgeClass(tier) {
+  if (tier === "power") return "ct-tier-badge-power";
+  if (tier === "pro") return "ct-tier-badge-pro";
+  return "ct-tier-badge-free";
+}
 
 function formatWhen(iso) {
   if (!iso) return "—";
@@ -34,6 +46,7 @@ export default function AdminUsersPanel() {
   const [flash, setFlash] = useState("");
   const [busyId, setBusyId] = useState(null);
   const [editUser, setEditUser] = useState(/** @type {Record<string, unknown> | null} */ (null));
+  const [viewUser, setViewUser] = useState(/** @type {Record<string, unknown> | null} */ (null));
   const [editForm, setEditForm] = useState(
     /** @type {{ display_name: string, phone: string, subscription_tier: string, monthly_income: string, onboarding_complete: boolean }} */ ({
       display_name: "",
@@ -148,13 +161,18 @@ export default function AdminUsersPanel() {
                 return (
                   <tr key={id}>
                     <td>
-                      <span className="ct-admin-users-name">{userLabel(u)}</span>
+                      <div className="ct-admin-users-name-row">
+                        <span className="ct-admin-users-initials">{userInitials(u)}</span>
+                        <span className="ct-admin-users-name">{userLabel(u)}</span>
+                      </div>
                       <Caption className="block mt-0.5">
                         {u.phone ? String(u.phone) : "—"} · joined {formatWhen(u.created_at)}
                       </Caption>
                     </td>
                     <td>
-                      <span className="ct-admin-users-tier">{String(u.subscription_tier || "free")}</span>
+                      <span className={`ct-tier-badge ${tierBadgeClass(String(u.subscription_tier || "free"))}`}>
+                        {String(u.subscription_tier || "free")}
+                      </span>
                     </td>
                     <td>
                       <div className="ct-admin-users-badges">
@@ -166,6 +184,16 @@ export default function AdminUsersPanel() {
                     </td>
                     <td>
                       <div className="ct-admin-users-actions">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="!w-auto"
+                          disabled={busy}
+                          onClick={() => setViewUser(u)}
+                        >
+                          {t("admin.users.view")}
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -252,6 +280,8 @@ export default function AdminUsersPanel() {
           </div>
         </div>
       )}
+
+      <AdminUserDetailDrawer user={viewUser} onClose={() => setViewUser(null)} />
 
       {editUser && (
         <Modal title={t("admin.users.editTitle")} onClose={() => setEditUser(null)}>

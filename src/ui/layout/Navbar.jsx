@@ -110,6 +110,7 @@ function FabRadialMenu({ open, onClose, navigate, onScanBill }) {
 export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  if (location.pathname.startsWith("/you/")) return null;
   const { settings } = usePerovo();
   const { t } = useTranslation();
   const navItems = navItemsForMode(resolveUserMode(settings));
