@@ -16,7 +16,7 @@ export function monthlyBurdenForCommitment(c, getEffectiveStatusFn) {
 }
 
 export function totalMonthlyBurden(commitments, getEffectiveStatusFn) {
-  return commitments.reduce(
+  return (commitments || []).reduce(
     (s, c) => new Decimal(s).plus(monthlyBurdenForCommitment(c, getEffectiveStatusFn)).toNumber(),
     0,
   );

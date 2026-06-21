@@ -172,9 +172,9 @@ export function buildPressureNarratives(analysis) {
  * Full pressure analysis — canonical intelligence output.
  */
 export function computePressureAnalysis({
-  commitments,
+  commitments = [],
   income,
-  getEffectiveStatus,
+  getEffectiveStatus = () => "pending",
   monthlySnapshots = [],
   lendings = [],
   getEffectiveLendingStatus = undefined,

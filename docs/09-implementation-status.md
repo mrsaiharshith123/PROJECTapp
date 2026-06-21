@@ -2,9 +2,9 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: **21 June 2026** (v1.0.4 — UI token sweep, gap analysis phases complete).
+Last reviewed: **21 June 2026** (v1.0.5 — chaos-first QA suite replaces 140 legacy tests).
 
-Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/qa-findings.md`](./qa-findings.md)
+Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/planning/perovo-qa-system-prompt.md`](./planning/perovo-qa-system-prompt.md) · [`docs/qa-findings.md`](./qa-findings.md)
 
 ## V1 product scope
 
@@ -84,7 +84,7 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 |------|--------|-----------|
 | Capgo notify-first + relative paths | ✅ | `capgo-notify-only.js`, `build-ota-bundle.mjs` |
 | I18n boot fix + BootShell | ✅ | `renderApp.jsx`, `I18nProvider.jsx` |
-| Live **v1.0.4** | ✅ | GitHub Pages + `app-bundle.zip` |
+| Live **v1.0.5** | ✅ | GitHub Pages + `app-bundle.zip` |
 
 ## Shipped — duplication kills (KILL 1–6)
 
@@ -107,12 +107,22 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 | Patterns (ToneSurface, CategoryChip) | ✅ Token classes |
 | FinancialPulseCard trim | ✅ MetricOwnerLink for survival |
 
+## Shipped — QA system (v1.0.5)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Chaos-first test suites (8) | ✅ | `tests/suites/*.test.mjs` |
+| Terminal QA reporter | ✅ | `tests/qa-runner.mjs` — `npm run qa` |
+| Shared fixtures | ✅ | `tests/fixtures.mjs` |
+| Legacy `src/**/__tests__` removed | ✅ | 0 files under `src/` |
+| Engine null-safety guards | ✅ | `burden.js`, `pressureScore.js` |
+
 ## Shipped — QA fixes (automated pass)
 
 | Area | Status |
 |------|--------|
 | Razorpay order failure toast | ✅ `plans.orderFailed` |
-| Engine unit tests | ✅ `npm run test:engines` |
+| Chaos QA suite | ✅ `npm test` · `npm run qa` |
 | i18n key parity | ✅ `npm run sync:i18n` + translate pass |
 
 ## Explicitly deferred (post-V1)
@@ -125,9 +135,10 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 
 ## Tests & quality
 
-- **386+** unit tests (`npm test`)
+- **105** chaos-first tests (`npm test`) across 8 suites under `tests/suites/`
+- **QA reporter:** `npm run qa` (P0/P1 severity, CI exit codes)
 - Gate: `npm run audit`
-- QA framework: `docs/planning/perovo-QA-framework.md`
+- QA system spec: `docs/planning/perovo-qa-system-prompt.md`
 
 ## Related docs
 

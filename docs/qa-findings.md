@@ -1,6 +1,6 @@
 # QA findings snapshot
 
-Code-review audit run **21 June 2026** (gap analysis completion + QA framework prompts 01, 02, 04, 10, 13, 20, 26).
+Code-review audit run **21 June 2026** (v1.0.5 chaos-first QA suite + gap analysis completion).
 
 ## P0 — ship blockers
 
@@ -41,10 +41,10 @@ Code-review audit run **21 June 2026** (gap analysis completion + QA framework p
 
 | Area | Score | Notes |
 |------|-------|-------|
-| Fintech logic | 8/10 | Engine tests green |
+| Fintech logic | 9/10 | Chaos suite + engine null guards |
 | Security posture | 7/10 | RLS + server verify; client tier known gap |
 | UI completeness | 9/10 | Money/Plan/You/Admin + token sweep |
-| Test coverage | 8/10 | 386+ unit tests |
+| Test coverage | 9/10 | 105 chaos tests · `npm run qa` health 10/10 |
 
 ## Manual follow-ups (cannot automate)
 
@@ -52,4 +52,4 @@ Code-review audit run **21 June 2026** (gap analysis completion + QA framework p
 2. **QA-15:** WCAG keyboard/contrast pass before Play Store
 3. **Account Aggregator:** Future epic — not in gap analysis V1 execution plan
 
-See `docs/planning/perovo-QA-framework.md` for all 26 prompts.
+See `docs/planning/perovo-qa-system-prompt.md` for the chaos-first suite spec.
