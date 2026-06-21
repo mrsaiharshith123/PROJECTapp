@@ -51,6 +51,7 @@ export default {
   "nav.add": "ചേർക്കുക",
   "nav.lending": "വായ്പ",
   "nav.profile": "പ്രൊഫൈൽ",
+  "nav.you": "You",
   "nav.analytics": "വിശകലനം",
   "nav.fabAria": "ബിൽ അല്ലെങ്കിൽ loan ചേർക്കുക",
   "nav.fabAddCommitment": "ഒരു പ്രതിബദ്ധത ചേർക്കുക",

@@ -51,6 +51,7 @@ export default {
   "nav.add": "जमा करचें",
   "nav.lending": "रिणां दिवप",
   "nav.profile": "__टी0__फायल",
+  "nav.you": "You",
   "nav.analytics": "विश्लेशण",
   "nav.fabAria": "बिल वा रिणां जोडप",
   "nav.fabAddCommitment": "एक वचनबद्धताय जोडची",

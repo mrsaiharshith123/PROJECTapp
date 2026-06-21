@@ -51,6 +51,7 @@ export default {
   "nav.add": "ઉમેરો",
   "nav.lending": "ધિરાણ",
   "nav.profile": "Proફાઇલ",
+  "nav.you": "You",
   "nav.analytics": "એનાલિટિક્સ",
   "nav.fabAria": "બિલ અથવા ધિરાણ ઉમેરો",
   "nav.fabAddCommitment": "પ્રતિબદ્ધતા ઉમેરો",

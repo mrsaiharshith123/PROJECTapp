@@ -5860,9 +5860,35 @@ html[data-ui="ct"] .ct-profile-identity-privacy-bar {
 }
 html[data-ui="ct"] .ct-profile-quick-stats {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 12px;
   padding: 0 0.25rem;
+}
+html[data-ui="ct"] .ct-profile-quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+html[data-ui="ct"] .ct-metric-owner-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 12px;
+  border: 0.5px solid var(--ct-border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ct-text-muted);
+  font-size: 0.75rem;
+  text-decoration: none;
+}
+html[data-ui="ct"] .ct-metric-owner-link-value {
+  color: var(--ct-text);
+  font-weight: 600;
+}
+html[data-ui="ct"] .ct-metric-owner-link-arrow {
+  margin-left: auto;
+  color: var(--ct-accent);
 }
 html[data-ui="ct"] .ct-profile-quick-stat {
   flex: 1;

@@ -76,6 +76,9 @@ function resolveBuildInput() {
 // https://vite.dev/config/
 export default defineConfig({
   base: basePath,
+  resolve: {
+    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
+  },
   publicDir: updateTestShell ? false : "public",
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),

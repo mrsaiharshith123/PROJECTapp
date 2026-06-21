@@ -51,6 +51,7 @@ export default {
   "nav.add": "जोड़ें",
   "nav.lending": "उधार देना",
   "nav.profile": "Proफ़ाइल",
+  "nav.you": "You",
   "nav.analytics": "एनालिटिक्स",
   "nav.fabAria": "बिल या लेंडिंग जोड़ें",
   "nav.fabAddCommitment": "इक कमिटमेंट जोड़ो",

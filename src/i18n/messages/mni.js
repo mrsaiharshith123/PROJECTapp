@@ -51,6 +51,7 @@ export default {
   "nav.add": "ꯍꯥꯞꯆꯤꯟꯕ",
   "nav.lending": "ꯂꯂꯣꯟ-ꯏꯇꯤꯛ ꯇꯧꯕꯥ꯫",
   "nav.profile": "__ꯇꯤ꯰__ꯐꯥꯏꯜ ꯇꯧꯕꯥ꯫",
+  "nav.you": "You",
   "nav.analytics": "ꯑꯦꯅꯥꯂꯥꯏꯇꯤꯛꯁ꯫",
   "nav.fabAria": "ꯕꯤꯜ ꯅꯠꯠꯔꯒꯥ ꯂꯦꯟꯗꯤꯡ ꯍꯥꯄꯆꯤꯅꯕꯥ꯫",
   "nav.fabAddCommitment": "ꯀꯃꯤꯠꯃꯦꯟꯇ ꯑꯃꯥ ꯍꯥꯄꯆꯤꯜꯂꯨ꯫",

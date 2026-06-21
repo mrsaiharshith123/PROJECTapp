@@ -22,7 +22,7 @@ import RequireAdmin from "./app/RequireAdmin.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
-import { I18nProvider } from "./i18n/index.js";
+import { I18nProvider, PerovoLocaleSync } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
 import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
 import WebLandingPage from "./ui/features/pages/WebLandingPage.jsx";
@@ -57,7 +57,6 @@ const YouHistoryPage = lazy(() => import("./ui/features/profile/pages/YouHistory
 const YouSupportPage = lazy(() => import("./ui/features/profile/pages/YouSupportPage.jsx"));
 const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage.jsx"));
 const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
-const Paycheck = lazy(() => import("./ui/features/pages/PaycheckPage.jsx"));
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
 
@@ -126,7 +125,7 @@ function MainShell() {
             <Route path="/tools" element={<Navigate to="/plan" replace />} />
             <Route path="/" element={<Home />} />
             <Route path="/add" element={<Add />} />
-            <Route path="/paycheck" element={<Paycheck />} />
+            <Route path="/paycheck" element={<Navigate to="/money/insights" replace />} />
             <Route path="/family-room" element={<HouseholdRoom />} />
             <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
             <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
@@ -286,10 +285,11 @@ function App() {
 
   return (
     <BrowserRouter basename={routerBasename()}>
-      <AuthProvider>
-        <PerovoProvider>
-          <NetWorthProvider>
-          <I18nProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <PerovoProvider>
+            <PerovoLocaleSync />
+            <NetWorthProvider>
             <BrandDocumentSync />
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
@@ -307,10 +307,10 @@ function App() {
                 </Routes>
               </Suspense>
             </ErrorBoundary>
-          </I18nProvider>
-          </NetWorthProvider>
-        </PerovoProvider>
-      </AuthProvider>
+            </NetWorthProvider>
+          </PerovoProvider>
+        </AuthProvider>
+      </I18nProvider>
     </BrowserRouter>
   );
 }

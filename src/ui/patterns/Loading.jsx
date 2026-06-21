@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { PerovoLogo } from "../brand/PerovoLogo.jsx";
 import { PerovoWordmark } from "../brand/PerovoWordmark.jsx";
-import { useTranslation } from "../../i18n/I18nProvider.js";
+import { useTranslationOptional } from "../../i18n/I18nProvider.js";
 import { RouteSkeleton } from "./loadingSkeletons.jsx";
 
 const LOADING_HINT_KEYS = [
@@ -63,7 +63,7 @@ function LoadingAmbient() {
 }
 
 function useRotatingHint(enabled = true) {
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
   const hints = useMemo(() => LOADING_HINT_KEYS.map((key) => t(key)), [t]);
   const [index, setIndex] = useState(0);
 
@@ -83,7 +83,7 @@ function useRotatingHint(enabled = true) {
  * @param {{ message?: string, hint?: boolean }} props
  */
 export function PageLoader({ message, hint = true }) {
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
   const rotatingHint = useRotatingHint(hint && !message);
   const sub = hint ? rotatingHint : null;
 
@@ -123,7 +123,7 @@ export function PageLoader({ message, hint = true }) {
  */
 export function RouteFallback() {
   const { pathname } = useLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
 
   return (
     <div className="ct-route-load" role="status" aria-live="polite" aria-busy="true">
@@ -144,7 +144,7 @@ export function RouteFallback() {
  * @param {{ message?: string }} props
  */
 export function SectionLoader({ message }) {
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
   return (
     <div className="ct-section-load" role="status" aria-live="polite" aria-busy="true">
       <LoadingSpinner size="md" />
@@ -163,7 +163,7 @@ export function SectionLoader({ message }) {
  * @param {{ label?: string }} props
  */
 export function InlineLoader({ label }) {
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
   return (
     <span className="ct-inline-load" role="status" aria-live="polite">
       <LoadingSpinner size="sm" />

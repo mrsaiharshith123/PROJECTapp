@@ -270,10 +270,19 @@ const Analytics = () => {
 
   const showSelfView = !isFamily || analyticsView === "self";
 
+  const embeddedInMoney = location.pathname.startsWith("/money/insights");
+
   return (
     <PageShell
-      title={t("analytics.title")}
-      subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
+      title={embeddedInMoney ? undefined : t("analytics.title")}
+      subtitle={
+        embeddedInMoney
+          ? undefined
+          : isFamily
+            ? t("analytics.homeSnapshotHintHousehold")
+            : t("analytics.homeSnapshotHint")
+      }
+      className={embeddedInMoney ? "ct-money-insights-embedded" : undefined}
     >
 
       {isFamily ? (

@@ -51,6 +51,7 @@ export default {
   "nav.add": "ਸ਼ਾਮਲ ਕਰੋ",
   "nav.lending": "ਉਧਾਰ",
   "nav.profile": "Proਫਾਇਲ",
+  "nav.you": "You",
   "nav.analytics": "ਵਿਸ਼ਲੇਸ਼ਣ",
   "nav.fabAria": "ਬਿੱਲ ਜਾਂ ਉਧਾਰ ਸ਼ਾਮਲ ਕਰੋ",
   "nav.fabAddCommitment": "ਇੱਕ ਵਚਨਬੱਧਤਾ ਸ਼ਾਮਲ ਕਰੋ",

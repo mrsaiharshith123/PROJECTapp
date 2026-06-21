@@ -64,6 +64,7 @@ export default {
   "nav.add": "Add",
   "nav.lending": "Lending",
   "nav.profile": "Profile",
+  "nav.you": "You",
   "nav.analytics": "Analytics",
   "nav.fabAria": "Add bill or lending",
   "nav.fabAddCommitment": "Add a commitment",

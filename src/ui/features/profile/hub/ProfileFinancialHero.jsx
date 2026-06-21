@@ -157,7 +157,7 @@ export default function ProfileFinancialHero({
             <button
               type="button"
               className="ct-profile-identity-stat"
-              onClick={() => navigate("/net-worth")}
+              onClick={() => navigate("/money/insights")}
               aria-label={t("profileHub.heroStatNetWorthAria", { value: netWorthDisplay })}
             >
               <Caption className="ct-profile-identity-stat-label">{t("profileHub.heroStatNetWorth")}</Caption>

@@ -9,8 +9,20 @@ import { enMessages, loadMessages, translate, invalidateMessageCache } from "../
 /** @type {import('react').Context<I18nContextValue | null>} */
 const I18nContext = createContext(null);
 
+/** @type {import('react').Context<{ setLocale: (locale: string) => void } | null>} */
+const LocaleControlContext = createContext(null);
+
 function localeFromStorage() {
   return normalizeAppLanguage(loadSettingsFromStorage()?.appLanguage);
+}
+
+function fallbackTranslation() {
+  return {
+    locale: "en",
+    meta: getLanguageMeta("en"),
+    t: (key, params) => translate(enMessages, key, params),
+    ready: true,
+  };
 }
 
 function I18nProviderCore({ children, locale }) {
@@ -56,21 +68,34 @@ function I18nProviderCore({ children, locale }) {
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
-function I18nProviderWithPerovo({ children }) {
+/**
+ * Sync locale when Perovo settings change — mount inside PerovoProvider.
+ */
+export function PerovoLocaleSync() {
   const { settings } = usePerovo();
-  const locale = normalizeAppLanguage(settings.appLanguage);
-  return <I18nProviderCore locale={locale}>{children}</I18nProviderCore>;
+  const control = useContext(LocaleControlContext);
+
+  useEffect(() => {
+    if (!control?.setLocale) return;
+    control.setLocale(normalizeAppLanguage(settings.appLanguage));
+  }, [settings.appLanguage, control]);
+
+  return null;
 }
 
 /**
  * @param {{ children: import('react').ReactNode, standalone?: boolean }} props
- * standalone — landing page without PerovoProvider (language from local storage)
+ * standalone — landing page without PerovoProvider (language from local storage only)
  */
 export function I18nProvider({ children, standalone = false }) {
-  if (standalone) {
-    return <I18nProviderCore locale={localeFromStorage()}>{children}</I18nProviderCore>;
-  }
-  return <I18nProviderWithPerovo>{children}</I18nProviderWithPerovo>;
+  const [locale, setLocale] = useState(localeFromStorage);
+  const control = useMemo(() => ({ setLocale }), []);
+
+  return (
+    <LocaleControlContext.Provider value={standalone ? null : control}>
+      <I18nProviderCore locale={locale}>{children}</I18nProviderCore>
+    </LocaleControlContext.Provider>
+  );
 }
 
 /** @returns {I18nContextValue} */
@@ -81,4 +106,11 @@ export function useTranslation() {
     throw new Error("useTranslation must be used within I18nProvider");
   }
   return ctx;
+}
+
+/** Boot loaders — English fallback if provider is not mounted yet (OTA / duplicate React edge cases). */
+// eslint-disable-next-line react-refresh/only-export-components -- hook paired with provider
+export function useTranslationOptional() {
+  const ctx = useContext(I18nContext);
+  return ctx || fallbackTranslation();
 }

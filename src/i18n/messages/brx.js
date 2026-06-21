@@ -51,6 +51,7 @@ export default {
   "nav.add": "जोड़ल",
   "nav.lending": "उधार देवे के बा",
   "nav.profile": "__टी0__फाइल के बा",
+  "nav.you": "You",
   "nav.analytics": "विश्लेषणात्मकता के बारे में बतावल गइल बा",
   "nav.fabAria": "बिल भा उधार जोड़ दीं",
   "nav.fabAddCommitment": "एगो प्रतिबद्धता जोड़ल जाव",

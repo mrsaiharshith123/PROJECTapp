@@ -25,7 +25,7 @@ function ProUpgradeNudge({ featureId }) {
     <Card className="ct-stack-sm">
       <Body className="font-semibold">{isPower ? t("proGate.powerTitle") : t("proGate.proTitle")}</Body>
       <Caption className="block">{isPower ? t("proGate.powerHint") : t("proGate.proHint")}</Caption>
-      <Button type="button" variant="primary" onClick={() => navigate("/profile#upgrade")}>
+      <Button type="button" variant="primary" onClick={() => navigate("/you/plans")}>
         {t("proGate.viewPlans")}
       </Button>
     </Card>

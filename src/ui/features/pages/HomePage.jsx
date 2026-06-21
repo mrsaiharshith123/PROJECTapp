@@ -18,7 +18,7 @@ import HomeGoodNewsLine from "../home/HomeGoodNewsLine.jsx";
 import HomeGoalNudge from "../home/HomeGoalNudge.jsx";
 import HomeToolsEntry from "../home/HomeToolsEntry.jsx";
 
-/** Home = glance + action. Deep insights live on Analytics. */
+/** Home = glance + action. Deep insights live on Money → Insights. */
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();

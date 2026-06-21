@@ -51,6 +51,7 @@ export default {
   "nav.add": "ଯୋଡନ୍ତୁ |",
   "nav.lending": "Ing ଣ ଦେବା",
   "nav.profile": "Pro ଫାଇଲ୍ |",
+  "nav.you": "You",
   "nav.analytics": "ଆନାଲିଟିକ୍ସ |",
   "nav.fabAria": "ବିଲ୍ କିମ୍ବା ending ଣ ଯୋଗ କରନ୍ତୁ |",
   "nav.fabAddCommitment": "ଏକ ପ୍ରତିବଦ୍ଧତା ଯୋଡନ୍ତୁ |",

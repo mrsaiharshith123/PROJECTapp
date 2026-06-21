@@ -51,6 +51,7 @@ export default {
   "nav.add": "شامل ڪريو",
   "nav.lending": "قرض ڏيڻ",
   "nav.profile": "Proفائل",
+  "nav.you": "You",
   "nav.analytics": "تجزياتي",
   "nav.fabAria": "بل يا قرض شامل ڪريو",
   "nav.fabAddCommitment": "هڪ عزم شامل ڪريو",

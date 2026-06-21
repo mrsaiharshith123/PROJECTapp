@@ -2,7 +2,9 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: 15 June 2026 (Perovo rebrand, six-task batch, 386 tests / 90 engines).
+Last reviewed: **21 June 2026** (OTA I18n boot fix v1.0.2, Money Insights tab, You nav).
+
+Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/qa-findings.md`](./qa-findings.md)
 
 ## V1 product scope
 
@@ -13,110 +15,87 @@ Last reviewed: 15 June 2026 (Perovo rebrand, six-task batch, 386 tests / 90 engi
 | **Household rooms** (invite code, local-first + optional Supabase) | Live multi-device join without migration |
 | Local-first commitments + pressure + lending | Mass-market spend tracking (Walnut-style) |
 
-**Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` / `tierAccess.js` — they are not separate user-facing “modes”. Free caps: 5 lending, 2 chits, 3 goals, 50 spends/mo, 5 splits/mo (3 people), 30-day cashflow; plain-text annual report.
+**Subscription tiers** (`constants/subscriptionTiers.js`): `free`, `pro`, `power`. Tiers unlock features via `ProGate` / `tierAccess.js`. Free caps: 5 lending, 2 chits, 3 goals, 50 spends/mo, 5 splits/mo (3 people), 30-day cashflow.
 
-## Shipped — core product
-
-| Area | Status | Key paths |
-|------|--------|-----------|
-| Home dashboard (scroll layout) | ✅ Current UI | `ui/features/pages/HomePage.jsx`, `dashboard/*`, `home/HomeQuickActions.jsx` |
-| Family household UX (combined data + copy) | ✅ | `resolveDataProfileScope()` in `modeExperience.js`; Home, Profile, Analytics |
-| Household command panel (Analytics full house) | ✅ Phase 1 | `HouseholdCommandPanel.jsx`, `familyCommandCenter.js`, `useFamilyCommandIntel.js` |
-| Household dependents badge + editor | ✅ | `HouseholdFamilyBadge.jsx`, `HouseholdDependentsEditorModal.jsx` — Home + Analytics |
-| Family stability score (unified) | ✅ | `familyStabilityScore.js` — one household index |
-| Contribution memory (payment history) | ✅ Local | `familyContribution.js` — payer-tag ledger insights |
-| Dependency analysis | ✅ | `familyDependency.js` — income concentration, overload |
-| Pressure forecast (family) | ✅ | `familyPressureForecast.js` + `familyCalendar.js` |
-| Household rooms (create/join, invite code) | ✅ Local-first | `householdRoom*.js`, `HouseholdSetupModal.jsx`, `HouseholdRoomBridge.jsx` |
-| Room seat limit (2–20 at create) | ✅ | `settings.householdMemberLimit`; owner can edit in dependents modal |
-| Dependents count (0–99) | ✅ | `settings.dependents`; pencil edit on Home/Analytics badge |
-| Home insights card + hero status block | ✅ | `HomeInsightsSection.jsx`, `HeroMonthCard.jsx` — titled Insights with curved panel |
-| Modal portal (all sheets) | ✅ | `Modal.jsx` — portals to `document.body`; Control center fits viewport |
-| Single vs family income fields | ✅ | `ProfilePersonalSection.jsx` — second income (family) / side income (single) |
-| Combined income scope | ✅ | `combinedIncome.js` — secondary income only in family household |
-| Dependents persist on mode switch | ✅ | `usePerovoCrud.js` — no reset when toggling household scope |
-| Paycheck page `/paycheck` | ✅ | `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` |
-| Salary-day bridge | ✅ | `SalaryDayBridge.jsx` — auto-navigate + goal auto-save on credit day |
-| Bill health (per-bill + portfolio) | ✅ | `engines/billHealth.js`, `BillCard.jsx`, portfolio score on `CommitmentsBillsTab.jsx` |
-| Bill OCR scan (photo → commitment) | ✅ | `BillScannerTool.jsx`, `billOcr.js` — **+ FAB menu** (`Navbar.jsx`), not dashboard tools grid |
-| Goals ↔ SIP advisory + linking | ✅ | `sipAdvisor.js`, `GoalsToolPanel.jsx`; SIP payment → `savedAmount` via `goalId` on bill |
-| Goal salary-day auto-save | ✅ | `goalAutoSave.js`, checkbox in `GoalsToolPanel.jsx`, `settings.goalAutoSaveRules` |
-| Lending recovery UI | ✅ | `LendingOverduePanel.jsx` on `/lending` — overdue installments, mark paid, share notice |
-| Recurring spend detection | ✅ | `recurringSpendDetect.js`, inline banner in `DailySpendPanel.jsx` |
-| Net worth benchmark engine | ✅ | `netWorthBenchmark.js` (engine + tests; UI card removed — wealth analytics on Profile) |
-| Bond advisor v2 | ✅ | `bondAnalyzer.js` — YTM, credit rating, SGB/tax, compare alternatives |
-| CA export (Power) | ✅ | `caExport.js` — `.txt` + structured `.json` in `ProfileBackupSection.jsx` |
-| Multiple profiles gate | ✅ | `ProfileManager.jsx` gated with `multiple_profiles`; **single mode only** — family uses household rooms |
-| AI financial advisor (Pro) | ✅ | `financialAdvisor.js` → `supabase/functions/financial-advisor` (deploy + `ANTHROPIC_API_KEY` on you) |
-| Financial pulse + forecast i18n | ✅ | `forecast.js`, `subscriptionLeak.js` return `{ id, tone, params }` |
-| Smart pressure notifications | ✅ | `notifications.js` — `{ titleKey, messageKey, params }`; UI via `notificationLabels.js` |
-| Engine tests (intelligence, forecast, notifications, pressure) | ✅ | `src/engines/__tests__/*.test.js` |
-| Tier gates enforced | ✅ | `audit:tier` in main gate |
-| i18n — 22 langs + English | ✅ Infrastructure | `src/i18n/` — `npm run sync:i18n` |
-
-## Shipped — admin intelligence (internal)
+## Shipped — navigation & IA (redesign)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Product analytics pipeline | ✅ | `services/analytics/*`, `app/AnalyticsBridge.jsx` |
-| Admin dashboard `/admin` | ✅ | `ui/features/pages/AdminPage.jsx` |
+| Bottom nav Home · Money · + · Plan · **You** | ✅ | `constants/userModes.js` — route `/profile`, label `nav.you` |
+| Money tab shell (Bills / Spends / Lending / **Insights**) | ✅ | `MoneyShellPage.jsx`, `/money/*` in `App.jsx` |
+| Plan tab `/plan` | ✅ | `PlanPage.jsx` |
+| You hub + 11 sub-pages `/you/*` | ✅ | `ProfilePage.jsx`, `profile/pages/You*.jsx` |
+| Analytics deep-link | ✅ | `/analytics` → `/money/insights` |
+| Paycheck deep-link | ✅ | `/paycheck` → `/money/insights` |
+| Legacy redirects | ✅ | `/commitments`, `/lending`, `/tools` → Money or Plan |
 
-## Shipped — payments & legal (backend-heavy)
+## Shipped — Home (H1–H6 partial)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Razorpay checkout (client) | ✅ Wired | `services/razorpaySubscription.js`, `PlansModal.jsx` |
-| Server payment verify | ✅ Edge Function | `supabase/functions/razorpay-checkout` — deploy + secrets |
-| Promissory note engine (India) | ✅ | `engines/lendingAgreement.js` |
-| Agreement PDF (pdfmake) + eStamp guidance | ✅ | `utils/agreementPdf.js`, `LendingDetailDashboard.jsx` |
-| KYC — PAN verify + IFSC bank lookup | ✅ | `kycVerification.js`, `LegalDetailsModal.jsx` (DigiLocker placeholder) |
-| Market data — AMFI NAV, gold rate, IFSC | ✅ | `services/market/*`, `PerovoContext.jsx` daily refresh |
-| Perovo rebrand + storage migration | ✅ | `PerovoContext`, `usePerovo`, `perovo_*` keys, `migrateLegacyStorageKeys()` |
-| Dev panel (`/dev`, dev builds only) | ✅ | `DevPanel.jsx`, `devOverride.js`, floating 🔧 — state overrides + integration status |
-| Claude financial translation pipeline | ✅ | `financialGlossary.js`, `i18n-auto-translate.mjs`, `i18n:fix` |
+| Conic pressure hero + Perovo Score | ✅ | `home/HomePressureHero.jsx`, `PressureRing.jsx` |
+| Safe-to-spend in hero caption | ✅ | `HomePressureHero.jsx` (no duplicate SafeToSpendCard on Home) |
+| Needs Attention (single overdue block) | ✅ | `home/HomeNeedsAttention.jsx` |
+| Four quick actions | ✅ | `home/HomeQuickActions.jsx` |
+| Tools entry row → Plan | ✅ | `home/HomeToolsEntry.jsx` |
+| Design tokens (partial) | ✅ | `tokens.css`, `components.css` — `ct-hero-card`, `ct-stat-tile`, gradients |
 
-### Settings fields (profile)
+## Shipped — You tab (Y1–Y4)
 
-| Field | Purpose |
-|-------|---------|
-| `salaryCreditDay` | Day of month (1–31) — paycheck timeline, safe-to-spend, salary-day bridge |
-| `goalAutoSaveRules` | `[{ goalId, amount }]` — auto credit goals on salary day |
-| `goalAutoSaveLastRun` | `yyyy-MM-dd` — once-per-day guard |
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Identity hero (net worth, score, goals) | ✅ | `profile/hub/ProfileFinancialHero.jsx` |
+| Inline settings groups (no sheet) | ✅ | `ProfileSettingsGroups.jsx` |
+| Admin entry (admin-only) | ✅ | `ProfileAdminEntry.jsx` |
+| Sub-page push navigation | ✅ | `/you/personal` … `/you/plans` |
+| Metric dedup links | ✅ | `MetricOwnerLink.jsx`, slim `ProfileQuickStatsStrip.jsx` |
 
-## Deferred — UI phases
+## Shipped — Admin (A1–A2)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Command bar + KPI strip | ✅ | `AdminPage.jsx`, `AdminMetricCard.jsx` |
+| Revenue / adoption / health sections | ✅ | `AdminPage.jsx`, `adminExport.js` |
+| User detail drawer | ✅ | `AdminUserDetailDrawer.jsx` |
+
+## Shipped — OTA updates (Capacitor)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Capgo notify-first boot | ✅ | `capgo-notify-only.js`, Vite plugin |
+| Relative OTA asset paths | ✅ | `build-ota-bundle.mjs` (`VITE_BASE_PATH=./`) |
+| I18n boot crash fix (OTA) | ✅ | `I18nProvider` wraps app root; `useTranslationOptional` on loaders |
+| Update test shell | ✅ | `apk:update-test`, `UpdateTestShell.jsx` |
+| **Deploy required** | ⚠️ | Ship **v1.0.2** OTA + rebuild `apk:update-test` |
+
+## Shipped — core product (unchanged highlights)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Household rooms | ✅ | `householdRoom*.js`, `HouseholdRoomBridge.jsx` |
+| Bill OCR + permissions | ✅ | `BillScannerTool.jsx`, `nativePermissions.js` |
+| Lending + legal agreements | ✅ | `lendingAgreement.js`, `LendingPage.jsx` |
+| Net worth engines + wealth page | ✅ | `engines/netWorth/*`, `/net-worth` |
+| Razorpay + server verify | ✅ | `razorpaySubscription.js`, edge `razorpay-checkout` |
+| i18n — 22 langs + English | ✅ | `src/i18n/` |
+
+## Deferred / in progress
 
 | Phase | Description |
 |-------|-------------|
-| Full i18n on all screens | ~1,400+ locale slots still English fallback; run `npm run i18n:translate` + `i18n:fix` with `ANTHROPIC_API_KEY` before release |
-| OS launcher home | Status bar + module tile grid instead of scroll dashboard |
-| Account Aggregator bank sync | Competitive gap — manual import only today |
-| Live CIBIL / MF CAS import | Not started |
-
-## Environment variables
-
-| Variable | Required | Purpose |
-|----------|----------|---------|
-| `VITE_SUPABASE_URL` | For cloud auth | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | For cloud auth | Supabase anon key |
-| `VITE_RAZORPAY_KEY_ID` | For paid upgrades | Razorpay checkout |
-| `VITE_SUREPASS_TOKEN` | Optional | PAN + bank KYC verification |
-| `VITE_GOLD_API_KEY` | Optional | Auto gold rate (100 calls/mo free tier) |
-| `VITE_LEEGALITY_*` | Optional | Aadhaar eSign via Leegality |
-
-Edge Function secrets (Supabase Dashboard): `ANTHROPIC_API_KEY` (advisor), `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
-
-**Pre-deploy checklist:** deploy `financial-advisor` + `razorpay-checkout`; apply migrations; set edge secrets.
+| UI completion sweep | Apply modern tokens to remaining feature files (~145-file pass) |
+| Duplication kills 3–6 | Further trim pressure/net worth/survival on secondary screens |
+| Net worth section inside Money tab | Wealth still primary at `/net-worth`; optional Money subsection |
+| Wealth simulation entry in Plan Growth | Engine exists; Plan UI entry TBD |
+| Full i18n translate pass | Run `npm run i18n:translate:all` before non-English launch |
+| Account Aggregator bank sync | Not started |
 
 ## Tests & quality
 
-- **386** unit tests in **141** files (`npm test`) — **90/90** engine modules have dedicated tests (`npm run audit:engine-tests`)
-- Focused: `npm run test:sync`, `npm run test:engines`, `npm run test:utils`
-- Gate: `npm run audit` — env, deps, CSS, UI, copy tone, i18n, tier gates, insight i18n, code+depth, tests, types, build
-- Pre-release bundle: `npm run audit:pre-release` — full gate + governance + docs-sync + engine-test count
-- Strict: `npm run audit -- --strict` — also fails on i18n hardcoded + English fallback threshold
-- Family/household: `npm run audit:household` — mode isolation + profile-scope wiring
-- Advisory audits: `audit:notification-i18n`, `audit:docs-sync`, `audit:profile-scope`, `audit:edge-functions`, `audit:pro-features-built`, `audit:insight-registry`
-- Engine coverage: `npm run audit:engine-tests` (90/90) · depth: `npm run audit:complexity` · purity: `npm run audit:engines`
+- **386+** unit tests (`npm test`); engine tests: `npm run test:engines`
+- Gate: `npm run audit`
+- QA framework: `docs/planning/perovo-QA-framework.md` (26 prompts)
+- Latest audit notes: `docs/qa-findings.md`
 
 ## Related docs
 

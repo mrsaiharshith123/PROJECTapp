@@ -1,10 +1,10 @@
 import { Component } from "react";
 import * as Sentry from "@sentry/react";
 import { log } from "../../utils/logger.js";
-import { useTranslation } from "../../i18n/I18nProvider.js";
+import { useTranslationOptional } from "../../i18n/I18nProvider.js";
 
 function ErrorFallback({ error, onReload }) {
-  const { t } = useTranslation();
+  const { t } = useTranslationOptional();
   return (
     <div className="ct-page ct-stack-center min-h-screen justify-center">
       <div className="ct-card max-w-md w-full ct-stack">

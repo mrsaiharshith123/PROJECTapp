@@ -51,6 +51,7 @@ export default {
   "nav.add": "যোগ কৰা",
   "nav.lending": "ঋণ দিয়া",
   "nav.profile": "Proফাইল",
+  "nav.you": "You",
   "nav.analytics": "বিশ্লেষণ",
   "nav.fabAria": "বিল বা ঋণ যোগ কৰক",
   "nav.fabAddCommitment": "এটা প্ৰতিশ্ৰুতি যোগ কৰক",

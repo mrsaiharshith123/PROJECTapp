@@ -53,6 +53,7 @@ export default {
   "nav.add": "شٲمِل کٔرِو۔",
   "nav.lending": "قرض دینٲ",
   "nav.profile": "Proفائل",
+  "nav.you": "You",
   "nav.analytics": "تجزیات",
   "nav.fabAria": "بل یا قرض شٲمِل کٔرِو۔",
   "nav.fabAddCommitment": "ایک عہد شٲمِل کٔرِو۔",

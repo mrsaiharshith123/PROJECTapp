@@ -3,14 +3,9 @@ import { useCommitIntel } from "../../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../../hooks/useStabilityIntel.js";
 import { translatePressureLabel } from "../../../../i18n/engineLabels.js";
 import { formatInr } from "../../../../constants/symbols.js";
+import { MetricOwnerLink } from "../../../patterns/MetricOwnerLink.jsx";
 
-function pressureColor(score) {
-  if (score >= 70) return "var(--ct-success)";
-  if (score >= 40) return "#fbbf24";
-  return "var(--ct-danger)";
-}
-
-/** Ambient context row below the profile hero — read-only summary tiles. */
+/** Ambient context row — monthly burden only; score/runway link to their owner screens. */
 export default function ProfileQuickStatsStrip() {
   const { t } = useTranslation();
   const intel = useCommitIntel();
@@ -24,17 +19,19 @@ export default function ProfileQuickStatsStrip() {
         <span className="ct-stat-tile-label">{t("profileHub.quickThisMonth")}</span>
         <span className="ct-stat-tile-value">{formatInr(Math.round(intel.monthlyBurden ?? 0))}</span>
       </div>
-      <div className="ct-stat-tile ct-profile-quick-stat">
-        <span className="ct-stat-tile-label">{t("profileHub.quickPressure")}</span>
-        <span className="ct-stat-tile-value" style={{ color: pressureColor(pressureScore) }}>
-          {pressureScore} — {translatePressureLabel(t, intel.stability?.label)}
-        </span>
-      </div>
-      <div className="ct-stat-tile ct-profile-quick-stat">
-        <span className="ct-stat-tile-label">{t("profileHub.quickRunway")}</span>
-        <span className="ct-stat-tile-value" style={{ color: "#fbbf24" }}>
-          {runway != null ? t("profileHub.quickRunwayValue", { months: runway.toFixed(1) }) : "—"}
-        </span>
+      <div className="ct-profile-quick-links">
+        <MetricOwnerLink
+          label={t("perovoScore.title")}
+          value={`${pressureScore} · ${translatePressureLabel(t, intel.stability?.label)}`}
+          to="/"
+        />
+        {runway != null ? (
+          <MetricOwnerLink
+            label={t("profileHub.quickRunway")}
+            value={t("profileHub.quickRunwayValue", { months: runway.toFixed(1) })}
+            to="/money/insights"
+          />
+        ) : null}
       </div>
     </div>
   );

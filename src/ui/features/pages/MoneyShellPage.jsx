@@ -10,6 +10,7 @@ const MONEY_TABS = [
   { id: "bills", path: "/money/bills", labelKey: "money.tab.bills" },
   { id: "spends", path: "/money/spends", labelKey: "money.tab.spends" },
   { id: "lending", path: "/money/lending", labelKey: "money.tab.lending" },
+  { id: "insights", path: "/money/insights", labelKey: "money.tab.insights" },
 ];
 
 /** Money tab shell — Bills / Spends / Lending with cross-fade content. */

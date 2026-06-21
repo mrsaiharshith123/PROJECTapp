@@ -51,6 +51,7 @@ export default {
   "nav.add": "थप्नुहोस्",
   "nav.lending": "उधारो",
   "nav.profile": "Proफाइल",
+  "nav.you": "You",
   "nav.analytics": "विश्लेषण",
   "nav.fabAria": "बिल वा ऋण थप्नुहोस्",
   "nav.fabAddCommitment": "प्रतिबद्धता थप्नुहोस्",

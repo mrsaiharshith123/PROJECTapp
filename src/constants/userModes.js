@@ -1,10 +1,10 @@
-/** Primary bottom nav — Home · Money · Add · Plan · Profile */
+/** Primary bottom nav — Home · Money · Add · Plan · You */
 export const NAV_ITEMS = [
   { to: "/", labelKey: "nav.home", icon: "house" },
   { to: "/money", labelKey: "nav.money", icon: "wallet", navGroup: "money" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
   { to: "/plan", labelKey: "nav.plan", icon: "target", navGroup: "plan" },
-  { to: "/profile", labelKey: "nav.profile", icon: "user" },
+  { to: "/profile", labelKey: "nav.you", icon: "user" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */

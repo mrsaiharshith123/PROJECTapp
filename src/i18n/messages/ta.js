@@ -51,6 +51,7 @@ export default {
   "nav.add": "சேர்",
   "nav.lending": "கடன் கொடுத்தல்",
   "nav.profile": "Proகோப்பு",
+  "nav.you": "You",
   "nav.analytics": "பகுப்பாய்வு",
   "nav.fabAria": "பில் அல்லது கடனைச் சேர்க்கவும்",
   "nav.fabAddCommitment": "உறுதிமொழியைச் சேர்க்கவும்",

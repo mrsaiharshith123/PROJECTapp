@@ -51,6 +51,7 @@ export default {
   "nav.add": "संयोजयति",
   "nav.lending": "ऋणदान",
   "nav.profile": "Proसञ्चिका",
+  "nav.you": "You",
   "nav.analytics": "विश्लेषणात्मकता",
   "nav.fabAria": "बिल वा ऋणं वा योजयन्तु",
   "nav.fabAddCommitment": "प्रतिबद्धतां योजयन्तु",

@@ -51,6 +51,7 @@ export default {
   "nav.add": "చేర్చండి",
   "nav.lending": "ఋణ వ్యవహారం",
   "nav.profile": "ప్రొఫైల్",
+  "nav.you": "You",
   "nav.analytics": "విశ్లేషణ",
   "nav.fabAria": "బిల్ లేదా అప్పు జోడించండి",
   "nav.fabAddCommitment": "నిబద్ధతను జోడించండి",

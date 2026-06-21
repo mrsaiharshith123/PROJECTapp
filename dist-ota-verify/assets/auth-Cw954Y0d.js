@@ -1,1 +1,0 @@
-import{n as e}from"./auth-Cat3oftt.js";export{e as deleteAccountData};

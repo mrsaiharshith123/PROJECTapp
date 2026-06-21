@@ -51,6 +51,7 @@ export default {
   "nav.add": "ಸೇರಿಸಿ",
   "nav.lending": "ಸಾಲ ನೀಡುತ್ತಿದೆ",
   "nav.profile": "Proಫೈಲ್",
+  "nav.you": "You",
   "nav.analytics": "ಅನಾಲಿಟಿಕ್ಸ್",
   "nav.fabAria": "ಬಿಲ್ ಅಥವಾ ಸಾಲವನ್ನು ಸೇರಿಸಿ",
   "nav.fabAddCommitment": "ಬದ್ಧತೆಯನ್ನು ಸೇರಿಸಿ",

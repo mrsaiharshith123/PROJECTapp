@@ -1,1 +1,1 @@
-export { I18nProvider, useTranslation } from "../ui/providers/I18nProvider.jsx";
+export { I18nProvider, PerovoLocaleSync, useTranslation, useTranslationOptional } from "../ui/providers/I18nProvider.jsx";
