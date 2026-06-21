@@ -1,0 +1,1 @@
+import{t as e}from"./esm-Cf7AkQYb.js";import"./definitions-DvQiMT_q.js";export{e as CapacitorUpdater};

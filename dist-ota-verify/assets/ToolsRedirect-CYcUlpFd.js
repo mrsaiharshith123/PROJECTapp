@@ -1,0 +1,1 @@
+import{o as e}from"./rolldown-runtime-CMxvf4Kt.js";import{_t as t}from"./react-vendor-KM8t4VuZ.js";import{g as n}from"./charts-DYtul85C.js";var r=e(n(),1);function i(){let e=t();return(0,r.useEffect)(()=>{e(`/plan`,{replace:!0})},[e]),null}export{i as default};

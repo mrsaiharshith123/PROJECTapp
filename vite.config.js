@@ -7,8 +7,16 @@ import { VitePWA } from "vite-plugin-pwa";
 import pkg from "./package.json" with { type: "json" };
 
 /** GitHub Pages project site: https://user.github.io/PROJECTapp/ */
-const rawBase = process.env.VITE_BASE_PATH || "/PROJECTapp/";
-const basePath = rawBase.startsWith("/") ? (rawBase.endsWith("/") ? rawBase : `${rawBase}/`) : `/${rawBase}/`;
+function resolveViteBase(raw) {
+  const value = raw || "/PROJECTapp/";
+  if (value === "./" || value === ".") return "./";
+  if (value.startsWith("/")) {
+    return value.endsWith("/") ? value : `${value}/`;
+  }
+  return `/${value}/`;
+}
+
+const basePath = resolveViteBase(process.env.VITE_BASE_PATH);
 const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
 const updateTestShell = process.env.VITE_UPDATE_TEST_SHELL === "1";
 const appVersion = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
@@ -19,6 +27,50 @@ try {
   appBuiltAt = manifest.builtAt || "";
 } catch {
   /* dev without generated manifest */
+}
+
+const capgoNotifyEnabled = embeddedApp || updateTestShell;
+const capgoNotifyEntry = updateTestShell
+  ? path.resolve(process.cwd(), "src/capgo-notify-update-test-only.js")
+  : path.resolve(process.cwd(), "src/capgo-notify-only.js");
+
+function capgoAssetPath(fileName) {
+  if (basePath === "./") return `./${fileName}`;
+  return `${basePath}${fileName}`.replace(/\/{2,}/g, "/");
+}
+
+/** Capgo must receive notifyAppReady before React chunks load — separate tiny entry injected first. */
+function capgoNotifyFirstPlugin() {
+  return {
+    name: "capgo-notify-first",
+    transformIndexHtml: {
+      order: "post",
+      handler(html, ctx) {
+        if (!ctx.bundle) return html;
+        const capgoChunk = Object.values(ctx.bundle).find(
+          (item) => item.type === "chunk" && item.name === "capgo-notify",
+        );
+        if (!capgoChunk || typeof capgoChunk.fileName !== "string") return html;
+
+        const capgoSrc = capgoAssetPath(capgoChunk.fileName);
+        const tag = `<script type="module" crossorigin src="${capgoSrc}"></script>`;
+        let out = html.replace(/<script type="module" src="\/src\/capgo-notify[^"]*"><\/script>\s*/g, "");
+        if (out.includes(capgoSrc)) return out;
+        return out.replace(/<script type="module"/, `${tag}\n    <script type="module"`);
+      },
+    },
+  };
+}
+
+function resolveBuildInput() {
+  const mainHtml = updateTestShell
+    ? path.resolve(process.cwd(), "update-test.html")
+    : path.resolve(process.cwd(), "index.html");
+  if (!capgoNotifyEnabled) return mainHtml;
+  return {
+    main: mainHtml,
+    "capgo-notify": capgoNotifyEntry,
+  };
 }
 
 // https://vite.dev/config/
@@ -36,12 +88,11 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: updateTestShell
-        ? path.resolve(process.cwd(), "update-test.html")
-        : path.resolve(process.cwd(), "index.html"),
+      input: resolveBuildInput(),
       output: updateTestShell
-        ? undefined
+        ? { entryFileNames: "assets/[name]-[hash].js" }
         : {
+            entryFileNames: "assets/[name]-[hash].js",
             manualChunks(id) {
               if (!id.includes("node_modules")) return;
               if (id.includes("recharts") || id.includes("d3-")) return "charts";
@@ -54,6 +105,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    ...(capgoNotifyEnabled ? [capgoNotifyFirstPlugin()] : []),
     ...(!embeddedApp
       ? [
           VitePWA({

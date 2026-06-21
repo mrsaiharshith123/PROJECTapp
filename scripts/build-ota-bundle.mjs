@@ -35,11 +35,12 @@ function distUsesCapacitorBase(dir) {
   const htmlPath = path.join(dir, "index.html");
   if (!fs.existsSync(htmlPath)) return false;
   const html = fs.readFileSync(htmlPath, "utf8");
-  return !html.includes("/PROJECTapp/");
+  if (html.includes("/PROJECTapp/")) return false;
+  return html.includes("./assets/") || html.includes('src="/assets/') || html.includes("src='/assets/");
 }
 
 function buildEmbeddedOtaDist() {
-  console.log("Building Capacitor OTA web bundle (VITE_BASE_PATH=/, embedded)…");
+  console.log("Building Capacitor OTA web bundle (VITE_BASE_PATH=./, embedded)…");
   if (fs.existsSync(otaBuildDir)) {
     fs.rmSync(otaBuildDir, { recursive: true, force: true });
   }
@@ -49,7 +50,7 @@ function buildEmbeddedOtaDist() {
     shell: isWin,
     env: {
       ...process.env,
-      VITE_BASE_PATH: "/",
+      VITE_BASE_PATH: "./",
       VITE_EMBEDDED_APP: "1",
     },
   });

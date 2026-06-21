@@ -23,6 +23,26 @@
         background: inherit;
       }
     </style>
+    <script>
+      (function () {
+        function showBootError(msg) {
+          var root = document.getElementById("root");
+          if (!root || root.dataset.bootError) return;
+          root.dataset.bootError = "1";
+          root.innerHTML =
+            '<p style="padding:24px;text-align:center;font-family:system-ui,sans-serif;color:#f0eff9;white-space:pre-wrap">' +
+            msg +
+            "</p>";
+        }
+        window.addEventListener("error", function (e) {
+          showBootError("Load error: " + (e.message || "unknown"));
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          var reason = e.reason && (e.reason.message || String(e.reason));
+          showBootError("Startup failed: " + (reason || "unknown"));
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root">
@@ -30,6 +50,7 @@
         Starting update test…
       </p>
     </div>
+    <script type="module" src="/src/capgo-notify-update-test-only.js"></script>
     <script type="module" src="/src/main-update-test.jsx"></script>
   </body>
 </html>

@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
       autoUpdate: false,
       /** Full app needs time to load chunks before notifyAppReady — avoid rollback black screen. */
       appReadyTimeout: 120000,
-      keepUrlPathAfterReload: true,
+      autoDeleteFailed: true,
     },
   },
 };

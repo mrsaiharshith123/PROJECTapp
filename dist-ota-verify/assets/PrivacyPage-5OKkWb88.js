@@ -1,0 +1,1 @@
+import{t as e}from"./PrivacyPage-B2akOZwB.js";export{e as default};

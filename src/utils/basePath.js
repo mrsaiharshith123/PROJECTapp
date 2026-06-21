@@ -1,7 +1,7 @@
 /** Vite `base` without trailing slash (for React Router `basename`). */
 export function routerBasename() {
   const base = import.meta.env.BASE_URL || "/";
-  if (base === "/") return undefined;
+  if (base === "/" || base === "./") return undefined;
   return base.replace(/\/$/, "");
 }
 
@@ -9,5 +9,6 @@ export function routerBasename() {
 export function assetUrl(path) {
   const base = import.meta.env.BASE_URL || "/";
   const clean = String(path).replace(/^\//, "");
+  if (base === "./") return `./${clean}`;
   return `${base}${clean}`;
 }

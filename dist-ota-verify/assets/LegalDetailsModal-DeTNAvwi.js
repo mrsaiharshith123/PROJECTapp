@@ -1,0 +1,1 @@
+import{t as e}from"./LegalDetailsModal-Pf_WnWYv.js";export{e as default};

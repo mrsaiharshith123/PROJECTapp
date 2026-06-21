@@ -1,0 +1,1 @@
+import{t as e}from"./esm-Cf7AkQYb.js";(async()=>{try{typeof window<`u`&&window.Capacitor?.isNativePlatform?.()&&await e.notifyAppReady()}catch(e){console.error(`[capgo] notifyAppReady failed`,e)}})();

@@ -28,6 +28,8 @@ const JSX_SHELL_PREFIXES = [
   "src/App.jsx",
   "src/main.jsx",
   "src/main-update-test.jsx",
+  "src/capgo-notify-only.js",
+  "src/capgo-notify-update-test-only.js",
   "src/app/",
   "src/context/",
 ];
