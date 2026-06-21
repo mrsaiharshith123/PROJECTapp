@@ -98,8 +98,9 @@ export default defineConfig({
             entryFileNames: "assets/[name]-[hash].js",
             manualChunks(id) {
               const norm = id.replace(/\\/g, "/");
-              if (norm.includes("/src/i18n/") || norm.includes("/ui/providers/I18nProvider")) {
-                return "i18n";
+              // Only the React context module — not locale message files (would exceed PWA precache limit).
+              if (norm.includes("/ui/providers/I18nProvider")) {
+                return "i18n-core";
               }
               if (!norm.includes("node_modules")) return;
               if (id.includes("recharts") || id.includes("d3-")) return "charts";
