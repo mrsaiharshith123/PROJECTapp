@@ -16,10 +16,14 @@ import {
   AllocationCharts,
   SimulationPanel,
 } from "../netWorth/NetWorthIntelligencePanels.jsx";
+import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 import SafetyPlannerPanel from "../tools/SafetyPlannerPanel.jsx";
 
 /** Net worth intelligence — emergency readiness, liquidity, life score, pressure, allocation charts. */
-export default function WealthAnalyticsSection() {
+export default function WealthAnalyticsSection({
+  showSimulation = false,
+  showPressureAsLink = false,
+}) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
   const isFamily = isSalariedFamily(settings);
@@ -95,8 +99,16 @@ export default function WealthAnalyticsSection() {
       <SafetyPlannerPanel />
       <LiquidityPanel liquidity={intel.liquidity} privacyMode={privacyMode} totalAssets={intel.core?.totalAssets ?? 0} />
       <HealthScorePanel lifeScore={intel.lifeScore} />
-      <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />
-      <SimulationPanel simulationBase={intel.simulationBase} />
+      {showPressureAsLink ? (
+        <MetricOwnerLink
+          label={t("perovoScore.title")}
+          value={privacyMode ? undefined : String(intel.pressure?.score ?? "")}
+          to="/"
+        />
+      ) : (
+        <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />
+      )}
+      {showSimulation ? <SimulationPanel simulationBase={intel.simulationBase} /> : null}
       <AllocationCharts intel={intel} privacyMode={privacyMode} />
     </section>
   );

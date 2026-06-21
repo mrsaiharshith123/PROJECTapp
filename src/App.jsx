@@ -40,8 +40,8 @@ const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
 const MoneyShell = lazy(() => import("./ui/features/pages/MoneyShellPage.jsx"));
+const MoneyWealth = lazy(() => import("./ui/features/pages/MoneyWealthPage.jsx"));
 const Plan = lazy(() => import("./ui/features/pages/PlanPage.jsx"));
-const ProfileWealthAnalytics = lazy(() => import("./ui/features/pages/ProfileWealthAnalyticsPage.jsx"));
 const Tools = lazy(() => import("./app/ToolsRedirect.jsx"));
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
@@ -118,6 +118,7 @@ function MainShell() {
                 }
               />
               <Route path="insights" element={<Analytics />} />
+              <Route path="wealth" element={<MoneyWealth />} />
             </Route>
             <Route path="/commitments" element={<Navigate to="/money/bills" replace />} />
             <Route path="/lending" element={<Navigate to="/money/lending" replace />} />
@@ -128,8 +129,8 @@ function MainShell() {
             <Route path="/add" element={<Add />} />
             <Route path="/paycheck" element={<Navigate to="/money/insights" replace />} />
             <Route path="/family-room" element={<HouseholdRoom />} />
-            <Route path="/profile/analytics" element={<ProfileWealthAnalytics />} />
-            <Route path="/net-worth" element={<ProfileWealthAnalytics />} />
+            <Route path="/profile/analytics" element={<Navigate to="/money/wealth" replace />} />
+            <Route path="/net-worth" element={<Navigate to="/money/wealth" replace />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/scores" element={<ProfileScoresDetail />} />
             <Route path="/you/personal" element={<YouPersonalPage />} />

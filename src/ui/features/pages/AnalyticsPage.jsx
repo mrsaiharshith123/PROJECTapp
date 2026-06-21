@@ -6,11 +6,9 @@ import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSect
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
 import HouseholdCommandPanel from "../analytics/HouseholdCommandPanel.jsx";
 import HouseholdSpendPanel from "../analytics/HouseholdSpendPanel.jsx";
-import SchoolFeeCard from "../dashboard/SchoolFeeCard.jsx";
 import FestivalPlannerCard from "../dashboard/FestivalPlannerCard.jsx";
 import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
 import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
-import { FinancialPulseCard } from "../../";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import {
@@ -81,7 +79,6 @@ const Analytics = () => {
   }, [location.state?.openHousehold, location.pathname, navigate]);
   const profileScope = resolveAnalyticsProfileScope(settings, isFamily ? analyticsView : "self");
   const today = todayStr || todayYmd();
-  const microTipSeed = commitments.length;
 
   const emiPlan = useMemo(() => {
     if (isFamily) return null;
@@ -315,9 +312,6 @@ const Analytics = () => {
               {t("analytics.exportCa")}
             </Button>
           </div>
-          <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
-            <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="personal" />
-          </div>
           {emiPlan ? (
             <Card className="ct-stack-sm ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
               <Heading level={3}>
@@ -360,15 +354,9 @@ const Analytics = () => {
             <HouseholdCommandPanel />
           </div>
           <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
-            <FinancialPulseCard microTipSeed={microTipSeed} pulseScope="household" />
-          </div>
-          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
             <HouseholdSpendPanel />
           </div>
-          <div className="ct-animate-fade-up" style={{ animationDelay: "180ms" }}>
-            <SchoolFeeCard />
-          </div>
-          <div className="ct-animate-fade-up" style={{ animationDelay: "240ms" }}>
+          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
             <FestivalPlannerCard />
           </div>
           <FamilyMonthlyReportCard />

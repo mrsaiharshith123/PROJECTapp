@@ -23,6 +23,8 @@ Code-review audit run **21 June 2026** (QA-01, QA-02, QA-04, QA-10, QA-20 from `
 |----|------|---------|-----|
 | QA-13-01 | Duplication | Pressure + runway shown on Profile quick stats and Home hero | ✅ Reduced — Profile strip links to owners |
 | QA-13-02 | Duplication | `/paycheck` duplicated Money insights content | ✅ Redirect → `/money/insights` |
+| QA-13-03 | Duplication | Net worth scattered across profile sections | ✅ Primary home `/money/wealth`; You hero links there |
+| QA-13-04 | Duplication | Pressure duplicated on Insights pulse card | ✅ Removed `FinancialPulseCard` from Insights |
 | QA-20-02 | Nav | Tab still labeled “Profile” | ✅ Label → “You” (`nav.you`) |
 | QA-20-03 | UI sweep | Modern tokens not on every screen | Ongoing — see gap analysis Phase 8 |
 

@@ -9,6 +9,7 @@ import InvestSavingsPanel from "../tools/InvestSavingsPanel.jsx";
 import RetirementPlannerPanel from "../tools/RetirementPlannerPanel.jsx";
 import BondAdvisor from "../tools/BondAdvisor.jsx";
 import UnifiedScenariosPanel from "../tools/UnifiedScenariosPanel.jsx";
+import PlanWealthSimulationPanel from "./PlanWealthSimulationPanel.jsx";
 import GoalsToolPanel from "../tools/GoalsToolPanel.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 
@@ -67,6 +68,7 @@ export function renderPlanToolPanel(toolId, ctx) {
     case "bond":
       return <BondAdvisor monthlyIncome={income} />;
     case "wealth":
+      return <PlanWealthSimulationPanel />;
     case "scenarios":
       return <UnifiedScenariosPanel />;
     case "goals":

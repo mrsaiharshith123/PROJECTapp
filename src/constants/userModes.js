@@ -13,7 +13,7 @@ export const USER_MODE_IDS = ["salaried"];
 /** Removed modes — migrated to salaried on load. */
 export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
-const NAV_FULL = ["/", "/money", "/money/bills", "/money/spends", "/money/lending", "/money/insights", "/add", "/plan", "/profile"];
+const NAV_FULL = ["/", "/money", "/money/bills", "/money/spends", "/money/lending", "/money/insights", "/money/wealth", "/add", "/plan", "/profile"];
 
 export const USER_MODES = [
   {

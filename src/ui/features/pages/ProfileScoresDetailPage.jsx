@@ -8,7 +8,7 @@ import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { joinEngineMessages } from "../../../i18n/engineLabels.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { Card, PageHeader, Body, Caption, InfoTip } from "../../index.js";
-import { MetricCard } from "../../patterns/MetricCard.jsx";
+import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 
 function formatDue(dateStr) {
   if (!dateStr) return "";
@@ -45,30 +45,20 @@ export default function ProfileScoresDetailPage() {
         subtitle={t("perovoScore.detailSubtitle")}
       />
 
-      <div className="ct-hero-card pressure relative">
-        <div className="ct-hero-glow" aria-hidden />
-        <p className="ct-hero-label">{t("perovoScore.title")}</p>
-        <p className="ct-hero-number ct-numeral relative">
-          {privacyMode ? "•••" : perovo.score}
-          {!privacyMode ? <span className="text-lg font-normal opacity-75">/100</span> : null}
-        </p>
-        {!privacyMode ? (
-          <Caption className="block relative opacity-90">{t(`perovoScore.tier.${perovo.tier.id}`)}</Caption>
-        ) : null}
-      </div>
+      <MetricOwnerLink
+        label={t("perovoScore.title")}
+        value={privacyMode ? undefined : `${perovo.score}/100`}
+        to="/"
+      />
 
       <div className="ct-grid-2 gap-2">
         {PEROVO_PILLARS.map((pillar) => {
           const data = perovo.pillars[pillar.id];
           return (
-            <MetricCard
-              key={pillar.id}
-              label={t(`perovoScore.pillar.${pillar.id}`)}
-              value={privacyMode ? "•••" : data?.score ?? 0}
-              trend={privacyMode ? null : data?.trend ?? null}
-              icon={pillar.icon}
-              tone={pillar.tone}
-            />
+            <div key={pillar.id} className="ct-stat-tile">
+              <p className="ct-stat-label">{t(`perovoScore.pillar.${pillar.id}`)}</p>
+              <p className="ct-stat-value ct-numeral">{privacyMode ? "•••" : data?.score ?? 0}</p>
+            </div>
           );
         })}
       </div>

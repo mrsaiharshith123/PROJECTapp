@@ -2258,6 +2258,8 @@ export default {
   "money.tab.spends": "Spends",
   "money.tab.lending": "రుణాలిస్తోంది",
   "money.tab.insights": "అంతర్దృష్టులు",
+  "money.tab.wealth": "Wealth",
+  "dedup.survivalOnInsights": "Runway and survival scenarios live in Money → Insights.",
   "money.overflowMenu": "More actions",
   "money.bills.committedLabel": "Committed this month",
   "money.bills.summaryMeta": "{count} bills · {overdue} overdue",
