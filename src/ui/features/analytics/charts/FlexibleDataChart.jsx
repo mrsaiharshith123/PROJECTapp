@@ -161,6 +161,8 @@ export function FlexibleDataChart({
               name={s.name}
               stroke={s.color || t.series.accent}
               strokeWidth={t.lineWidth}
+              animationDuration={800}
+              animationEasing="ease-out"
               dot={showDots ? { r: t.dotRadius, fill: s.color || t.series.accentSoft } : false}
               activeDot={
                 clickable
@@ -185,6 +187,8 @@ export function FlexibleDataChart({
               name={s.name}
               fill={s.color || t.series.accent}
               radius={t.barRadius}
+              animationDuration={800}
+              animationEasing="ease-out"
               onClick={clickable ? (row) => onSeriesClick(row, s.key) : undefined}
               style={clickable ? { cursor: "pointer" } : undefined}
             />

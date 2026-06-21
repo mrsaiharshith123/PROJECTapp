@@ -137,6 +137,13 @@ export default function HouseholdCommandPanel() {
       <div className="ct-hero-card survival ct-family-command ct-household-hub ct-stack relative">
         <div className="ct-hero-glow teal" aria-hidden />
         <div className="relative ct-stack">
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-label">{t("analytics.household.combinedLabel")}</p>
+            <p className="ct-stat-value ct-numeral" style={{ color: "#5eead4" }}>
+              {formatInr(countedFreeCash)}
+            </p>
+            <Caption className="block mt-0.5">{t("family.command.householdFree")}</Caption>
+          </div>
         <div className="ct-row-between gap-2 flex-wrap items-start">
           <div className="ct-row gap-2 items-start flex-wrap min-w-0">
             <div className="min-w-0">

@@ -9,7 +9,6 @@ import LendingPageDialogs from "../lending/LendingPageDialogs.jsx";
 import { useLendingLists } from "../lending/useLendingLists.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import BillSplitModal from "../modals/BillSplitModal.jsx";
 import { canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 import LendingOverduePanel from "../lending/LendingOverduePanel.jsx";
@@ -46,7 +45,6 @@ const Lending = () => {
   const [formErrors, setFormErrors] = useState({});
   const [detailFor, setDetailFor] = useState(null);
   const [showRequest, setShowRequest] = useState(false);
-  const [billSplitOpen, setBillSplitOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [listTab, setListTab] = useState("lent");
 
@@ -178,11 +176,6 @@ const Lending = () => {
       label: t("lending.requestMoney"),
       onClick: () => setShowRequest(true),
     },
-    {
-      id: "split",
-      label: t("lending.splitBill"),
-      onClick: () => setBillSplitOpen(true),
-    },
   ];
 
   const visibleList = listTab === "lent" ? lentList : borrowedList;
@@ -272,8 +265,6 @@ const Lending = () => {
       {visibleList.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
         <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
       )}
-
-      {billSplitOpen && <BillSplitModal onClose={() => setBillSplitOpen(false)} />}
 
       <LendingPageDialogs
         showAdd={showAdd}

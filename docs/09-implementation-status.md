@@ -2,9 +2,52 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: **21 June 2026** (v1.0.5 — chaos-first QA suite replaces 140 legacy tests).
+Last reviewed: **22 June 2026** (score/analytics/asset OS sweep + dead-code cleanup pass).
 
 Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/planning/perovo-qa-system-prompt.md`](./planning/perovo-qa-system-prompt.md) · [`docs/qa-findings.md`](./qa-findings.md)
+
+## Shipped — score / analytics / settings (June 2026)
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Focused score page | ✅ | `/score-detail` · `ScoreDetailPage.jsx` |
+| Profile scores accordion | ✅ | `ProfileScoresDetailPage.jsx` |
+| Analytics 3-section layout | ✅ | `AnalyticsPage.jsx` — pulse · spending · household |
+| Net worth overflow guards | ✅ | `components.css`, `MoneyWealthPage.jsx` |
+| Settings colored icon tiles | ✅ | `ProfileSettingsGroups.jsx`, `SettingsGroup.jsx` |
+| Household warm invitation | ✅ | `HouseholdModeSection.jsx`, `ProfileSettingsGroups.jsx` |
+
+## Shipped — feature cleanup (removed from UI)
+
+| Removed from screen | Kept in repo (engine/UI file) | Replacement |
+|---------------------|-------------------------------|-------------|
+| Bill split modal entry | `BillSplitModal.jsx` | — (Splitwise-style flows deferred) |
+| Bond advisor tool grid | `BondAdvisor.jsx` | — |
+| Festival planner card | *(file deleted — unused)* | Smart notifications when relevant |
+| Family calendar widget | *(file deleted — unused)* | `CashflowCalendarStrip` on Insights |
+| Loan tools menu tile | `LoanToolsPanel.jsx` | Contextual link on EMI `BillCard` |
+| Income sensitivity panel | engine kept | — |
+| Setu AA / BBPS / Stream chat | removed | Deferred post-V1 |
+
+## Shipped — Personal Asset OS
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Physical asset fields in wealth modal | ✅ | `WealthEntryModal.jsx`, `wealthStorage.js` |
+| Physical assets section | ✅ | `PhysicalAssetsSection.jsx` |
+| CAGR + AI insight per asset | ✅ | `WealthEntryCard.jsx`, `assetInsight.js` |
+| Gold auto-price suggestion | ✅ | `physicalAssetHelpers.js`, `goldPrice.js` |
+| Vehicle depreciation estimate | ✅ | `vehicleDepreciation.js` |
+| Debt pillar from net worth | ✅ | `ScoreDetailPage.jsx` |
+
+## Removed — unreachable UI (audit cleanup)
+
+These files had no route/import chain from `App.jsx` and were deleted:
+
+- `AnalyticsScoreTiles.jsx` (scores live on `/score-detail` + profile scores)
+- `FamilyCalendarWidget.jsx`, `FestivalPlannerCard.jsx` (feature cleanup)
+- `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` (paycheck → `/money/insights`)
+- `ProfileWealthAnalyticsPage.jsx` (wealth → `/money/wealth` · `MoneyWealthPage.jsx`)
 
 ## V1 product scope
 
@@ -111,10 +154,10 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Chaos-first test suites (8) | ✅ | `tests/suites/*.test.mjs` |
+| Chaos-first test suites (8) | ✅ | `tests/suites/*.test.mjs` — **105** tests |
+| Colocated unit tests | ✅ | `src/**/__tests__/` — engine/utils/service coverage |
 | Terminal QA reporter | ✅ | `tests/qa-runner.mjs` — `npm run qa` |
 | Shared fixtures | ✅ | `tests/fixtures.mjs` |
-| Legacy `src/**/__tests__` removed | ✅ | 0 files under `src/` |
 | Engine null-safety guards | ✅ | `burden.js`, `pressureScore.js` |
 
 ## Shipped — QA fixes (automated pass)
@@ -133,11 +176,29 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 | Live Razorpay sandbox payment | Requires manual test with real sandbox keys on device |
 | Full WCAG audit (QA-15) | Run before public store launch |
 
+## Shipped — lending, bill health & exports
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Per-bill health scores | ✅ | `engines/billHealth.js`, `BillCard.jsx`, profile scores |
+| CA-ready summary export | ✅ | `engines/caExport.js`, `ProfileBackupSection.jsx` |
+| Lending profile share (deal) | ✅ | `lendingShareCard.js`, `LendingDetailDashboard.jsx` |
+
+## Shipped — household data scope
+
+| Area | Status | Key paths |
+|------|--------|-----------|
+| Family combined data scope | ✅ | `resolveDataProfileScope()` in `modeExperience.js` |
+| Household command panel | ✅ | `HouseholdCommandPanel.jsx` on Insights |
+| Dependents editor + badge | ✅ | `HouseholdDependentsEditorModal.jsx`, `HouseholdFamilyBadge.jsx` |
+| Household room (invite code) | ✅ | `HouseholdSetupModal.jsx`, `/family-room` |
+
 ## Tests & quality
 
 - **105** chaos-first tests (`npm test`) across 8 suites under `tests/suites/`
+- Colocated engine/utils tests under `src/**/__tests__/` (not in default `npm test` include — run via Vitest path if needed)
 - **QA reporter:** `npm run qa` (P0/P1 severity, CI exit codes)
-- Gate: `npm run audit`
+- **Gate:** `npm run audit` (lint, Knip, UI depth, governance tree, types, build)
 - QA system spec: `docs/planning/perovo-qa-system-prompt.md`
 
 ## Related docs

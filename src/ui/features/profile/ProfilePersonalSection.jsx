@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Caption, Body, Button, inputClassName } from "../../index.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
@@ -82,6 +82,7 @@ export default function ProfilePersonalSection({
   part = "full",
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const userMode = resolveUserMode(settings);
@@ -259,22 +260,16 @@ export default function ProfilePersonalSection({
             </ProfileField>
 
             {userMode === "salaried" && (
-              <ProfileField label={t("profile.household")} hint={t("profile.householdHint")}>
-                <select
-                  className={profileInputClass}
-                  value={settings.householdScope === "family" ? "family" : "single"}
-                  onChange={(e) => {
-                    const family = e.target.value === "family";
-                    updateSettings({
-                      householdScope: family ? "family" : "single",
-                      activeProfileId: "default",
-                    });
-                  }}
+              <Caption className="block mt-2">
+                {t("settings.household.personalHint")}{" "}
+                <button
+                  type="button"
+                  className="ct-suggestion-link"
+                  onClick={() => navigate("/you/household")}
                 >
-                  <option value="single">{t("profile.householdSingle")}</option>
-                  <option value="family">{t("profile.householdFamily")}</option>
-                </select>
-              </ProfileField>
+                  {t("settings.household.personalLink")}
+                </button>
+              </Caption>
             )}
           </SettingsGroupContent>
         </SettingsGroup>

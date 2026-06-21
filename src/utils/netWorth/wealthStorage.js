@@ -21,6 +21,17 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [emi]
  * @property {string} [profileId]
  * @property {string} [commitmentId] bill-derived rows link back to commitments
+ * @property {number} [purchaseYear]
+ * @property {number} [purchasePrice]
+ * @property {string} [location]
+ * @property {string} [areaUnit]
+ * @property {number} [areaMeasure]
+ * @property {number} [weightGrams]
+ * @property {number} [purityKarat]
+ * @property {string} [vehicleMake]
+ * @property {number} [vehicleYear]
+ * @property {string} [aiInsight]
+ * @property {string} [aiInsightDate]
  * @property {number} createdAt
  * @property {number} updatedAt
  */
@@ -75,9 +86,16 @@ function defaultState() {
 export function normalizeWealthEntry(raw) {
   const r = /** @type {Record<string, unknown>} */ (raw || {});
   const kind = r.kind === "liability" ? "liability" : "asset";
-  const categoryId = String(r.categoryId || (kind === "asset" ? "other" : "other"));
-  const cat = kind === "asset" ? getAssetCategory(categoryId) : getLiabilityCategory(categoryId);
+  const rawCategoryId = String(r.categoryId || (kind === "asset" ? "other" : "other"));
+  const normalizedCategoryId = rawCategoryId === "property" ? "property_residential" : rawCategoryId;
+  const cat = kind === "asset" ? getAssetCategory(normalizedCategoryId) : getLiabilityCategory(rawCategoryId);
   const now = Date.now();
+
+  /** @param {unknown} v */
+  const optStr = (v) => (v != null && String(v).trim() ? String(v).trim() : undefined);
+  /** @param {unknown} v */
+  const optNum = (v) => (v != null && v !== "" ? Math.max(0, Number(v) || 0) : undefined);
+
   return {
     id: String(r.id || now),
     kind,
@@ -91,6 +109,18 @@ export function normalizeWealthEntry(raw) {
     interestRate: r.interestRate != null ? Math.max(0, Number(r.interestRate) || 0) : undefined,
     emi: r.emi != null ? Math.max(0, Number(r.emi) || 0) : undefined,
     profileId: r.profileId ? String(r.profileId) : "default",
+    commitmentId: r.commitmentId ? String(r.commitmentId) : undefined,
+    purchaseYear: optNum(r.purchaseYear),
+    purchasePrice: optNum(r.purchasePrice),
+    location: optStr(r.location),
+    areaUnit: optStr(r.areaUnit),
+    areaMeasure: optNum(r.areaMeasure),
+    weightGrams: optNum(r.weightGrams),
+    purityKarat: optNum(r.purityKarat),
+    vehicleMake: optStr(r.vehicleMake),
+    vehicleYear: optNum(r.vehicleYear),
+    aiInsight: optStr(r.aiInsight),
+    aiInsightDate: optStr(r.aiInsightDate),
     createdAt: Number(r.createdAt) || now,
     updatedAt: Number(r.updatedAt) || now,
   };

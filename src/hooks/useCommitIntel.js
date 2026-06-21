@@ -118,7 +118,7 @@ export function useCommitIntel() {
     const pressureAnalysis = computePressureAnalysis({
       commitments,
       income,
-      getEffectiveStatus,
+      getEffectiveStatus: (c) => getEffectiveStatus(c),
       monthlySnapshots,
       lendings,
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),

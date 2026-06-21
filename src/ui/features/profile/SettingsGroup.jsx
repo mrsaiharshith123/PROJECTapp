@@ -86,9 +86,7 @@ export function SettingsGroupRow({
       ) : value ? (
         <span className="ct-settings-row-value">{value}</span>
       ) : onClick ? (
-        <span className="ct-settings-chevron" aria-hidden>
-          ›
-        </span>
+        <CtIcon name="chevron-right" size={14} className="ct-settings-chevron-icon shrink-0" aria-hidden />
       ) : null}
     </Tag>
   );

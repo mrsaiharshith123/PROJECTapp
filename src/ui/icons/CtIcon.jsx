@@ -16,7 +16,13 @@
  */
 import {
   ArrowLeft,
+  ArrowRight,
   ArrowsClockwise,
+  CaretRight,
+  ClockCounterClockwise,
+  Crown,
+  Info,
+  MapPin,
   Backpack,
   Bank,
   Bell,
@@ -78,7 +84,14 @@ import { cn } from "../utils/cn.js";
 /** @type {Record<string, import('@phosphor-icons/react').Icon>} */
 const ICON_REGISTRY = {
   "arrow-left": ArrowLeft,
+  "arrow-right": ArrowRight,
   "arrows-clockwise": ArrowsClockwise,
+  "caret-right": CaretRight,
+  "chevron-right": CaretRight,
+  "clock-counter-clockwise": ClockCounterClockwise,
+  crown: Crown,
+  info: Info,
+  "map-pin": MapPin,
   backpack: Backpack,
   bank: Bank,
   bell: Bell,

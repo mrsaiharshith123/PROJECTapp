@@ -219,7 +219,10 @@ export const FEATURES = [
     id: "paycheck",
     name: "Paycheck & salary timing",
     layer: "product",
-    ui: ["ui/features/pages/PaycheckPage.jsx", "ui/features/paycheck/"],
+    ui: [
+      "ui/features/analytics/PaycheckBreakdown.jsx",
+      "ui/features/dashboard/CashflowCalendarStrip.jsx",
+    ],
     engines: ["engines/paycheckTimeline.js", "engines/salaryBreakdown.js", "engines/cashflowCalendar.js"],
     hooks: [],
   },

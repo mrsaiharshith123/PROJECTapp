@@ -124,6 +124,20 @@ export default function HomeOverviewCard() {
         <p className={`ct-body !text-xs leading-snug ${guidance?.isTight ? "ct-text-warning" : "ct-text-secondary"}`}>
           {spendTip}
         </p>
+      ) : income <= 0 ? (
+        <p className="ct-body !text-xs leading-snug ct-text-warning">
+          {t("scoreDetail.setIncomeHint")}{" "}
+          <button
+            type="button"
+            className="ct-link !text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate("/you/money");
+            }}
+          >
+            {t("profile.setIncome")}
+          </button>
+        </p>
       ) : null}
       {momentum ? (
         <p className="ct-body !text-xs leading-snug ct-row gap-1.5 items-center">
@@ -190,7 +204,7 @@ export default function HomeOverviewCard() {
         statusLine={statusLine}
         privacyMode={privacyMode}
         onTogglePrivacy={togglePrivacyMode}
-        onClick={() => navigate("/money/insights")}
+        onClick={() => navigate("/score-detail")}
       />
       {isFamily ? (
         <HouseholdDependentsEditorModal open={editHouseholdOpen} onClose={() => setEditHouseholdOpen(false)} />

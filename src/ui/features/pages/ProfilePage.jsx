@@ -5,7 +5,6 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
-import ProfileQuickStatsStrip from "../profile/hub/ProfileQuickStatsStrip.jsx";
 import ProfileUpgradeRow from "../profile/hub/ProfileUpgradeRow.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
@@ -103,8 +102,6 @@ const Profile = () => {
         onOpenIncome={() => navigate("/you/money")}
         incomeMissing={incomeMissing}
       />
-
-      <ProfileQuickStatsStrip />
 
       <ProfileUpgradeRow settings={settings} />
 

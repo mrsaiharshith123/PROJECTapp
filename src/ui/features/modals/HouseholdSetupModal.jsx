@@ -8,9 +8,9 @@ import { normalizeInviteCode, householdMemberLimit } from "../../../engines/hous
 
 /**
  * Create or join a shared household room (requires sign-in + Supabase).
- * @param {{ open: boolean, onClose: () => void }} props
+ * @param {{ open: boolean, onClose: () => void, onComplete?: () => void }} props
  */
-export default function HouseholdSetupModal({ open, onClose }) {
+export default function HouseholdSetupModal({ open, onClose, onComplete }) {
   const { t } = useTranslation();
   const { settings, updateSettings } = usePerovo();
   const { user, isLoggedIn } = useAuth();
@@ -29,6 +29,8 @@ export default function HouseholdSetupModal({ open, onClose }) {
   const applyRoom = (result) => {
     const limit = Number(result.memberLimit) || householdMemberLimit(settings);
     updateSettings({
+      userMode: "salaried",
+      householdScope: "family",
       householdRoomId: result.roomId,
       householdInviteCode: result.inviteCode,
       householdRoomRole: result.role,
@@ -42,6 +44,7 @@ export default function HouseholdSetupModal({ open, onClose }) {
       activeProfileId: "default",
       profiles: [{ id: "default", label: t("profile.defaultProfileLabel"), color: "indigo" }],
     });
+    onComplete?.();
     onClose();
   };
 

@@ -1,14 +1,31 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useProfileScoreGuide } from "../../../hooks/useProfileScoreGuide.js";
 import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
-import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { joinEngineMessages } from "../../../i18n/engineLabels.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Card, PageHeader, Body, Caption, InfoTip } from "../../index.js";
-import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
+import { Body, Caption, CtIcon } from "../../index.js";
+import YouSubPageShell from "../profile/pages/YouSubPageShell.jsx";
+
+function chipVariant(tone) {
+  if (tone === "ok") return "teal";
+  if (tone === "mid") return "amber";
+  return "danger";
+}
+
+function chipColor(tone) {
+  if (tone === "ok") return "#2dd4bf";
+  if (tone === "mid") return "#fbbf24";
+  return "#f87171";
+}
+
+function toneColor(tone) {
+  if (tone === "success" || tone === "ok") return "#2dd4bf";
+  if (tone === "warning" || tone === "mid") return "#fbbf24";
+  return "#f87171";
+}
 
 function formatDue(dateStr) {
   if (!dateStr) return "";
@@ -22,66 +39,48 @@ function formatDue(dateStr) {
   }
 }
 
-function chipVariant(tone) {
-  if (tone === "ok") return "teal";
-  if (tone === "mid") return "amber";
-  return "danger";
-}
-
 export default function ProfileScoresDetailPage() {
   const { t } = useTranslation();
   const { privacyMode } = useNetWorth();
   const guide = useProfileScoreGuide();
   const perovo = usePerovoScore();
-  const lendingTrust = guide.detailScores.find((s) => s.id === "lending-trust");
+  const [openId, setOpenId] = useState(null);
+  const [showPayoff, setShowPayoff] = useState(false);
 
   return (
-    <div className="ct-page ct-stack pb-8">
-      <Link to="/profile" className="ct-link text-sm">
-        {t("profileHub.scoresBack")}
-      </Link>
-      <PageHeader
-        title={t("perovoScore.title")}
-        subtitle={t("perovoScore.detailSubtitle")}
-      />
-
-      <MetricOwnerLink
-        label={t("perovoScore.title")}
-        value={privacyMode ? undefined : `${perovo.score}/100`}
-        to="/"
-      />
-
+    <YouSubPageShell titleKey="perovoScore.title">
       <div className="ct-grid-2 gap-2">
-        {PEROVO_PILLARS.map((pillar) => {
-          const data = perovo.pillars[pillar.id];
-          return (
-            <div key={pillar.id} className="ct-stat-tile">
-              <p className="ct-stat-label">{t(`perovoScore.pillar.${pillar.id}`)}</p>
-              <p className="ct-stat-value ct-numeral">{privacyMode ? "•••" : data?.score ?? 0}</p>
-            </div>
-          );
-        })}
+        {guide.heroChips.map((chip) => (
+          <div key={chip.id} className={`ct-stat-tile ${chipVariant(chip.tone)} text-center py-3 px-2`}>
+            <p className="ct-stat-label">{t(chip.labelKey)}</p>
+            <p
+              className="ct-stat-value ct-numeral mt-1"
+              style={{ color: chipColor(chip.tone) }}
+            >
+              {privacyMode
+                ? "•••"
+                : chip.id === "pressure"
+                  ? `${chip.detailValue ?? 0}`
+                  : chip.value}
+            </p>
+          </div>
+        ))}
+        <div className={`ct-stat-tile ${chipVariant(perovo.tier?.tone === "success" ? "ok" : perovo.tier?.tone === "warning" ? "mid" : "risk")} text-center py-3 px-2`}>
+          <p className="ct-stat-label">{t("perovoScore.title")}</p>
+          <p className="ct-stat-value ct-numeral mt-1">{privacyMode ? "•••" : `${perovo.score}`}</p>
+        </div>
       </div>
 
-      <div className="ct-stack-sm px-1">
-        <Body className="ct-body-strong text-sm">{t("scores.pillars.title")}</Body>
-        <Caption className="block">{t("scores.pillars.cashflow")}</Caption>
-        <Caption className="block">{t("scores.pillars.savings")}</Caption>
-        <Caption className="block">{t("scores.pillars.debt")}</Caption>
-        <Caption className="block">{t("scores.pillars.protection")}</Caption>
+      <div className="ct-stat-tile mt-3">
+        <p className="ct-stat-label">{t("profileHub.scoresFreeCashLabel")}</p>
+        <p className="ct-stat-value" style={{ color: "#fcd34d" }}>
+          {privacyMode ? "••••" : guide.formatFreeMoney}
+        </p>
       </div>
-
-      <Body className="ct-body-strong text-sm">{t("profileHub.scoresDetailTitle")}</Body>
-
-      <Caption className="block">
-        {t("profileHub.scoresFreeCash", {
-          amount: privacyMode ? "•••" : guide.formatFreeMoney,
-        })}
-      </Caption>
 
       {guide.narrative &&
         (guide.narrative.strengths?.length > 0 || guide.narrative.weaknesses?.length > 0) && (
-          <Card variant="flat" className="ct-stack-sm">
+          <div className="ct-analytics-card mt-3 ct-stack-sm">
             {guide.narrative.strengths?.length > 0 && (
               <Caption className="block">
                 <span className="ct-text-success font-semibold">{t("pulse.strengths")} </span>
@@ -94,11 +93,11 @@ export default function ProfileScoresDetailPage() {
                 {joinEngineMessages(t, guide.narrative.weaknesses)}
               </Caption>
             )}
-          </Card>
+          </div>
         )}
 
-      {guide.focusFirst && (
-        <div className="ct-hero-card survival relative ct-stack-sm">
+      {guide.focusFirst ? (
+        <div className="ct-hero-card survival relative ct-stack-sm mt-3">
           <div className="ct-hero-glow amber" aria-hidden />
           <Body className="ct-body-strong relative">{t("profileHub.scoreFix.payFirst")}</Body>
           <Caption className="block font-semibold relative">{guide.focusFirst.name}</Caption>
@@ -106,109 +105,93 @@ export default function ProfileScoresDetailPage() {
             {guide.focusFirst.message || t("profileHub.scoreFix.payFirstHint")}
           </Caption>
         </div>
-      )}
+      ) : null}
 
-      <div className="ct-stack">
+      <div className="mt-4 ct-stack-sm">
         {guide.detailScores.map((score) => (
-          <Card key={score.id} variant="flat" className="ct-stack-sm">
-            <div className="ct-row-between gap-2 flex-wrap items-start">
-              <Body className="ct-body-strong inline-flex items-center gap-1">
-                {t(score.titleKey)}
-                {score.helpKey ? <InfoTip text={t(score.helpKey)} /> : null}
-              </Body>
-              {score.id === "pressure" && !score.emptyKey ? (
-                <div className={`ct-stat-tile ${chipVariant(score.tone === "success" ? "ok" : score.tone === "warning" ? "mid" : "risk")} shrink-0 text-right min-w-[7rem]`}>
-                  <p className="ct-stat-label">{t("pulse.pressureHint")}</p>
-                  <p className="ct-stat-value">
-                    {score.statusLabel ? translatePressureLabel(t, score.statusLabel) : score.value}
+          <div key={score.id} className="ct-score-accordion">
+            <button
+              type="button"
+              className="ct-score-accordion-head"
+              onClick={() => setOpenId(openId === score.id ? null : score.id)}
+            >
+              <div className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-medium text-[var(--ct-text)]">{t(score.titleKey)}</p>
+                {(score.statusKey || score.statusLabel) && (
+                  <p className="text-[11px] mt-0.5" style={{ color: toneColor(score.tone) }}>
+                    {score.statusKey ? t(score.statusKey) : translatePressureLabel(t, score.statusLabel)}
                   </p>
-                  <p className="ct-stat-label mt-0.5 ct-numeral">{score.value}</p>
-                </div>
-              ) : score.id === "health" && score.statusKey && !score.emptyKey ? (
-                <div className={`ct-stat-tile ${chipVariant(guide.primary.health.tone)} shrink-0 text-right min-w-[7rem]`}>
-                  <p className="ct-stat-label">{t("scores.health.hint")}</p>
-                  <p className="ct-stat-value">{t(score.statusKey)}</p>
-                  <p className="ct-stat-label mt-0.5 ct-numeral">{score.value}</p>
-                </div>
-              ) : (
-                <div className="ct-stat-tile indigo shrink-0 text-right min-w-[7rem]">
-                  <p className="ct-stat-value ct-numeral">
-                    {score.emptyKey ? t(score.emptyKey) : score.value}
-                  </p>
-                </div>
-              )}
-            </div>
-            {score.id !== "pressure" && score.id !== "health" && (score.statusKey || score.statusLabel) && (
-              <Caption className="block">
-                {score.statusKey ? t(score.statusKey) : translatePressureLabel(t, score.statusLabel)}
-              </Caption>
-            )}
-            {score.extraLine && (
-              <Caption className="block">
-                {t(score.extraLine.key, score.extraLine.params ?? undefined)}
-              </Caption>
-            )}
-            {score.subScores?.length > 0 && (
-              <div className="ct-grid-2 gap-2">
-                {score.subScores.map((sub) => (
-                  <div key={sub.labelKey} className="ct-stat-tile">
-                    <p className="ct-stat-label">{t(sub.labelKey)}</p>
-                    <p className="ct-stat-value ct-numeral">{sub.value}</p>
-                  </div>
-                ))}
+                )}
               </div>
-            )}
+              <p className="ct-numeral text-lg font-semibold shrink-0" style={{ color: toneColor(score.tone) }}>
+                {score.emptyKey ? t(score.emptyKey) : score.value}
+              </p>
+              <CtIcon
+                name={openId === score.id ? "caret-up" : "caret-down"}
+                size={14}
+                className="text-[var(--ct-text-muted)] shrink-0"
+              />
+            </button>
 
-            <div className="ct-stack-sm mt-1 pt-2 border-t border-white/5">
-              <Caption className="block font-semibold">{t("profileHub.scoreDetail.why")}</Caption>
-              <ul className="list-disc pl-4 space-y-1">
+            {openId === score.id ? (
+              <div className="ct-score-accordion-body">
+                <p className="ct-score-accordion-kicker">{t("profileHub.scoreDetail.why")}</p>
                 {score.whyKeys.map((key) => (
-                  <li key={key}>
-                    <Caption className="block">{t(key)}</Caption>
-                  </li>
+                  <p key={key} className="ct-score-accordion-line">
+                    {t(key)}
+                  </p>
                 ))}
-              </ul>
-            </div>
-
-            <div className="ct-stack-sm">
-              <Caption className="block font-semibold">{t("profileHub.scoreDetail.fix")}</Caption>
-              <ul className="list-disc pl-4 space-y-1">
+                <p className="ct-score-accordion-kicker mt-2">{t("profileHub.scoreDetail.fix")}</p>
                 {score.fixKeys.map((key) => (
-                  <li key={key}>
-                    <Caption className="block">{t(key)}</Caption>
-                  </li>
+                  <p key={key} className="ct-score-accordion-line ct-score-accordion-line-fix">
+                    {t(key)}
+                  </p>
                 ))}
-              </ul>
-            </div>
-          </Card>
+                {score.subScores?.length > 0 ? (
+                  <div className="ct-row gap-2 flex-wrap mt-2">
+                    {score.subScores.map((sub) => (
+                      <span key={sub.labelKey} className="ct-score-sub-chip">
+                        {t(sub.labelKey)}: <strong>{sub.value}</strong>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         ))}
       </div>
 
-      {guide.payoffOrder.length > 0 && (
-        <Card className="ct-stack-sm">
-          <Body className="ct-body-strong">{t("profileHub.scorePayOrder")}</Body>
-          <Caption className="block mb-2">{t("profileHub.scorePayOrderHint")}</Caption>
-          <ol className="space-y-2">
-            {guide.payoffOrder.map((row, i) => (
-              <li key={`${row.name}-${i}`} className="ct-row-between gap-2 text-sm">
-                <span>
-                  <span className="font-semibold">{i + 1}.</span> {row.name}
-                  {row.dueDate ? (
-                    <Caption className="inline ml-1 opacity-75">
-                      ({formatDue(row.dueDate)})
-                    </Caption>
-                  ) : null}
-                </span>
-                <span className="ct-numeral shrink-0">{formatInr(row.amount || 0)}</span>
-              </li>
-            ))}
-          </ol>
-        </Card>
-      )}
-
-      <Caption className="block text-center opacity-75">
-        {t("help.healthScore")}
-      </Caption>
-    </div>
+      {guide.payoffOrder.length > 0 ? (
+        <>
+          <button
+            type="button"
+            className="ct-btn ct-btn-ghost w-full mt-3"
+            onClick={() => setShowPayoff((v) => !v)}
+          >
+            {showPayoff ? t("scoreDetail.hidePayoff") : t("scoreDetail.showPayoff")}
+          </button>
+          {showPayoff ? (
+            <div className="ct-analytics-card mt-2 ct-stack-sm">
+              <Body className="ct-body-strong">{t("profileHub.scorePayOrder")}</Body>
+              <Caption className="block mb-2">{t("profileHub.scorePayOrderHint")}</Caption>
+              <ol className="space-y-2">
+                {guide.payoffOrder.map((row, i) => (
+                  <li key={`${row.name}-${i}`} className="ct-row-between gap-2 text-sm">
+                    <span>
+                      <span className="font-semibold">{i + 1}.</span> {row.name}
+                      {row.dueDate ? (
+                        <Caption className="inline ml-1 opacity-75">({formatDue(row.dueDate)})</Caption>
+                      ) : null}
+                    </span>
+                    <span className="ct-numeral shrink-0">{formatInr(row.amount || 0)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </YouSubPageShell>
   );
 }

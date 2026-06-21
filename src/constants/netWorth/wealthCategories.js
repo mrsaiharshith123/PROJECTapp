@@ -15,7 +15,9 @@ export const ASSET_CATEGORIES = [
   { id: "rd", labelKey: "netWorth.asset.rd", icon: "calendar-check", tier: "locked", indian: true },
   { id: "gold", labelKey: "netWorth.asset.gold", icon: "coins", tier: "semi-liquid", indian: true },
   { id: "crypto", labelKey: "netWorth.asset.crypto", icon: "currency-btc", tier: "high-risk" },
-  { id: "property", labelKey: "netWorth.asset.property", icon: "house-line", tier: "locked" },
+  { id: "property_residential", labelKey: "netWorth.asset.propertyResidential", icon: "house", tier: "locked", indian: true },
+  { id: "property_land", labelKey: "netWorth.asset.propertyLand", icon: "push-pin", tier: "locked", indian: true },
+  { id: "property_commercial", labelKey: "netWorth.asset.propertyCommercial", icon: "buildings", tier: "locked", indian: true },
   { id: "vehicle", labelKey: "netWorth.asset.vehicle", icon: "car", tier: "locked" },
   { id: "pf_epf", labelKey: "netWorth.asset.pfEpf", icon: "briefcase", tier: "locked", indian: true },
   { id: "business", labelKey: "netWorth.asset.business", icon: "buildings", tier: "locked" },
@@ -42,7 +44,8 @@ const LIABILITY_MAP = new Map(LIABILITY_CATEGORIES.map((c) => [c.id, c]));
 
 /** @param {string} id */
 export function getAssetCategory(id) {
-  return ASSET_MAP.get(id) || ASSET_CATEGORIES[ASSET_CATEGORIES.length - 1];
+  const resolved = id === "property" ? "property_residential" : id;
+  return ASSET_MAP.get(resolved) || ASSET_CATEGORIES[ASSET_CATEGORIES.length - 1];
 }
 
 /** @param {string} id */

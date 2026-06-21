@@ -96,6 +96,18 @@ const VIEW_DEFAULT_TYPE = {
 const VARIABLE_SERIES = new Set(["variableLogged", "variableSpent"]);
 const SWIPE_PX = 48;
 
+function seriesHasValues(rows, keys) {
+  if (!rows?.length) return false;
+  return rows.some((row) => keys.some((key) => Number(row[key]) > 0));
+}
+
+function pickChartView(forecastSeries, paymentsData, pressureTrend) {
+  if (seriesHasValues(forecastSeries, ["due", "variableSpent", "free"])) return "forecast";
+  if (seriesHasValues(paymentsData, ["billsPaid", "variableLogged", "amount"])) return "payments";
+  if (pressureTrend?.length) return "pressure";
+  return "forecast";
+}
+
 export default function AnalyticsChartPanel({
   forecastSeries,
   paymentsData,
@@ -111,7 +123,7 @@ export default function AnalyticsChartPanel({
 
   const views = CHART_VIEWS;
 
-  const [viewId, setViewId] = useState("forecast");
+  const [viewId, setViewId] = useState(() => pickChartView(forecastSeries, paymentsData, pressureTrend));
   const activeId = views.some((v) => v.id === viewId) ? viewId : "forecast";
   const chartType = chartTypes[activeId] || VIEW_DEFAULT_TYPE[activeId] || "bar";
   const plotHeight = 272;

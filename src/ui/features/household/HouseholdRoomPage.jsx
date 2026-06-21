@@ -19,7 +19,6 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { normalizeInviteCode } from "../../../engines/householdRoom.js";
-import RoomChatPanel from "./RoomChatPanel.jsx";
 import {
   createHouseholdRoom,
   joinHouseholdRoom,
@@ -74,7 +73,6 @@ export default function HouseholdRoomPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [leaveConfirm, setLeaveConfirm] = useState(false);
   const [joinCelebration, setJoinCelebration] = useState(false);
-  const [roomTab, setRoomTab] = useState("activity");
 
   const isFamily = isSalariedFamily(settings);
 
@@ -329,31 +327,6 @@ export default function HouseholdRoomPage() {
         </Stack>
       ) : (
         <Stack gap="md" className="ct-list-animate">
-          <div className="ct-row gap-2" role="tablist">
-            <Button
-              type="button"
-              variant={roomTab === "activity" ? "primary" : "ghost"}
-              size="sm"
-              onClick={() => setRoomTab("activity")}
-            >
-              {t("household.room.tabActivity")}
-            </Button>
-            <Button
-              type="button"
-              variant={roomTab === "chat" ? "primary" : "ghost"}
-              size="sm"
-              onClick={() => setRoomTab("chat")}
-            >
-              {t("household.room.tabChat")}
-            </Button>
-          </div>
-
-          {roomTab === "chat" ? (
-            <Card>
-              <RoomChatPanel />
-            </Card>
-          ) : (
-            <>
           <Card className="ct-household-room-active">
             <div className="ct-row-between gap-2 flex-wrap items-start">
               <Heading level={3} className="!text-lg">
@@ -436,8 +409,6 @@ export default function HouseholdRoomPage() {
               </Card>
             )}
           </div>
-            </>
-          )}
         </Stack>
       )}
     </div>

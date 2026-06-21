@@ -1,15 +1,21 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/capgo-notify-only.js", "src/capgo-notify-update-test-only.js", "src/main.jsx", "src/main-update-test.jsx", "public/notification-handler.js"],
-  "project": ["src/**/*.{js,jsx}", "public/notification-handler.js"],
+  "entry": [
+    "src/capgo-notify-only.js",
+    "src/capgo-notify-update-test-only.js",
+    "src/main.jsx",
+    "src/main-update-test.jsx",
+    "public/notification-handler.js",
+    "src/**/*.test.js",
+    "tests/**/*.test.mjs"
+  ],
+  "project": ["src/**/*.{js,jsx}", "public/notification-handler.js", "tests/**/*.test.mjs"],
   "ignore": [
     "scripts/**",
     "dist/**",
-    "src/engines/__tests__/**",
-    "src/utils/__tests__/**",
     "src/governance/**"
   ],
-  "ignoreDependencies": ["sharp", "pdfkit", "gh-pages"],
+  "ignoreDependencies": ["sharp", "pdfkit", "gh-pages", "@capacitor/ios"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {
     "src/engines/**": ["exports"],

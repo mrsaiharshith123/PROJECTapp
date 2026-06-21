@@ -1,6 +1,27 @@
 # QA findings snapshot
 
-Code-review audit run **21 June 2026** (v1.0.5 chaos-first QA suite + gap analysis completion).
+Code-review audit run **22 June 2026** (full `npm run audit` pass after score/analytics/asset OS + dead-code cleanup).
+
+## Audit gate (22 June 2026)
+
+| Check | Result |
+|-------|--------|
+| `npm run audit` | ✅ **0 blocking errors** |
+| `npm run audit:tree` | ✅ 0 errors |
+| `npm run audit:ui-depth` | ✅ 0 issues |
+| `npm run audit:docs-sync` | ✅ Current |
+| `npm test` | ✅ 105/105 |
+| `npm run typecheck` | ✅ Clean |
+
+**Advisories (non-blocking):** 2 moderate npm audit deps, i18n English fallbacks (~2379 keys), large i18n bundle chunk, ~400 governance warnings (large pages, a11y, empty states), 91 engines without dedicated test files, 4 merge suggestions.
+
+## Dead code removed (22 June 2026)
+
+Unreachable UI deleted (no `App.jsx` import chain): `AnalyticsScoreTiles`, `FamilyCalendarWidget`, `FestivalPlannerCard`, `PaycheckPage`, `ProfileWealthAnalyticsPage`, `PaycheckTimelinePanel`, `SafeToSpendCard`.
+
+Unused services/utils removed: `otpConfirmation.js`, `lendingProfileShare.js` (deal share uses `lendingShareCard.js`).
+
+**Wired into product:** `netWorthBenchmark.js` → Wealth tab; `recurringSpendDetect.js` → transaction insights.
 
 ## P0 — ship blockers
 

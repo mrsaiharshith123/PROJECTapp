@@ -38,6 +38,7 @@ const Add = lazy(() => import("./ui/features/pages/AddPage.jsx"));
 const Lending = lazy(() => import("./ui/features/pages/LendingPage.jsx"));
 const Profile = lazy(() => import("./ui/features/pages/ProfilePage.jsx"));
 const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
+const ScoreDetail = lazy(() => import("./ui/features/pages/ScoreDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
 const MoneyShell = lazy(() => import("./ui/features/pages/MoneyShellPage.jsx"));
 const MoneyWealth = lazy(() => import("./ui/features/pages/MoneyWealthPage.jsx"));
@@ -133,6 +134,7 @@ function MainShell() {
             <Route path="/net-worth" element={<Navigate to="/money/wealth" replace />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/scores" element={<ProfileScoresDetail />} />
+            <Route path="/score-detail" element={<ScoreDetail />} />
             <Route path="/you/personal" element={<YouPersonalPage />} />
             <Route path="/you/account" element={<YouAccountPage />} />
             <Route path="/you/money" element={<YouMoneyPage />} />

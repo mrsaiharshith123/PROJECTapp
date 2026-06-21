@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { differenceInMonths, format, parseISO } from "date-fns";
 import { Card } from "../primitives/Card.jsx";
 import { Button } from "../primitives/Button.jsx";
@@ -11,7 +12,6 @@ import { useTranslation } from "../../i18n/I18nProvider.js";
 import { translateBillStatus, translateRepeatType } from "../../i18n/domainLabels.js";
 import { formatLocaleDate } from "../../i18n/formatLocale.js";
 import { cn } from "../utils/cn.js";
-import { BbpsPayButton } from "./BbpsPayButton.jsx";
 
 const LOAN_CATEGORIES = new Set(["EMI", "Loan", "Credit Card", "BNPL"]);
 
@@ -98,6 +98,7 @@ export function BillCard({
   health = null,
 }) {
   const { t, locale } = useTranslation();
+  const navigate = useNavigate();
   const statusIconRef = useRef(null);
   const prevMonthPaid = useRef(monthPaid);
 
@@ -200,6 +201,19 @@ export function BillCard({
 
       <CommitmentProgress commitment={item} effectiveStatus={eff} />
 
+      {(item.category === "EMI" || item.category === "Loan") && eff !== "paid" ? (
+        <button
+          type="button"
+          className="ct-suggestion-link mx-4 mb-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate("/plan", { state: { openTool: "loan" } });
+          }}
+        >
+          {t("bill.loanPrepaySuggestion")}
+        </button>
+      ) : null}
+
       {monthPaid && <p ref={statusIconRef} className="ct-bill-paid-banner ct-celebrate">{t("bill.paidBanner")}</p>}
 
       {(eff === "pending" || eff === "overdue") && (
@@ -208,7 +222,6 @@ export function BillCard({
             {t("common.pay")} {"\u20b9"}
             {cycleDue.toLocaleString("en-IN")}
           </Button>
-          <BbpsPayButton commitment={item} cycleDue={cycleDue} />
           <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
             {t("common.edit")}
           </Button>

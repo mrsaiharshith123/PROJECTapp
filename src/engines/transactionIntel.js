@@ -3,6 +3,7 @@ import { detectLifestyleInflation } from "./lifestyleInflation.js";
 import { buildDueHeatmap } from "./analyticsSeries.js";
 import { sumDailySpendsInRange, dailySpendByLifeCategory, dailySpendByMerchant } from "../utils/dailySpends.js";
 import { groupCommitmentsByMerchant } from "../utils/merchantNormalize.js";
+import { detectRecurringFromDailySpends } from "./recurringSpendDetect.js";
 
 function analyzeDailySpendFlow(dailySpends, todayStr) {
   const start7 = format(subDays(parseISO(`${todayStr}T12:00:00`), 6), "yyyy-MM-dd");
@@ -70,6 +71,18 @@ function detectMerchantPressure(commitments, dailySpends, todayStr) {
   }
   if (flow.entryCount >= 5 && flow.weekTotal >= 500 && flow.weekTotal / flow.entryCount < 400) {
     insights.push({ id: "txn-small-leaks", tone: "info" });
+  }
+
+  const recurring = detectRecurringFromDailySpends(dailySpends, {
+    todayStr,
+    minOccurrences: 3,
+  });
+  if (recurring.length >= 2) {
+    insights.push({
+      id: "txn-recurring-merchants",
+      tone: "info",
+      params: { count: recurring.length },
+    });
   }
 
   return { flow, merchantInsights: insights };

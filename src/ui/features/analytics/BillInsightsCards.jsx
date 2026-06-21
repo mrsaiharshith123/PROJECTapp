@@ -6,13 +6,14 @@ import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { computeBiggestOpenCategory, computeHighestRecurring } from "../../../utils/billInsightStats.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { cn } from "../../utils/cn.js";
 
 /**
- * @param {{ eyebrow: string, title?: import('react').ReactNode, detail?: string, empty?: string, icon?: string, variant?: string, iconTone?: string }} props
+ * @param {{ eyebrow: string, title?: import('react').ReactNode, detail?: string, empty?: string, icon?: string, tone?: "positive"|"warning"|"danger", iconTone?: string }} props
  */
-function InsightStatCard({ eyebrow, title, detail, empty, icon, variant = "indigo", iconTone = "violet" }) {
+function InsightStatCard({ eyebrow, title, detail, empty, icon, tone = "positive", iconTone = "violet" }) {
   return (
-    <div className={`ct-stat-tile ${variant}`}>
+    <div className={cn("ct-stat-tile ct-insight-stat", tone === "warning" ? "warning" : tone === "danger" ? "danger" : "positive", iconTone && `icon-${iconTone}`)}>
       <div className="ct-row gap-2 items-start">
         {icon ? (
           <span className={`ct-icon-tile ct-icon-tile-sm ${iconTone} shrink-0`} aria-hidden>
@@ -54,7 +55,7 @@ export default function BillInsightsCards() {
     <div className="ct-grid-2 gap-2">
       <InsightStatCard
         eyebrow={t("home.biggestCategory")}
-        variant="indigo"
+        tone="positive"
         iconTone="violet"
         icon={biggestCategory ? getCategoryById(biggestCategory.name).icon : undefined}
         title={biggestCategory ? getCategoryById(biggestCategory.name).label : undefined}
@@ -63,7 +64,7 @@ export default function BillInsightsCards() {
       />
       <InsightStatCard
         eyebrow={t("home.highestRecurring")}
-        variant="amber"
+        tone="warning"
         iconTone="amber"
         icon="arrows-clockwise"
         title={highestRecurring?.name}

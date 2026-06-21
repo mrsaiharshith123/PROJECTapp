@@ -9,6 +9,8 @@ import { NetWorthGrowthSparkline } from "../../patterns/NetWorthGrowthSparkline.
 import { buildWealthDailySeries } from "../../../utils/wealthDailySeries.js";
 import { resolveDataProfileScope } from "../../../constants/modeExperience.js";
 import { useMemo } from "react";
+import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
+import { benchmarkNetWorth } from "../../../engines/netWorthBenchmark.js";
 import {
   LiquidityPanel,
   HealthScorePanel,
@@ -18,11 +20,13 @@ import {
 } from "../netWorth/NetWorthIntelligencePanels.jsx";
 import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 import SafetyPlannerPanel from "../tools/SafetyPlannerPanel.jsx";
+import PhysicalAssetsSection from "../netWorth/PhysicalAssetsSection.jsx";
 
 /** Net worth intelligence — emergency readiness, liquidity, life score, pressure, allocation charts. */
 export default function WealthAnalyticsSection({
   showSimulation = false,
   showPressureAsLink = false,
+  ledgerSlot = null,
 }) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
@@ -30,6 +34,16 @@ export default function WealthAnalyticsSection({
   const intel = useNetWorthIntel();
   const { privacyMode, dailySnapshots, entries } = useNetWorth();
   const profileScope = resolveDataProfileScope(settings);
+  const income = combinedMonthlyIncome(settings);
+
+  const benchmark = useMemo(() => {
+    if (privacyMode) return null;
+    return benchmarkNetWorth({
+      netWorth: intel.core?.netWorth ?? 0,
+      monthlyIncome: income,
+      age: settings.age,
+    });
+  }, [privacyMode, intel.core?.netWorth, income, settings.age]);
 
   const sparkSeries = useMemo(
     () =>
@@ -96,9 +110,26 @@ export default function WealthAnalyticsSection({
         </div>
       </div>
 
+      <AllocationCharts intel={intel} privacyMode={privacyMode} />
+
+      {ledgerSlot}
+
+      <PhysicalAssetsSection />
+
       <SafetyPlannerPanel />
       <LiquidityPanel liquidity={intel.liquidity} privacyMode={privacyMode} totalAssets={intel.core?.totalAssets ?? 0} />
       <HealthScorePanel lifeScore={intel.lifeScore} />
+      {benchmark?.estimatedPercentile != null && !privacyMode ? (
+        <div className="ct-stat-tile indigo">
+          <p className="ct-stat-label">{t("netWorth.benchmark.title")}</p>
+          <p className="ct-stat-value ct-numeral">
+            {t("netWorth.benchmark.percentile", { pct: benchmark.estimatedPercentile })}
+          </p>
+          <Caption className="block mt-1">
+            {t("netWorth.benchmark.peerMedian")}: {formatInr(benchmark.peerMedian ?? 0)}
+          </Caption>
+        </div>
+      ) : null}
       {showPressureAsLink ? (
         <MetricOwnerLink
           label={t("perovoScore.title")}
@@ -109,7 +140,6 @@ export default function WealthAnalyticsSection({
         <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />
       )}
       {showSimulation ? <SimulationPanel simulationBase={intel.simulationBase} /> : null}
-      <AllocationCharts intel={intel} privacyMode={privacyMode} />
     </section>
   );
 }

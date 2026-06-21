@@ -93,8 +93,8 @@ npm run audit:merge
 - Parses summary: `Tests N passed`, `Test Files N passed`
 - **Fails** if Vitest exits non-zero
 - Focused runs: `npm run test:sync` (snapshot + backup log), `npm run test:engines`, `npm run test:utils`
-- Current baseline: **386** tests in **141** files (see `npm test` summary)
-- Engine coverage: `npm run audit:engine-tests` — **90/90** modules have dedicated test files
+- Current baseline: **105** chaos QA tests in **8** suite files under `tests/suites/`; colocated tests in `src/**/__tests__/`
+- Engine coverage: `npm run audit:engine-tests` — advisory list of engines without dedicated test files
 - Engine depth scan: `npm run audit:complexity` — flags skeleton engines (&lt;40 lines)
 - Engine purity: `npm run audit:engines` — no React/UI imports in `src/engines/`
 

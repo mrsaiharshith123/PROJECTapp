@@ -36,12 +36,22 @@ export default function HouseholdSpendPanel() {
 
   if (!memberRows.length && !categoryRows.length) return null;
 
+  const combinedSpend = memberRows.reduce((sum, row) => sum + row.total, 0);
+
   return (
     <div className="ct-stack">
       {memberRows.length > 0 && (
         <div className="ct-hero-card lending ct-stack relative">
           <div className="ct-hero-glow teal" aria-hidden />
-          <div className="ct-row gap-3 items-start relative">
+          <div className="relative ct-stack-sm">
+            <div className="ct-stat-tile teal">
+              <p className="ct-stat-label">{t("analytics.household.combinedLabel")}</p>
+              <p className="ct-stat-value ct-numeral" style={{ color: "#5eead4" }}>
+                {formatInr(combinedSpend)}
+              </p>
+              <Caption className="block mt-0.5">{t("analytics.household.combinedSpendHint")}</Caption>
+            </div>
+          <div className="ct-row gap-3 items-start">
             <span className="ct-icon-tile violet shrink-0" aria-hidden>
               <CtIcon name="users-three" size={22} />
             </span>
@@ -73,6 +83,7 @@ export default function HouseholdSpendPanel() {
                 <p className="ct-stat-value ct-numeral shrink-0">{formatInr(row.total)}</p>
               </div>
             ))}
+          </div>
           </div>
         </div>
       )}

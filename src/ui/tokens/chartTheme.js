@@ -15,7 +15,7 @@ export function getChartTheme(mode) {
     },
     tooltip: {
       contentStyle: {
-        backgroundColor: isLight ? "#ffffff" : "rgba(13, 14, 24, 0.94)",
+        backgroundColor: isLight ? "#ffffff" : "var(--ct-surface-raised, rgba(13, 14, 24, 0.94))",
         border: isLight ? "1px solid rgba(15, 23, 42, 0.1)" : "1px solid rgba(99, 102, 241, 0.35)",
         borderRadius: "14px",
         boxShadow: isLight

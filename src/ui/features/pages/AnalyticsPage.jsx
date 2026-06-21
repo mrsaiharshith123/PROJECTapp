@@ -6,9 +6,8 @@ import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSect
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
 import HouseholdCommandPanel from "../analytics/HouseholdCommandPanel.jsx";
 import HouseholdSpendPanel from "../analytics/HouseholdSpendPanel.jsx";
-import FestivalPlannerCard from "../dashboard/FestivalPlannerCard.jsx";
 import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
-import FamilyCalendarWidget from "../dashboard/FamilyCalendarWidget.jsx";
+import FinancialPulseCard from "../dashboard/FinancialPulseCard.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import {
@@ -18,7 +17,6 @@ import {
   lendingCompletionStats,
 } from "../../../engines/analyticsSeries.js";
 import { buildCashflowForecastSeries, MONEY_OUTLOOK_WINDOW } from "../../../engines/forecastSeries.js";
-import { buildIncomeSensitivityRows } from "../../../engines/pressureScore.js";
 import { summarizeHouseholdPayerBurden } from "../../../engines/householdPayer.js";
 import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
 import { todayYmd } from "../../../utils/dates.js";
@@ -30,7 +28,6 @@ import {
 } from "../../../utils/analyticsSpendSeries.js";
 import { buildEmiConsolidationPlan } from "../../../engines/emiConsolidation.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
-import { ToolsDiscoveryToast } from "../../";
 import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import CashflowCalendarStrip from "../dashboard/CashflowCalendarStrip.jsx";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
@@ -39,8 +36,16 @@ import { getAnalyticsCopy, getIncomeLabelKey, isSalariedFamily, resolveAnalytics
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { TabContent } from "../../patterns/TabContent.jsx";
-import AnalyticsScoreTiles from "../analytics/AnalyticsScoreTiles.jsx";
 import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
+
+function AnalyticsSectionHead({ title, subtitle }) {
+  return (
+    <div className="ct-analytics-section-head">
+      <p className="ct-analytics-section-title">{title}</p>
+      {subtitle ? <p className="ct-analytics-section-sub">{subtitle}</p> : null}
+    </div>
+  );
+}
 
 const Analytics = () => {
   const { t } = useTranslation();
@@ -121,14 +126,6 @@ const Analytics = () => {
     [analyticsCopy.showPaycheckFlow, commitments, getEffectiveStatus, income],
   );
 
-  const paycheckSensitivity = useMemo(
-    () =>
-      analyticsCopy.showPaycheckFlow && income > 0
-        ? buildIncomeSensitivityRows(commitments, income, getEffectiveStatus)
-        : [],
-    [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus],
-  );
-
   const monthBreakdown = useMemo(
     () =>
       computeCurrentMonthSummary(commitments, getEffectiveStatus, today, income, {
@@ -179,9 +176,16 @@ const Analytics = () => {
 
   const monthlySection = (
     <MonthlySpendAnalyticsSection>
+      <AnalyticsChartPanel
+        forecastSeries={forecastSeries}
+        paymentsData={paymentsData}
+        pressureTrend={pressureTrend}
+        dailySpends={dailySpends}
+      />
+
       <BillInsightsCards />
 
-      <Card className="ct-stack" id="paycheck-flow">
+      <div className="ct-analytics-card ct-stack mx-4 mb-2.5" id="paycheck-flow">
         <div>
           <Heading level={3}>
             {isFamily && analyticsView === "household"
@@ -200,19 +204,11 @@ const Analytics = () => {
           incomeEntryBasis={settings.incomeEntryBasis === "gross" ? "gross" : "take_home"}
           payerSplit={payerSplitForPaycheck}
           creditCard={cardPressureAnalytics}
-          sensitivityRows={paycheckSensitivity}
         />
-      </Card>
-
-      <AnalyticsChartPanel
-        forecastSeries={forecastSeries}
-        paymentsData={paymentsData}
-        pressureTrend={pressureTrend}
-        dailySpends={dailySpends}
-      />
+      </div>
 
       {lendings.length > 0 && (
-        <Card className="ct-stack">
+        <div className="ct-analytics-card ct-stack mx-4 mb-2.5">
           <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
           <Caption>
             {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}
@@ -234,11 +230,11 @@ const Analytics = () => {
               <p className="ct-display ct-numeral">{formatInr(lendingTotals.interest)}</p>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {debtReduction && (
-        <Card>
+        <div className="ct-analytics-card mx-4 mb-2.5">
           <Body className="!text-sm inline-flex items-center gap-1">
             {t("analytics.balanceChange")}
             <InfoTip text={CALC_HELP.debtTrend} />
@@ -253,15 +249,15 @@ const Analytics = () => {
                 ? t("analytics.balanceReduction")
                 : ""}
           </Body>
-        </Card>
+        </div>
       )}
 
-      <Card variant="flat">
+      <div className="ct-analytics-card mx-4 mb-2.5">
         <Caption>
           {t("analytics.allTimePayments")}{" "}
           {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
         </Caption>
-      </Card>
+      </div>
     </MonthlySpendAnalyticsSection>
   );
 
@@ -295,8 +291,15 @@ const Analytics = () => {
       <TabContent tabId="self" activeTab={analyticsView}>
         {showSelfView ? (
         <div className="ct-stack">
-          <AnalyticsScoreTiles />
-          <div className="ct-row justify-end">
+          <AnalyticsSectionHead title={t("analytics.section.pulse")} subtitle={t("analytics.section.pulseHint")} />
+          <FinancialPulseCard />
+          <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
+            <CashflowCalendarStrip />
+          </div>
+
+          <div className="ct-analytics-section-divider" />
+          <AnalyticsSectionHead title={t("analytics.section.spending")} subtitle={t("analytics.section.spendingHint")} />
+          <div className="ct-row justify-end px-4">
             <Button
               type="button"
               variant="outline"
@@ -313,7 +316,7 @@ const Analytics = () => {
             </Button>
           </div>
           {emiPlan ? (
-            <Card className="ct-stack-sm ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
+            <div className="ct-analytics-card ct-stack-sm ct-animate-fade-up mx-4 mb-2.5" style={{ animationDelay: "60ms" }}>
               <Heading level={3}>
                 {t("analytics.emiConsolidation.title")}
                 <InfoTip textKey="analytics.emiConsolidation.subtitle" />
@@ -335,12 +338,9 @@ const Analytics = () => {
               <Caption className="block">
                 {t(emiPlan.insightKey, emiPlan.insightParams)}
               </Caption>
-            </Card>
+            </div>
           ) : null}
-          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
-            <CashflowCalendarStrip />
-          </div>
-          <div className="ct-animate-fade-up ct-list-animate" style={{ animationDelay: "180ms" }}>
+          <div className="ct-animate-fade-up ct-list-animate" style={{ animationDelay: "120ms" }}>
             {monthlySection}
           </div>
         </div>
@@ -350,22 +350,17 @@ const Analytics = () => {
       <TabContent tabId="household" activeTab={analyticsView}>
         {!showSelfView ? (
         <div className="ct-stack ct-list-animate">
+          <AnalyticsSectionHead title={t("analytics.section.household")} subtitle={t("analytics.section.householdHint")} />
           <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
             <HouseholdCommandPanel />
           </div>
           <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
             <HouseholdSpendPanel />
           </div>
-          <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
-            <FestivalPlannerCard />
-          </div>
           <FamilyMonthlyReportCard />
-          <FamilyCalendarWidget />
         </div>
         ) : null}
       </TabContent>
-
-      <ToolsDiscoveryToast variant="analytics" />
     </PageShell>
   );
 };

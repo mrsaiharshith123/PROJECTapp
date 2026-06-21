@@ -14,7 +14,6 @@ import { Grid, Stack } from "../../primitives/Stack.jsx";
 import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import ModeHeroCard from "./shared/ModeHeroCard.jsx";
 import ModeInsightStrip from "./shared/ModeInsightStrip.jsx";
-import FestivalPlannerCard from "./FestivalPlannerCard.jsx";
 import SchoolFeeCard from "./SchoolFeeCard.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import RoomActivityFeed from "../household/RoomActivityFeed.jsx";
@@ -143,11 +142,8 @@ export default function FamilyModeDashboard() {
       <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
         <SchoolFeeCard />
       </div>
-      <div className="ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
-        <FestivalPlannerCard />
-      </div>
 
-      <Card variant="flat" className="ct-stack ct-animate-fade-up" style={{ animationDelay: "180ms" }}>
+      <Card variant="flat" className="ct-stack ct-animate-fade-up" style={{ animationDelay: "120ms" }}>
         <div className="ct-row-between">
           <Caption>{t("family.emergency.fundTitle")}</Caption>
           <Badge tone={emergencyPct >= 100 ? "success" : emergencyPct >= 50 ? "warning" : "danger"}>

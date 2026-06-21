@@ -20,8 +20,6 @@ import FinancialAdvisorTool from "../tools/FinancialAdvisorTool.jsx";
 import InsuranceCalculatorModal from "../modals/InsuranceCalculatorModal.jsx";
 import InvestSavingsPanel from "../tools/InvestSavingsPanel.jsx";
 import GoalsToolPanel from "../tools/GoalsToolPanel.jsx";
-import AccountConnectTool from "../tools/AccountConnectTool.jsx";
-import PayBillsTool from "../tools/PayBillsTool.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { orderDashboardWidgets } from "../../../utils/dashboardToolOrder.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -199,18 +197,6 @@ export default function DashboardTools() {
       {activeTool === "goals" && (
         <Modal title={modalTitle} onClose={closeTool}>
           <GoalsToolPanel />
-        </Modal>
-      )}
-
-      {activeTool === "accountConnect" && (
-        <Modal title={modalTitle} onClose={closeTool}>
-          <AccountConnectTool />
-        </Modal>
-      )}
-
-      {activeTool === "payBills" && (
-        <Modal title={modalTitle} onClose={closeTool}>
-          <PayBillsTool />
         </Modal>
       )}
 

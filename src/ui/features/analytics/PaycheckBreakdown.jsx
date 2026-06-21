@@ -20,7 +20,7 @@ export default function PaycheckBreakdown({
   incomeEntryBasis,
   payerSplit,
   creditCard,
-  sensitivityRows,
+  sensitivityRows = [],
 }) {
   const { t } = useTranslation();
 

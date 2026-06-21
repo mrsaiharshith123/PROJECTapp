@@ -14,14 +14,10 @@ const TOOL_ORDER = [
   "advisor",
   "incomeTax",
   "retirement",
-  "loan",
   "goals",
   "invest",
   "chit",
   "insurance",
-  "bond",
-  "accountConnect",
-  "payBills",
 ];
 
 export const MODE_TOOL_IDS = {
@@ -153,18 +149,6 @@ export const MODE_TOOL_DEFS = {
     title: "Financial goals",
     subtitle: "Save · debt · education",
     accent: "yellow",
-  },
-  accountConnect: {
-    id: "accountConnect",
-    title: "Connect banks",
-    subtitle: "Account Aggregator",
-    accent: "teal",
-  },
-  payBills: {
-    id: "payBills",
-    title: "Pay bills",
-    subtitle: "BBPS in-app",
-    accent: "indigo",
   },
 };
 

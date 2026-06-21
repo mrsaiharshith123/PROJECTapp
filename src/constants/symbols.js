@@ -17,8 +17,6 @@ export const TOOL_ICONS = {
   safety: "shield",
   advisor: "chat-dots",
   goals: "target",
-  accountConnect: "bank",
-  payBills: "wallet",
   logSpend: "note-pencil",
 };
 

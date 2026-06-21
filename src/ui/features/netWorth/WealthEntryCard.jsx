@@ -1,6 +1,22 @@
+import { useState } from "react";
 import { formatInr } from "../../../constants/symbols.js";
 import { getAssetCategory, getLiabilityCategory } from "../../../constants/netWorth/wealthCategories.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
+import { useNetWorth } from "../../../context/NetWorthContext.jsx";
+import { isFeatureUnlocked } from "../../../constants/subscriptionTiers.js";
+import { getTier } from "../../../utils/tierAccess.js";
+import { fetchAssetInsight } from "../../../services/ai/assetInsight.js";
+import {
+  buildAssetDetailLine,
+  computeAssetCagr,
+  computeGoldAutoValue,
+  formatHoldingPeriod,
+  isGoldAssetCategory,
+  isPhysicalAssetCategory,
+  shouldSuggestGoldSync,
+} from "../../../utils/netWorth/physicalAssetHelpers.js";
+import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Card, Caption, Body } from "../../index.js";
 
@@ -15,10 +31,53 @@ export default function WealthEntryCard({
   onOpen = undefined,
 }) {
   const { t } = useTranslation();
+  const { settings } = usePerovo();
+  const { updateEntry } = useNetWorth();
+  const [insightLoading, setInsightLoading] = useState(false);
+
   const cat =
     entry.kind === "asset"
       ? getAssetCategory(entry.categoryId)
       : getLiabilityCategory(entry.categoryId);
+
+  const physical = entry.kind === "asset" && isPhysicalAssetCategory(entry.categoryId);
+  const isGold = isGoldAssetCategory(entry.categoryId);
+  const isVehicle = entry.categoryId === "vehicle";
+  const goldAutoValue =
+    isGold && !privacyMode ? computeGoldAutoValue(entry.weightGrams, entry.purityKarat, settings.goldRatePerGram) : null;
+  const showGoldSync = isGold && !privacyMode && shouldSuggestGoldSync(entry.value, goldAutoValue);
+  const vehicleEstimate =
+    isVehicle && !privacyMode
+      ? estimateVehicleValue({
+          purchasePrice: entry.purchasePrice,
+          purchaseYear: entry.purchaseYear,
+          vehicleYear: entry.vehicleYear,
+        })
+      : null;
+  const showVehicleEstimate =
+    vehicleEstimate != null && !privacyMode && Math.abs(vehicleEstimate - (Number(entry.value) || 0)) > 1;
+  const cagr =
+    physical && !privacyMode
+      ? computeAssetCagr(entry.purchasePrice, entry.purchaseYear, entry.value)
+      : null;
+  const detailLine = physical && !privacyMode ? buildAssetDetailLine(entry, t) : "";
+  const holding = physical && !privacyMode ? formatHoldingPeriod(entry.purchaseYear, t) : "";
+  const hasAiInsight = Boolean(entry.aiInsight);
+  const aiUnlocked = isFeatureUnlocked("ai_advisor", getTier(settings));
+
+  const handleFetchInsight = async () => {
+    if (!physical || insightLoading || !aiUnlocked) return;
+    setInsightLoading(true);
+    try {
+      const { insight } = await fetchAssetInsight(entry, t);
+      updateEntry(entry.id, {
+        aiInsight: insight,
+        aiInsightDate: new Date().toISOString(),
+      });
+    } finally {
+      setInsightLoading(false);
+    }
+  };
 
   const body = (
     <>
@@ -28,7 +87,14 @@ export default function WealthEntryCard({
             <CtIcon name={cat.icon} size={20} />
           </span>
           <div className="min-w-0">
-            <Body className="font-semibold truncate">{entry.name}</Body>
+            <div className="ct-row gap-2 items-center min-w-0">
+              <Body className="font-semibold truncate">{entry.name}</Body>
+              {hasAiInsight && (
+                <span className="ct-nw-ai-badge" title={t("netWorth.physical.aiInsightBadge")}>
+                  <CtIcon name="lightning" size={12} />
+                </span>
+              )}
+            </div>
             <Caption>
               {t(cat.labelKey)}
               {sourceLabel ? ` · ${sourceLabel}` : ""}
@@ -40,8 +106,56 @@ export default function WealthEntryCard({
             {privacyMode ? "••••" : formatInr(entry.value)}
           </Body>
           {pct != null && <Caption>{pct.toFixed(0)}%</Caption>}
+          {cagr != null && (
+            <span className="ct-trend-chip ct-nw-cagr-chip">
+              {cagr >= 0 ? "+" : ""}
+              {cagr.toFixed(1)}%
+            </span>
+          )}
         </div>
       </div>
+
+      {detailLine && <Caption className="mt-2 block truncate">{detailLine}</Caption>}
+      {holding && <Caption className="mt-1 block">{holding}</Caption>}
+
+      {showGoldSync && goldAutoValue != null && (
+        <div className="ct-nw-value-suggestion mt-2">
+          <Caption className="block">
+            {t("netWorth.asset.goldUpdate", { amount: formatInr(goldAutoValue) })}
+          </Caption>
+          {!readOnly && (
+            <button
+              type="button"
+              className="ct-suggestion-link mt-1"
+              onClick={() => updateEntry(entry.id, { value: goldAutoValue })}
+            >
+              {t("netWorth.asset.syncValueCta")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {showVehicleEstimate && (
+        <div className="ct-nw-value-suggestion mt-2">
+          <Caption className="block">
+            {t("netWorth.asset.vehicleEstimate", { value: formatInr(vehicleEstimate) })}
+          </Caption>
+          {!readOnly && (
+            <button
+              type="button"
+              className="ct-suggestion-link mt-1"
+              onClick={() => updateEntry(entry.id, { value: vehicleEstimate })}
+            >
+              {t("netWorth.asset.syncValueCta")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {hasAiInsight && !privacyMode && (
+        <p className="ct-nw-insight mt-2">{entry.aiInsight}</p>
+      )}
+
       {(Number(entry.emi) || 0) > 0 && (
         <Caption className="mt-2 block">
           {t("netWorth.entry.emi", { amount: privacyMode ? "••••" : formatInr(entry.emi) })}
@@ -50,19 +164,31 @@ export default function WealthEntryCard({
     </>
   );
 
+  const cardClass = physical ? "ct-nw-entry ct-nw-entry--physical ct-animate-fade-in" : "ct-nw-entry ct-animate-fade-in";
+
   if (readOnly && onOpen) {
     return (
       <button type="button" className="ct-nw-entry-btn w-full text-left" onClick={onOpen}>
-        <Card className="ct-nw-entry ct-animate-fade-in">{body}</Card>
+        <Card className={cardClass}>{body}</Card>
       </button>
     );
   }
 
   return (
-    <Card className="ct-nw-entry ct-animate-fade-in">
+    <Card className={cardClass}>
       {body}
       {!readOnly && (
         <div className="ct-row gap-2 mt-3 pt-2 border-t border-[var(--ct-border-subtle)]">
+          {physical && aiUnlocked && (
+            <button
+              type="button"
+              className="ct-btn ct-btn-ghost ct-btn-sm flex-1"
+              onClick={handleFetchInsight}
+              disabled={insightLoading}
+            >
+              {insightLoading ? t("netWorth.physical.aiInsightLoading") : t("netWorth.physical.aiInsightCta")}
+            </button>
+          )}
           <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm flex-1" onClick={() => onEdit(entry)}>
             {t("common.edit")}
           </button>

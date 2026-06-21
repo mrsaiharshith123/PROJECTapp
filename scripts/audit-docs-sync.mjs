@@ -38,7 +38,7 @@ const MUST_EXIST = [
   { pattern: /householdRoom|HouseholdCommandPanel|household rooms/i, note: "Document household rooms / command panel" },
   { pattern: /resolveDataProfileScope|household combined/i, note: "Document family household data scope" },
   { pattern: /HouseholdDependentsEditorModal|HouseholdFamilyBadge/i, note: "Document household dependents editor + badge" },
-  { pattern: /386.*test|test.*386/i, note: "Document current test count (386)" },
+  { pattern: /105.*test|test.*105/i, note: "Document current chaos QA test count (105)" },
 ];
 
 function main() {
