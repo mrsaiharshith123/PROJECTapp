@@ -84,7 +84,7 @@ export default function WebLandingPage() {
           <ul className="ct-landing-feature-grid">
             {FEATURES.map(({ key, icon }) => (
               <li key={key} className="ct-landing-feature-tile">
-                <span className="ct-landing-feature-icon" aria-hidden>
+                <span className="ct-icon-tile violet ct-landing-feature-icon" aria-hidden>
                   <CtIcon name={icon} size={22} weight="duotone" />
                 </span>
                 <Heading level={2} className="ct-landing-feature-title">

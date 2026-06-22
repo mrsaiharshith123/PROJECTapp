@@ -36,7 +36,7 @@ export default function FinancialLifeOverviewPanel({ hub, insights, household = 
           {items.map((item) => (
             <li
               key={item.id || item.key}
-              className={`ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
+              className={`ct-stat-tile ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
             >
               {t(item.key, item.params || {})}
             </li>

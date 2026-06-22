@@ -343,6 +343,11 @@ const Add = () => {
         <AddTypePicker onSelect={handlePick} />
       ) : addKind === "lending" ? (
         <div className="ct-stack ct-add-form-embedded">
+          <div className="ct-hero-card lending relative ct-stack-sm">
+            <div className="ct-hero-glow teal" aria-hidden />
+            <p className="ct-hero-label">{t("add.pick.lending")}</p>
+            <p className="ct-analytics-section-sub mt-1 relative">{t("add.pick.lendingDesc")}</p>
+          </div>
           <div>
             <label className="ct-field-label">{t("add.lendingPersonName")}</label>
             <input
@@ -393,8 +398,10 @@ const Add = () => {
       ) : (
         <>
           {addKind === "bill" && (
-            <button type="button" className="ct-add-scan-tile" onClick={() => navigate("/tools?tool=bill-scanner")}>
-              <CtIcon name="camera" size={24} />
+            <button type="button" className="ct-tool-tile ct-add-scan-tile w-full" onClick={() => navigate("/tools?tool=bill-scanner")}>
+              <span className="ct-icon-tile primary shrink-0" aria-hidden>
+                <CtIcon name="camera" size={24} />
+              </span>
               <span>
                 <strong>{t("add.scanTileTitle")}</strong>
                 <span className="block">{t("add.scanTileHint")}</span>

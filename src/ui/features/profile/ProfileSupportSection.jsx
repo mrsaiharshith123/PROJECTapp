@@ -40,8 +40,10 @@ export default function ProfileSupportSection({ onOpenGuide }) {
 
       <SettingsGroup title={t("support.about")} icon="book">
         <SettingsGroupContent className="ct-stack-sm">
-          <Caption className="block">{t("support.aboutBody")}</Caption>
-          <Caption className="block opacity-80">{t("support.version", { version: getLocalAppVersion() })}</Caption>
+          <div className="ct-stat-tile">
+            <p className="ct-stat-tile-value text-sm">{t("support.aboutBody")}</p>
+            <p className="ct-stat-tile-label mt-1">{t("support.version", { version: getLocalAppVersion() })}</p>
+          </div>
           <div className="flex justify-center pt-1">
             <PerovoBrand layout="column" iconSize="sm" wordmarkSize="sm" />
           </div>

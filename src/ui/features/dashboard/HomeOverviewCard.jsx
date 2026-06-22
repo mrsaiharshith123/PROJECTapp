@@ -105,7 +105,7 @@ export default function HomeOverviewCard() {
   }, [isFamily, monthlySnapshots, commitments, getEffectiveStatus]);
 
   const statusLine = pressure?.score != null ? (
-    <div className="ct-stack-sm !gap-1.5">
+    <div className="ct-stat-tile teal ct-stack-sm !gap-1.5">
       <p className="ct-body !text-xs leading-snug">
         {t(
           isFamily ? "home.statusStressHousehold" : "home.statusStress",
@@ -181,6 +181,7 @@ export default function HomeOverviewCard() {
   return (
     <>
       <HeroMonthCard
+        className={isFamily ? "survival" : "pressure"}
         title={title}
         monthLabel={monthLabel}
         icon={isFamily ? undefined : modeCfg.icon}

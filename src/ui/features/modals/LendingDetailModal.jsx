@@ -51,7 +51,7 @@ export default function LendingDetailModal({ lending, onClose }) {
 
   return (
     <Modal title={lending.personName} onClose={onClose}>
-      <div className="max-h-[75vh] overflow-y-auto pb-2">
+      <div className="max-h-[75vh] overflow-y-auto pb-2 ct-nw-panel">
         <LendingDetailDashboard
           lending={lending}
           agreementDraft={agreementDraft}
@@ -61,7 +61,8 @@ export default function LendingDetailModal({ lending, onClose }) {
           fileRef={fileRef}
           onAddProof={addProof}
         />
-        <div className="mt-4 ct-row gap-2">
+        <div className="mt-4 ct-stack-sm ct-stat-tile indigo">
+          <label className="ct-field-label">{t("lending.form.relationship")}</label>
           <select
             className={fieldClass}
             value={lending.relationshipTag || "Other"}
@@ -73,6 +74,7 @@ export default function LendingDetailModal({ lending, onClose }) {
               </option>
             ))}
           </select>
+          <label className="ct-field-label">{t("lending.dispute.label")}</label>
           <select
             className={fieldClass}
             value={lending.disputeStatus || "none"}

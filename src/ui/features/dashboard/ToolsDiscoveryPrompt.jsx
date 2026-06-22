@@ -17,11 +17,35 @@ function isToolsSectionReached() {
   return rect.top < window.innerHeight * 0.55;
 }
 
-export default function ToolsDiscoveryToast({ variant = "home", blocked = false }) {
+function ToolsDiscoveryCard({ variant, onGo, onDismiss, t }) {
+  return (
+    <div className="relative">
+      <button type="button" onClick={onGo} className="ct-stat-tile teal ct-tools-discovery-tile ct-pressable w-full">
+        <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
+          <CtIcon name="calculator" size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <Body className="!text-[11px] font-semibold leading-tight">{t("tools.calculators")}</Body>
+          <Caption className="mt-0.5 block leading-snug">
+            {variant === "analytics" ? t("tools.availableOnHome") : t("tools.plannerSubtitle")}
+          </Caption>
+          <Caption className="ct-text-teal font-semibold mt-1 block">
+            {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("tools.viewCalculatorsLink")} ↓`}
+          </Caption>
+        </div>
+      </button>
+      <button type="button" onClick={onDismiss} className="ct-tools-toast-dismiss" aria-label={t("common.dismiss")}>
+        ×
+      </button>
+    </div>
+  );
+}
+
+export default function ToolsDiscoveryToast({ variant = "home", blocked = false, inline = false }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dismissed, setDismissed] = useState(() => isToolsNudgeDismissed());
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(inline);
   const [scrolling, setScrolling] = useState(false);
   const [toolsReached, setToolsReached] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
@@ -33,13 +57,13 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
   }, []);
 
   useEffect(() => {
-    if (dismissed || blocked) return;
+    if (inline || dismissed || blocked) return;
     const timer = window.setTimeout(() => setReady(true), SHOW_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [dismissed, blocked]);
+  }, [dismissed, blocked, inline]);
 
   useEffect(() => {
-    if (dismissed || blocked || variant !== "home") return;
+    if (inline || dismissed || blocked || variant !== "home") return;
 
     let scrollIdleTimer;
     let pollTimer;
@@ -76,10 +100,10 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateToolsReached);
     };
-  }, [dismissed, blocked, variant]);
+  }, [dismissed, blocked, variant, inline]);
 
   useEffect(() => {
-    if (dismissed || blocked || variant !== "analytics") return;
+    if (inline || dismissed || blocked || variant !== "analytics") return;
 
     let scrollIdleTimer;
 
@@ -94,7 +118,7 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
       window.clearTimeout(scrollIdleTimer);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [dismissed, blocked, variant]);
+  }, [dismissed, blocked, variant, inline]);
 
   const goToTools = () => {
     if (variant === "analytics") {
@@ -109,7 +133,15 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
     setDismissed(true);
   };
 
-  if (dismissed) return null;
+  if (dismissed || blocked) return null;
+
+  if (inline) {
+    return (
+      <div className="ct-tools-discovery-inline" aria-live="polite" role="complementary">
+        <ToolsDiscoveryCard variant={variant} onGo={goToTools} onDismiss={dismiss} t={t} />
+      </div>
+    );
+  }
 
   const visible =
     ready && !blocked && !fabOpen && !scrolling && (variant === "analytics" || !toolsReached);
@@ -120,27 +152,7 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false 
       aria-live="polite"
       role="complementary"
     >
-      <div className="relative">
-        <button type="button" onClick={goToTools} className="ct-tools-toast-btn">
-          <span className="ct-tools-toast-icon shrink-0" aria-hidden>
-            <CtIcon name="calculator" size={22} />
-          </span>
-          <div className="min-w-0">
-            <Body className="!text-[11px] font-semibold leading-tight text-[var(--ct-text)]">
-              {t("tools.calculators")}
-            </Body>
-            <Caption className="mt-0.5 block leading-snug">
-              {variant === "analytics" ? t("tools.availableOnHome") : t("tools.plannerSubtitle")}
-            </Caption>
-            <Caption className="ct-text-accent font-semibold mt-1 block">
-              {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("tools.viewCalculatorsLink")} ↓`}
-            </Caption>
-          </div>
-        </button>
-        <button type="button" onClick={dismiss} className="ct-tools-toast-dismiss" aria-label={t("common.dismiss")}>
-          ×
-        </button>
-      </div>
+      <ToolsDiscoveryCard variant={variant} onGo={goToTools} onDismiss={dismiss} t={t} />
     </div>,
     document.body,
   );

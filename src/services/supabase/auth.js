@@ -352,6 +352,50 @@ export async function saveSubscriptionTier(userId, tier, paymentId = "") {
 }
 
 /**
+ * Debounced dual-write target — full settings blob in profiles.app_settings.
+ * @param {Record<string, unknown>} settings
+ */
+export async function syncSettingsToServer(settings) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await supabase
+      .from(PROFILE_TABLE)
+      .update({ app_settings: settings, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (error) log.auth.warn("Settings sync failed", { message: error.message });
+  } catch (e) {
+    log.auth.warn("Settings sync error", { message: e?.message });
+  }
+}
+
+/** @returns {Promise<Record<string, unknown> | null>} */
+export async function loadSettingsFromServer() {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await supabase
+      .from(PROFILE_TABLE)
+      .select("app_settings")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error) return null;
+    const blob = data?.app_settings;
+    return blob && typeof blob === "object" && !Array.isArray(blob) ? blob : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * DPDP Act 2023 S.12 right to erasure.
  * Caller must also run clearAllLocalData() from migrateStorage.js to erase device-local data.
  * @param {string} userId

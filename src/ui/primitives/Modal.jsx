@@ -4,9 +4,9 @@ import { cn } from "../utils/cn.js";
 import { Heading } from "./Text.jsx";
 
 /**
- * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode, fullScreen?: boolean, sheet?: boolean }} props
+ * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode, fullScreen?: boolean, sheet?: boolean, darkSheet?: boolean }} props
  */
-export function Modal({ title, children, onClose, footer, fullScreen = false, sheet = false }) {
+export function Modal({ title, children, onClose, footer, fullScreen = false, sheet = false, darkSheet = false }) {
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -30,6 +30,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
         className={cn(
           "ct-modal-panel",
           sheet ? "ct-modal-panel--sheet ct-animate-sheet-up" : "ct-animate-scale-in",
+          sheet && darkSheet && "ct-modal-panel--sheet-dark",
           fullScreen && "ct-modal-panel--fullscreen",
         )}
       >

@@ -14,8 +14,6 @@ import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 import LendingOverduePanel from "../lending/LendingOverduePanel.jsx";
 import LendingHeroSummary from "../money/LendingHeroSummary.jsx";
 import MoneyOverflowMenu from "../money/MoneyOverflowMenu.jsx";
-import { Fab } from "../../index.js";
-import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -49,6 +47,15 @@ const Lending = () => {
   const [listTab, setListTab] = useState("lent");
 
   const { borrowedList, lentList, totals, trustScore } = useLendingLists(lendings, searchQuery);
+
+  const owed = Math.max(0, Number(totals?.lentRemaining ?? totals?.lentOutstanding) || 0);
+  const owe = Math.max(0, Number(totals?.borrowedRemaining ?? totals?.borrowedOutstanding) || 0);
+  const isEmpty = lendings.length === 0 && owed === 0 && owe === 0;
+
+  const openAdd = () => {
+    resetForm();
+    setShowAdd(true);
+  };
 
   const resetForm = () => {
     setForm(emptyLendingForm());
@@ -181,21 +188,14 @@ const Lending = () => {
   const visibleList = listTab === "lent" ? lentList : borrowedList;
 
   return (
-    <div className="ct-stack ct-money-lending-page">
+    <div className="ct-page ct-stack ct-money-lending-page">
       <div className="ct-row-between gap-2 mb-1">
-        <span className="ct-caption">{t("lending.subtitle")}</span>
+        <p className="ct-analytics-section-title">{t("money.tab.lending")}</p>
         <div className="ct-header-actions">
           <MoneyOverflowMenu items={overflowItems} />
-          <Fab
-            type="button"
-            aria-label={t("lending.addShort")}
-            onClick={() => {
-              resetForm();
-              setShowAdd(true);
-            }}
-          >
-            +
-          </Fab>
+          <button type="button" className="ct-btn ct-btn-primary ct-btn-sm" onClick={openAdd}>
+            + {t("lending.addShort")}
+          </button>
         </div>
       </div>
 
@@ -207,63 +207,68 @@ const Lending = () => {
         />
       )}
 
-      <LendingHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
-
-      <input
-        className={inputClassName()}
-        placeholder={t("bills.searchPlaceholder")}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-
-      <LendingOverduePanel />
-
-      <SegmentedControl
-        options={[
-          { id: "lent", label: t("lending.sectionLent") },
-          { id: "owe", label: t("lending.sectionOwe") },
-        ]}
-        value={listTab}
-        onChange={setListTab}
-      />
-
-      {borrowedList.length === 0 && lentList.length === 0 && (
-        <EmptyState
-          icon="handshake"
-          title={t("lending.emptyTitle")}
-          message={t("lending.empty")}
-          action={
-            <Button
-              type="button"
-              onClick={() => {
-                resetForm();
-                setShowAdd(true);
-              }}
-            >
-              {t("lending.addShort")}
-            </Button>
-          }
-        />
+      {isEmpty ? (
+        <div className="ct-lending-empty-warm">
+          <div className="ct-lending-empty-icon" aria-hidden>
+            🤝
+          </div>
+          <p className="ct-lending-empty-title">{t("lending.emptyWarmTitle")}</p>
+          <p className="ct-lending-empty-body">{t("lending.emptyWarmBody")}</p>
+          <Button type="button" className="mt-3" onClick={openAdd}>
+            {t("lending.recordLoan")}
+          </Button>
+        </div>
+      ) : (
+        <LendingHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
       )}
 
-      {visibleList.length > 0 && (
-        <section className="ct-stack-sm ct-list-animate">
-          {visibleList.map((item) => (
-            <LendingEntryCard
-              key={item.id}
-              item={item}
-              todayStr={todayStr}
-              onPayment={openPayment}
-              onDetail={setDetailFor}
-              onEdit={openEdit}
-              onDelete={deleteLending}
-            />
-          ))}
-        </section>
-      )}
+      {!isEmpty && (
+        <>
+          <input
+            className={inputClassName()}
+            placeholder={t("bills.searchPlaceholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
-      {visibleList.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
-        <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
+          <LendingOverduePanel />
+
+          <div className="ct-lending-pill-switcher">
+            {[
+              { id: "lent", label: t("lending.pillYouLent") },
+              { id: "owe", label: t("lending.pillYouOwe") },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`ct-lending-pill ${listTab === tab.id ? "active" : ""}`}
+                onClick={() => setListTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {visibleList.length > 0 && (
+            <section className="ct-stack-sm ct-list-animate">
+              {visibleList.map((item) => (
+                <LendingEntryCard
+                  key={item.id}
+                  item={item}
+                  todayStr={todayStr}
+                  onPayment={openPayment}
+                  onDetail={setDetailFor}
+                  onEdit={openEdit}
+                  onDelete={deleteLending}
+                />
+              ))}
+            </section>
+          )}
+
+          {visibleList.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
+            <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
+          )}
+        </>
       )}
 
       <LendingPageDialogs

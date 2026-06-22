@@ -116,9 +116,13 @@ export default function CommitmentsBillsTab({
         searchPlaceholder={t("bills.searchPlaceholder")}
       />
 
-      <button type="button" className="ct-money-filter-row" onClick={() => setCategoryOpen(true)}>
-        <span>{categoryLabel}</span>
-        <CtIcon name="caret-right" size={16} />
+      <button type="button" className="ct-link !text-xs text-left w-fit" onClick={onToggleHistory}>
+        {showHistory ? t("money.bills.hidePaidHistory") : t("money.bills.showPaidHistory")}
+      </button>
+
+      <button type="button" className="ct-settings-row ct-pressable" onClick={() => setCategoryOpen(true)}>
+        <span className="ct-settings-row-label">{categoryLabel}</span>
+        <CtIcon name="caret-right" size={14} className="ct-settings-row-caret shrink-0" aria-hidden />
       </button>
 
       <BillsCategorySheet
@@ -184,9 +188,9 @@ export default function CommitmentsBillsTab({
       </div>
 
       {activeBills.length > 0 && monthlyCommitted > 0 && (
-        <div className="ct-money-bills-footer">
-          <Caption>{t("bills.monthlyCommitted")}</Caption>
-          <Body className="ct-money-hero-amount">{formatInr(monthlyCommitted)}</Body>
+        <div className="ct-stat-tile teal ct-row-between gap-2 items-center">
+          <Caption className="ct-stat-tile-label">{t("bills.monthlyCommitted")}</Caption>
+          <Body className="ct-stat-tile-value ct-numeral">{formatInr(monthlyCommitted)}</Body>
         </div>
       )}
 

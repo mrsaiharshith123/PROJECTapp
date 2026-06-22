@@ -115,17 +115,19 @@ export default function LendingPageDialogs({
           }
         >
           <div className="ct-stack">
-            <Caption className="block">
-              {t("lending.payment.remainingLine", {
-                name: paymentFor.personName,
-                amount: formatInr(Number(paymentFor.remainingAmount) || 0),
-              })}
-            </Caption>
-            <Caption className="block opacity-80">
-              {t("lending.payment.hint", {
-                mode: translateRepaymentMode(t, paymentFor.repaymentType || paymentFor.repaymentFrequency),
-              })}
-            </Caption>
+            <div className="ct-hero-card lending ct-stack-sm">
+              <Caption className="block">
+                {t("lending.payment.remainingLine", {
+                  name: paymentFor.personName,
+                  amount: formatInr(Number(paymentFor.remainingAmount) || 0),
+                })}
+              </Caption>
+              <Caption className="block opacity-80">
+                {t("lending.payment.hint", {
+                  mode: translateRepaymentMode(t, paymentFor.repaymentType || paymentFor.repaymentFrequency),
+                })}
+              </Caption>
+            </div>
             <div>
               <label className="ct-field-label">{t("lending.payment.amountLabel")}</label>
               <input

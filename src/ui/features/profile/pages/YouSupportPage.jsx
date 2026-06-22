@@ -14,8 +14,10 @@ export default function YouSupportPage() {
 
   return (
     <YouSubPageShell titleKey="settings.row.help">
-      <ProfileGuidanceSection onStartGuide={replayGuide} />
-      <ProfileSupportSection onOpenGuide={replayGuide} />
+      <div className="ct-stat-tile violet !bg-transparent !border-0 !shadow-none !p-0 ct-stack">
+        <ProfileGuidanceSection onStartGuide={replayGuide} />
+        <ProfileSupportSection onOpenGuide={replayGuide} />
+      </div>
     </YouSubPageShell>
   );
 }

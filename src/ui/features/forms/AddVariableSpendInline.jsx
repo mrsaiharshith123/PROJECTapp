@@ -5,7 +5,7 @@ import { TRANSACTION_LIFE_CATEGORIES, getTransactionLifeCategoryMeta } from "../
 import { smsTextToDailySpendDraft } from "../../../engines/smsToTransaction.js";
 import { classifyMerchant } from "../../../utils/merchantNormalize.js";
 import { todayYmd } from "../../../utils/dates.js";
-import { Button, Input, FormField, Caption, CtIcon } from "../../index.js";
+import { Button, inputClassName, Caption, CtIcon } from "../../index.js";
 import { canAddDailySpend } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 
@@ -16,6 +16,8 @@ const LIFE_CATEGORY_ICON = {
   pressure: "hourglass",
   risk: "warning",
 };
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 /** Inline variable spend on Add page — same data path as Bills → Variable spend. */
 export default function AddVariableSpendInline({ onSaved }) {
@@ -72,7 +74,9 @@ export default function AddVariableSpendInline({ onSaved }) {
 
   return (
     <div className="ct-stack-lg">
-      <Caption className="block">{t("add.variableIntro")}</Caption>
+      <div className="ct-stat-tile teal">
+        <Caption className="block">{t("add.variableIntro")}</Caption>
+      </div>
       {!spendGate.ok && (
         <TierLimitBanner
           compact
@@ -81,12 +85,26 @@ export default function AddVariableSpendInline({ onSaved }) {
         />
       )}
 
-      <FormField label={t("bills.dailySpend.amount")}>
-        <Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} className="ct-numeral" autoFocus />
-      </FormField>
+      <div>
+        <label className="ct-field-label">{t("bills.dailySpend.amount")}</label>
+        <input
+          type="number"
+          min="0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className={`${fieldClass} ct-numeral`}
+          autoFocus
+        />
+      </div>
 
-      <FormField label={t("bills.dailySpend.label")}>
-        <Input value={label} onChange={(e) => onLabelChange(e.target.value)} placeholder={t("bills.dailySpend.labelPlaceholder")} />
+      <div>
+        <label className="ct-field-label">{t("bills.dailySpend.label")}</label>
+        <input
+          value={label}
+          onChange={(e) => onLabelChange(e.target.value)}
+          placeholder={t("bills.dailySpend.labelPlaceholder")}
+          className={fieldClass}
+        />
         {merchantPreview && label.trim() && (
           <Caption className="block mt-1.5 text-[var(--ct-accent-muted)]">
             {t("bills.dailySpend.detectedAs", {
@@ -95,9 +113,10 @@ export default function AddVariableSpendInline({ onSaved }) {
             })}
           </Caption>
         )}
-      </FormField>
+      </div>
 
-      <FormField label={t("bills.dailySpend.category")}>
+      <div>
+        <label className="ct-field-label">{t("bills.dailySpend.category")}</label>
         <div className="ct-row-wrap">
           {TRANSACTION_LIFE_CATEGORIES.map((c) => {
             const active = lifeCategory === c.id;
@@ -119,15 +138,17 @@ export default function AddVariableSpendInline({ onSaved }) {
           })}
         </div>
         <Caption className="block mt-1.5">{t("bills.dailySpend.selectedCategory", { category: lifeMeta.label })}</Caption>
-      </FormField>
+      </div>
 
-      <FormField label={t("bills.dailySpend.date")}>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      </FormField>
+      <div>
+        <label className="ct-field-label">{t("bills.dailySpend.date")}</label>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={fieldClass} />
+      </div>
 
-      <FormField label={t("bills.dailySpend.smsOptional")}>
+      <div>
+        <label className="ct-field-label">{t("bills.dailySpend.smsOptional")}</label>
         <textarea
-          className="ct-input w-full min-h-[72px]"
+          className={`${fieldClass} w-full min-h-[72px]`}
           value={sms}
           onChange={(e) => setSms(e.target.value)}
           placeholder={t("bills.dailySpend.smsPlaceholder")}
@@ -137,7 +158,7 @@ export default function AddVariableSpendInline({ onSaved }) {
             {t("bills.dailySpend.parseSms")}
           </Button>
         )}
-      </FormField>
+      </div>
 
       <Button type="button" onClick={save} size="lg" disabled={!spendGate.ok}>
         {t("add.variableSave")}

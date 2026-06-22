@@ -76,6 +76,7 @@ export default function DashboardTools() {
 
   return (
     <section className="ct-stack-sm" id="dashboard-tools">
+      <div className="ct-hero-card sim ct-stack-sm">
       <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
         <div>
           <h2 className="ct-h2 !text-base">{toolsHeading}</h2>
@@ -96,7 +97,8 @@ export default function DashboardTools() {
           </button>
         </div>
       </div>
-      <div className="ct-grid-3">
+      </div>
+      <div className="ct-grid-2">
         {widgets.map((widget) =>
           reorderTools ? (
             <div

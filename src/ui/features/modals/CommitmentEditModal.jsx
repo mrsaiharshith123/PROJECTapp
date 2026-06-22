@@ -204,7 +204,13 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         </div>
       }
     >
-      <div className="ct-stack">
+      <div className="ct-stack ct-nw-panel">
+        {form.category ? (
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-tile-label">{t("add.categoryLabel")}</p>
+            <p className="ct-stat-tile-value text-sm">{form.category}</p>
+          </div>
+        ) : null}
         <div>
           <label className="ct-field-label">{t("commitment.edit.name")}</label>
           <input
@@ -212,7 +218,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             value={form.name}
             onChange={(e) => patchForm({ name: e.target.value })}
           />
-          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+          {errors.name && <p className="ct-field-hint ct-text-danger">{errors.name}</p>}
         </div>
         <div>
           <label className="ct-field-label">
@@ -222,18 +228,18 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             type="number"
             min="0"
             readOnly={showChit && form.chitInstallmentMode !== "custom"}
-            className={`${fieldClass("amount")} ${showChit && form.chitInstallmentMode !== "custom" ? "bg-gray-100 dark:bg-slate-700/80 cursor-default" : ""}`}
+            className={`${fieldClass("amount")} ${showChit && form.chitInstallmentMode !== "custom" ? "opacity-80 cursor-default" : ""}`}
             value={form.amount}
             onChange={(e) => patchForm({ amount: e.target.value })}
           />
-          {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
+          {errors.amount && <p className="ct-field-hint ct-text-danger">{errors.amount}</p>}
           {showChit && form.chitInstallmentMode !== "custom" && (
-            <p className="text-[11px] text-yellow-800 dark:text-yellow-200 mt-1">
+            <p className="ct-field-hint ct-text-warning mt-1">
               {t("commitment.edit.chitInstallmentHint")}
             </p>
           )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="ct-grid-2">
           <div>
             <label className="ct-field-label">{t("commitment.edit.startDate")}</label>
             <input
@@ -242,7 +248,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               value={form.startDate}
               onChange={(e) => patchForm({ startDate: e.target.value })}
             />
-            {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
+            {errors.startDate && <p className="ct-field-hint ct-text-danger">{errors.startDate}</p>}
           </div>
           <div>
             <label className="ct-field-label">
@@ -255,7 +261,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               onChange={(e) => patchForm({ endDate: e.target.value })}
               onFocus={fillEndDateIfEmpty}
             />
-            {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
+            {errors.endDate && <p className="ct-field-hint ct-text-danger">{errors.endDate}</p>}
           </div>
         </div>
         <div>
@@ -266,7 +272,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             value={form.dueDate}
             onChange={(e) => patchForm({ dueDate: e.target.value })}
           />
-          {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
+          {errors.dueDate && <p className="ct-field-hint ct-text-danger">{errors.dueDate}</p>}
         </div>
         <div>
           <label className="ct-field-label">{t("commitment.edit.category")}</label>

@@ -1,7 +1,7 @@
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Modal } from "../../primitives/Modal.jsx";
 import { FilterChips } from "../../patterns/FilterChips.jsx";
-import { Body, Caption } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 
 const CATEGORY_OPTIONS = [
   ["EMI", "category.emi"],
@@ -37,8 +37,8 @@ export default function BillsCategorySheet({
   ];
 
   return (
-    <Modal title={t("money.bills.filterCategory")} onClose={onClose} sheet>
-      <div className="ct-stack">
+    <Modal title={t("money.bills.filterCategory")} onClose={onClose} sheet darkSheet>
+      <div className="ct-stack ct-nw-panel">
         <FilterChips
           options={categoryChips}
           value={value}
@@ -47,9 +47,9 @@ export default function BillsCategorySheet({
             onClose();
           }}
         />
-        <label className="ct-row gap-2 items-center mt-2">
+        <label className="ct-settings-row ct-pressable w-full mt-2 cursor-pointer">
           <input type="checkbox" checked={showHistory} onChange={onToggleHistory} />
-          <Body>{t("money.bills.showPaidHistory")}</Body>
+          <span className="ct-settings-row-label">{t("money.bills.showPaidHistory")}</span>
         </label>
         <Caption>{t("money.bills.filterCategoryHint")}</Caption>
       </div>

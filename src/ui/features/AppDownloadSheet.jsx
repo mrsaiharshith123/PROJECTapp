@@ -8,9 +8,9 @@ import { requestInstallPlatform, getIosDownloadUrl } from "../../utils/appDownlo
 import { fetchAppReleases, triggerApkDownload } from "../../utils/appReleases.js";
 
 const PLATFORMS = [
-  { id: "windows", icon: "laptop", labelKey: "download.platform.windows", hintKey: "download.platform.windowsHint" },
-  { id: "android", icon: "device-mobile", labelKey: "download.platform.android", hintKey: "download.platform.androidHint" },
-  { id: "ios", icon: "device-mobile", labelKey: "download.platform.ios", hintKey: "download.platform.iosHint" },
+  { id: "windows", icon: "laptop", labelKey: "download.platform.windows", hintKey: "download.platform.windowsHint", tone: "indigo" },
+  { id: "android", icon: "device-mobile", labelKey: "download.platform.android", hintKey: "download.platform.androidHint", tone: "teal" },
+  { id: "ios", icon: "device-mobile", labelKey: "download.platform.ios", hintKey: "download.platform.iosHint", tone: "violet" },
 ];
 
 /**
@@ -76,64 +76,74 @@ export default function AppDownloadSheet({ open, onClose }) {
 
   if (step === "android") {
     return (
-      <Modal sheet title={t("download.androidVersionsTitle")} onClose={handleClose}>
-        <button
-          type="button"
-          className="ct-btn ct-btn-ghost ct-btn-sm mb-3 -mt-1"
-          onClick={() => setStep("platform")}
-        >
-          {t("download.backToPlatforms")}
-        </button>
-        <Body className="mb-4">{t("download.androidVersionsBody")}</Body>
-        {loadingReleases ? (
-          <Caption>{t("webLanding.versionsLoading")}</Caption>
-        ) : (
-          <ul className="ct-stack-sm">
-            {releases.map((release) => (
-              <li key={release.version}>
-                <button
-                  type="button"
-                  className="ct-option-card w-full !text-left !py-3"
-                  onClick={() => onSelectAndroidRelease(release)}
-                >
-                  <span className="ct-row gap-3 items-start">
-                    <span className="ct-landing-version-badge shrink-0">{release.version}</span>
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-[var(--ct-text)]">
-                        {release.label || release.version}
+      <Modal sheet darkSheet title={t("download.androidVersionsTitle")} onClose={handleClose}>
+        <div className="ct-nw-panel ct-stack-sm !p-0 !border-0 !bg-transparent">
+          <button
+            type="button"
+            className="ct-btn ct-btn-ghost ct-btn-sm mb-1 -mt-1 self-start"
+            onClick={() => setStep("platform")}
+          >
+            {t("download.backToPlatforms")}
+          </button>
+          <Body className="mb-2">{t("download.androidVersionsBody")}</Body>
+          {loadingReleases ? (
+            <Caption>{t("webLanding.versionsLoading")}</Caption>
+          ) : (
+            <ul className="ct-stack-sm">
+              {releases.map((release) => (
+                <li key={release.version}>
+                  <button
+                    type="button"
+                    className="ct-stat-tile teal w-full !text-left ct-pressable"
+                    onClick={() => onSelectAndroidRelease(release)}
+                  >
+                    <span className="ct-row gap-3 items-start">
+                      <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
+                        <CtIcon name="device-mobile" size={18} weight="duotone" />
                       </span>
-                      <Caption className="block mt-0.5">{t("download.platform.androidHint")}</Caption>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-[var(--ct-text)]">
+                          {release.label || release.version}
+                        </span>
+                        <Caption className="block mt-0.5">{t("download.platform.androidHint")}</Caption>
+                      </span>
                     </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </Modal>
     );
   }
 
   return (
-    <Modal sheet title={t("download.sheetTitle")} onClose={handleClose}>
-      <Body className="mb-4">{t("download.sheetBody")}</Body>
-      <ul className="ct-stack-sm">
-        {PLATFORMS.map(({ id, icon, labelKey, hintKey }) => (
-          <li key={id}>
-            <button type="button" className="ct-option-card w-full !text-left !py-3" onClick={() => onSelectPlatform(id)}>
-              <span className="ct-row gap-3 items-start">
-                <span className="ct-landing-feature-icon shrink-0" aria-hidden>
-                  <CtIcon name={icon} size={22} weight="duotone" />
+    <Modal sheet darkSheet title={t("download.sheetTitle")} onClose={handleClose}>
+      <div className="ct-nw-panel ct-stack-sm !p-0 !border-0 !bg-transparent">
+        <Body className="mb-2">{t("download.sheetBody")}</Body>
+        <ul className="ct-stack-sm">
+          {PLATFORMS.map(({ id, icon, labelKey, hintKey, tone }) => (
+            <li key={id}>
+              <button
+                type="button"
+                className={`ct-stat-tile ${tone} w-full !text-left ct-pressable`}
+                onClick={() => onSelectPlatform(id)}
+              >
+                <span className="ct-row gap-3 items-start">
+                  <span className={`ct-icon-tile ct-icon-tile-sm ${tone} shrink-0`} aria-hidden>
+                    <CtIcon name={icon} size={18} weight="duotone" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-[var(--ct-text)]">{t(labelKey)}</span>
+                    <Caption className="block mt-0.5">{t(hintKey)}</Caption>
+                  </span>
                 </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-[var(--ct-text)]">{t(labelKey)}</span>
-                  <Caption className="block mt-0.5">{t(hintKey)}</Caption>
-                </span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </Modal>
   );
 }

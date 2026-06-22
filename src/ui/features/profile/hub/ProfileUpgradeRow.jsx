@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { getTier } from "../../../../utils/tierAccess.js";
-import { Button, Caption } from "../../../index.js";
+import { Caption } from "../../../index.js";
 import PlansModal from "../PlansModal.jsx";
 
 /** Conditional Pro/Power upsell row (You tab block 3). */
@@ -16,7 +16,7 @@ export default function ProfileUpgradeRow({ settings }) {
 
   return (
     <>
-      <div className={`ct-profile-upgrade-row ct-reveal ct-reveal-delay-2 ${isFree ? "ct-profile-upgrade-free" : "ct-profile-upgrade-pro"}`}>
+      <div className={`ct-stat-tile ct-profile-upgrade-row ct-reveal ct-reveal-delay-2 ${isFree ? "ct-profile-upgrade-free" : "ct-profile-upgrade-pro"}`}>
         <div className="min-w-0 flex-1">
           <p className="ct-profile-upgrade-title">
             {isFree ? t("profileHub.upgradeProTitle") : t("profileHub.upgradePowerTitle")}
@@ -25,9 +25,9 @@ export default function ProfileUpgradeRow({ settings }) {
             {isFree ? t("profileHub.upgradeProBody") : t("profileHub.upgradePowerBody")}
           </Caption>
         </div>
-        <Button type="button" size="sm" variant="primary" className="!w-auto shrink-0" onClick={() => setPlansOpen(true)}>
+        <button type="button" className="ct-btn ct-btn-primary ct-btn-sm shrink-0" onClick={() => setPlansOpen(true)}>
           {t("profileHub.upgradeCta")}
-        </Button>
+        </button>
       </div>
       <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
     </>

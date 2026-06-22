@@ -70,7 +70,7 @@ export default function AddCommitmentForm({
               </option>
             ))}
           </select>
-          {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
+          {errors.category && <p className="ct-field-hint ct-text-danger">{errors.category}</p>}
         </div>
 
         {showChit && (
@@ -94,7 +94,7 @@ export default function AddCommitmentForm({
 
         <div>
           <label className="ct-field-label">
-            {showChit ? "This month's installment (₹)" : "Amount to pay (₹)"}
+            {showChit ? t("commitment.edit.installment") : t("commitment.edit.amount")}
           </label>
           <div className="ct-input-prefix-wrap">
             <span className="ct-input-prefix">₹</span>
@@ -109,10 +109,10 @@ export default function AddCommitmentForm({
               className={`${fieldClass("amount")} ct-input-with-prefix ${showChit && form.chitInstallmentMode !== "custom" ? "opacity-80 cursor-default" : ""}`}
             />
           </div>
-          {errors.amount && <p className="text-xs text-red-500 mt-1">{errors.amount}</p>}
+          {errors.amount && <p className="ct-field-hint ct-text-danger">{errors.amount}</p>}
           {showChit && form.chitInstallmentMode !== "custom" && (
             <Caption className="block mt-1 ct-text-warning">
-              From chit value and month. Use &quot;fixed amount&quot; in chit details if your group uses a different number.
+              {t("add.form.chitInstallmentHint")}
             </Caption>
           )}
         </div>
@@ -120,16 +120,17 @@ export default function AddCommitmentForm({
         <div className="ct-grid-2">
           <div>
             <label className="ct-field-label">
-              Start date <span className="ct-caption font-normal opacity-75">(when it began)</span>
+              {t("commitment.edit.startDate")}{" "}
+              <span className="ct-caption font-normal opacity-75">{t("add.form.startDateHint")}</span>
             </label>
             <input type="date" name="startDate" value={form.startDate} onChange={onChange} className={fieldClass("startDate")} />
-            {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
+            {errors.startDate && <p className="ct-field-hint ct-text-danger">{errors.startDate}</p>}
           </div>
           <div>
             <label className="ct-field-label">
-              End date{" "}
+              {t("commitment.edit.endDate")}{" "}
               <span className="ct-caption font-normal opacity-75">
-                {isSubscription ? "(optional — cancel reminder)" : "(optional)"}
+                {isSubscription ? t("add.form.endDateCancelHint") : t("add.form.endDateOptional")}
               </span>
             </label>
             <input
@@ -140,29 +141,31 @@ export default function AddCommitmentForm({
               onFocus={onFillEndDate}
               className={fieldClass("endDate")}
             />
-            {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
+            {errors.endDate && <p className="ct-field-hint ct-text-danger">{errors.endDate}</p>}
           </div>
         </div>
 
         <div>
-          <label className="ct-field-label">Next payment due</label>
+          <label className="ct-field-label">{t("commitment.edit.nextDue")}</label>
           <input type="date" name="dueDate" value={form.dueDate} onChange={onChange} className={fieldClass("dueDate")} />
-          {errors.dueDate && <p className="text-xs text-red-500 mt-1">{errors.dueDate}</p>}
-          <Caption className="block mt-1 opacity-75">
-            Next payment date (not the same as start). We suggest the next due from your start day and repeat.
-          </Caption>
+          {errors.dueDate && <p className="ct-field-hint ct-text-danger">{errors.dueDate}</p>}
+          <Caption className="block mt-1 opacity-75">{t("add.form.dueDateHint")}</Caption>
         </div>
 
         {priorSpendHint > 0 && (
-          <div className="ct-insight-accent rounded-lg px-3 py-2 text-xs">
-            Est. ~₹{priorSpendHint.toLocaleString()} paid in years before {todayStr.slice(0, 4)} — included in spend
-            totals. Record payments this year as you go.
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-tile-value text-xs">
+              {t("add.form.priorSpendHint", {
+                amount: priorSpendHint.toLocaleString(),
+                year: todayStr.slice(0, 4),
+              })}
+            </p>
           </div>
         )}
 
         {!showChit && (
           <div>
-            <label className="ct-field-label">Repeat</label>
+            <label className="ct-field-label">{t("commitment.edit.repeat")}</label>
             <select name="repeatType" value={form.repeatType} onChange={onChange} className={fieldClass("repeatType")}>
               {REPEAT_OPTIONS.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -173,15 +176,14 @@ export default function AddCommitmentForm({
           </div>
         )}
         {showChit && (
-          <div className="ct-insight-warning rounded-lg px-3 py-2 text-xs">
-            Repeats monthly until the chit ends. When a new month starts, your due amount updates to the lower
-            installment — you do not change it yourself.
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-tile-value text-xs">{t("add.form.chitRepeatNote")}</p>
           </div>
         )}
 
         {isOther && (
           <div>
-            <label className="ct-field-label">Priority</label>
+            <label className="ct-field-label">{t("commitment.edit.priority")}</label>
             <select name="priority" value={form.priority} onChange={onChange} className={fieldClass("priority")}>
               {OTHER_PRIORITY_OPTIONS.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -189,13 +191,13 @@ export default function AddCommitmentForm({
                 </option>
               ))}
             </select>
-            <Caption className="block mt-1 opacity-75">For other bills, set priority according to urgency.</Caption>
+            <Caption className="block mt-1 opacity-75">{t("add.form.priorityHint")}</Caption>
           </div>
         )}
 
         {!isOther && form.category && (
           <div className="ct-inset rounded-lg px-3 py-2 text-xs">
-            Priority set automatically for {category} bills.
+            {t("add.form.priorityAuto", { category })}
           </div>
         )}
 
@@ -203,7 +205,7 @@ export default function AddCommitmentForm({
           <label className="ct-field-label">
             {copy.billName}{" "}
             {showInsurance ? (
-              <span className="ct-caption font-normal opacity-75">(optional — auto from policy)</span>
+              <span className="ct-caption font-normal opacity-75">{t("add.form.nameOptionalInsurance")}</span>
             ) : null}
           </label>
           <input
@@ -211,16 +213,17 @@ export default function AddCommitmentForm({
             name="name"
             value={form.name}
             onChange={onChange}
-            placeholder={showInsurance ? "Nickname only if you want" : "e.g. Rent, EMI, school fees"}
+            placeholder={showInsurance ? t("add.form.namePlaceholderInsurance") : t("add.form.namePlaceholder")}
             className={fieldClass("name")}
           />
-          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+          {errors.name && <p className="ct-field-hint ct-text-danger">{errors.name}</p>}
         </div>
 
         {showInterest && (
           <div>
             <label className="ct-field-label">
-              Annual interest % <span className="ct-caption font-normal opacity-75">(optional)</span>
+              {t("add.form.interestOptional")}{" "}
+              <span className="ct-caption font-normal opacity-75">{t("add.form.optional")}</span>
             </label>
             <input
               type="number"
@@ -255,7 +258,8 @@ export default function AddCommitmentForm({
         {salariedFamily && (
           <div>
             <label className="ct-field-label">
-              Who pays this bill? <span className="ct-caption font-normal opacity-75">(optional)</span>
+              {t("commitment.edit.householdPayer")}{" "}
+              <span className="ct-caption font-normal opacity-75">{t("add.form.optional")}</span>
               <InfoTip text={CALC_HELP.householdPayerBillTag} />
             </label>
             <select
@@ -264,17 +268,18 @@ export default function AddCommitmentForm({
               onChange={onChange}
               className={fieldClass("householdPayer")}
             >
-              <option value="">Not tagged</option>
-              <option value="primary">Primary / main earner</option>
-              <option value="secondary">Second income / partner</option>
-              <option value="shared">Shared / joint</option>
+              <option value="">{t("commitment.edit.payerUntagged")}</option>
+              <option value="primary">{t("commitment.edit.payerPrimary")}</option>
+              <option value="secondary">{t("commitment.edit.payerSecondary")}</option>
+              <option value="shared">{t("commitment.edit.payerShared")}</option>
             </select>
           </div>
         )}
 
         <div>
           <label className="ct-field-label">
-            Notes <span className="ct-caption font-normal opacity-75">(optional)</span>
+            {t("add.form.notesOptional")}{" "}
+            <span className="ct-caption font-normal opacity-75">{t("add.form.optional")}</span>
           </label>
           <textarea
             name="notes"
@@ -293,9 +298,9 @@ export default function AddCommitmentForm({
       </Card>
 
       {!embedded && entryType === "scheduled" && affordability && (
-        <Card className="ct-stack-sm ct-insight-accent">
+        <div className="ct-stat-tile indigo ct-stack-sm">
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
-            <Caption className="font-semibold uppercase">Affordability</Caption>
+            <Caption className="font-semibold uppercase">{t("add.form.affordability")}</Caption>
             <span
               className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${semanticToneToClass(affordabilityTierTone(affordability.tier))}`}
             >
@@ -303,12 +308,15 @@ export default function AddCommitmentForm({
             </span>
           </div>
           <Caption>
-            After adding: ~₹{Math.round(affordability.newTotalBurden).toLocaleString()}/mo burden vs income (
-            {affordability.committedPercent != null ? `${affordability.committedPercent}%` : "—"} committed). Free
-            money ≈ ₹{Math.round(affordability.freeMoneyAfter).toLocaleString()}.
+            {t("add.form.affordabilityAfter", {
+              burden: Math.round(affordability.newTotalBurden).toLocaleString(),
+              committed:
+                affordability.committedPercent != null ? `${affordability.committedPercent}%` : "—",
+              free: Math.round(affordability.freeMoneyAfter).toLocaleString(),
+            })}
           </Caption>
           <Caption>{PROFILE_SETTINGS_HINT}</Caption>
-        </Card>
+        </div>
       )}
 
       {embedded && entryType === "scheduled" && affordability && (
@@ -320,7 +328,7 @@ export default function AddCommitmentForm({
       )}
 
       {!embedded && entryType === "scheduled" && (
-        <Card className="ct-insight-accent ct-stack-sm">
+        <div className="ct-stat-tile teal ct-stack-sm">
           <p className="ct-body-strong">{t("add.guidanceTitle")}</p>
           <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
             <li>• {t("add.guidanceDeviceOnly")}</li>
@@ -328,7 +336,7 @@ export default function AddCommitmentForm({
             <li>• {t("add.guidanceEndDate")}</li>
             <li>• {t("add.guidanceRollForward")}</li>
           </ul>
-        </Card>
+        </div>
       )}
     </>
   );

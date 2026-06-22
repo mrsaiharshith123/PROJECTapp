@@ -20,6 +20,7 @@ export const ONBOARDING_EXPERIENCES = [
       "Perovo shows household burden, school fees, renewals, and shared runway for clearer household review.",
     userMode: "salaried",
     householdScope: "family",
+    hidden: true,
   },
 ];
 

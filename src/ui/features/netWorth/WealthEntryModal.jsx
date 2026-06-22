@@ -5,7 +5,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { computeAssetCagr } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Modal, Button, inputClassName, Caption } from "../../index.js";
+import { Modal, inputClassName, Caption } from "../../index.js";
 
 const PROPERTY_IDS = new Set([
   "property",
@@ -203,9 +203,11 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, onClose, onSave }) {
             </div>
           </div>
           {cagr != null && (
-            <Caption className="block ct-nw-cagr-hint">
-              {t("netWorth.physical.cagrHint", { pct: `${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)}` })}
-            </Caption>
+            <div className="ct-stat-tile teal">
+              <p className="ct-stat-tile-value text-sm">
+                {t("netWorth.physical.cagrHint", { pct: `${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)}` })}
+              </p>
+            </div>
           )}
         </>
       )}
@@ -302,9 +304,11 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, onClose, onSave }) {
             </div>
           </div>
           {vehicleEstimate != null && (
-            <Caption className="block ct-nw-cagr-hint">
-              {t("netWorth.physical.vehicleEstimate", { amount: formatInr(vehicleEstimate) })}
-            </Caption>
+            <div className="ct-stat-tile amber">
+              <p className="ct-stat-tile-value text-sm">
+                {t("netWorth.physical.vehicleEstimate", { amount: formatInr(vehicleEstimate) })}
+              </p>
+            </div>
           )}
         </>
       )}
@@ -342,9 +346,9 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, onClose, onSave }) {
           onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
         />
       </div>
-      <Button type="button" size="lg" className="w-full" onClick={submit}>
+      <button type="button" className="ct-btn ct-btn-primary w-full" onClick={submit}>
         {t("common.save")}
-      </Button>
+      </button>
     </div>
   );
 }

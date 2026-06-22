@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { inputClassName } from "../../";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
+import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { recordConsent } from "../../../utils/dpdpConsent.js";
 import { getOnboardingExperience } from "../../../guidance/index.js";
 import { ONBOARDING_EXPERIENCES } from "../../../guidance/registry/onboardingCopy.js";
@@ -12,12 +13,12 @@ import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { validateOnboardingFields } from "../../../utils/profileSetup.js";
 import { trackEvent } from "../../../services/analytics/trackEvent.js";
 import { ANALYTICS_EVENTS } from "../../../services/analytics/eventNames.js";
+import { Caption } from "../../index.js";
 import {
   OnboardingModeStep,
   OnboardingFocusStep,
   OnboardingBasicsStep,
   OnboardingBillsStep,
-  OnboardingProgress,
 } from "../onboarding/OnboardingStepPanels.jsx";
 
 function experienceIdFromSettings(settings) {
@@ -28,6 +29,7 @@ function experienceIdFromSettings(settings) {
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const replay = searchParams.get("replay") === "1";
   const { settings, updateSettings, addCommitment } = usePerovo();
@@ -155,11 +157,18 @@ export default function Onboarding() {
   };
 
   const wrapStep = (panel) => (
-  <>
-    <OnboardingProgress step={step} total={4} />
-    {panel}
-  </>
-);
+    <div className="ct-page ct-form-narrow pb-8">
+      <div className="ct-stat-tile indigo mb-4 py-3 px-3 text-center">
+        <div className="ct-onboard-dots" aria-hidden>
+          {Array.from({ length: 4 }, (_, i) => (
+            <span key={i} className={`ct-onboard-dot ${i === step ? "active" : ""}`} />
+          ))}
+        </div>
+        <Caption className="block mt-2">{t("onboarding.stepOf", { current: step + 1, total: 4 })}</Caption>
+      </div>
+      {panel}
+    </div>
+  );
 
   if (step === 0) {
     return wrapStep(

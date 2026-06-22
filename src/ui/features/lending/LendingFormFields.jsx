@@ -120,7 +120,9 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
             </option>
           ))}
         </select>
-        <p className="ct-caption block mt-1 opacity-75">{t("lending.form.repaymentHint")}</p>
+        <div className="ct-stat-tile teal mt-2">
+          <p className="ct-stat-tile-label">{t("lending.form.repaymentHint")}</p>
+        </div>
       </div>
       <div className="ct-grid-2">
         <div>

@@ -31,11 +31,11 @@ export function OnboardingModeStep({
   onRecordConsent,
 }) {
   const { t } = useTranslation();
-  const titlePrefix = replay ? "Review" : "Welcome";
+  const titlePrefix = replay ? t("onboarding.review") : t("onboarding.welcome");
 
   return (
     <div className="ct-onboard-page ct-onboard-modern">
-      <div className="ct-onboard-step-hero">
+      <div className="ct-hero-card lending ct-onboard-step-hero">
         <p className="ct-hero-label">{titlePrefix}</p>
         <h1 className="ct-onboard-title !mt-1">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
         <Caption className="block mt-2 relative">
@@ -43,18 +43,22 @@ export function OnboardingModeStep({
         </Caption>
       </div>
       <div className="ct-stack">
-        {ONBOARDING_EXPERIENCES.map((m) => (
+        {ONBOARDING_EXPERIENCES.filter((m) => !m.hidden).map((m) => (
           <button
             key={m.id}
             type="button"
             onClick={() => onExperienceChange(m.id)}
-            className={`ct-option-card ${experienceId === m.id ? "ct-option-card-active" : ""}`}
+            className={`ct-stat-tile indigo ct-pressable w-full !text-left ${experienceId === m.id ? "ct-option-card-active" : ""}`}
           >
-            <span className="inline-flex mr-2 shrink-0">
-              <CtIcon name={m.icon} size={24} />
+            <span className="ct-row items-start gap-3">
+              <span className="ct-icon-tile ct-icon-tile-sm indigo shrink-0" aria-hidden>
+                <CtIcon name={m.icon} size={22} />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-semibold">{m.label}</span>
+                <Caption className="block mt-1">{m.tagline}</Caption>
+              </span>
             </span>
-            <span className="font-semibold">{m.label}</span>
-            <Caption className="block mt-1 ml-8">{m.tagline}</Caption>
           </button>
         ))}
       </div>
@@ -69,26 +73,26 @@ export function OnboardingModeStep({
             window.open(base, "_blank", "noopener,noreferrer");
           }}
         >
-          Read our privacy policy →
+          {t("onboarding.privacyPolicyLink")}
         </button>
       </ToneSurface>
       <div className="ct-row">
         {replay && (
           <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         )}
         <Button
           type="button"
           variant="primary"
           size="lg"
-          className={replay ? "flex-1" : ""}
+          className={replay ? "flex-1" : "w-full"}
           onClick={() => {
             onRecordConsent(userId || "anonymous");
             onContinue();
           }}
         >
-          Continue
+          {t("common.continue")}
         </Button>
       </div>
     </div>
@@ -96,21 +100,22 @@ export function OnboardingModeStep({
 }
 
 export function OnboardingFocusStep({ experience, onBack, onContinue }) {
+  const { t } = useTranslation();
   return (
     <div className="ct-onboard-page ct-onboard-modern">
-      <div>
+      <div className="ct-hero-card lending">
         <Eyebrow>{experience.label}</Eyebrow>
-        <h1 className="ct-onboard-title">What we will focus on</h1>
-        <Card variant="flat" className="ct-guidance-onboard-explain">
+        <h1 className="ct-onboard-title">{t("onboarding.focusTitle")}</h1>
+        <Card variant="flat" className="ct-guidance-onboard-explain mt-3">
           <Body className="!text-sm">{experience.explain}</Body>
         </Card>
       </div>
       <div className="ct-row">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
-          Back
+          {t("common.back")}
         </Button>
         <Button type="button" variant="primary" size="lg" className="flex-1" onClick={onContinue}>
-          Continue
+          {t("common.continue")}
         </Button>
       </div>
     </div>
@@ -136,30 +141,32 @@ export function OnboardingBasicsStep({
 
   return (
     <div className="ct-onboard-page ct-onboard-modern">
-      <div>
+      <div className="ct-hero-card lending">
         <Eyebrow>{t("onboarding.setupEyebrow")}</Eyebrow>
-        <h1 className="ct-onboard-title">{replay ? "Update basics" : "Confirm your details"}</h1>
+        <h1 className="ct-onboard-title">
+          {replay ? t("onboarding.basicsTitleReplay") : t("onboarding.basicsTitle")}
+        </h1>
         <Caption className="block mt-2">{t("onboarding.basicsRequired")}</Caption>
       </div>
-      <Card className="ct-stack">
+      <Card className="ct-stack ct-nw-panel">
         <div>
-          <label className="ct-field-label">Your name *</label>
+          <label className="ct-field-label">{t("onboarding.nameLabel")}</label>
           <input className={fieldClass} value={displayName} onChange={(e) => onDisplayNameChange(e.target.value)} required />
         </div>
         <div>
-          <label className="ct-field-label">Mobile number *</label>
+          <label className="ct-field-label">{t("onboarding.mobileLabel")}</label>
           <input
             type="tel"
             className={fieldClass}
             value={phoneNumber}
             onChange={(e) => onPhoneNumberChange(e.target.value)}
-            placeholder="10-digit Indian mobile"
+            placeholder={t("onboarding.mobilePlaceholder")}
             inputMode="numeric"
             required
           />
         </div>
         <div>
-          <label className="ct-field-label">Monthly salary (₹) *</label>
+          <label className="ct-field-label">{t("onboarding.salaryLabel")}</label>
           <input
             type="number"
             min="1"
@@ -178,10 +185,10 @@ export function OnboardingBasicsStep({
       {fieldError && <Caption className="block text-[var(--ct-danger)]">{fieldError}</Caption>}
       <div className="ct-row">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
-          Back
+          {t("common.back")}
         </Button>
         <Button type="button" variant="primary" size="lg" className="flex-1" onClick={onContinue}>
-          Continue
+          {t("common.continue")}
         </Button>
       </div>
     </div>
@@ -202,12 +209,10 @@ export function OnboardingBillsStep({
 
   return (
     <div className="ct-onboard-page ct-onboard-modern">
-      <div>
+      <div className="ct-hero-card lending">
         <Eyebrow>{t("onboarding.initialSetupEyebrow")}</Eyebrow>
-        <h1 className="ct-onboard-title">What do you pay regularly?</h1>
-        <Caption className="block mt-2">
-          Optional — tap bills or EMIs you want to add now. You can skip and add them later.
-        </Caption>
+        <h1 className="ct-onboard-title">{t("onboarding.billsTitle")}</h1>
+        <Caption className="block mt-2">{t("onboarding.billsSubtitle")}</Caption>
       </div>
       <div className="ct-grid-2">
         {QUICK_COMMITMENT_TEMPLATES.map((tpl) => {
@@ -217,21 +222,21 @@ export function OnboardingBillsStep({
               key={tpl.label}
               type="button"
               onClick={() => onToggleTemplate(tpl.label)}
-              className={`ct-option-card ${active ? "ct-option-card-active" : ""}`}
+              className={`ct-stat-tile indigo ct-pressable !text-left ${active ? "ct-option-card-active" : ""}`}
             >
-              <span className="inline-flex mr-2 shrink-0">
+              <span className="ct-row items-center gap-2">
                 <CtIcon name={getCategoryById(tpl.category).icon} size={20} />
+                <span className="font-semibold text-sm">{tpl.label}</span>
               </span>
-              <span className="font-semibold text-sm">{tpl.label}</span>
             </button>
           );
         })}
       </div>
       {selectedLabels.size > 0 && (
-        <Card className="ct-stack-sm">
+        <Card className="ct-stack-sm ct-nw-panel">
           {QUICK_COMMITMENT_TEMPLATES.filter((tpl) => selectedLabels.has(tpl.label)).map((tpl) => (
             <div key={tpl.label}>
-              <label className="ct-field-label">{tpl.label} (₹/mo)</label>
+              <label className="ct-field-label">{t("onboarding.billsAmountLabel", { label: tpl.label })}</label>
               <input
                 type="number"
                 min="0"
@@ -245,13 +250,13 @@ export function OnboardingBillsStep({
       )}
       <div className="ct-row">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
-          Back
+          {t("common.back")}
         </Button>
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onSkip}>
-          Skip
+          {t("common.skip")}
         </Button>
         <Button type="button" variant="primary" size="lg" className="flex-1" onClick={onFinishSelected}>
-          Add selected & start
+          {t("onboarding.addSelectedStart")}
         </Button>
       </div>
     </div>

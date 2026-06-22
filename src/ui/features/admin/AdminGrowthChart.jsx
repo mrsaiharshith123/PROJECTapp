@@ -13,22 +13,29 @@ export default function AdminGrowthChart({ points = [] }) {
   }));
 
   return (
-    <ChartShell title={t("admin.chart.growth")} hint={t("admin.chart.growthHint")} compact height={200}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-          <XAxis dataKey="date" tick={{ fill: "var(--ct-text-muted)", fontSize: 10 }} axisLine={false} tickLine={false} />
-          <YAxis allowDecimals={false} tick={{ fill: "var(--ct-text-muted)", fontSize: 10 }} axisLine={false} tickLine={false} />
-          <Tooltip
-            contentStyle={{
-              background: "var(--ct-surface)",
-              border: "1px solid var(--ct-border)",
-              borderRadius: "8px",
-              fontSize: "12px",
-            }}
-          />
-          <Bar dataKey="signups" fill="var(--ct-accent)" radius={[8, 8, 0, 0]} style={{ filter: "drop-shadow(0 0 8px var(--ct-chart-line-glow))" }} />
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartShell>
+    <div className="ct-hero-card lending ct-stack-sm">
+      <ChartShell title={t("admin.chart.growth")} hint={t("admin.chart.growthHint")} compact height={200}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+            <XAxis dataKey="date" tick={{ fill: "var(--ct-text-muted)", fontSize: 10 }} axisLine={false} tickLine={false} />
+            <YAxis allowDecimals={false} tick={{ fill: "var(--ct-text-muted)", fontSize: 10 }} axisLine={false} tickLine={false} />
+            <Tooltip
+              contentStyle={{
+                background: "var(--ct-surface)",
+                border: "1px solid var(--ct-border)",
+                borderRadius: "8px",
+                fontSize: "12px",
+              }}
+            />
+            <Bar
+              dataKey="signups"
+              fill="var(--ct-teal-text)"
+              radius={[8, 8, 0, 0]}
+              style={{ filter: "drop-shadow(0 0 8px var(--ct-teal-glow))" }}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartShell>
+    </div>
   );
 }

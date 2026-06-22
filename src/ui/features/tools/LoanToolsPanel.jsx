@@ -14,9 +14,12 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
+import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 function DebtOrderPanel() {
   const { t } = useTranslation();
@@ -31,9 +34,9 @@ function DebtOrderPanel() {
     <div className="ct-stack">
       <Caption>{t("tools.planner.debtIntro")}</Caption>
       <div>
-        <label className="ct-metric-label block">{t("tools.planner.extraDebt", { currency: INR })}</label>
+        <label className="ct-field-label">{t("tools.planner.extraDebt", { currency: INR })}</label>
         <input
-          className="ct-input mt-1"
+          className={fieldClass}
           value={payoffExtra}
           onChange={(e) => setPayoffExtra(e.target.value)}
           placeholder="0"
@@ -45,15 +48,15 @@ function DebtOrderPanel() {
       ) : (
         <div className="ct-stack-sm">
           {payoff.recommendation && (
-            <div className="ct-insight-accent">
-              <Body className="!text-sm font-semibold">{payoff.recommendation.label}</Body>
+            <div className="ct-stat-tile teal">
+              <p className="ct-stat-tile-label">{payoff.recommendation.label}</p>
               {payoff.recommendation.firstPay && (
-                <Caption className="block">
+                <p className="ct-stat-tile-value text-sm">
                   {t("tools.planner.startWith", {
                     name: payoff.recommendation.firstPay.name,
                     reason: payoff.recommendation.reason,
                   })}
-                </Caption>
+                </p>
               )}
             </div>
           )}
@@ -154,65 +157,80 @@ export default function LoanToolsPanel() {
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "extra" && (
         <>
+          {sim ? (
+            <ToolAnswerHero
+              tone="sim"
+              label={t("tools.loan.monthsSaved")}
+              value={String(sim.monthsSaved)}
+              subtitle={t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}
+            />
+          ) : null}
           <Caption>{t("tools.loan.extraIntro")}</Caption>
           <div className="ct-grid-2">
             <div>
-              <label className="ct-metric-label block">{t("tools.loan.loanLeft", { currency: INR })}</label>
-              <input className="ct-input mt-1" value={principal} onChange={(e) => setPrincipal(e.target.value)} inputMode="numeric" />
+              <label className="ct-field-label">{t("tools.loan.loanLeft", { currency: INR })}</label>
+              <input className={fieldClass} value={principal} onChange={(e) => setPrincipal(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-metric-label block">{t("tools.loan.interestRate")}</label>
-              <input className="ct-input mt-1" value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
+              <label className="ct-field-label">{t("tools.loan.interestRate")}</label>
+              <input className={fieldClass} value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
             </div>
             <div>
-              <label className="ct-metric-label block">{t("tools.loan.yourEmi", { currency: INR })}</label>
-              <input className="ct-input mt-1" value={emi} onChange={(e) => setEmi(e.target.value)} inputMode="numeric" />
+              <label className="ct-field-label">{t("tools.loan.yourEmi", { currency: INR })}</label>
+              <input className={fieldClass} value={emi} onChange={(e) => setEmi(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-metric-label block">{t("tools.loan.extraPerMonth", { currency: INR })}</label>
-              <input className="ct-input mt-1" value={extra} onChange={(e) => setExtra(e.target.value)} inputMode="numeric" />
+              <label className="ct-field-label">{t("tools.loan.extraPerMonth", { currency: INR })}</label>
+              <input className={fieldClass} value={extra} onChange={(e) => setExtra(e.target.value)} inputMode="numeric" />
             </div>
           </div>
           {sim && (
             <>
-              <ToolAnswerHero
-                tone="sim"
-                label={t("tools.loan.monthsSaved")}
-                value={String(sim.monthsSaved)}
-                subtitle={t("tools.loan.interestSaved", { amount: formatInr(Math.round(sim.interestSaved)) })}
-              >
-                <Caption>
-                  {sim.baselineMonths} {ARROW} {sim.acceleratedMonths}
-                </Caption>
+              <div className="ct-grid-2">
+                <div className="ct-stat-tile indigo">
+                  <p className="ct-stat-tile-value text-sm">
+                    {sim.baselineMonths} {ARROW} {sim.acceleratedMonths}
+                  </p>
+                </div>
                 {stressDelta && (
-                  <Caption className="block">
-                    {t("charts.stressAfterPayoff", {
-                      before: stressDelta.during,
-                      after: stressDelta.after,
-                      delta: stressDelta.delta,
-                    })}
-                  </Caption>
+                  <div className="ct-stat-tile amber">
+                    <p className="ct-stat-tile-value text-sm">
+                      {t("charts.stressAfterPayoff", {
+                        before: stressDelta.during,
+                        after: stressDelta.after,
+                        delta: stressDelta.delta,
+                      })}
+                    </p>
+                  </div>
                 )}
-                {Number(extra) > 0 && <Caption className="block opacity-80">{t("charts.stressDuringExtra")}</Caption>}
-                {paidSeries && (
-                  <>
-                    <Caption className="block">
+              </div>
+              {Number(extra) > 0 && (
+                <div className="ct-stat-tile">
+                  <p className="ct-stat-tile-value text-sm opacity-80">{t("charts.stressDuringExtra")}</p>
+                </div>
+              )}
+              {paidSeries && (
+                <div className="ct-grid-2">
+                  <div className="ct-stat-tile teal">
+                    <p className="ct-stat-tile-value text-sm">
                       {t("charts.loanPayoffBaseline", {
                         month: payoffLabelFromMonths(paidSeries.baselineMonths, todayStr),
                         total: formatInr(paidSeries.baselineTotalPaid),
                       })}
-                    </Caption>
-                    {Number(extra) > 0 && (
-                      <Caption className="block">
+                    </p>
+                  </div>
+                  {Number(extra) > 0 && (
+                    <div className="ct-stat-tile indigo">
+                      <p className="ct-stat-tile-value text-sm">
                         {t("charts.loanPayoffWithExtra", {
                           month: payoffLabelFromMonths(paidSeries.acceleratedMonths, todayStr),
                           total: formatInr(paidSeries.acceleratedTotalPaid),
                         })}
-                      </Caption>
-                    )}
-                  </>
-                )}
-              </ToolAnswerHero>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               {paidSeries && paidSeries.rows.length > 0 && (
               <ToolComparisonChart
                 data={sampleLoanChartRows(paidSeries.rows)}

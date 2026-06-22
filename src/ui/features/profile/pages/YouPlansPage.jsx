@@ -13,7 +13,9 @@ export default function YouPlansPage() {
 
   return (
     <YouSubPageShell titleKey="settings.row.subscription">
-      <PlansModal open={open} onClose={() => setOpen(false)} />
+      <div className="ct-stat-tile gold !bg-transparent !border-0 !shadow-none !p-0">
+        <PlansModal open={open} onClose={() => setOpen(false)} />
+      </div>
     </YouSubPageShell>
   );
 }

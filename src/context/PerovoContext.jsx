@@ -4,7 +4,7 @@ import { todayYmd } from "../utils/dates.js";
 import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
 import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../storage/events.js";
 import { useAuth } from "./AuthContext.jsx";
-import { loadSubscriptionTier } from "../services/supabase/auth.js";
+import { loadSubscriptionTier, syncSettingsToServer, loadSettingsFromServer } from "../services/supabase/auth.js";
 import {
   loadInitialAppState,
   loadSettingsFromStorage,
@@ -38,6 +38,9 @@ const PerovoContext = createContext(/** @type {import('../types/context.js').Per
 
 export function PerovoProvider({ children }) {
   const { user } = useAuth();
+  const syncTimerRef = useRef(null);
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
   const [commitments, setCommitments] = useState(() =>
     refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
   );
@@ -84,6 +87,38 @@ export function PerovoProvider({ children }) {
       .catch(() => {});
   }, [user?.id]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    loadSettingsFromServer()
+      .then((serverSettings) => {
+        if (cancelled || !serverSettings || typeof serverSettings !== "object") return;
+        setSettings((prev) => {
+          const localTs = prev.updatedAt ? Date.parse(prev.updatedAt) : 0;
+          const serverTs = serverSettings.updatedAt ? Date.parse(serverSettings.updatedAt) : 0;
+          if (serverTs > localTs) {
+            const next = { ...prev, ...serverSettings };
+            try {
+              localStorage.setItem("perovo_settings", JSON.stringify(next));
+              invalidateInitialAppStateCache();
+            } catch {
+              /* ignore */
+            }
+            return next;
+          }
+          return prev;
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    return () => clearTimeout(syncTimerRef.current);
+  }, []);
+
   const persistCommitments = useCallback((updater) => {
     setCommitments((prev) => {
       const raw = typeof updater === "function" ? updater(prev) : updater;
@@ -120,11 +155,18 @@ export function PerovoProvider({ children }) {
 
   const persistSettings = useCallback((updater) => {
     setSettings((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
+      const merged = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
+      const next = { ...merged, updatedAt: new Date().toISOString() };
       try {
         localStorage.setItem("perovo_settings", JSON.stringify(next));
         invalidateInitialAppStateCache();
         emitLocalDataChanged();
+        clearTimeout(syncTimerRef.current);
+        if (userIdRef.current) {
+          syncTimerRef.current = setTimeout(() => {
+            syncSettingsToServer(next);
+          }, 2000);
+        }
       } catch {
         /* ignore */
       }

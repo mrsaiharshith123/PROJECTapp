@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { Button, Caption, inputClassName } from "../../index.js";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
+import { cn } from "../../utils/cn.js";
 
 const COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 
-const COLOR_HEX = {
-  indigo: "#6366f1",
-  violet: "#8b5cf6",
-  emerald: "#10b981",
-  amber: "#f59e0b",
-  rose: "#f43f5e",
-  sky: "#0ea5e9",
+const TILE_CLASS = {
+  indigo: "indigo",
+  violet: "violet",
+  emerald: "teal",
+  amber: "amber",
+  rose: "danger",
+  sky: "teal",
 };
 
-const profileInputClass = inputClassName();
+const profileInputClass = `${inputClassName()} ct-input-tint`;
 
 export default function ProfileManager() {
   const { t } = useTranslation();
   const { settings, updateSettings } = usePerovo();
   const defaultProfile = { id: "default", label: t("profile.defaultProfileLabel"), color: "indigo" };
   const profiles = settings.profiles || [defaultProfile];
+  const activeId = settings.activeProfileId || "default";
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState("indigo");
   const [editingId, setEditingId] = useState(null);
@@ -67,34 +70,50 @@ export default function ProfileManager() {
     <div className="ct-stack-sm">
       <Caption className="font-semibold block">{t("profile.profilesTitle")}</Caption>
       <ul className="ct-stack-sm">
-        {profiles.map((p) => (
-          <li key={p.id} className="ct-hero-inset ct-row flex-wrap items-center gap-2">
-            <span
-              className="w-2.5 h-2.5 rounded-full shrink-0"
-              style={{ backgroundColor: COLOR_HEX[p.color] || COLOR_HEX.indigo }}
-            />
-            {editingId === p.id ? (
-              <input
-                className={`${profileInputClass} flex-1 min-w-0 !py-1.5 !text-sm`}
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                onBlur={commitRename}
-              />
-            ) : (
-              <span className="flex-1 text-sm font-medium text-[var(--ct-text)]">{p.label}</span>
-            )}
-            {p.id !== "default" && editingId !== p.id && (
-              <>
-                <button type="button" onClick={() => startRename(p)} className="ct-link !text-xs">
-                  {t("profile.rename")}
-                </button>
-                <button type="button" onClick={() => removeProfile(p.id)} className="ct-link !text-xs text-[var(--ct-danger-text)]">
-                  {t("common.delete")}
-                </button>
-              </>
-            )}
-          </li>
-        ))}
+        {profiles.map((p) => {
+          const isActive = p.id === activeId;
+          const initial = (p.label || "?").charAt(0).toUpperCase();
+          const tileClass = TILE_CLASS[p.color] || "indigo";
+
+          return (
+            <li key={p.id} className="ct-settings-row ct-settings-row-static">
+              <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)} aria-hidden>
+                {initial}
+              </span>
+              {editingId === p.id ? (
+                <input
+                  className={`${profileInputClass} flex-1 min-w-0 !py-1.5 !text-sm`}
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  onBlur={commitRename}
+                />
+              ) : (
+                <span className="min-w-0 flex-1">
+                  <span className="ct-settings-row-label block truncate">{p.label}</span>
+                  {isActive ? (
+                    <Caption className="block mt-0.5 text-[var(--ct-success)]">{t("profile.activeBadge")}</Caption>
+                  ) : null}
+                </span>
+              )}
+              {p.id !== "default" && editingId !== p.id ? (
+                <span className="ct-row gap-2 shrink-0">
+                  <button type="button" onClick={() => startRename(p)} className="ct-link !text-xs">
+                    {t("profile.rename")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeProfile(p.id)}
+                    className="ct-link !text-xs text-[var(--ct-danger-text)]"
+                  >
+                    {t("common.delete")}
+                  </button>
+                </span>
+              ) : isActive ? (
+                <CtIcon name="check-circle" size={16} className="text-[var(--ct-success)] shrink-0" aria-hidden />
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
       {!canAddProfile && profiles.length <= 1 && (
         <TierLimitBanner title={t("tier.limit.profilesTitle")} message={t("tier.limit.profilesMessage")} />
@@ -123,7 +142,7 @@ export default function ProfileManager() {
       </div>
       <select
         className={profileInputClass}
-        value={settings.activeProfileId || "default"}
+        value={activeId}
         onChange={(e) => updateSettings({ activeProfileId: e.target.value })}
       >
         {profiles.map((p) => (

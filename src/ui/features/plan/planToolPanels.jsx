@@ -13,6 +13,12 @@ import PlanWealthSimulationPanel from "./PlanWealthSimulationPanel.jsx";
 import GoalsToolPanel from "../tools/GoalsToolPanel.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 
+/** Wrap plan tool panel content with modern sheet surface. */
+function PlanToolPanelShell({ children }) {
+  if (!children) return null;
+  return <div className="ct-plan-tool-panel ct-stat-tile !p-0 !bg-transparent !border-0">{children}</div>;
+}
+
 /**
  * Render a Plan tool panel by id.
  * @param {string} toolId
@@ -32,51 +38,57 @@ export function renderPlanToolPanel(toolId, ctx) {
 
   switch (toolId) {
     case "tax":
-      return <IncomeTaxPanel />;
+      return <PlanToolPanelShell><IncomeTaxPanel /></PlanToolPanelShell>;
     case "loan":
       return (
-        <LoanPayoffAdvisor
-          commitments={commitments}
-          lendings={lendings}
-          settings={settings}
-          getEffectiveStatus={getEffectiveStatus}
-          getEffectiveLendingStatus={getEffectiveLendingStatus}
-          todayStr={todayStr}
-        />
+        <PlanToolPanelShell>
+          <LoanPayoffAdvisor
+            commitments={commitments}
+            lendings={lendings}
+            settings={settings}
+            getEffectiveStatus={getEffectiveStatus}
+            getEffectiveLendingStatus={getEffectiveLendingStatus}
+            todayStr={todayStr}
+          />
+        </PlanToolPanelShell>
       );
     case "safety":
-      return <SafetyPlannerPanel />;
+      return <PlanToolPanelShell><SafetyPlannerPanel /></PlanToolPanelShell>;
     case "expense":
-      return <ExpenseSimulatorForm />;
+      return <PlanToolPanelShell><ExpenseSimulatorForm /></PlanToolPanelShell>;
     case "planner":
-      return <MoneyPlannerPanel />;
+      return <PlanToolPanelShell><MoneyPlannerPanel /></PlanToolPanelShell>;
     case "loantools":
-      return <LoanToolsPanel />;
+      return <PlanToolPanelShell><LoanToolsPanel /></PlanToolPanelShell>;
     case "chit":
       return (
-        <ChitFundAdvisor
-          commitments={commitments}
-          settings={settings}
-          getEffectiveStatus={getEffectiveStatus}
-          todayStr={todayStr}
-        />
+        <PlanToolPanelShell>
+          <ChitFundAdvisor
+            commitments={commitments}
+            settings={settings}
+            getEffectiveStatus={getEffectiveStatus}
+            todayStr={todayStr}
+          />
+        </PlanToolPanelShell>
       );
     case "invest":
-      return <InvestSavingsPanel />;
+      return <PlanToolPanelShell><InvestSavingsPanel /></PlanToolPanelShell>;
     case "retirement":
-      return <RetirementPlannerPanel />;
+      return <PlanToolPanelShell><RetirementPlannerPanel /></PlanToolPanelShell>;
     case "bond":
-      return <BondAdvisor monthlyIncome={income} />;
+      return <PlanToolPanelShell><BondAdvisor monthlyIncome={income} /></PlanToolPanelShell>;
     case "wealth":
-      return <PlanWealthSimulationPanel />;
+      return <PlanToolPanelShell><PlanWealthSimulationPanel /></PlanToolPanelShell>;
     case "scenarios":
-      return <UnifiedScenariosPanel />;
+      return <PlanToolPanelShell><UnifiedScenariosPanel /></PlanToolPanelShell>;
     case "goals":
       return (
-        <GoalsToolPanel
-          initialTitle={goalDraft?.title || ""}
-          initialType={goalDraft?.type || "save_amount"}
-        />
+        <PlanToolPanelShell>
+          <GoalsToolPanel
+            initialTitle={goalDraft?.title || ""}
+            initialType={goalDraft?.type || "save_amount"}
+          />
+        </PlanToolPanelShell>
       );
     default:
       return null;

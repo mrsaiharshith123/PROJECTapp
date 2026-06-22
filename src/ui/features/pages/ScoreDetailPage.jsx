@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
@@ -14,6 +14,8 @@ import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { useCountUp } from "../../hooks/useCountUp.js";
 import { Button } from "../../primitives/Button.jsx";
+import PerovoShareCard from "../sharing/PerovoShareCard.jsx";
+import Confetti from "react-confetti";
 
 function tierRingColor(tone) {
   if (tone === "success" || tone === "ok") return "#2dd4bf";
@@ -44,6 +46,7 @@ function pillarStatusKey(pillarId, score, survivalMonths, debtRatio, goalsRatio)
 
 export default function ScoreDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { commitments, lendings, dailySpends, settings, getEffectiveStatus, getEffectiveLendingStatus, todayStr, monthlySnapshots } =
     usePerovo();
@@ -95,8 +98,12 @@ export default function ScoreDetailPage() {
   const goalsOnTrackRatio =
     perovo.pillars?.protection?.score != null ? Math.min(1, perovo.pillars.protection.score / 100) : 0.5;
 
+  const showPayoffShare = Boolean(location.state?.showPayoffShare);
+  const payoffLoanName = location.state?.loanName;
+
   return (
     <div className="ct-page ct-score-detail pb-8">
+      {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
       <header className="ct-subpage-header">
         <button type="button" className="ct-back-btn" onClick={() => navigate(-1)} aria-label={t("common.back")}>
           <CtIcon name="arrow-left" size={18} />
@@ -208,6 +215,23 @@ export default function ScoreDetailPage() {
           <CtIcon name="arrow-right" size={16} className="text-red-400 shrink-0" />
         </button>
       ) : null}
+
+      <div className="mx-4 mb-3">
+        <PerovoShareCard
+          score={perovo.score}
+          tierLabel={t(`perovoScore.tier.${perovo.tier?.id}`)}
+          tierTone={perovo.tier?.tone}
+          freeCash={freeCash}
+          runwayMonths={survivalMonths}
+          variant={showPayoffShare ? "payoff" : "score"}
+          loanName={payoffLoanName}
+          headline={
+            pressureDelta != null && pressureDelta <= -10
+              ? t("scoreDetail.trendUp")
+              : undefined
+          }
+        />
+      </div>
 
       <Button type="button" variant="outline" className="mx-4 w-[calc(100%-2rem)]" onClick={() => navigate("/money/insights")}>
         {t("scoreDetail.viewAnalytics")}

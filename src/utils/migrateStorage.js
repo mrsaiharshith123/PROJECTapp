@@ -655,6 +655,8 @@ const DEFAULT_SETTINGS = {
   sideIncomes: [],
   spouseName: "",
   familyName: "",
+  /** ISO timestamp — last settings persist (local + server sync compare) */
+  updatedAt: "",
 };
 
 export function loadSettingsFromStorage() {
@@ -774,6 +776,7 @@ export function loadSettingsFromStorage() {
           : [],
         spouseName: String(o.spouseName || ""),
         familyName: String(o.familyName || ""),
+        updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : "",
       };
     }
   } catch {

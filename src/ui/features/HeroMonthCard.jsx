@@ -44,7 +44,7 @@ export function HeroMonthCard({
     <button
       type="button"
       onClick={onClick}
-      className={cn("ct-hero-month ct-hero-month-financial", className)}
+      className={cn("ct-hero-card ct-hero-month ct-hero-month-financial", className)}
       aria-label={t("home.openAnalytics")}
     >
       <div className="ct-hero-month-glow" aria-hidden />
@@ -104,7 +104,7 @@ export function HeroMonthCard({
               <p
                 className={cn(
                   "ct-hero-metric ct-numeral mt-1",
-                  freeCashWarn ? "ct-hero-metric-warn" : "ct-hero-metric-success",
+                  freeCashWarn ? "ct-hero-metric-warn" : "ct-hero-metric-gold",
                 )}
               >
                 {privacyMode ? "••••" : freeCashValue}

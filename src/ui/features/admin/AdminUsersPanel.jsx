@@ -111,7 +111,7 @@ export default function AdminUsersPanel() {
   const to = Math.min(offset + limit, total);
 
   return (
-    <div className="ct-admin-panel ct-stack">
+    <div className="ct-hero-card lending ct-admin-panel ct-stack">
       <Heading level={4}>{t("admin.section.users")}</Heading>
 
       <form
@@ -162,7 +162,7 @@ export default function AdminUsersPanel() {
                   <tr key={id}>
                     <td>
                       <div className="ct-admin-users-name-row">
-                        <span className="ct-admin-users-initials">{userInitials(u)}</span>
+                        <span className="ct-icon-tile-sm indigo shrink-0 ct-admin-users-initials">{userInitials(u)}</span>
                         <span className="ct-admin-users-name">{userLabel(u)}</span>
                       </div>
                       <Caption className="block mt-0.5">

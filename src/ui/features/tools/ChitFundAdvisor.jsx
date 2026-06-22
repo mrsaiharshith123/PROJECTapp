@@ -55,6 +55,18 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
         <InfoTip text={CALC_HELP.chitAdvisor} />
       </Caption>
 
+      {advice.best && (
+        <ToolAnswerHero
+          tone="survival"
+          label={t("chit.advisor.suggestedMonth", { month: advice.best.month })}
+          value={formatInr(advice.best.payout)}
+          subtitle={t("chit.advisor.payoutLine", {
+            payout: formatInr(advice.best.payout),
+            loss: formatInr(advice.best.loss),
+          })}
+        />
+      )}
+
       {advice.lossSuggestion && params.chitValue > 0 && (
         <ToneSurface tone="warning" className="ct-stack-sm text-xs">
           <p className="font-semibold inline-flex items-center">
@@ -104,21 +116,9 @@ function ChitAnalysis({ params, commitments, settings, getEffectiveStatus, today
       )}
 
       {advice.summary && (
-        <ToneSurface tone="info" className="text-xs">
-          {advice.summary}
-        </ToneSurface>
-      )}
-
-      {advice.best && (
-        <ToolAnswerHero
-          tone="survival"
-          label={t("chit.advisor.suggestedMonth", { month: advice.best.month })}
-          value={formatInr(advice.best.payout)}
-          subtitle={t("chit.advisor.payoutLine", {
-            payout: formatInr(advice.best.payout),
-            loss: formatInr(advice.best.loss),
-          })}
-        />
+        <div className="ct-stat-tile indigo text-xs">
+          <p className="ct-stat-tile-value text-sm">{advice.summary}</p>
+        </div>
       )}
 
       {advice.rows.length > 0 && (

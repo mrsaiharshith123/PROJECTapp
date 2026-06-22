@@ -1,4 +1,4 @@
-import { Modal, Button, Caption, ToneSurface, inputClassName } from "../../index.js";
+import { Modal, Button, Caption, inputClassName } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
 
@@ -37,26 +37,28 @@ export default function CommitmentsPaymentModal({
       }
     >
       <div className="ct-stack">
-        <Caption className="block">
-          <span className="font-semibold text-[var(--ct-text)]">{paymentFor.name}</span>
-          {contractStillToPay > installmentAmount && installmentAmount > 0 ? (
-            <>
-              {" "}
-              {t("bills.totalLeftOnContract", { amount: contractDisplay })}{" "}
-              {t("bills.payingThisMonth", { amount: installmentDisplay })}
-            </>
-          ) : (
-            <> {t("bills.thisPayment", { amount: installmentDisplay })}</>
-          )}
-        </Caption>
+        <div className="ct-hero-card survival ct-stack-sm">
+          <Caption className="block">
+            <span className="font-semibold text-[var(--ct-text)]">{paymentFor.name}</span>
+            {contractStillToPay > installmentAmount && installmentAmount > 0 ? (
+              <>
+                {" "}
+                {t("bills.totalLeftOnContract", { amount: contractDisplay })}{" "}
+                {t("bills.payingThisMonth", { amount: installmentDisplay })}
+              </>
+            ) : (
+              <> {t("bills.thisPayment", { amount: installmentDisplay })}</>
+            )}
+          </Caption>
+        </div>
         {cycleAlreadyPaid ? (
-          <ToneSurface tone="success">
+          <div className="ct-stat-tile teal">
             <Caption className="block">{t("bills.alreadyPaidMonth")}</Caption>
-          </ToneSurface>
+          </div>
         ) : (
-          <div>
-            <label className="ct-field-label">{t("bills.installmentFixed")}</label>
-            <p className={`${fieldClass} ct-numeral text-lg font-bold !py-3`}>{installmentDisplay}</p>
+          <div className="ct-stat-tile amber">
+            <label className="ct-stat-tile-label">{t("bills.installmentFixed")}</label>
+            <p className="ct-stat-tile-value ct-numeral">{installmentDisplay}</p>
           </div>
         )}
         <div>

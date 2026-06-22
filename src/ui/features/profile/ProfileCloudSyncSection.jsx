@@ -127,9 +127,9 @@ export default function ProfileCloudSyncSection() {
       <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.freePlanHint")}>
         <SettingsGroupContent className="ct-stack-sm">
           <Body className="!text-sm">{t("sync.freePlanBody")}</Body>
-          <Button type="button" variant="primary" size="sm" onClick={() => navigate("/profile#upgrade")}>
+          <button type="button" className="ct-btn ct-btn-primary w-full" onClick={() => navigate("/profile#upgrade")}>
             {t("common.viewPlans")} →
-          </Button>
+          </button>
         </SettingsGroupContent>
       </SettingsGroup>
     );
@@ -163,7 +163,7 @@ export default function ProfileCloudSyncSection() {
 
       {enabled ? (
         <SettingsGroupContent className="ct-stack-sm">
-          <div className="ct-hero-inset ct-stack gap-1 !text-xs">
+          <div className="ct-stat-tile indigo ct-stack gap-1 !text-xs">
             <p>• {t("sync.backupBullet")}</p>
             <p>• {t("sync.restoreBullet")}</p>
             <p>• {t("sync.autoBullet")}</p>
@@ -178,12 +178,12 @@ export default function ProfileCloudSyncSection() {
           )}
 
           <div className="ct-grid-2 gap-2">
-            <Button type="button" variant="primary" disabled={sync.busy} onClick={sync.pushNow}>
+            <button type="button" className="ct-btn ct-btn-primary w-full" disabled={sync.busy} onClick={sync.pushNow}>
               {sync.busy ? t("sync.working") : t("sync.backupNow")}
-            </Button>
-            <Button type="button" variant="secondary" disabled={sync.busy} onClick={() => setRestoreOpen(true)}>
+            </button>
+            <button type="button" className="ct-btn ct-btn-outline w-full" disabled={sync.busy} onClick={() => setRestoreOpen(true)}>
               {t("sync.restore")}
-            </Button>
+            </button>
           </div>
           <RestoreBackupModal
             open={restoreOpen}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Fab } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
@@ -104,9 +103,12 @@ const Commitments = () => {
         type: "confetti",
         message: t("celebration.loanPaidOff", { name: paymentFor.name }),
       });
-    } else {
-      setCelebration({ type: "checkmark", message: t("celebration.paymentRecorded") });
+      const loanName = paymentFor.name;
+      setPaymentFor(null);
+      navigate("/profile/scores", { state: { showPayoffShare: true, loanName } });
+      return;
     }
+    setCelebration({ type: "checkmark", message: t("celebration.paymentRecorded") });
     setPaymentFor(null);
   };
 
@@ -138,14 +140,19 @@ const Commitments = () => {
   ];
 
   return (
-    <div className="ct-stack ct-money-bills-page">
+    <div className="ct-page ct-stack ct-money-bills-page">
       <div className="ct-row-between gap-2 mb-1">
-        <span className="ct-caption">{t("bills.eyebrowMonthly")}</span>
+        <p className="ct-analytics-section-title">{t("money.tab.bills")}</p>
         <div className="ct-header-actions">
           <MoneyOverflowMenu items={overflowItems} />
-          <Fab type="button" onClick={() => navigate("/add")} aria-label={t("bills.actionAddBill")}>
+          <button
+            type="button"
+            className="ct-back-btn ct-bills-add-btn"
+            onClick={() => navigate("/add")}
+            aria-label={t("bills.actionAddBill")}
+          >
             +
-          </Fab>
+          </button>
         </div>
       </div>
 

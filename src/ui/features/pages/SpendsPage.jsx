@@ -28,7 +28,12 @@ export default function SpendsPage() {
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ct-page ct-stack ct-money-spends-page">
+      <div className="ct-stat-tile indigo py-2 px-3">
+        <p className="ct-analytics-section-title">{t("money.tab.spends")}</p>
+        <p className="ct-analytics-section-sub">{t("money.spends.sectionSub")}</p>
+      </div>
+
       <div className="ct-money-import-row">
         <Button type="button" size="sm" variant="secondary" onClick={() => setSpendSmsOpen(true)}>
           <CtIcon name="device-mobile" size={16} />

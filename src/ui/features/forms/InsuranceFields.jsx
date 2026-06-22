@@ -10,7 +10,7 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
   const preview = buildInsuranceBillName(values);
 
   return (
-    <div className="ct-form-panel ct-form-panel-info">
+    <div className="ct-stat-tile indigo ct-form-panel ct-form-panel-info ct-stack">
       <Caption className="block leading-relaxed">{t("insurance.form.trackNote")}</Caption>
       <div>
         <label className="ct-field-label">

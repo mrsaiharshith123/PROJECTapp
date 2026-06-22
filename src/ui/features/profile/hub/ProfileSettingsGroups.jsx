@@ -44,30 +44,32 @@ export default function ProfileSettingsGroups({
 
       <SettingsGroup title={t("settings.group.money")} icon="wallet">
         <SettingsGroupRow iconColor="teal" icon="currency-inr" label={t("settings.row.incomeSalary")} onClick={() => navigate("/you/money")} />
-        {isFamily ? (
-          <SettingsGroupRow
-            iconColor="teal"
-            icon="users-three"
-            label={t("settings.row.householdMode")}
-            value={householdValue}
-            onClick={() => navigate("/you/household")}
-          />
-        ) : (
-          <button
-            type="button"
-            className="ct-household-invite-card ct-settings-row"
-            onClick={() => setHouseholdSetupOpen(true)}
-          >
-            <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
-              <CtIcon name="users-three" size={15} weight="duotone" />
-            </span>
-            <span className="min-w-0 flex-1 text-left">
-              <Body className="!text-sm font-medium">{t("settings.household.inviteTitle")}</Body>
-              <Caption className="block mt-0.5 opacity-80">{t("settings.household.inviteSubtitle")}</Caption>
-            </span>
-            <CtIcon name="chevron-right" size={14} className="ct-settings-chevron-icon shrink-0" aria-hidden />
-          </button>
-        )}
+        {false ? (
+          isFamily ? (
+            <SettingsGroupRow
+              iconColor="teal"
+              icon="users-three"
+              label={t("settings.row.householdMode")}
+              value={householdValue}
+              onClick={() => navigate("/you/household")}
+            />
+          ) : (
+            <button
+              type="button"
+              className="ct-household-invite-card ct-settings-row"
+              onClick={() => setHouseholdSetupOpen(true)}
+            >
+              <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
+                <CtIcon name="users-three" size={15} weight="duotone" />
+              </span>
+              <span className="min-w-0 flex-1 text-left">
+                <Body className="!text-sm font-medium">{t("settings.household.inviteTitle")}</Body>
+                <Caption className="block mt-0.5 opacity-80">{t("settings.household.inviteSubtitle")}</Caption>
+              </span>
+              <CtIcon name="chevron-right" size={14} className="ct-settings-chevron-icon shrink-0" aria-hidden />
+            </button>
+          )
+        ) : null /* Temporarily hidden — coming in v1.1 */}
         <SettingsGroupRow iconColor="teal" icon="map-pin" label={t("settings.row.city")} onClick={() => navigate("/you/money")} />
         <SettingsGroupRow
           iconColor="teal"

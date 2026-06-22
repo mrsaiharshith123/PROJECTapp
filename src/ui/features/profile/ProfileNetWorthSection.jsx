@@ -13,6 +13,7 @@ import { deriveWealthFromCommitments } from "../../../engines/netWorth/commitmen
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import ProfileMilestonesPanel from "./hub/ProfileMilestonesPanel.jsx";
+import { formatInr } from "../../../constants/symbols.js";
 
 /** Profile wealth ledger — journey patterns, assets, and liabilities. */
 export default function ProfileNetWorthSection() {
@@ -44,9 +45,18 @@ export default function ProfileNetWorthSection() {
 
   const hasAssets = assets.length > 0 || fromBills.assets.length > 0;
   const hasLiabilities = liabilities.length > 0 || fromBills.liabilities.length > 0;
+  const netWorthDisplay = privacyMode ? "••••••" : formatInr(intel.core.netWorth);
 
   return (
     <div className="ct-stack ct-nw-embedded ct-profile-settings-panel">
+      <div className="ct-hero-card wealth">
+        <div className="ct-hero-glow teal" aria-hidden />
+        <p className="ct-hero-label">
+          {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+        </p>
+        <p className="ct-hero-number">{netWorthDisplay}</p>
+      </div>
+
       <SegmentedControl
         options={[
           { id: "overview", label: isFamily ? t("netWorth.tab.overviewHousehold") : t("netWorth.tab.overview") },

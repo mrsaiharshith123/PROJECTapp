@@ -110,13 +110,8 @@ function FabRadialMenu({ open, onClose, navigate, onScanBill }) {
 export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  if (location.pathname.startsWith("/you/")) return null;
   const { settings } = usePerovo();
   const { t } = useTranslation();
-  const navItems = navItemsForMode(resolveUserMode(settings));
-  const tabItems = navItems.filter((item) => !item.fab);
-  const fabItem = navItems.find((item) => item.fab);
-  const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
   const [logSpendOpen, setLogSpendOpen] = useState(false);
   const [scanBillOpen, setScanBillOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
@@ -128,6 +123,14 @@ export function Navbar() {
     else document.body.removeAttribute("data-fab-open");
     window.dispatchEvent(new CustomEvent(FAB_CHANGE_EVENT, { detail: { open: fabOpen } }));
   }, [fabOpen]);
+
+  const hideOnYouSubpage = location.pathname.startsWith("/you/");
+  const navItems = navItemsForMode(resolveUserMode(settings));
+  const tabItems = navItems.filter((item) => !item.fab);
+  const fabItem = navItems.find((item) => item.fab);
+  const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
+
+  if (hideOnYouSubpage) return null;
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current != null) window.clearTimeout(longPressTimerRef.current);

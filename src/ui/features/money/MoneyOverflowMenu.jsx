@@ -34,19 +34,20 @@ export default function MoneyOverflowMenu({ items }) {
         <CtIcon name="dots-three-vertical" size={22} />
       </button>
       {open ? (
-        <div className="ct-money-overflow-panel" role="menu">
+        <div className="ct-money-overflow-panel ct-nw-panel !p-1.5" role="menu">
           {items.map((item) => (
             <button
               key={item.id}
               type="button"
               role="menuitem"
-              className="ct-money-overflow-item"
+              className="ct-settings-row ct-money-overflow-item ct-pressable"
               onClick={() => {
                 item.onClick();
                 setOpen(false);
               }}
             >
-              {item.label}
+              <span className="ct-settings-row-label">{item.label}</span>
+              <CtIcon name="caret-right" size={14} className="ct-settings-row-caret shrink-0" aria-hidden />
             </button>
           ))}
         </div>

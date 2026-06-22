@@ -7,14 +7,16 @@ export default function YouHistoryPage() {
     usePerovo();
   return (
     <YouSubPageShell titleKey="settings.row.paymentHistory">
-      <ProfileHistorySection
-        commitments={commitments}
-        getEffectiveStatus={getEffectiveStatus}
-        todayStr={todayStr}
-        deleteCommitment={deleteCommitment}
-        removeCommitmentPayment={removeCommitmentPayment}
-        updateCommitment={updateCommitment}
-      />
+      <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none !p-0">
+        <ProfileHistorySection
+          commitments={commitments}
+          getEffectiveStatus={getEffectiveStatus}
+          todayStr={todayStr}
+          deleteCommitment={deleteCommitment}
+          removeCommitmentPayment={removeCommitmentPayment}
+          updateCommitment={updateCommitment}
+        />
+      </div>
     </YouSubPageShell>
   );
 }

@@ -5,9 +5,10 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { isPhysicalAssetCategory } from "../../../utils/netWorth/physicalAssetHelpers.js";
-import { Button, Caption, Heading, EmptyState } from "../../index.js";
+import { EmptyState } from "../../index.js";
 import WealthEntryCard from "./WealthEntryCard.jsx";
 import WealthEntryModal from "./WealthEntryModal.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 
 /** Physical assets panel — property, vehicle, gold, business. */
 export default function PhysicalAssetsSection() {
@@ -40,18 +41,13 @@ export default function PhysicalAssetsSection() {
 
   return (
     <section className="ct-nw-panel ct-animate-fade-up" aria-labelledby="physical-assets-heading">
-      <div className="ct-row-between gap-2">
-        <div>
-          <Heading level={3} id="physical-assets-heading">
-            {isFamily ? t("netWorth.physical.titleHousehold") : t("netWorth.physical.title")}
-          </Heading>
-          <Caption className="block mt-1">
-            {isFamily ? t("netWorth.physical.subtitleHousehold") : t("netWorth.physical.subtitle")}
-          </Caption>
-        </div>
-        {!privacyMode && physicalAssets.length > 0 && (
-          <span className="ct-stat-value ct-numeral text-sm shrink-0">{formatInr(totalValue)}</span>
-        )}
+      <div className="ct-hero-card wealth ct-tool-answer-hero">
+        <div className="ct-hero-glow teal" aria-hidden />
+        <p className="ct-hero-label">{isFamily ? t("netWorth.physical.titleHousehold") : t("netWorth.physical.title")}</p>
+        <p className="ct-hero-number">{privacyMode ? "••••" : formatInr(totalValue)}</p>
+        <Caption className="block mt-1 relative opacity-90">
+          {isFamily ? t("netWorth.physical.subtitleHousehold") : t("netWorth.physical.subtitle")}
+        </Caption>
       </div>
 
       {physicalAssets.length === 0 ? (
@@ -74,9 +70,9 @@ export default function PhysicalAssetsSection() {
         </div>
       )}
 
-      <Button type="button" variant="secondary" className="w-full mt-3" onClick={openAdd}>
+      <button type="button" className="ct-btn ct-btn-primary w-full mt-3" onClick={openAdd}>
         {t("netWorth.physical.addCta")}
-      </Button>
+      </button>
 
       <WealthEntryModal
         open={Boolean(modal)}

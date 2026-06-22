@@ -137,9 +137,13 @@ export function BillCard({
           <Button variant="ghost" size="sm" type="button" onClick={onEdit}>
             {t("common.edit")}
           </Button>
-          <Button variant="danger" size="sm" type="button" onClick={onDelete}>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="ct-bill-delete-btn"
+          >
             {t("common.delete")}
-          </Button>
+          </button>
         </div>
       </Card>
     );
@@ -164,7 +168,9 @@ export function BillCard({
             )}
             {health && (
               <span className={`ct-chip-health ct-chip-health-${health.band}`}>
-                {t(`bill.health.${health.band}`)}
+                {health.band === "stress" && health.insightId === "bill-health-top-stress"
+                  ? t("bill.health.topStressContributor")
+                  : t(`bill.health.${health.band}`)}
               </span>
             )}
           </div>
@@ -185,7 +191,7 @@ export function BillCard({
             <p className="ct-caption ct-text-accent">{progress.label}</p>
           )}
         </div>
-        <div className="ct-bill-card-amount">
+        <div className="ct-bill-card-amount ct-bill-card-amount-right">
           <p className="ct-display ct-amount ct-numeral">
             {"\u20b9"}
             {total.toLocaleString()}
@@ -225,9 +231,9 @@ export function BillCard({
           <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
             {t("common.edit")}
           </Button>
-          <Button variant="danger" size="sm" type="button" onClick={onDelete}>
+          <button type="button" onClick={onDelete} className="ct-bill-delete-btn">
             {t("common.delete")}
-          </Button>
+          </button>
         </div>
       )}
     </Card>

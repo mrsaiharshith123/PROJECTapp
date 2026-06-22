@@ -93,7 +93,7 @@ export default function ProfileHubFooter({
             </Body>
             <Caption className="block">{t("profileHub.deleteTypePrompt")}</Caption>
             <input
-              className={inputClassName()}
+              className={`${inputClassName()} ct-input-tint`}
               value={deleteConfirmValue}
               onChange={(e) => onDeleteConfirmChange?.(e.target.value)}
               placeholder="DELETE"
@@ -119,7 +119,9 @@ export default function ProfileHubFooter({
       ) : null}
 
       <InstallAppBanner />
-      <Caption className="text-center block pb-1 opacity-75">{t("profile.savedLocally")}</Caption>
+      <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none">
+        <Caption className="text-center block pb-1 opacity-75">{t("profile.savedLocally")}</Caption>
+      </div>
       <ProfileBrandFooter />
     </footer>
   );

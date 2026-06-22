@@ -206,10 +206,10 @@ export default function LoanPayoffAdvisor({
       )}
 
       {step === "calc" && target && (
-        <ToneSurface tone="info" className="text-xs">
-          <p className="font-semibold">{target.title}</p>
-          <p className="opacity-90">{target.subtitle}</p>
-        </ToneSurface>
+        <div className="ct-stat-tile indigo text-xs">
+          <p className="ct-stat-tile-value text-sm font-semibold">{target.title}</p>
+          <p className="ct-stat-tile-label mt-0.5">{target.subtitle}</p>
+        </div>
       )}
 
       {showResults && (

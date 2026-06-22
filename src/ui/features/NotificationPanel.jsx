@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { usePerovo } from "../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
@@ -7,8 +8,25 @@ import { useTranslation } from "../../i18n/I18nProvider.js";
 import { translateNotification } from "../../i18n/notificationLabels.js";
 import { Button } from "../primitives/Button.jsx";
 import { Badge } from "../primitives/Badge.jsx";
-import { Heading, Body, Caption } from "../primitives/Text.jsx";
-import { Card } from "../primitives/Card.jsx";
+import { Heading, Caption } from "../primitives/Text.jsx";
+import { CtIcon } from "../icons/CtIcon.jsx";
+import { cn } from "../utils/cn.js";
+
+const URGENCY_ICON = {
+  critical: { icon: "warning", tone: "danger" },
+  high: { icon: "warning", tone: "amber" },
+  normal: { icon: "bell", tone: "indigo" },
+  low: { icon: "check", tone: "teal" },
+};
+
+function formatNotifTime(createdAt) {
+  if (!createdAt) return "";
+  try {
+    return formatDistanceToNow(new Date(createdAt), { addSuffix: true });
+  } catch {
+    return "";
+  }
+}
 
 export function NotificationPanel({ onClose }) {
   const panelRef = useRef(null);
@@ -43,7 +61,7 @@ export function NotificationPanel({ onClose }) {
         role="dialog"
         aria-label={t("notifications.panel.title")}
       >
-        <Card variant="flat" className="!p-0 overflow-hidden">
+        <div className="ct-nw-panel !p-0 overflow-hidden">
           <div className="ct-row-between px-4 py-3 border-b border-[var(--ct-border)]">
             <Heading level={2}>{t("notifications.panel.title")}</Heading>
             <div className="ct-row">
@@ -67,14 +85,25 @@ export function NotificationPanel({ onClose }) {
               <ul>
                 {notifications.map((n) => {
                   const copy = translateNotification(t, n);
+                  const meta = URGENCY_ICON[n.urgency] || URGENCY_ICON.normal;
+                  const timeAgo = formatNotifTime(n.createdAt);
                   return (
-                    <li key={n.id} className={n.read ? "ct-notif-item" : "ct-notif-item ct-notif-item-unread"}>
-                      <div className="ct-row-between items-start">
-                        <div>
-                          <Body className="text-[var(--ct-text)]">{copy.message}</Body>
-                          <Caption className="uppercase font-semibold mt-1 block">{n.urgency}</Caption>
+                    <li
+                      key={n.id}
+                      className={cn("ct-notif-item", !n.read && "ct-notif-item-unread")}
+                    >
+                      <div className="ct-notif-item-row">
+                        <span className={cn("ct-notif-icon-tile ct-icon-tile ct-icon-tile-sm", meta.tone)} aria-hidden>
+                          <CtIcon name={meta.icon} size={18} />
+                        </span>
+                        <div className="ct-notif-item-body">
+                          <p className="ct-notif-item-title">{copy.title || copy.message}</p>
+                          {copy.title && copy.message ? (
+                            <Caption className="block mt-0.5 leading-snug">{copy.message}</Caption>
+                          ) : null}
+                          {timeAgo ? <p className="ct-notif-item-time">{timeAgo}</p> : null}
                         </div>
-                        <div className="ct-row gap-1">
+                        <div className="ct-row gap-1 shrink-0">
                           {"href" in n && n.href ? (
                             <Button
                               type="button"
@@ -117,7 +146,7 @@ export function NotificationPanel({ onClose }) {
               </Button>
             </div>
           ) : null}
-        </Card>
+        </div>
       </div>
     </>,
     document.body,

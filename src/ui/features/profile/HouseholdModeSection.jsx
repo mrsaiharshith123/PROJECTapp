@@ -14,6 +14,8 @@ import HouseholdSetupModal from "../modals/HouseholdSetupModal.jsx";
  * @param {{ settings: object, updateSettings: (p: object) => void }} props
  */
 export default function HouseholdModeSection({ settings, updateSettings }) {
+  if (true) return null; // Temporarily hidden — coming in v1.1
+
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user, saveProfile } = useAuth();

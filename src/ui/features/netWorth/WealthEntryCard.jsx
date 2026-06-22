@@ -101,11 +101,11 @@ export default function WealthEntryCard({
             </Caption>
           </div>
         </div>
-        <div className="text-right shrink-0">
-          <Body className="ct-numeral font-bold">
+        <div className="ct-stat-tile teal shrink-0 text-right min-w-[5rem]">
+          <p className="ct-stat-tile-value ct-numeral">
             {privacyMode ? "••••" : formatInr(entry.value)}
-          </Body>
-          {pct != null && <Caption>{pct.toFixed(0)}%</Caption>}
+          </p>
+          {pct != null && <p className="ct-stat-tile-label">{pct.toFixed(0)}%</p>}
           {cagr != null && (
             <span className="ct-trend-chip ct-nw-cagr-chip">
               {cagr >= 0 ? "+" : ""}

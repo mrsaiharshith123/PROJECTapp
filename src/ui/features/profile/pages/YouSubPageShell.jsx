@@ -27,12 +27,14 @@ export default function YouSubPageShell({ titleKey, title, children, action }) {
           onClick={() => navigate("/profile")}
           aria-label={t("common.back")}
         >
-          <CtIcon name="arrow-left" size={18} />
+          <span className="ct-icon-tile ct-icon-tile-sm slate" aria-hidden>
+            <CtIcon name="arrow-left" size={16} weight="duotone" />
+          </span>
         </button>
         <span className="ct-subpage-title">{pageTitle}</span>
         {action ? <span className="ct-subpage-action">{action}</span> : <span className="ct-subpage-spacer" aria-hidden />}
       </header>
-      <div className="ct-subpage-content">{children}</div>
+      <div className="ct-subpage-content ct-stack">{children}</div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default function PlanCalculatorsSection() {
       <h2 className="ct-plan-section-title">{t("plan.section.calculators")}</h2>
       <p className="ct-plan-section-sub">{t("plan.section.calculatorsSub")}</p>
 
-      <div className="ct-plan-grid-2">
+      <div className="ct-plan-grid-2 ct-tool-tile-grid">
         {CALCULATOR_TOOLS.map((tool) => (
           <ToolTile
             key={tool.id}
@@ -41,6 +41,7 @@ export default function PlanCalculatorsSection() {
             subtitle={t(tool.subtitleKey)}
             accent={tool.accent}
             onClick={() => openTool(tool.id)}
+            className="ct-tool-tile"
           />
         ))}
       </div>

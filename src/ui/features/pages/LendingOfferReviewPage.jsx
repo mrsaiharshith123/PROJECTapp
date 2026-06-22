@@ -26,7 +26,7 @@ export default function LendingOfferReview() {
 
   if (!offer) {
     return (
-      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center">
+      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
         <Card className="ct-stack-sm text-center py-10">
           <span className="ct-icon-tile danger mx-auto" aria-hidden>
             <CtIcon name="warning" size={24} context="status" />
@@ -74,7 +74,7 @@ export default function LendingOfferReview() {
 
   if (accepted) {
     return (
-      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center">
+      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
         <Card className="ct-stack-sm text-center py-8">
           <span className="ct-icon-tile teal mx-auto" aria-hidden>
             <CtIcon name="check" size={28} context="status" />
@@ -92,7 +92,7 @@ export default function LendingOfferReview() {
   }
 
   return (
-    <div className="ct-page ct-stack max-w-lg mx-auto pb-10">
+    <div className="ct-page ct-stack max-w-lg mx-auto pb-10" style={{ background: "var(--ct-bg)" }}>
       <div className="ct-hero-card lending relative">
         <div className="ct-hero-glow" aria-hidden />
         <Eyebrow>{t("lending.offer.eyebrow")}</Eyebrow>

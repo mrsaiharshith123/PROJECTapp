@@ -12,20 +12,22 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   ProGate,
   Card,
-  Button,
   Caption,
   Body,
   Stack,
   Heading,
   CtIcon,
+  inputClassName,
 } from "../../index.js";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
-const SUGGESTED_CHIPS = [
-  "Can I afford a ₹10,000 EMI?",
-  "What's hurting my score most?",
-  "How long can I survive without income?",
-  "Am I saving enough?",
+const fieldClass = `${inputClassName()} ct-input-tint`;
+
+const SUGGESTED_CHIP_KEYS = [
+  "tools.advisor.chip.emi",
+  "tools.advisor.chip.score",
+  "tools.advisor.chip.runway",
+  "tools.advisor.chip.saving",
 ];
 
 export default function FinancialAdvisorTool() {
@@ -75,7 +77,7 @@ export default function FinancialAdvisorTool() {
           { role: "user", text: q },
           {
             role: "advisor",
-            text: "I did not recognise that city. Pick from the list below or type a major city name (e.g. Hyderabad, Mumbai). Educational only.",
+            text: t("tools.advisor.cityUnrecognized"),
             source: "local",
           },
         ]);
@@ -89,7 +91,7 @@ export default function FinancialAdvisorTool() {
         { role: "user", text: q },
         {
           role: "advisor",
-          text: `Thanks — I'll use ${getCityLabel(cityId)} for living-cost estimates.`,
+          text: t("tools.advisor.thanksCity", { city: getCityLabel(cityId) }),
           source: "local",
         },
       ]);
@@ -110,7 +112,7 @@ export default function FinancialAdvisorTool() {
         { role: "user", text: q },
         {
           role: "advisor",
-          text: "Which city do you live in? I need this for survival runway and daily spend benchmarks. Educational only.",
+          text: t("tools.advisor.askCity"),
           source: "local",
         },
       ]);
@@ -130,7 +132,7 @@ export default function FinancialAdvisorTool() {
       ...prev,
       {
         role: "advisor",
-        text: `City set to ${getCityLabel(cityId)}. Ask your question again or continue below. Educational only.`,
+        text: t("tools.advisor.citySetContinue", { city: getCityLabel(cityId) }),
         source: "local",
       },
     ]);
@@ -149,32 +151,34 @@ export default function FinancialAdvisorTool() {
         value={t("tools.advisor.heroScore", { score: Math.round(intel.health?.score ?? 0) })}
         subtitle={intel.health?.label}
       />
-      <div className="ct-row" style={{ gap: "0.5rem", alignItems: "center" }}>
-        <CtIcon name="chat-dots" context="tile" size={22} />
-        <Heading level={3} className="!text-base">
+      <div className="ct-settings-row ct-settings-row-static">
+        <span className="ct-icon-tile ct-icon-tile-sm violet shrink-0" aria-hidden>
+          <CtIcon name="chat-dots" size={18} weight="duotone" />
+        </span>
+        <Heading level={3} className="!text-base min-w-0">
           {t("tools.advisor.title")}
         </Heading>
       </div>
 
       <div className="ct-advisor-messages">
         {(needsCity || awaitingCity) && (
-          <div className="ct-inset ct-stack-sm">
-            <Caption className="block font-semibold">Your city</Caption>
+          <div className="ct-stat-tile indigo ct-stack-sm">
+            <Caption className="block font-semibold">{t("tools.advisor.yourCity")}</Caption>
             <CitySelect value={settings.userCity || ""} onChange={saveCityFromPicker} />
           </div>
         )}
 
         {messages.length === 0 && !awaitingCity && !needsCity && (
           <div className="ct-advisor-chips">
-            {SUGGESTED_CHIPS.map((chip) => (
+            {SUGGESTED_CHIP_KEYS.map((key) => (
               <button
-                key={chip}
+                key={key}
                 type="button"
                 className="ct-chip"
-                onClick={() => handleSend(chip)}
+                onClick={() => handleSend(t(key))}
                 disabled={loading}
               >
-                {chip}
+                {t(key)}
               </button>
             ))}
           </div>
@@ -190,7 +194,7 @@ export default function FinancialAdvisorTool() {
             >
               <Body className="!text-sm">{msg.text}</Body>
               {msg.role === "advisor" && msg.source === "local" && (
-                <Caption className="block ct-advisor-offline">(offline analysis)</Caption>
+                <Caption className="block ct-advisor-offline">{t("tools.advisor.offlineTag")}</Caption>
               )}
             </div>
           ))}
@@ -207,22 +211,27 @@ export default function FinancialAdvisorTool() {
         </Stack>
       </div>
 
-      <div className="ct-advisor-input-row">
+      <div className="ct-advisor-input-row ct-stack-sm">
         <input
-          className="ct-input ct-advisor-input"
+          className={`${fieldClass} ct-advisor-input`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !loading) handleSend();
           }}
           placeholder={
-            awaitingCity ? "Type your city…" : "Ask about affordability, pressure, or runway…"
+            awaitingCity ? t("tools.advisor.placeholderCity") : t("tools.advisor.placeholderQuestion")
           }
           disabled={loading}
         />
-        <Button type="button" variant="primary" onClick={() => handleSend()} disabled={loading || !input.trim()}>
-          Ask
-        </Button>
+        <button
+          type="button"
+          className="ct-btn ct-btn-primary w-full"
+          onClick={() => handleSend()}
+          disabled={loading || !input.trim()}
+        >
+          {t("common.send")}
+        </button>
       </div>
       <Caption className="block">{t("tools.advisor.disclaimer")}</Caption>
     </Card>

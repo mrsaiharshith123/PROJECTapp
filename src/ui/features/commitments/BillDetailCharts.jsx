@@ -44,6 +44,7 @@ export function BillDetailCharts({ bill, summary, allCommitments, perCycleAmount
       emptyKey="bill.detail.chartEmpty"
       totalLabelKey="bill.detail.contractTotal"
       paymentListTitleKey="bill.detail.paymentList"
+      heroVariant="survival"
     />
   );
 }

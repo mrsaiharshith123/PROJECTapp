@@ -7,7 +7,7 @@ import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { Caption, Body } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
 /**
@@ -99,41 +99,37 @@ export default function UnifiedScenariosPanel() {
       </div>
 
       {active?.kind === "cashflow" && (
-        <div className="ct-card-flat ct-stack-sm !p-3 ct-nw-sim-result">
-          <Body className="!text-sm font-semibold">{active.row.label}</Body>
-          <Caption className="ct-text-accent block">{active.row.headline}</Caption>
-          <Caption className="block">{active.row.detail}</Caption>
+        <div className="ct-stat-tile teal ct-stack-sm">
+          <p className="ct-stat-tile-label">{active.row.label}</p>
+          <p className="ct-stat-tile-value text-sm ct-text-accent">{active.row.headline}</p>
+          <p className="ct-stat-tile-value text-sm">{active.row.detail}</p>
         </div>
       )}
 
       {active?.kind === "wealth" && wealthResult && (
-        <div className="ct-nw-sim-result ct-card-flat !p-3">
-          <div className="ct-grid-2 gap-3">
-            <div>
-              <Caption>{t("netWorth.sim.projectedNw")}</Caption>
-              <Body className="ct-numeral font-bold">{formatInr(wealthResult.projectedNetWorth)}</Body>
-            </div>
-            <div>
-              <Caption>{t("netWorth.sim.delta")}</Caption>
-              <Body
-                className={`ct-numeral font-bold ${wealthResult.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}
-              >
-                {wealthResult.deltaNetWorth >= 0 ? "+" : ""}
-                {formatInr(wealthResult.deltaNetWorth)}
-              </Body>
-            </div>
-            <div>
-              <Caption>{t("netWorth.sim.survival")}</Caption>
-              <Body className="font-bold">
-                {t("netWorth.liquidity.months", {
-                  count: Math.min(99, wealthResult.survivabilityMonths),
-                })}
-              </Body>
-            </div>
-            <div>
-              <Caption>{t("netWorth.sim.stability")}</Caption>
-              <Body className="font-bold">{t(wealthResult.stabilityKey)}</Body>
-            </div>
+        <div className="ct-grid-2 gap-3">
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-tile-label">{t("netWorth.sim.projectedNw")}</p>
+            <p className="ct-stat-tile-value ct-numeral">{formatInr(wealthResult.projectedNetWorth)}</p>
+          </div>
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-tile-label">{t("netWorth.sim.delta")}</p>
+            <p className={`ct-stat-tile-value ct-numeral ${wealthResult.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}>
+              {wealthResult.deltaNetWorth >= 0 ? "+" : ""}
+              {formatInr(wealthResult.deltaNetWorth)}
+            </p>
+          </div>
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-tile-label">{t("netWorth.sim.survival")}</p>
+            <p className="ct-stat-tile-value text-sm">
+              {t("netWorth.liquidity.months", {
+                count: Math.min(99, wealthResult.survivabilityMonths),
+              })}
+            </p>
+          </div>
+          <div className="ct-stat-tile">
+            <p className="ct-stat-tile-label">{t("netWorth.sim.stability")}</p>
+            <p className="ct-stat-tile-value text-sm">{t(wealthResult.stabilityKey)}</p>
           </div>
         </div>
       )}

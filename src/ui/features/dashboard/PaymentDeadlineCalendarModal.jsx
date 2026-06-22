@@ -53,46 +53,48 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
       <div className="ct-stack">
         <Caption className="block">{t("calendar.hint", { count: monthDeadlines })}</Caption>
 
-        <div className="ct-row-between">
-          <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => subMonths(m, 1))}>
-            ←
-          </Button>
-          <Body className="font-semibold !text-sm">{grid.monthLabel}</Body>
-          <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => addMonths(m, 1))}>
-            →
-          </Button>
+        <div className="ct-pay-cal-panel ct-stack-sm">
+          <div className="ct-row-between">
+            <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => subMonths(m, 1))}>
+              ←
+            </Button>
+            <Body className="font-semibold !text-sm">{grid.monthLabel}</Body>
+            <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => addMonths(m, 1))}>
+              →
+            </Button>
+          </div>
+
+          <div className="ct-pay-cal-grid">
+            {WEEKDAY_KEYS.map((d) => (
+              <Caption key={d} className="text-center font-semibold !text-[10px]">
+                {t(`calendar.week.${d}`)}
+              </Caption>
+            ))}
+            {Array.from({ length: grid.leadingEmpty }).map((_, i) => (
+              <span key={`pad-${i}`} aria-hidden />
+            ))}
+            {grid.days.map((cell) => {
+              const items = deadlinesByDate[cell.ymd] || [];
+              const hasDue = items.length > 0;
+              const selected = selectedYmd === cell.ymd;
+              const overdue = items.some((it) => it.status === "overdue");
+              return (
+                <button
+                  key={cell.ymd}
+                  type="button"
+                  className={`ct-pay-cal-day${hasDue ? " ct-pay-cal-day-has-dues" : ""}${selected ? " ct-pay-cal-day-selected" : ""}${cell.isToday ? " ct-pay-cal-day-today" : ""}${overdue ? " ct-pay-cal-day-overdue" : ""}`}
+                  onClick={() => setSelectedYmd(cell.ymd)}
+                  aria-label={`${cell.dayNum}${hasDue ? `, ${items.length} due` : ""}`}
+                >
+                  <span>{cell.dayNum}</span>
+                  {hasDue && <span className="ct-pay-cal-dot" aria-hidden />}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="ct-pay-cal-grid">
-          {WEEKDAY_KEYS.map((d) => (
-            <Caption key={d} className="text-center font-semibold !text-[10px]">
-              {t(`calendar.week.${d}`)}
-            </Caption>
-          ))}
-          {Array.from({ length: grid.leadingEmpty }).map((_, i) => (
-            <span key={`pad-${i}`} aria-hidden />
-          ))}
-          {grid.days.map((cell) => {
-            const items = deadlinesByDate[cell.ymd] || [];
-            const hasDue = items.length > 0;
-            const selected = selectedYmd === cell.ymd;
-            const overdue = items.some((it) => it.status === "overdue");
-            return (
-              <button
-                key={cell.ymd}
-                type="button"
-                className={`ct-pay-cal-day${hasDue ? " ct-pay-cal-day-has-dues" : ""}${selected ? " ct-pay-cal-day-selected" : ""}${cell.isToday ? " ct-pay-cal-day-today" : ""}${overdue ? " ct-pay-cal-day-overdue" : ""}`}
-                onClick={() => setSelectedYmd(cell.ymd)}
-                aria-label={`${cell.dayNum}${hasDue ? `, ${items.length} due` : ""}`}
-              >
-                <span>{cell.dayNum}</span>
-                {hasDue && <span className="ct-pay-cal-dot" aria-hidden />}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
+        <div className="ct-pay-cal-panel ct-stack-sm">
           {selectedYmd ? (
             <>
               <Body className="font-semibold !text-sm">{formatDeadlineHeading(selectedYmd)}</Body>
@@ -101,18 +103,20 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
               ) : (
                 <ul className="ct-stack-sm">
                   {selectedItems.map((item) => (
-                    <li key={`${item.kind}-${item.id}`} className="ct-row-between gap-2">
-                      <div className="min-w-0">
-                        <Body className="font-semibold truncate !text-sm">{item.name}</Body>
-                        <Caption>
-                          {item.kind === "lending" ? t("calendar.kind.lending") : t("calendar.kind.bill")}
-                        </Caption>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <Body className="font-semibold !text-sm">{formatInr(item.amount)}</Body>
-                        <Badge tone={item.status === "overdue" ? "danger" : item.status === "pending" ? "warning" : "neutral"}>
-                          {translateBillStatus(t, item.status)}
-                        </Badge>
+                    <li key={`${item.kind}-${item.id}`} className="ct-stat-tile">
+                      <div className="ct-row-between gap-2">
+                        <div className="min-w-0">
+                          <Body className="font-semibold truncate !text-sm">{item.name}</Body>
+                          <Caption>
+                            {item.kind === "lending" ? t("calendar.kind.lending") : t("calendar.kind.bill")}
+                          </Caption>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <Body className="font-semibold !text-sm">{formatInr(item.amount)}</Body>
+                          <Badge tone={item.status === "overdue" ? "danger" : item.status === "pending" ? "warning" : "neutral"}>
+                            {translateBillStatus(t, item.status)}
+                          </Badge>
+                        </div>
                       </div>
                     </li>
                   ))}

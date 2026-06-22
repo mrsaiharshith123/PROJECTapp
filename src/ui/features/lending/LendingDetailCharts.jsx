@@ -34,6 +34,7 @@ export function LendingDetailCharts({ lending }) {
       emptyKey="lending.detail.chartEmpty"
       totalLabelKey="lending.detail.totalPayable"
       paymentListTitleKey="lending.detail.paymentHistory"
+      heroVariant="lending"
     />
   );
 }

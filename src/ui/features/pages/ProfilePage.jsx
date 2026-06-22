@@ -107,6 +107,11 @@ const Profile = () => {
 
       <ProfileAdminEntry />
 
+      <div className="ct-stat-tile indigo mx-0 mb-1" id="profile-settings">
+        <p className="ct-analytics-section-title">{t("profileHub.settingsTitle")}</p>
+        <p className="ct-analytics-section-sub">{t("profileHub.settingsSubtitle")}</p>
+      </div>
+
       <ProfileSettingsGroups
         settings={settings}
         updateSettings={updateSettings}

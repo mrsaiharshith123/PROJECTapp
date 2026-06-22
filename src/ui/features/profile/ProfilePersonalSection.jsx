@@ -15,7 +15,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getIncomeLabelKey } from "../../../constants/modeExperience.js";
 import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
 
-const profileInputClass = inputClassName();
+const profileInputClass = `${inputClassName()} ct-input-tint`;
 
 /**
  * @param {{ label: string, hint?: string, required?: boolean, children: import('react').ReactNode }} props
@@ -65,9 +65,11 @@ function LanguagePickerBlock({ updateSettings }) {
             );
           })}
         </div>
-        {savedFlash && (
-          <Caption className="text-[var(--ct-success)] font-semibold">{t("profile.languageSaved")}</Caption>
-        )}
+        {savedFlash ? (
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-tile-label">{t("profile.languageSaved")}</p>
+          </div>
+        ) : null}
       </SettingsGroupContent>
     </SettingsGroup>
   );
@@ -313,8 +315,11 @@ function SideIncomeSection({ settings, updateSettings, t, profileInputClass }) {
         <Caption>{t("profile.sideIncome.empty")}</Caption>
       ) : (
         sideIncomes.map((inc) => (
-          <div key={inc.id} className="ct-row-between gap-2 py-1">
-            <div className="min-w-0">
+          <div key={inc.id} className="ct-settings-row ct-settings-row-static">
+            <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
+              ₹
+            </span>
+            <div className="min-w-0 flex-1">
               <Body className="font-semibold truncate">{inc.label}</Body>
               <Caption>
                 {t(`profile.sideIncome.type.${inc.type}`)} · {formatInr(Number(inc.monthlyAmount) || 0)}/mo

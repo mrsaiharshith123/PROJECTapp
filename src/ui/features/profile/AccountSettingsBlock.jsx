@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, inputClassName, Caption, SectionLoader } from "../../index.js";
+import { inputClassName, Caption, SectionLoader } from "../../index.js";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { isValidPan, maskPan, normalizePan } from "../../../utils/pan.js";
@@ -7,7 +7,7 @@ import { formatAuthError } from "../../../utils/authErrors.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
-import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
+import { SettingsGroup, SettingsGroupContent, SettingsGroupRow } from "./SettingsGroup.jsx";
 
 const fieldClass = `${inputClassName()} ct-input-tint`;
 
@@ -73,7 +73,9 @@ export default function AccountSettingsBlock() {
     return (
       <SettingsGroup title={t("account.title")} icon="lock" description={t("account.signInPrompt")}>
         <SettingsGroupContent>
-          <Caption>{t("account.signInPrompt")}</Caption>
+          <div className="ct-stat-tile">
+            <p className="ct-stat-tile-label">{t("account.signInPrompt")}</p>
+          </div>
         </SettingsGroupContent>
       </SettingsGroup>
     );
@@ -81,14 +83,20 @@ export default function AccountSettingsBlock() {
 
   return (
     <SettingsGroup title={t("account.title")} icon="lock" description={t("account.subtitle")}>
+      <SettingsGroupRow
+        icon="envelope"
+        iconColor="indigo"
+        label={t("account.email")}
+        value={user?.email || "—"}
+      />
+      <SettingsGroupRow
+        icon="sign-out"
+        iconColor="slate"
+        label={t("account.logout")}
+        onClick={handleSignOut}
+        disabled={busy}
+      />
       <SettingsGroupContent className="ct-stack-sm">
-        <div className="ct-row-between gap-2">
-          <Caption className="truncate">{user?.email}</Caption>
-          <Button type="button" variant="outline" size="sm" onClick={handleSignOut} disabled={busy} className="!w-auto shrink-0">
-            {t("account.logout")}
-          </Button>
-        </div>
-
         <div className="ct-stack-sm">
           <label className="ct-field-label">{t("profile.userCity")}</label>
           <CitySelect
@@ -120,10 +128,14 @@ export default function AccountSettingsBlock() {
           </button>
         </div>
 
-        <Button type="button" disabled={busy} onClick={handleSaveKyc} size="sm" variant="secondary">
+        <button type="button" className="ct-btn ct-btn-primary w-full" disabled={busy} onClick={handleSaveKyc}>
           {t("account.saveKyc")}
-        </Button>
-        {note && <Caption className="block">{note}</Caption>}
+        </button>
+        {note ? (
+          <div className="ct-stat-tile teal">
+            <p className="ct-stat-tile-label">{note}</p>
+          </div>
+        ) : null}
       </SettingsGroupContent>
     </SettingsGroup>
   );

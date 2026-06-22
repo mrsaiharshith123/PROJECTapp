@@ -64,7 +64,7 @@ export default function ProfileMilestonesPanel({ household = false }) {
                   ? `${item.label} — ${t(item.labelSuffixKey)}`
                   : item.label;
               return (
-                <li key={item.id} className="ct-nw-insight ct-nw-insight-positive ct-nw-milestone-row">
+                <li key={item.id} className="ct-stat-tile teal ct-nw-milestone-row">
                   <div className="ct-row-between gap-2">
                     <span>{label}</span>
                     {item.achievedAt > 0 && (

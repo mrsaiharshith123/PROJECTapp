@@ -1,4 +1,4 @@
-import { Card, PageShell, Body, Caption } from "../../index.js";
+import { PageShell, Body, Caption } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function PrivacyPage() {
@@ -7,7 +7,7 @@ export default function PrivacyPage() {
 
   return (
     <PageShell title={t("privacy.title")}>
-      <Card className="ct-stack max-h-[70vh] overflow-y-auto">
+      <div className="ct-hero-card relative max-h-[70vh] overflow-y-auto ct-stack">
         <Caption className="block">{t("privacy.effective")}</Caption>
 
         <Body className="font-semibold mt-4">{t("privacy.collectTitle")}</Body>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
 
         <Body className="font-semibold mt-4">{t("privacy.contactTitle")}</Body>
         <Body>{contactEmail}</Body>
-      </Card>
+      </div>
     </PageShell>
   );
 }

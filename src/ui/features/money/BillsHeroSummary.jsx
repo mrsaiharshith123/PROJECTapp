@@ -28,7 +28,7 @@ export default function BillsHeroSummary({ activeBills, counts }) {
     };
   }, [activeBills]);
 
-  if (activeBills.length === 0) return null;
+  if (activeBills.length <= 1) return null;
 
   const paidPct = total > 0 ? (paidAmt / total) * 100 : 0;
   const pendingPct = total > 0 ? (pendingAmt / total) * 100 : 0;
@@ -36,7 +36,7 @@ export default function BillsHeroSummary({ activeBills, counts }) {
   const overdueCount = counts.overdue || 0;
 
   return (
-    <div className="ct-money-bills-hero">
+    <div className="ct-hero-card lending ct-money-bills-hero">
       <p className="ct-hero-label">{t("money.bills.committedLabel")}</p>
       <p className="ct-money-hero-amount">{formatInr(total)}</p>
       <div className="ct-money-commit-bar" aria-hidden>

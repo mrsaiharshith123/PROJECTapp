@@ -67,8 +67,8 @@ function HouseholdDependentsEditorForm({ settings, updateSettings, onClose }) {
   return (
     <Modal title={t("household.edit.title")} onClose={onClose}>
       <Stack gap="md">
-        <div className="ct-row gap-3 items-start">
-          <span className="ct-icon-tile violet" aria-hidden>
+        <div className="ct-stat-tile indigo ct-row gap-3 items-start">
+          <span className="ct-icon-tile-sm violet shrink-0" aria-hidden>
             <CtIcon name="users-three" size={22} />
           </span>
           <Caption className="block">{t("household.edit.subtitle")}</Caption>

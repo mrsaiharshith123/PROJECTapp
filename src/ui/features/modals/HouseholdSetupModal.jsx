@@ -92,8 +92,10 @@ export default function HouseholdSetupModal({ open, onClose, onComplete }) {
 
   return (
     <Modal title={t("household.setup.title")} onClose={onClose}>
-      <Stack gap="md">
-        <Caption className="block">{t("household.setup.subtitle")}</Caption>
+      <Stack gap="md" className="ct-nw-panel">
+        <div className="ct-hero-card lending ct-stack-sm">
+          <Caption className="block">{t("household.setup.subtitle")}</Caption>
+        </div>
         {mode === "create" ? (
           <div>
             <label className="ct-field-label">{t("household.setup.seatCountLabel")}</label>
@@ -162,7 +164,7 @@ export default function HouseholdSetupModal({ open, onClose, onComplete }) {
           </div>
         )}
         {error ? <Body className="ct-text-danger text-sm">{error}</Body> : null}
-        <Button type="button" variant="primary" disabled={busy} onClick={submit}>
+        <Button type="button" variant="primary" size="lg" className="w-full" disabled={busy} onClick={submit}>
           {busy ? t("common.loading") : mode === "create" ? t("household.setup.createCta") : t("household.setup.joinCta")}
         </Button>
       </Stack>

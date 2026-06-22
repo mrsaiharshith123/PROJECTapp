@@ -41,6 +41,7 @@ const rupeeTip = (v) => (v != null ? formatInr(v) : "");
  *   yDomainTight?: boolean,
  *   customTooltip?: import('react').ComponentType<any>,
  *   disableTooltipCursor?: boolean,
+ *   segmentColors?: string[],
  * }} props
  */
 export function FlexibleDataChart({
@@ -60,6 +61,7 @@ export function FlexibleDataChart({
   yDomainTight = false,
   customTooltip = undefined,
   disableTooltipCursor = false,
+  segmentColors = undefined,
 }) {
   const t = getChartTheme(theme);
 
@@ -110,7 +112,7 @@ export function FlexibleDataChart({
             style={onSeriesClick ? { cursor: "pointer" } : undefined}
           >
             {data.map((entry, i) => (
-              <Cell key={entry[xKey] ?? i} fill={t.colors[i % t.colors.length]} />
+              <Cell key={entry[xKey] ?? i} fill={segmentColors?.[i] ?? t.colors[i % t.colors.length]} />
             ))}
           </Pie>
           <Tooltip formatter={(v) => rupeeTip(v)} {...t.tooltip} />

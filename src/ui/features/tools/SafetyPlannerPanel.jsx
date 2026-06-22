@@ -29,24 +29,24 @@ export default function SafetyPlannerPanel() {
       {!hasLiquidAssets && (
         <Caption className="block ct-text-warning">{t("tools.safety.addBankAsset")}</Caption>
       )}
-      <div className="ct-stack-sm">
-        <ul className="ct-stack-sm divide-y divide-[var(--ct-border)]">
-          <li className="ct-row-between gap-2 py-2">
-            <Caption className="block">{t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}</Caption>
-          </li>
-          {emergency?.gap > 0 ? (
-            <li className="ct-row-between gap-2 py-2">
-              <Caption className="block">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</Caption>
-            </li>
-          ) : null}
-        </ul>
-        <ProgressBar value={fundedPct} />
-        {emergency?.messageKey && (
-          <Caption className="block">{translateInsight(t, { key: emergency.messageKey })}</Caption>
-        )}
+      <div className="ct-grid-2">
+        <div className="ct-stat-tile teal">
+          <p className="ct-stat-tile-value text-sm">{t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}</p>
+        </div>
+        {emergency?.gap > 0 ? (
+          <div className="ct-stat-tile amber">
+            <p className="ct-stat-tile-value text-sm">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</p>
+          </div>
+        ) : null}
       </div>
-      <div className="ct-inset ct-stack-sm !p-3">
-        <Caption className="block opacity-90">{t("tools.safety.disclaimer")}</Caption>
+      <ProgressBar value={fundedPct} />
+      {emergency?.messageKey && (
+        <div className="ct-stat-tile indigo">
+          <p className="ct-stat-tile-value text-sm">{translateInsight(t, { key: emergency.messageKey })}</p>
+        </div>
+      )}
+      <div className="ct-stat-tile">
+        <p className="ct-stat-tile-label">{t("tools.safety.disclaimer")}</p>
       </div>
     </div>
   );

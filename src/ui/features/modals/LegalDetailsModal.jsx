@@ -144,12 +144,14 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
 
   return (
     <Modal onClose={onClose} title={t("lending.legal.modalTitle")}>
-      <div className="ct-stack ct-legal-flow">
-        <LegalStepper activeStep={step} panVerified={Boolean(panVerifiedName)} />
+      <div className="ct-stack ct-legal-flow ct-nw-panel">
+        <div className="ct-hero-card lending ct-stack-sm">
+          <LegalStepper activeStep={step} panVerified={Boolean(panVerifiedName)} />
+        </div>
 
-        <ToneSurface tone="info">
+        <div className="ct-stat-tile teal">
           <Caption className="block">{t("lending.legal.itActInfo")}</Caption>
-        </ToneSurface>
+        </div>
 
         {step === 0 ? (
           <>
@@ -272,7 +274,7 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
               {t("lending.legal.prevStep")}
             </Button>
           ) : null}
-          <Button type="button" variant="primary" className="flex-1" onClick={next}>
+          <Button type="button" variant="primary" size="lg" className="flex-1" onClick={next}>
             {step < 2 ? t("lending.legal.nextStep") : t("lending.legal.completeCta")}
           </Button>
         </div>

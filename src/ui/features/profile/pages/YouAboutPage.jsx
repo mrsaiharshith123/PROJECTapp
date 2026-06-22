@@ -8,12 +8,14 @@ export default function YouAboutPage() {
   const { updateSettings } = usePerovo();
   return (
     <YouSubPageShell titleKey="settings.row.about">
-      <ProfileSupportSection
-        onOpenGuide={() => {
-          updateSettings({ appGuideComplete: false });
-          navigate("/", { state: { replayGuide: true } });
-        }}
-      />
+      <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none !p-0">
+        <ProfileSupportSection
+          onOpenGuide={() => {
+            updateSettings({ appGuideComplete: false });
+            navigate("/", { state: { replayGuide: true } });
+          }}
+        />
+      </div>
     </YouSubPageShell>
   );
 }

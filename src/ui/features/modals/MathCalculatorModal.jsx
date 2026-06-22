@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { Modal, Button } from "../../index.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
 
 function compute(a, b, op) {
   const x = Number(a);
@@ -114,13 +113,10 @@ export default function MathCalculatorModal({ onClose }) {
   return (
     <Modal onClose={onClose} title={t("tools.mathCalc.title")}>
       <div className="ct-math-calc">
-        <div className="ct-row gap-3 mb-3">
-          <span className="ct-icon-tile primary" aria-hidden>
-            <CtIcon name="calculator" size={22} />
-          </span>
-        </div>
+        <div className="ct-hero-card sim ct-math-calc-display-wrap">
         <div className="ct-math-calc-display ct-hero-number ct-numeral" aria-live="polite">
           {display}
+        </div>
         </div>
         <div className="ct-math-calc-grid">
           {rows.flatMap((row, ri) =>

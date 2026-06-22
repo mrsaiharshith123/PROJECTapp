@@ -40,9 +40,11 @@ import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
 
 function AnalyticsSectionHead({ title, subtitle }) {
   return (
-    <div className="ct-analytics-section-head">
-      <p className="ct-analytics-section-title">{title}</p>
-      {subtitle ? <p className="ct-analytics-section-sub">{subtitle}</p> : null}
+    <div className="ct-stat-tile indigo mx-4 mb-1 py-2 px-3">
+      <div className="ct-analytics-section-head !p-0">
+        <p className="ct-analytics-section-title">{title}</p>
+        {subtitle ? <p className="ct-analytics-section-sub">{subtitle}</p> : null}
+      </div>
     </div>
   );
 }
@@ -208,7 +210,7 @@ const Analytics = () => {
       </div>
 
       {lendings.length > 0 && (
-        <div className="ct-analytics-card ct-stack mx-4 mb-2.5">
+        <div className="ct-hero-card lending relative ct-stack mx-4 mb-2.5">
           <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
           <Caption>
             {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}

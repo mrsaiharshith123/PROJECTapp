@@ -1,4 +1,4 @@
-import { Card } from "../../../primitives/Card.jsx";
+import { cn } from "../../../utils/cn.js";
 import { Caption } from "../../../primitives/Text.jsx";
 import { CtIcon } from "../../../icons/CtIcon.jsx";
 
@@ -14,22 +14,23 @@ function HeroMetric({ label, value, sub, tone = "default" }) {
             ? "ct-metric-value-accent"
             : "";
   return (
-    <div className="ct-metric text-left min-w-0">
-      <Caption className="font-semibold uppercase block">{label}</Caption>
-      <p className={`ct-metric-value mt-0.5 truncate ${valueClass}`.trim()}>{value}</p>
-      {sub && <Caption className="mt-0.5 block leading-snug">{sub}</Caption>}
+    <div className="text-left min-w-0">
+      <p className="ct-stat-label">{label}</p>
+      <p className={cn("ct-stat-value mt-0.5 truncate", valueClass)}>{value}</p>
+      {sub && <p className="ct-stat-label mt-0.5 leading-snug">{sub}</p>}
     </div>
   );
 }
 
 /** Mode hero strip: title + 2×2 metrics + optional tip. */
-export default function ModeHeroCard({ title, subtitle, icon, metrics = [], tip }) {
+export default function ModeHeroCard({ title, subtitle, icon, metrics = [], tip, variant = "lending" }) {
   return (
-    <Card variant="hero" className="!pb-3">
-      <div className="ct-row items-start gap-3 pb-3">
+    <div className={cn("ct-hero-card", variant)}>
+      <div className="ct-hero-glow teal" aria-hidden />
+      <div className="ct-row items-start gap-3 pb-3 relative">
         {icon && (
-          <span className="ct-hero-month-icon shrink-0" aria-hidden>
-            <CtIcon name={icon} size={28} />
+          <span className="ct-icon-tile ct-icon-tile-sm indigo shrink-0" aria-hidden>
+            <CtIcon name={icon} size={20} />
           </span>
         )}
         <div className="min-w-0">
@@ -38,13 +39,15 @@ export default function ModeHeroCard({ title, subtitle, icon, metrics = [], tip 
         </div>
       </div>
       {metrics.length > 0 && (
-        <div className="ct-grid-2 pb-2">
+        <div className="ct-grid-2 pb-2 relative">
           {metrics.map((m) => (
-            <HeroMetric key={m.label} {...m} />
+            <div key={m.label} className="ct-stat-tile">
+              <HeroMetric {...m} />
+            </div>
           ))}
         </div>
       )}
-      {tip && <div className="ct-hero-inset ct-body !text-xs mx-1 mb-1">{tip}</div>}
-    </Card>
+      {tip && <div className="ct-stat-tile teal ct-body !text-xs relative">{tip}</div>}
+    </div>
   );
 }

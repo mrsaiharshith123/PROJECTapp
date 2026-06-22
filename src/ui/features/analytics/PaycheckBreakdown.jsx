@@ -79,12 +79,15 @@ export default function PaycheckBreakdown({
         {steps.map((row, i) => (
           <div key={row.label}>
             {i > 0 && <p className="ct-paycheck-arrow">↓</p>}
-            <div className={`ct-stat-tile ${STEP_TILE[row.tone]} ct-row-between gap-2 items-center`}>
-              <span className="ct-stat-label min-w-0">
+            <div className={`ct-stat-tile ${STEP_TILE[row.tone]} ct-row-between gap-2 items-center`} style={{ minWidth: 0 }}>
+              <span className="ct-stat-label min-w-0 truncate">
                 {row.label}
                 {row.detail ? <span className="block text-[11px] opacity-80 mt-0.5">{row.detail}</span> : null}
               </span>
-              <span className={`ct-stat-value ct-numeral shrink-0 ${row.bold ? "!text-lg" : ""}`}>
+              <span
+                className={`ct-stat-value ct-numeral shrink-0 ${row.bold ? "!text-lg" : ""}`}
+                style={{ flexShrink: 0 }}
+              >
                 {row.value < 0 ? "−" : ""}
                 {formatInr(Math.abs(row.value))}
               </span>

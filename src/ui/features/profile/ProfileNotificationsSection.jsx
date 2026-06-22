@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Caption, Button } from "../../index.js";
+import { Caption } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isEmbeddedApp } from "../../../utils/embeddedApp.js";
@@ -82,19 +82,19 @@ export default function ProfileNotificationsSection({ settings, updateSettings }
 
       {supported ? (
         <SettingsGroupContent className="ct-stack-sm">
-          <div className="ct-hero-inset ct-stack-sm !p-3 rounded-[var(--ct-radius)]">
+          <div className="ct-stat-tile teal ct-stack-sm !p-3">
             <Caption>
               {t("notifications.permission")}: <span className="font-semibold capitalize">{perm}</span>
             </Caption>
             <div className="ct-row-wrap">
               {perm !== "granted" && (
-                <Button type="button" size="sm" disabled={busy} onClick={handleEnable}>
+                <button type="button" className="ct-btn ct-btn-primary ct-btn-sm" disabled={busy} onClick={handleEnable}>
                   {t(embedded ? "notifications.enableAlertsNative" : "notifications.enableAlerts")}
-                </Button>
+                </button>
               )}
-              <Button type="button" variant="outline" size="sm" disabled={busy} onClick={handleTest}>
+              <button type="button" className="ct-btn ct-btn-outline ct-btn-sm" disabled={busy} onClick={handleTest}>
                 {busy ? t("common.sending") : t("notifications.sendTest")}
-              </Button>
+              </button>
             </div>
             {status && (
               <Caption className={status.type === "ok" ? "text-[var(--ct-success)]" : "text-[var(--ct-warning)]"}>

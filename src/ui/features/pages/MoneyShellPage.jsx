@@ -10,8 +10,6 @@ const MONEY_TABS = [
   { id: "bills", path: "/money/bills", labelKey: "money.tab.bills" },
   { id: "spends", path: "/money/spends", labelKey: "money.tab.spends" },
   { id: "lending", path: "/money/lending", labelKey: "money.tab.lending" },
-  { id: "insights", path: "/money/insights", labelKey: "money.tab.insights" },
-  { id: "wealth", path: "/money/wealth", labelKey: "money.tab.wealth" },
 ];
 
 /** Money tab shell — Bills / Spends / Lending with cross-fade content. */
@@ -33,15 +31,25 @@ export default function MoneyShellPage() {
 
   return (
     <PageShell title={t("nav.money")} className="ct-money-shell">
-      <SegmentedControl
-        className="ct-money-segment"
-        options={tabs.map((tab) => ({ id: tab.id, label: t(tab.labelKey) }))}
-        value={activeTab}
-        onChange={(id) => {
-          const tab = tabs.find((x) => x.id === id);
-          if (tab) navigate(tab.path);
+      <div
+        className="ct-seg-scroll"
+        style={{
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
         }}
-      />
+      >
+        <SegmentedControl
+          className="ct-money-segment"
+          options={tabs.map((tab) => ({ id: tab.id, label: t(tab.labelKey) }))}
+          value={activeTab}
+          onChange={(id) => {
+            const tab = tabs.find((x) => x.id === id);
+            if (tab) navigate(tab.path);
+          }}
+        />
+      </div>
       <div key={location.pathname} className="ct-money-tab-fade">
         <Outlet />
       </div>

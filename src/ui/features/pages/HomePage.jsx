@@ -5,6 +5,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { InstallAppBanner, PlansButton, ToolsDiscoveryToast } from "../../";
+import { isToolsNudgeDismissed } from "../../../utils/toolsDiscoveryStorage.js";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import { GuidedEmptyState } from "../../guidance/GuidedEmptyState.jsx";
 import { NotificationPanel } from "../NotificationPanel.jsx";
@@ -32,6 +33,7 @@ const Home = () => {
   const tourOpen = tourActive && !tourDismissed;
   const isFamily = isSalariedFamily(settings);
   const hasBills = commitments.length > 0;
+  const showToolsNudge = !isToolsNudgeDismissed() && commitments.length >= 3;
 
   const scrollToTools = useCallback(() => {
     navigate("/plan");
@@ -141,12 +143,16 @@ const Home = () => {
         <HomeGoodNewsLine />
         <HomeGoalNudge />
 
+        {showToolsNudge ? (
+          <div className="ct-home-enter-item" style={{ animationDelay: "240ms" }}>
+            <ToolsDiscoveryToast variant="home" inline blocked={tourOpen} />
+          </div>
+        ) : null}
+
         <div className="ct-home-enter-item" style={{ animationDelay: "300ms" }}>
           <HomeToolsEntry />
         </div>
       </div>
-
-      <ToolsDiscoveryToast variant="home" blocked={tourOpen} />
     </div>
   );
 };

@@ -8,9 +8,12 @@ import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
-import { Caption, Heading, Body } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
+import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+
+const fieldClass = `${inputClassName()} ct-input-tint`;
 
 function SipAdvisorTab() {
   const { t } = useTranslation();
@@ -90,14 +93,20 @@ function SipAdvisorTab() {
 
   return (
     <div className="ct-stack">
+      <ToolAnswerHero
+        tone="wealth"
+        label={t("tools.sip.projectedLabel")}
+        value={formatInr(plan.projectedCorpus)}
+        subtitle={plan.narrativeLines[0]}
+      />
       <Caption>{t("tools.sip.intro")}</Caption>
       {sipFromBills > 0 && (
         <Caption className="block">{t("tools.sip.fromBills", { amount: formatInr(sipFromBills) })}</Caption>
       )}
       <div>
-        <label className="ct-metric-label block">{t("tools.sip.monthly")}</label>
+        <label className="ct-field-label">{t("tools.sip.monthly")}</label>
         <input
-          className="ct-input mt-1"
+          className={fieldClass}
           value={sip}
           onChange={(e) => setSip(e.target.value.replace(/[^\d]/g, ""))}
           placeholder={sipFromBills ? String(sipFromBills) : "5000"}
@@ -105,46 +114,38 @@ function SipAdvisorTab() {
         />
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tools.sip.years")}</label>
-        <input className="ct-input mt-1" value={years} onChange={(e) => setYears(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
+        <label className="ct-field-label">{t("tools.sip.years")}</label>
+        <input className={fieldClass} value={years} onChange={(e) => setYears(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tools.sip.target")}</label>
-        <input className="ct-input mt-1" value={target} onChange={(e) => setTarget(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
+        <label className="ct-field-label">{t("tools.sip.target")}</label>
+        <input className={fieldClass} value={target} onChange={(e) => setTarget(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tools.sip.return")}</label>
-        <input className="ct-input mt-1" value={rate} onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))} inputMode="numeric" />
+        <label className="ct-field-label">{t("tools.sip.return")}</label>
+        <input className={fieldClass} value={rate} onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tools.sip.boostLabel")}</label>
+        <label className="ct-field-label">{t("tools.sip.boostLabel")}</label>
         <input
-          className="ct-input mt-1"
+          className={fieldClass}
           value={sipBoost}
           onChange={(e) => setSipBoost(e.target.value.replace(/[^\d]/g, ""))}
           placeholder={monthlySip > 0 ? String(Math.round(monthlySip * 0.2)) : "1000"}
           inputMode="numeric"
         />
       </div>
-      <div className="ct-inset ct-stack-sm">
-        <ToolAnswerHero
-          tone="wealth"
-          label={t("tools.sip.projectedLabel")}
-          value={formatInr(plan.projectedCorpus)}
-          subtitle={plan.narrativeLines[0]}
-        />
-        {sipCurrentValue > 0 ? (
-          <>
-            <Body className="font-semibold">{t("tools.sip.liveValue", { amount: formatInr(sipCurrentValue) })}</Body>
-            <Caption className="block">{t("tools.sip.liveValueHint")}</Caption>
-          </>
-        ) : null}
-        {plan.narrativeLines.map((line) => (
-          <Caption key={line} className="block">
-            {line}
-          </Caption>
-        ))}
-      </div>
+      {sipCurrentValue > 0 ? (
+        <div className="ct-stat-tile teal">
+          <p className="ct-stat-tile-label">{t("tools.sip.liveValue", { amount: formatInr(sipCurrentValue) })}</p>
+          <p className="ct-stat-tile-value text-sm">{t("tools.sip.liveValueHint")}</p>
+        </div>
+      ) : null}
+      {plan.narrativeLines.slice(1).map((line) => (
+        <div key={line} className="ct-stat-tile">
+          <p className="ct-stat-tile-value text-sm">{line}</p>
+        </div>
+      ))}
       {monthlySip > 0 && (
         <ToolComparisonChart
           data={corpusSeries}
@@ -184,6 +185,12 @@ function FdRdTab() {
 
   return (
     <div className="ct-stack">
+      <ToolAnswerHero
+        tone="wealth"
+        label={t("tier.fdrd.title")}
+        value={formatInr(projection.maturityAmount)}
+        subtitle={t("tier.fdrd.invested", { amount: formatInr(projection.totalInvested) })}
+      />
       <Caption>{t("tier.fdrd.subtitle")}</Caption>
       <SegmentedControl
         options={[
@@ -195,9 +202,9 @@ function FdRdTab() {
       />
       {kind === "fd" ? (
         <div>
-          <label className="ct-metric-label block">{t("tier.fdrd.principal")}</label>
+          <label className="ct-field-label">{t("tier.fdrd.principal")}</label>
           <input
-            className="ct-input mt-1"
+            className={fieldClass}
             value={principal}
             onChange={(e) => setPrincipal(e.target.value.replace(/[^\d]/g, ""))}
             inputMode="numeric"
@@ -205,9 +212,9 @@ function FdRdTab() {
         </div>
       ) : (
         <div>
-          <label className="ct-metric-label block">{t("tier.fdrd.monthlyDeposit")}</label>
+          <label className="ct-field-label">{t("tier.fdrd.monthlyDeposit")}</label>
           <input
-            className="ct-input mt-1"
+            className={fieldClass}
             value={monthlyDeposit}
             onChange={(e) => setMonthlyDeposit(e.target.value.replace(/[^\d]/g, ""))}
             inputMode="numeric"
@@ -216,18 +223,18 @@ function FdRdTab() {
       )}
       <div className="ct-row gap-3 flex-wrap">
         <div className="flex-1 min-w-[120px]">
-          <label className="ct-metric-label block">{t("tier.fdrd.rate")}</label>
+          <label className="ct-field-label">{t("tier.fdrd.rate")}</label>
           <input
-            className="ct-input mt-1"
+            className={fieldClass}
             value={rate}
             onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))}
             inputMode="decimal"
           />
         </div>
         <div className="flex-1 min-w-[120px]">
-          <label className="ct-metric-label block">{t("tier.fdrd.tenure")}</label>
+          <label className="ct-field-label">{t("tier.fdrd.tenure")}</label>
           <input
-            className="ct-input mt-1"
+            className={fieldClass}
             value={tenure}
             onChange={(e) => setTenure(e.target.value.replace(/[^\d]/g, ""))}
             inputMode="numeric"
@@ -235,13 +242,13 @@ function FdRdTab() {
         </div>
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tier.fdrd.bankName")}</label>
-        <input className="ct-input mt-1" value={bankName} onChange={(e) => setBankName(e.target.value)} />
+        <label className="ct-field-label">{t("tier.fdrd.bankName")}</label>
+        <input className={fieldClass} value={bankName} onChange={(e) => setBankName(e.target.value)} />
       </div>
       <div>
-        <label className="ct-metric-label block">{t("tier.fdrd.ifsc")}</label>
+        <label className="ct-field-label">{t("tier.fdrd.ifsc")}</label>
         <input
-          className="ct-input mt-1"
+          className={fieldClass}
           placeholder="HDFC0001234"
           value={ifscInput}
           maxLength={11}
@@ -264,16 +271,14 @@ function FdRdTab() {
           </Caption>
         ) : null}
       </div>
-      <div className="ct-inset ct-stack-sm">
-        <Body className="font-semibold">{t("tier.fdrd.maturity", { amount: formatInr(projection.maturityAmount) })}</Body>
-        <Caption className="block">
-          {t("tier.fdrd.invested", { amount: formatInr(projection.totalInvested) })} ·{" "}
-          {t("tier.fdrd.interest", { amount: formatInr(projection.interestEarned) })}
-        </Caption>
+      <div className="ct-grid-2">
+        <div className="ct-stat-tile indigo">
+          <p className="ct-stat-tile-value text-sm">{t("tier.fdrd.interest", { amount: formatInr(projection.interestEarned) })}</p>
+        </div>
         {projection.narrativeLines.map((line) => (
-          <Caption key={line} className="block">
-            {line}
-          </Caption>
+          <div key={line} className="ct-stat-tile col-span-2">
+            <p className="ct-stat-tile-value text-sm">{line}</p>
+          </div>
         ))}
       </div>
     </div>

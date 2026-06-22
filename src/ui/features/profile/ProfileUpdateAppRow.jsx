@@ -1,6 +1,5 @@
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
-import { Caption } from "../../index.js";
 import { useAppUpdateAction } from "../../../hooks/useAppUpdateAction.js";
 import UpdateProgressModal from "../UpdateProgressModal.jsx";
 
@@ -21,7 +20,9 @@ export default function ProfileUpdateAppRow() {
       />
       {status ? (
         <SettingsGroupContent>
-          <Caption className="block">{status}</Caption>
+          <div className="ct-stat-tile indigo">
+            <p className="ct-stat-tile-value text-sm">{status}</p>
+          </div>
         </SettingsGroupContent>
       ) : null}
       <UpdateProgressModal open={progressOpen} progress={progress} />

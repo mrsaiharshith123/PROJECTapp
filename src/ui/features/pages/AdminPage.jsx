@@ -103,7 +103,9 @@ export default function AdminPage() {
 
   return (
     <div className="ct-page ct-admin-page">
-      <div className="ct-admin-command-bar">
+      <div className="ct-hero-card pressure relative">
+        <div className="ct-hero-glow" aria-hidden />
+        <div className="ct-admin-command-bar relative">
         <div className="ct-admin-brand">
           <span className="ct-admin-title">{t("admin.commandTitle")}</span>
           <span className="ct-admin-env-badge">{isProd ? "PROD" : "DEV"}</span>
@@ -122,6 +124,7 @@ export default function AdminPage() {
             {t("admin.backApp")}
           </Button>
         </div>
+        </div>
       </div>
 
       <div className="ct-admin-kpi-strip">
@@ -134,7 +137,9 @@ export default function AdminPage() {
       {error && error !== "NOT_ADMIN" ? <Body className="ct-admin-error">{error}</Body> : null}
 
       <section className="ct-admin-section">
-        <Heading level={3}>{t("admin.section.revenue")}</Heading>
+        <div className="ct-analytics-section-head">
+          <p className="ct-analytics-section-title">{t("admin.section.revenue")}</p>
+        </div>
         <div className="ct-admin-metrics-grid">
           <AdminMetricCard label={t("admin.metric.mrr")} value={loading ? "…" : inr(totals.mrr_inr)} sparkline={mrrSpark} />
           <AdminMetricCard label={t("admin.metric.arr")} value={loading ? "…" : inr(totals.arr_inr)} />
@@ -248,7 +253,7 @@ export default function AdminPage() {
         <Heading level={3}>{t("admin.section.system")}</Heading>
         <div className="ct-admin-metrics-grid">
           {integrations.map((row) => (
-            <div key={row.label} className="ct-admin-panel ct-admin-system-row">
+            <div key={row.label} className="ct-stat-tile indigo ct-admin-panel ct-admin-system-row">
               <span className={`ct-admin-status-dot${row.ok ? " ok" : ""}`} aria-hidden />
               <Body className="!text-sm">{row.label}</Body>
               <Caption className="block opacity-80">{row.note}</Caption>
