@@ -82,13 +82,11 @@ export default function HomeNeedsAttention() {
   const { t } = useTranslation();
   const { sortedCommitments, lendings, getEffectiveStatus, todayStr } = usePerovo();
 
-  const { overdue, dueSoon, upcoming } = useMemo(() => {
+  const { overdue, dueSoon } = useMemo(() => {
     /** @type {object[]} */
     const overdueRows = [];
     /** @type {object[]} */
     const dueSoonRows = [];
-    /** @type {object[]} */
-    const upcomingRows = [];
 
     for (const c of sortedCommitments) {
       if (overdueRows.length >= 2) break;
@@ -151,37 +149,14 @@ export default function HomeNeedsAttention() {
       });
     }
 
-    for (const c of sortedCommitments) {
-      if (upcomingRows.length >= 3) break;
-      if (!isActiveBill(c, getEffectiveStatus, todayStr)) continue;
-      const status = getEffectiveStatus(c);
-      if (status !== "pending") continue;
-      const days = daysUntil(c.dueDate, todayStr);
-      if (days < 4 || days > 7) continue;
-      upcomingRows.push({
-        id: `upcoming-${c.id}`,
-        name: attentionBillTitle(c),
-        amount: Number(c.amount ?? 0),
-        statusText: t("home.attention.inDays", { days }),
-        overdue: false,
-        upcoming: true,
-        to: "/money/bills",
-        icon: "calendar-blank",
-      });
-    }
-
-    return { overdue: overdueRows, dueSoon: dueSoonRows, upcoming: upcomingRows };
+    return { overdue: overdueRows, dueSoon: dueSoonRows };
   }, [sortedCommitments, lendings, getEffectiveStatus, todayStr, t]);
 
-  const totalCount = overdue.length + dueSoon.length + upcoming.length;
+  const totalCount = overdue.length + dueSoon.length;
   if (totalCount === 0) return null;
 
   const hasOverdue = overdue.length > 0;
-  const sectionTitle = hasOverdue
-    ? t("home.needsAttention")
-    : dueSoon.length > 0
-      ? t("home.needsAttention")
-      : t("home.comingUp");
+  const sectionTitle = t("home.requiresAction");
 
   return (
     <ScreenSection
@@ -195,12 +170,6 @@ export default function HomeNeedsAttention() {
           <AttentionRow key={item.id} item={item} navigate={navigate} />
         ))}
         {dueSoon.map((item) => (
-          <AttentionRow key={item.id} item={item} navigate={navigate} />
-        ))}
-        {upcoming.length > 0 && (overdue.length > 0 || dueSoon.length > 0) ? (
-          <p className="ct-attention-section-label">{t("home.comingUp")}</p>
-        ) : null}
-        {upcoming.map((item) => (
           <AttentionRow key={item.id} item={item} navigate={navigate} />
         ))}
       </div>

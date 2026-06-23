@@ -23,13 +23,16 @@ export default function AppDownloadSheet({ open, onClose }) {
   const [releases, setReleases] = useState([]);
   const [loadingReleases, setLoadingReleases] = useState(false);
 
+  const handleClose = () => {
+    setStep("platform");
+    setReleases([]);
+    setLoadingReleases(false);
+    onClose();
+  };
+
   useEffect(() => {
-    if (!open) {
-      setStep("platform");
-      return;
-    }
+    if (step !== "android") return undefined;
     let cancelled = false;
-    setLoadingReleases(true);
     fetchAppReleases().then((list) => {
       if (!cancelled) {
         setReleases(list.filter((r) => r.androidApkUrl));
@@ -39,19 +42,16 @@ export default function AppDownloadSheet({ open, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [step]);
 
   if (!open) return null;
-
-  const handleClose = () => {
-    setStep("platform");
-    onClose();
-  };
 
   const onSelectPlatform = async (platform) => {
     requestInstallPlatform(platform);
 
     if (platform === "android") {
+      setLoadingReleases(true);
+      setReleases([]);
       setStep("android");
       return;
     }

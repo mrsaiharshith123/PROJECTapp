@@ -212,5 +212,7 @@ export function useCommitIntel() {
     getEffectiveStatus,
   ]);
 
+  // devTick intentionally invalidates dev override layer when panel toggles
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- devTick is not read inside memo; it forces recomputation
   return useMemo(() => applyDevOverrideToCommitIntel(rawIntel), [rawIntel, devTick]);
 }

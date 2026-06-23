@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: **22 June 2026** (score/analytics/asset OS sweep + dead-code cleanup pass).
+Last reviewed: **23 June 2026** (governance pass — dead code, lint, i18n sync, lending→Agreements cleanup).
 
 Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/planning/perovo-qa-system-prompt.md`](./planning/perovo-qa-system-prompt.md) · [`docs/qa-findings.md`](./qa-findings.md)
 
@@ -48,6 +48,11 @@ These files had no route/import chain from `App.jsx` and were deleted:
 - `FamilyCalendarWidget.jsx`, `FestivalPlannerCard.jsx` (feature cleanup)
 - `PaycheckPage.jsx`, `PaycheckTimelinePanel.jsx`, `SafeToSpendCard.jsx` (paycheck → `/money/insights`)
 - `ProfileWealthAnalyticsPage.jsx` (wealth → `/money/wealth` · `MoneyWealthPage.jsx`)
+- `PlanPage.jsx`, `PlanAISection.jsx` (plan → `/you/tools` · `YouToolsPage.jsx`)
+- `HomeGoalNudge.jsx`, `HomePressureHero.jsx`, `HomeToolsEntry.jsx` (replaced by `HomeNetPositionHero`, `HomeQuickActions`, `HomeToolsPreview`)
+- `LendingPage.jsx`, `LendingEntryCard.jsx`, `LendingHeroSummary.jsx` (lending → **Agreements** tab · `AgreementsPage.jsx`)
+- `appRouter.jsx`, `app/layouts/*`, `ModeRoute.jsx`, `ToolsRedirect.jsx` (unused router scaffold; live routes in `App.jsx`)
+- `engines/paycheckTimeline.js` (paycheck UI removed; salary flow in `salaryBreakdown.js` + Analytics)
 
 ## V1 product scope
 
@@ -65,41 +70,42 @@ These files had no route/import chain from `App.jsx` and were deleted:
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Bottom nav Home · Money · + · Plan · **You** | ✅ | `constants/userModes.js` — route `/profile`, label `nav.you` |
-| Money tab shell (Bills / Spends / Lending / Insights / **Wealth**) | ✅ | `MoneyShellPage.jsx`, `/money/*` in `App.jsx` |
-| Plan tab `/plan` | ✅ | `PlanPage.jsx` |
-| You hub + 11 sub-pages `/you/*` | ✅ | `ProfilePage.jsx`, `profile/pages/You*.jsx` |
+| Top nav Home · Ledger · Agreements · **You** + Add | ✅ | `constants/userModes.js`, `Navbar.jsx` |
+| Money routes (Bills / Spends only in shell) | ✅ | `MoneyShellPage.jsx` — `/money/bills`, `/money/spends` |
+| Standalone analytics & wealth | ✅ | `/money/insights` · `AnalyticsPage.jsx`; `/money/wealth` · `MoneyWealthPage.jsx` |
+| Tools & calculators | ✅ | `/you/tools` · `YouToolsPage.jsx` (legacy `/plan`, `/tools` redirect here) |
+| You hub + sub-pages `/you/*` | ✅ | `ProfilePage.jsx`, `profile/pages/You*.jsx` |
+| Ledger insights → net worth | ✅ | `LedgerPage.jsx` → `/money/wealth` |
 | Analytics deep-link | ✅ | `/analytics` → `/money/insights` |
-| Paycheck deep-link | ✅ | `/paycheck` → `/money/insights` |
-| Net worth deep-links | ✅ | `/net-worth`, `/profile/analytics` → `/money/wealth` |
-| Legacy redirects | ✅ | `/commitments`, `/lending`, `/tools` → Money or Plan |
+| Legacy redirects | ✅ | `/commitments`, `/lending`, `/money/lending` → Agreements or Money |
 
 ## Shipped — Home (H1–H6)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Conic pressure hero + Perovo Score | ✅ | `home/HomePressureHero.jsx`, `PressureRing.jsx` |
-| Safe-to-spend in hero caption | ✅ | `HomePressureHero.jsx` |
-| Needs Attention (single overdue block) | ✅ | `home/HomeNeedsAttention.jsx` |
-| Four quick actions | ✅ | `home/HomeQuickActions.jsx` |
-| Tools entry row → Plan | ✅ | `home/HomeToolsEntry.jsx` |
+| Net position hero + score ring | ✅ | `home/HomeNetPositionHero.jsx` |
+| Category tiles (assets / liabilities / agreements) | ✅ | `home/HomeCategoryTiles.jsx` |
+| Quick actions above needs-attention | ✅ | `home/HomeQuickActions.jsx` |
+| Needs Attention (overdue + due bills) | ✅ | `home/HomeNeedsAttention.jsx` |
+| Tools preview + See all → You/tools | ✅ | `home/HomeToolsPreview.jsx` |
 | Design tokens | ✅ | `tokens.css`, `components.css` |
 
 ## Shipped — Money + Add (M1–M5)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Bills / Spends / Lending shells | ✅ | Under Money shell |
-| Insights (4th pill) | ✅ | `AnalyticsPage.jsx` at `/money/insights` |
-| Wealth (5th pill) | ✅ | `MoneyWealthPage.jsx` |
+| Bills / Spends shells | ✅ | Under Money shell (`/money/bills`, `/money/spends`) |
+| Informal lending | ✅ | **Agreements** tab — `AgreementsPage.jsx` (not Money shell) |
+| Monthly analytics | ✅ | `AnalyticsPage.jsx` at `/money/insights` |
+| Net worth / ledger insights | ✅ | `MoneyWealthPage.jsx` at `/money/wealth` |
 | Add 2-step flow + scan tile | ✅ | `AddPage.jsx`, `AddTypePicker.jsx` |
 | Bills hero + filter chips | ✅ | `BillsHeroSummary.jsx`, `CommitmentsBillsTab.jsx` |
 
-## Shipped — Plan (S2–S6)
+## Shipped — Tools (You → Tools)
 
 | Area | Status | Key paths |
 |------|--------|-----------|
-| Goals hero + tool grid | ✅ | `PlanGoalsSection.jsx`, `PlanCalculatorsSection.jsx`, `PlanGrowthSection.jsx` |
+| Goals + calculator grid | ✅ | `PlanGoalsSection.jsx`, `PlanCalculatorsSection.jsx`, `PlanGrowthSection.jsx` on `YouToolsPage.jsx` |
 | Tools as bottom sheets | ✅ | `PlanToolSheet.jsx` |
 | Wealth simulation (10-yr) | ✅ | `PlanWealthSimulationPanel` → `SimulationPanel` |
 | Scenarios (quick what-if) | ✅ | `UnifiedScenariosPanel` |

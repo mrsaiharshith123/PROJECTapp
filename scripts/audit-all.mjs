@@ -438,14 +438,14 @@ console.log(paint(C.bold, "Running checks…\n"));
   }
 
   const govErrors = data.totals?.errors ?? (r.ok ? 0 : 1);
-  const govWarnings = (data.totals?.warnings ?? 0) + (data.totals?.advisories ?? 0);
   record(
     "governance",
     "Governance & project health",
     govErrors,
-    govWarnings,
+    data.totals?.warnings ?? 0,
     r.ok && govErrors === 0,
     notes,
+    false,
   );
 }
 

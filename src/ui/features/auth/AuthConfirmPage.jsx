@@ -41,6 +41,7 @@ export default function AuthConfirmPage() {
 
     const params = parseAuthCallbackParams();
     if (params.error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot auth callback error from URL
       setDetail(decodeURIComponent(String(params.error).replace(/\+/g, " ")));
       setPhase("error");
       return undefined;

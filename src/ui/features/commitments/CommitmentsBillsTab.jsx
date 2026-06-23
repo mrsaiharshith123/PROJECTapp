@@ -53,7 +53,7 @@ export default function CommitmentsBillsTab({
   onDelete,
   dailySpends = [],
   onAddCommitment,
-  getEffectiveStatus,
+  getEffectiveStatus: _getEffectiveStatus,
 }) {
   const { t } = useTranslation();
   const stable = useStabilityIntel();

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -100,6 +100,7 @@ export default function ScoreDetailPage() {
 
   const showPayoffShare = Boolean(location.state?.showPayoffShare);
   const payoffLoanName = location.state?.loanName;
+  const [shareOpen, setShareOpen] = useState(showPayoffShare);
 
   return (
     <div className="ct-page ct-score-detail pb-8">
@@ -112,7 +113,7 @@ export default function ScoreDetailPage() {
         <span className="ct-subpage-spacer" aria-hidden />
       </header>
 
-      <div className="ct-hero-card pressure mx-4">
+      <div className="pos-tile instrument mx-4">
         <div
           className="ct-hero-glow"
           aria-hidden
@@ -216,25 +217,35 @@ export default function ScoreDetailPage() {
         </button>
       ) : null}
 
-      <div className="mx-4 mb-3">
-        <PerovoShareCard
-          score={perovo.score}
-          tierLabel={t(`perovoScore.tier.${perovo.tier?.id}`)}
-          tierTone={perovo.tier?.tone}
-          freeCash={freeCash}
-          runwayMonths={survivalMonths}
-          variant={showPayoffShare ? "payoff" : "score"}
-          loanName={payoffLoanName}
-          headline={
-            pressureDelta != null && pressureDelta <= -10
-              ? t("scoreDetail.trendUp")
-              : undefined
-          }
-        />
-      </div>
+      {shareOpen ? (
+        <div className="mx-4 mb-3">
+          <PerovoShareCard
+            score={perovo.score}
+            tierLabel={t(`perovoScore.tier.${perovo.tier?.id}`)}
+            tierTone={perovo.tier?.tone}
+            freeCash={freeCash}
+            runwayMonths={survivalMonths}
+            variant={showPayoffShare ? "payoff" : "score"}
+            loanName={payoffLoanName}
+            headline={
+              pressureDelta != null && pressureDelta <= -10
+                ? t("scoreDetail.trendUp")
+                : undefined
+            }
+          />
+        </div>
+      ) : null}
+
+      <Button type="button" variant="primary" className="mx-4 w-[calc(100%-2rem)]" onClick={() => setShareOpen(true)}>
+        {t("scoreDetail.shareScore")}
+      </Button>
 
       <Button type="button" variant="outline" className="mx-4 w-[calc(100%-2rem)]" onClick={() => navigate("/money/insights")}>
         {t("scoreDetail.viewAnalytics")}
+      </Button>
+
+      <Button type="button" variant="ghost" className="mx-4 w-[calc(100%-2rem)]" onClick={() => navigate("/profile/scores")}>
+        {t("scoreDetail.viewScoreBreakdown")}
       </Button>
     </div>
   );

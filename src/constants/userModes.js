@@ -1,10 +1,10 @@
-/** Primary bottom nav — Home · Money · Add · Plan · You */
+/** Primary bottom nav — Home · Ledger · Add · Agreements · You */
 export const NAV_ITEMS = [
   { to: "/", labelKey: "nav.home", icon: "house" },
-  { to: "/money", labelKey: "nav.money", icon: "wallet", navGroup: "money" },
+  { to: "/ledger", labelKey: "nav.ledger", icon: "scales", navGroup: "ledger" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
-  { to: "/plan", labelKey: "nav.plan", icon: "target", navGroup: "plan" },
-  { to: "/profile", labelKey: "nav.you", icon: "user" },
+  { to: "/agreements", labelKey: "nav.agreements", icon: "handshake", navGroup: "agreements" },
+  { to: "/you", labelKey: "nav.you", icon: "user-circle" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */
@@ -13,7 +13,20 @@ export const USER_MODE_IDS = ["salaried"];
 /** Removed modes — migrated to salaried on load. */
 export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
-const NAV_FULL = ["/", "/money", "/money/bills", "/money/spends", "/money/lending", "/money/insights", "/money/wealth", "/add", "/plan", "/profile"];
+const NAV_FULL = [
+  "/",
+  "/ledger",
+  "/agreements",
+  "/money",
+  "/money/bills",
+  "/money/spends",
+  "/money/lending",
+  "/money/insights",
+  "/money/wealth",
+  "/add",
+  "/you",
+  "/profile",
+];
 
 export const USER_MODES = [
   {

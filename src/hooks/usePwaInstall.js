@@ -15,16 +15,6 @@ function readStandalone() {
   );
 }
 
-function readIos() {
-  if (typeof navigator === "undefined") return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-
-function readAndroid() {
-  if (typeof navigator === "undefined") return false;
-  return /android/i.test(navigator.userAgent);
-}
-
 export function usePwaInstall() {
   const embedded = isEmbeddedApp();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -38,8 +28,6 @@ export function usePwaInstall() {
     }
   });
   const [isStandalone] = useState(readStandalone);
-  const [isIos] = useState(readIos);
-  const [isAndroid] = useState(readAndroid);
 
   useEffect(() => {
     const onBeforeInstall = (e) => {

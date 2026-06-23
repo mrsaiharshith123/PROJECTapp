@@ -96,7 +96,7 @@ export default function ProfileHubFooter({
               className={`${inputClassName()} ct-input-tint`}
               value={deleteConfirmValue}
               onChange={(e) => onDeleteConfirmChange?.(e.target.value)}
-              placeholder="DELETE"
+              placeholder={t("profileHub.deleteConfirmWord")}
               autoComplete="off"
             />
             {deleteError ? <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption> : null}
@@ -109,7 +109,7 @@ export default function ProfileHubFooter({
                 variant="danger"
                 className="flex-1"
                 onClick={onConfirmDelete}
-                disabled={deleting || deleteConfirmValue !== "DELETE"}
+                disabled={deleting || deleteConfirmValue !== t("profileHub.deleteConfirmWord")}
               >
                 {deleting ? t("common.deleting") : t("backup.deleteConfirm")}
               </Button>

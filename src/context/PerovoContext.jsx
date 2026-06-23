@@ -40,7 +40,9 @@ export function PerovoProvider({ children }) {
   const { user } = useAuth();
   const syncTimerRef = useRef(null);
   const userIdRef = useRef(user?.id);
-  userIdRef.current = user?.id;
+  useEffect(() => {
+    userIdRef.current = user?.id;
+  }, [user?.id]);
   const [commitments, setCommitments] = useState(() =>
     refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
   );
@@ -95,7 +97,7 @@ export function PerovoProvider({ children }) {
         if (cancelled || !serverSettings || typeof serverSettings !== "object") return;
         setSettings((prev) => {
           const localTs = prev.updatedAt ? Date.parse(prev.updatedAt) : 0;
-          const serverTs = serverSettings.updatedAt ? Date.parse(serverSettings.updatedAt) : 0;
+          const serverTs = serverSettings.updatedAt ? Date.parse(String(serverSettings.updatedAt)) : 0;
           if (serverTs > localTs) {
             const next = { ...prev, ...serverSettings };
             try {

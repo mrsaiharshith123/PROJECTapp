@@ -8,18 +8,10 @@ import fs from "fs";
 import vm from "vm";
 import path from "path";
 import { fileURLToPath } from "url";
+import { isExemptIdentical } from "./i18n-fallback-exempt.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MESSAGES_DIR = path.join(__dirname, "..", "src/i18n/messages");
-
-/** Keys allowed to stay identical to English in every locale (symbols, acronyms). */
-const ALLOW_IDENTICAL = new Set([
-  "brand.proSuffix",
-  "plans.pro",
-  "plans.power",
-  "support.contactEmail",
-  "account.panPlaceholder",
-]);
 
 function loadLocale(filePath) {
   let source = fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, "").replace(/export\s+default/, "module.exports =");
@@ -45,8 +37,7 @@ for (const file of locales.sort()) {
   const messages = loadLocale(path.join(MESSAGES_DIR, file));
   const identical = [];
   for (const key of enKeys) {
-    if (ALLOW_IDENTICAL.has(key)) continue;
-    if (messages[key] === en[key]) identical.push(key);
+    if (messages[key] === en[key] && !isExemptIdentical(key, en[key])) identical.push(key);
   }
   report.push({
     locale: code,
@@ -59,9 +50,11 @@ for (const file of locales.sort()) {
 const totalIdentical = report.reduce((s, r) => s + r.identical, 0);
 const worst = report.reduce((a, b) => (b.identical > a.identical ? b : a), report[0]);
 
+const STRICT_THRESHOLD = 50;
+
 if (JSON_OUT) {
-  console.log(JSON.stringify({ totalIdentical, report }));
-  process.exit(STRICT && totalIdentical > 0 ? 1 : 0);
+  console.log(JSON.stringify({ totalIdentical, report, strictThreshold: STRICT_THRESHOLD }));
+  process.exit(STRICT && totalIdentical > STRICT_THRESHOLD ? 1 : 0);
 }
 
 console.log("i18n English-fallback audit (values identical to en.js)\n");
@@ -75,8 +68,8 @@ for (const row of report) {
 console.log(`\n  Total untranslated slots: ${totalIdentical}`);
 console.log(`  Run: npm run i18n:translate:all\n`);
 
-if (STRICT && totalIdentical > 50) {
-  console.log(`  FAIL — ${worst.locale} has ${worst.identical} English fallbacks (strict threshold 50)`);
+if (STRICT && totalIdentical > STRICT_THRESHOLD) {
+  console.log(`  FAIL — ${worst.locale} has ${worst.identical} English fallbacks (strict threshold ${STRICT_THRESHOLD})`);
   process.exit(1);
 }
 

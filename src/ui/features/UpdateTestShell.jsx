@@ -1,5 +1,6 @@
 import { useUpdateTestTranslation } from "../../app/UpdateTestShellI18n.jsx";
-import { UpdateTestShellUpdateProvider } from "./UpdateTestShellUpdateProvider.jsx";
+import UpdateProgressModal from "./UpdateProgressModal.jsx";
+import { useUpdateTestShellAction } from "../../hooks/useUpdateTestShellAction.js";
 import { getLocalAppVersion } from "../../services/appUpdate.js";
 
 function UpdateTestShellView({ status, busy, runUpdate, runReset }) {
@@ -29,9 +30,11 @@ function UpdateTestShellView({ status, busy, runUpdate, runReset }) {
 
 /** Temporary — bare screen with one Update button for testing the update flow. */
 export default function UpdateTestShell() {
+  const api = useUpdateTestShellAction();
   return (
-    <UpdateTestShellUpdateProvider>
-      {(api) => <UpdateTestShellView {...api} />}
-    </UpdateTestShellUpdateProvider>
+    <div className="ct-stack">
+      <UpdateTestShellView {...api} />
+      <UpdateProgressModal open={api.progressOpen} progress={api.progress} />
+    </div>
   );
 }

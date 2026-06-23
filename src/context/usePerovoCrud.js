@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { normalizeCommitmentStatusForSave, getEffectiveStatus } from "../utils/commitmentStatus.js";
 import { applyPaymentToCommitment, totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
@@ -371,25 +371,48 @@ export function usePerovoCrud({
     [persistGoals]
   );
 
-  return {
-    addCommitment,
-    updateCommitment,
-    deleteCommitment,
-    addCommitmentPayment,
-    removeCommitmentPayment,
-    addLending,
-    updateLending,
-    deleteLending,
-    addLendingPayment,
-    updateSettings,
-    addGoal,
-    updateGoal,
-    deleteGoal,
-    addDailySpend,
-    deleteDailySpend,
-    pushInAppNotification,
-    markNotificationRead,
-    markAllNotificationsRead,
-    logSavingsToGoal,
-  };
+  return useMemo(
+    () => ({
+      addCommitment,
+      updateCommitment,
+      deleteCommitment,
+      addCommitmentPayment,
+      removeCommitmentPayment,
+      addLending,
+      updateLending,
+      deleteLending,
+      addLendingPayment,
+      updateSettings,
+      addGoal,
+      updateGoal,
+      deleteGoal,
+      addDailySpend,
+      deleteDailySpend,
+      pushInAppNotification,
+      markNotificationRead,
+      markAllNotificationsRead,
+      logSavingsToGoal,
+    }),
+    [
+      addCommitment,
+      updateCommitment,
+      deleteCommitment,
+      addCommitmentPayment,
+      removeCommitmentPayment,
+      addLending,
+      updateLending,
+      deleteLending,
+      addLendingPayment,
+      updateSettings,
+      addGoal,
+      updateGoal,
+      deleteGoal,
+      addDailySpend,
+      deleteDailySpend,
+      pushInAppNotification,
+      markNotificationRead,
+      markAllNotificationsRead,
+      logSavingsToGoal,
+    ],
+  );
 }

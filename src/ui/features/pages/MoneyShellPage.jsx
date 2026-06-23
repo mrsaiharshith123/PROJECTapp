@@ -3,26 +3,21 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { PageShell } from "../../index.js";
-import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { getUserModeConfig } from "../../../constants/userModes.js";
 
 const MONEY_TABS = [
   { id: "bills", path: "/money/bills", labelKey: "money.tab.bills" },
   { id: "spends", path: "/money/spends", labelKey: "money.tab.spends" },
-  { id: "lending", path: "/money/lending", labelKey: "money.tab.lending" },
 ];
 
-/** Money tab shell — Bills / Spends / Lending with cross-fade content. */
+/** Money tab shell — Bills / Spends. */
 export default function MoneyShellPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { settings } = usePerovo();
-  const showLending = getUserModeConfig(settings.userMode || "salaried").showLending;
   const fadeKey = useRef(location.pathname);
 
   const segment = location.pathname.split("/")[2] || "bills";
-  const tabs = MONEY_TABS.filter((tab) => tab.id !== "lending" || showLending);
+  const tabs = MONEY_TABS;
   const activeTab = tabs.some((tab) => tab.id === segment) ? segment : "bills";
 
   useEffect(() => {
@@ -50,7 +45,7 @@ export default function MoneyShellPage() {
           }}
         />
       </div>
-      <div key={location.pathname} className="ct-money-tab-fade">
+      <div key={location.key} className="ct-money-tab-fade">
         <Outlet />
       </div>
     </PageShell>

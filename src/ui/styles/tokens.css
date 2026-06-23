@@ -23,7 +23,7 @@ html[data-ui="ct"] {
   --ct-life-inset-border: rgba(255, 255, 255, 0.06);
   --ct-life-shadow: 0 2px 24px rgba(0, 0, 0, 0.5), 0 0 32px -12px rgba(99, 102, 241, 0.12);
   --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.06));
-  --ct-life-nav-bg: rgba(13, 14, 24, 0.92);
+  --ct-life-nav-bg: rgba(24, 25, 48, 0.80);
   --ct-life-grad-hero: linear-gradient(165deg, rgba(99, 102, 241, 0.14) 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
   --ct-life-glass: rgba(24, 25, 48, 0.72);
   --ct-life-btn-grad: linear-gradient(135deg, #818cf8 0%, #6366f1 52%, #4f46e5 100%);
@@ -33,6 +33,42 @@ html[data-ui="ct"] {
   --ct-life-success-grad: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
   --ct-life-label: #a8a6c2;
   --ct-life-heading: #f0eff9;
+
+  /* Position OS — category colors */
+  --pos-bg: #0d0e18;
+  --pos-surface: #181930;
+  --pos-surface-2: #1e1f3a;
+  --pos-border: rgba(255, 255, 255, 0.07);
+  --pos-text: #f0eff9;
+  --pos-text-muted: #6e6c8a;
+  --pos-asset: #10b981;
+  --pos-asset-bg: rgba(16, 185, 129, 0.1);
+  --pos-asset-border: rgba(16, 185, 129, 0.25);
+  --pos-asset-glow: radial-gradient(circle at 70% -20%, rgba(16, 185, 129, 0.25), transparent 60%);
+  --pos-asset-grad: linear-gradient(150deg, rgba(16, 185, 129, 0.18) 0%, rgba(13, 14, 24, 0.95) 60%);
+  --pos-liab: #f43f5e;
+  --pos-liab-bg: rgba(244, 63, 94, 0.1);
+  --pos-liab-border: rgba(244, 63, 94, 0.25);
+  --pos-liab-glow: radial-gradient(circle at 70% -20%, rgba(244, 63, 94, 0.2), transparent 60%);
+  --pos-liab-grad: linear-gradient(150deg, rgba(244, 63, 94, 0.15) 0%, rgba(13, 14, 24, 0.95) 60%);
+  --pos-inst: #8b5cf6;
+  --pos-inst-bg: rgba(139, 92, 246, 0.1);
+  --pos-inst-border: rgba(139, 92, 246, 0.25);
+  --pos-inst-glow: radial-gradient(circle at 70% -20%, rgba(139, 92, 246, 0.2), transparent 60%);
+  --pos-inst-grad: linear-gradient(150deg, rgba(139, 92, 246, 0.15) 0%, rgba(13, 14, 24, 0.95) 60%);
+  --pos-agr: #6366f1;
+  --pos-agr-bg: rgba(99, 102, 241, 0.1);
+  --pos-agr-border: rgba(99, 102, 241, 0.25);
+  --pos-goal: #f59e0b;
+  --pos-goal-bg: rgba(245, 158, 11, 0.1);
+  --pos-goal-border: rgba(245, 158, 11, 0.25);
+  --pos-cashflow: #6b7280;
+  --pos-cashflow-bg: rgba(107, 114, 128, 0.10);
+  --pos-cashflow-border: rgba(107, 114, 128, 0.20);
+  --pos-positive: #2dd4bf;
+  --pos-warning: #fbbf24;
+  --pos-danger: #f87171;
+  --pos-gold: #fcd34d;
 
   /* Tailwind utility bridge (gray / slate / indigo / violet / emerald / amber) */
   --ct-tw-gray-50: var(--ct-life-inset-bg);

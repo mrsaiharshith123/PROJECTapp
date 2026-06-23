@@ -369,7 +369,7 @@ export async function syncSettingsToServer(settings) {
       .eq("id", user.id);
     if (error) log.auth.warn("Settings sync failed", { message: error.message });
   } catch (e) {
-    log.auth.warn("Settings sync error", { message: e?.message });
+    log.auth.warn("Settings sync error", { message: e instanceof Error ? e.message : String(e) });
   }
 }
 

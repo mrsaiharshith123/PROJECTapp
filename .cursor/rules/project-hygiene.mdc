@@ -41,7 +41,13 @@ globs:
 
 ## FAB quick actions (`Navbar.jsx`)
 
-Tap **+**: add commitment, scan bill, log daily spend, record lending. Long-press **+** opens log-spend modal directly.
+Tap **+**: add commitment, scan bill, log daily spend, record agreement (`/agreements`). Long-press **+** opens log-spend modal directly.
+
+## Routing
+
+- **Live router:** `src/App.jsx` only — do not add a parallel `appRouter` / layout scaffold without wiring `renderApp.jsx`.
+- **Ledger Insights** → `/money/wealth` (net worth). **Monthly analytics** → `/money/insights`.
+- Legacy `/plan`, `/tools` → `/you/tools`; `/lending`, `/money/lending` → `/agreements`.
 
 ## i18n
 

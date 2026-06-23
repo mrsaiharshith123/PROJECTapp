@@ -13,7 +13,7 @@ import { formatInr, INR, ARROW, EM_DASH } from "../../../constants/symbols.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { ProGate } from "../../patterns/ProGate.jsx";
-import { Caption, Body } from "../../primitives/Text.jsx";
+import { Caption } from "../../primitives/Text.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";

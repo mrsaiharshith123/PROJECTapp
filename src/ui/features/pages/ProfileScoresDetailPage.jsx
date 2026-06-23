@@ -5,7 +5,6 @@ import { useProfileScoreGuide } from "../../../hooks/useProfileScoreGuide.js";
 import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
 import { translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { joinEngineMessages } from "../../../i18n/engineLabels.js";
-import { formatInr } from "../../../constants/symbols.js";
 import { Body, Caption, CtIcon } from "../../index.js";
 import YouSubPageShell from "../profile/pages/YouSubPageShell.jsx";
 
@@ -27,25 +26,12 @@ function toneColor(tone) {
   return "#f87171";
 }
 
-function formatDue(dateStr) {
-  if (!dateStr) return "";
-  try {
-    return new Date(`${dateStr}T12:00:00`).toLocaleDateString(undefined, {
-      day: "numeric",
-      month: "short",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
 export default function ProfileScoresDetailPage() {
   const { t } = useTranslation();
   const { privacyMode } = useNetWorth();
   const guide = useProfileScoreGuide();
   const perovo = usePerovoScore();
   const [openId, setOpenId] = useState(null);
-  const [showPayoff, setShowPayoff] = useState(false);
 
   return (
     <YouSubPageShell titleKey="perovoScore.title">
@@ -162,36 +148,6 @@ export default function ProfileScoresDetailPage() {
         ))}
       </div>
 
-      {guide.payoffOrder.length > 0 ? (
-        <>
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost w-full mt-3"
-            onClick={() => setShowPayoff((v) => !v)}
-          >
-            {showPayoff ? t("scoreDetail.hidePayoff") : t("scoreDetail.showPayoff")}
-          </button>
-          {showPayoff ? (
-            <div className="ct-analytics-card mt-2 ct-stack-sm">
-              <Body className="ct-body-strong">{t("profileHub.scorePayOrder")}</Body>
-              <Caption className="block mb-2">{t("profileHub.scorePayOrderHint")}</Caption>
-              <ol className="space-y-2">
-                {guide.payoffOrder.map((row, i) => (
-                  <li key={`${row.name}-${i}`} className="ct-row-between gap-2 text-sm">
-                    <span>
-                      <span className="font-semibold">{i + 1}.</span> {row.name}
-                      {row.dueDate ? (
-                        <Caption className="inline ml-1 opacity-75">({formatDue(row.dueDate)})</Caption>
-                      ) : null}
-                    </span>
-                    <span className="ct-numeral shrink-0">{formatInr(row.amount || 0)}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ) : null}
-        </>
-      ) : null}
     </YouSubPageShell>
   );
 }

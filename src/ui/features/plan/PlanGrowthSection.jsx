@@ -19,12 +19,12 @@ const GROWTH_TOOLS = [
 ];
 
 /** Investment & growth tools + retirement featured tile. */
-export default function PlanGrowthSection() {
+export default function PlanGrowthSection({ initialTool = null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ctx = usePerovo();
   const { settings } = ctx;
-  const [activeTool, setActiveTool] = useState(/** @type {string | null} */ (null));
+  const [activeTool, setActiveTool] = useState(() => (initialTool === "retirement" ? "retirement" : null));
 
   const corpusEstimate = useMemo(() => {
     const basic = Math.max(0, Number(settings.monthlyIncome) || 0) * 0.4;
@@ -42,7 +42,7 @@ export default function PlanGrowthSection() {
 
   const openTool = (id) => {
     if (id === "cibil") {
-      navigate("/profile/scores");
+      navigate("/score-detail");
       return;
     }
     setActiveTool(id);

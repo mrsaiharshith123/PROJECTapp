@@ -63,5 +63,14 @@ export function useLendingLists(lendings, searchQuery = "") {
     return Math.round(scores.reduce((sum, n) => sum + n, 0) / scores.length);
   }, [lendings]);
 
-  return { borrowedList, lentList, trustRows, totals, trustScore };
+  /** Per-entry trust scores — compute once per lendings change (avoid O(n²) per card). */
+  const trustByEntryId = useMemo(() => {
+    const map = new Map();
+    for (const l of lendings) {
+      map.set(l.id, trustScoreForLendingEntry(l, lendings));
+    }
+    return map;
+  }, [lendings]);
+
+  return { borrowedList, lentList, trustRows, totals, trustScore, trustByEntryId };
 }

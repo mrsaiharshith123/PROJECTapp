@@ -45,11 +45,16 @@ export default function HomeGoodNewsLine() {
       type="button"
       className="ct-home-good-news ct-stat-tile teal ct-home-enter-item ct-pressable"
       style={{ animationDelay: "180ms" }}
-      onClick={isShare ? () => navigate("/profile/scores") : undefined}
+      onClick={isShare ? () => navigate("/score-detail") : undefined}
       disabled={!isShare}
     >
       <span className="ct-good-news-dot" aria-hidden />
       <span>{message}</span>
+      {isShare && (
+        <span style={{ marginLeft: 8, fontSize: 11, color: "var(--pos-asset)", flexShrink: 0 }}>
+          {t("home.goodNews.shareLink")}
+        </span>
+      )}
     </button>
   );
 }

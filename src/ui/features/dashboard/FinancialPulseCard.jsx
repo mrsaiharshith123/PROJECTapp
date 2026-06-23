@@ -122,8 +122,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
     : [];
 
   return (
-    <Card className="ct-stack ct-hero-card survival ct-pulse-modern">
-      <div className="ct-hero-glow amber" aria-hidden />
+    <Card className="ct-stack pos-tile instrument ct-pulse-modern">
       <div className="ct-row-between relative" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
         <Heading level={2}>
           {t("pulse.title")}

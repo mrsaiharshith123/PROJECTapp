@@ -33,15 +33,14 @@ const PROPER_NOUNS = [
   "Chrome", "Safari", "Supabase", "JSON", "PAN", "EMI", "CTC", "PF", "SMS", "WhatsApp",
 ];
 
-/** Email address and PAN format sample — stay Latin by design. */
-const ALLOW_IDENTICAL = new Set(["support.contactEmail", "account.panPlaceholder"]);
+import { ALLOW_IDENTICAL_KEYS, isExemptIdentical } from "./i18n-fallback-exempt.mjs";
 
 /** ASCII strings with common English words — stale copy not matching en.js. */
 const ENGLISH_WORD_RE =
   /\b(the|and|for|your|this|with|from|are|has|have|will|month|bill|paid|due|edit|delete|add|select|setup|before|name|mobile|salary|payment|loan|insight|pressure|score|free|cash|help|guide|privacy|contact|current|plan|feature|pro|power|pick|topic|switch|graph|type|tap|orange|variable|bars|slice|spent|open|stress|swipe|between|views|chart|change|record|log|spend|see|where|same|data|phone|icon|paste|debit)\b/i;
 
 function needsTranslation(key, currentValue, enValue) {
-  if (ALLOW_IDENTICAL.has(key)) return false;
+  if (isExemptIdentical(key, enValue)) return false;
   const cur = String(currentValue ?? "");
   const enV = String(enValue ?? "");
   if (key === "brand.proSuffix" && (cur === "Pro" || cur === enV)) return true;
@@ -215,7 +214,7 @@ async function translateLocale(locale, enMessages, keys, { rebuild = false } = {
 
   if (rebuild) {
     for (const key of keys) {
-      if (!ALLOW_IDENTICAL.has(key)) next[key] = enMessages[key];
+      if (!ALLOW_IDENTICAL_KEYS.has(key)) next[key] = enMessages[key];
     }
   }
 
@@ -241,6 +240,12 @@ async function translateLocale(locale, enMessages, keys, { rebuild = false } = {
         let brand = await translateWithGoogle("Commit Track", apiTarget);
         if (locale === "ks") brand = adaptKashmiriFromUrdu(brand);
         if (brand && !/^Perovo$/i.test(brand)) value = brand;
+      }
+      if (value === enValue && enValue.length > 2 && !isExemptIdentical(key, enValue)) {
+        const retryRaw = await translateWithGoogle(`Translate this finance app UI label: ${masked.slice(0, 460)}`, apiTarget);
+        let retry = unprotectText(retryRaw, tokens);
+        if (locale === "ks") retry = adaptKashmiriFromUrdu(retry);
+        if (retry && retry !== enValue && !isCorruptedTranslation(retry)) value = retry;
       }
       const fallback = locale === "ks" ? adaptKashmiriFromUrdu(unprotectText(raw, tokens)) : enValue;
       return { key, value: isCorruptedTranslation(value) ? fallback : value };

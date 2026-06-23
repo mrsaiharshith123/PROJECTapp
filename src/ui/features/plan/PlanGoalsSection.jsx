@@ -4,11 +4,11 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
-import { computeGoalProgress, computeGoalIntel } from "../../../engines/goalsProgress.js";
+import { computeGoalIntel } from "../../../engines/goalsProgress.js";
 import { monthlyBurdenForCommitment } from "../../../engines/burden.js";
 import { formatInr, CHEVRON } from "../../../constants/symbols.js";
 import { Button, Caption, Body } from "../../index.js";
-import GoalProgressRing from "./GoalProgressRing.jsx";
+import { cn } from "../../utils/cn.js";
 import PlanToolSheet from "./PlanToolSheet.jsx";
 import { renderPlanToolPanel } from "./planToolPanels.jsx";
 
@@ -17,6 +17,37 @@ const SUGGESTED_GOALS = [
   { type: "save_amount", titleKey: "plan.goals.suggestTrip" },
   { type: "save_amount", titleKey: "plan.goals.suggestDownPayment" },
 ];
+
+function ringColor(tone) {
+  if (tone === "danger") return "var(--ct-danger)";
+  if (tone === "amber") return "var(--ct-warning)";
+  return "var(--ct-success)";
+}
+
+function GoalProgressRing({ percent, tone = "teal", size = 40, className = "" }) {
+  const pct = Math.min(100, Math.max(0, Number(percent) || 0));
+  const deg = (pct / 100) * 360;
+  const color = ringColor(tone);
+  const inner = Math.round(size * 0.75);
+
+  return (
+    <div
+      className={cn("ct-conic-ring shrink-0", className)}
+      style={{
+        width: size,
+        height: size,
+        background: `conic-gradient(${color} 0deg ${deg}deg, rgba(255,255,255,0.08) ${deg}deg 360deg)`,
+      }}
+      aria-hidden
+    >
+      <div className="ct-conic-ring-inner" style={{ width: inner, height: inner }}>
+        <span className="text-[10px] font-semibold tabular-nums" style={{ color }}>
+          {Math.round(pct)}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 /** @param {string} type */
 function goalTypeI18nKey(type) {
@@ -37,14 +68,19 @@ function ringTone(status) {
 }
 
 /** Goals hero + cards — top of Plan tab. */
-export default function PlanGoalsSection() {
+export default function PlanGoalsSection({ requestOpen = false }) {
   const { t } = useTranslation();
   const ctx = usePerovo();
   const { goals, commitments, getEffectiveStatus, todayStr } = ctx;
   const stable = useStabilityIntel();
   const intel = useCommitIntel();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(() => requestOpen);
   const [goalDraft, setGoalDraft] = useState(/** @type {{ title?: string, type?: string } | null} */ (null));
+
+  const openGoals = (draft = null) => {
+    setGoalDraft(draft);
+    setSheetOpen(true);
+  };
 
   const openRemaining = useMemo(
     () => commitments.reduce((s, c) => s + monthlyBurdenForCommitment(c, getEffectiveStatus), 0),
@@ -111,11 +147,6 @@ export default function PlanGoalsSection() {
           : "#2dd4bf";
 
   const nearest = sorted[0];
-
-  const openGoals = (draft = null) => {
-    setGoalDraft(draft);
-    setSheetOpen(true);
-  };
 
   if (activeGoals.length === 0) {
     return (

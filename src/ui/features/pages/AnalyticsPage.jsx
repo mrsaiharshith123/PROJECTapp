@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Card, InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
+import { InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
@@ -38,13 +38,11 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { TabContent } from "../../patterns/TabContent.jsx";
 import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
 
-function AnalyticsSectionHead({ title, subtitle }) {
+function AnalyticsSectionHead({ title, subtitle, tone = "indigo" }) {
   return (
-    <div className="ct-stat-tile indigo mx-4 mb-1 py-2 px-3">
-      <div className="ct-analytics-section-head !p-0">
-        <p className="ct-analytics-section-title">{title}</p>
-        {subtitle ? <p className="ct-analytics-section-sub">{subtitle}</p> : null}
-      </div>
+    <div className={`pos-tile ${tone} mx-4 mb-1`}>
+      <p className="ct-analytics-section-title">{title}</p>
+      {subtitle ? <p className="ct-analytics-section-sub">{subtitle}</p> : null}
     </div>
   );
 }
@@ -82,8 +80,13 @@ const Analytics = () => {
 
   useEffect(() => {
     if (!location.state?.openHousehold) return;
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [location.state?.openHousehold, location.pathname, navigate]);
+    // Use setTimeout to avoid synchronous navigate-in-effect infinite loop
+    const id = setTimeout(() => {
+      navigate(location.pathname, { replace: true, state: {} });
+    }, 0);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const profileScope = resolveAnalyticsProfileScope(settings, isFamily ? analyticsView : "self");
   const today = todayStr || todayYmd();
 
@@ -187,7 +190,7 @@ const Analytics = () => {
 
       <BillInsightsCards />
 
-      <div className="ct-analytics-card ct-stack mx-4 mb-2.5" id="paycheck-flow">
+      <div className="pos-tile instrument ct-stack mx-4 mb-2.5" id="paycheck-flow">
         <div>
           <Heading level={3}>
             {isFamily && analyticsView === "household"
@@ -210,7 +213,7 @@ const Analytics = () => {
       </div>
 
       {lendings.length > 0 && (
-        <div className="ct-hero-card lending relative ct-stack mx-4 mb-2.5">
+        <div className="pos-tile agreement ct-stack mx-4 mb-2.5">
           <Body className="ct-body-strong">{t("analytics.lendingRepayment")}</Body>
           <Caption>
             {t("analytics.lendingSettled", { settled: lendingStats.settled })} {EM_DASH}{" "}
@@ -236,7 +239,7 @@ const Analytics = () => {
       )}
 
       {debtReduction && (
-        <div className="ct-analytics-card mx-4 mb-2.5">
+        <div className="pos-tile liability mx-4 mb-2.5">
           <Body className="!text-sm inline-flex items-center gap-1">
             {t("analytics.balanceChange")}
             <InfoTip text={CALC_HELP.debtTrend} />
@@ -254,7 +257,7 @@ const Analytics = () => {
         </div>
       )}
 
-      <div className="ct-analytics-card mx-4 mb-2.5">
+      <div className="pos-tile asset mx-4 mb-2.5">
         <Caption>
           {t("analytics.allTimePayments")}{" "}
           {formatInr(commitments.reduce((s, c) => s + totalPaidOnPayments(c.payments), 0))}
@@ -265,19 +268,10 @@ const Analytics = () => {
 
   const showSelfView = !isFamily || analyticsView === "self";
 
-  const embeddedInMoney = location.pathname.startsWith("/money/insights");
-
   return (
     <PageShell
-      title={embeddedInMoney ? undefined : t("analytics.title")}
-      subtitle={
-        embeddedInMoney
-          ? undefined
-          : isFamily
-            ? t("analytics.homeSnapshotHintHousehold")
-            : t("analytics.homeSnapshotHint")
-      }
-      className={embeddedInMoney ? "ct-money-insights-embedded" : undefined}
+      title={t("analytics.title")}
+      subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
     >
 
       {isFamily ? (
@@ -293,14 +287,13 @@ const Analytics = () => {
       <TabContent tabId="self" activeTab={analyticsView}>
         {showSelfView ? (
         <div className="ct-stack">
-          <AnalyticsSectionHead title={t("analytics.section.pulse")} subtitle={t("analytics.section.pulseHint")} />
           <FinancialPulseCard />
           <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
             <CashflowCalendarStrip />
           </div>
 
           <div className="ct-analytics-section-divider" />
-          <AnalyticsSectionHead title={t("analytics.section.spending")} subtitle={t("analytics.section.spendingHint")} />
+          <AnalyticsSectionHead title={t("analytics.section.spending")} subtitle={t("analytics.section.spendingHint")} tone="liability" />
           <div className="ct-row justify-end px-4">
             <Button
               type="button"
@@ -318,7 +311,7 @@ const Analytics = () => {
             </Button>
           </div>
           {emiPlan ? (
-            <div className="ct-analytics-card ct-stack-sm ct-animate-fade-up mx-4 mb-2.5" style={{ animationDelay: "60ms" }}>
+            <div className="pos-tile liability ct-stack-sm ct-animate-fade-up mx-4 mb-2.5" style={{ animationDelay: "60ms" }}>
               <Heading level={3}>
                 {t("analytics.emiConsolidation.title")}
                 <InfoTip textKey="analytics.emiConsolidation.subtitle" />
@@ -352,7 +345,7 @@ const Analytics = () => {
       <TabContent tabId="household" activeTab={analyticsView}>
         {!showSelfView ? (
         <div className="ct-stack ct-list-animate">
-          <AnalyticsSectionHead title={t("analytics.section.household")} subtitle={t("analytics.section.householdHint")} />
+          <AnalyticsSectionHead title={t("analytics.section.household")} subtitle={t("analytics.section.householdHint")} tone="agreement" />
           <div className="ct-animate-fade-up" style={{ animationDelay: "0ms" }}>
             <HouseholdCommandPanel />
           </div>

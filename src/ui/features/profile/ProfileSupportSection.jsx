@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { Caption } from "../../index.js";
 import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SettingsGroup, SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";

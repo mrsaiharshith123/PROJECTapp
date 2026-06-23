@@ -157,16 +157,16 @@ export default function ProfileFinancialHero({
             <button
               type="button"
               className="ct-profile-identity-stat"
-              onClick={() => navigate("/money/wealth")}
-              aria-label={t("profileHub.heroStatNetWorthAria", { value: netWorthDisplay })}
+              onClick={() => navigate("/ledger")}
+              aria-label={t("profileHub.heroStatNetPositionAria", { value: netWorthDisplay })}
             >
-              <Caption className="ct-profile-identity-stat-label">{t("profileHub.heroStatNetWorth")}</Caption>
+              <Caption className="ct-profile-identity-stat-label">{t("home.position.netLabel")}</Caption>
               <span className="ct-profile-identity-stat-value ct-profile-identity-stat-gold">{netWorthDisplay}</span>
             </button>
             <button
               type="button"
               className="ct-profile-identity-stat"
-              onClick={() => navigate("/profile/scores")}
+              onClick={() => navigate("/score-detail")}
               aria-label={t("profileHub.heroStatScoreAria", { score: scoreDisplay })}
             >
               <Caption className="ct-profile-identity-stat-label">{t("perovoScore.title")}</Caption>
@@ -177,10 +177,12 @@ export default function ProfileFinancialHero({
             <button
               type="button"
               className="ct-profile-identity-stat"
-              onClick={() => navigate("/plan")}
+              onClick={() => {
+                document.getElementById("profile-goals")?.scrollIntoView({ behavior: "smooth" });
+              }}
               aria-label={t("profileHub.heroStatGoalsAria", { value: goalsDisplay })}
             >
-              <Caption className="ct-profile-identity-stat-label">{t("nav.plan")}</Caption>
+              <Caption className="ct-profile-identity-stat-label">{t("you.goals.sectionTitle")}</Caption>
               <span
                 className={`ct-profile-identity-stat-value ${
                   goalsTone === "ok" ? "ct-profile-identity-stat-teal" : "ct-profile-identity-stat-amber"

@@ -64,16 +64,6 @@ export function usePerovoScore() {
 
     const debtHealthScore = debtHealthToScore(nwIntel.debtHealth);
 
-    const current = computePerovoScore({
-      pressureScore: intel.stability?.score ?? 50,
-      health: intel.health,
-      billPortfolioScore: billPortfolio.score,
-      emergencyProgressPercent: stable.emergency?.progressPercent ?? 0,
-      debtHealthScore,
-      creditUtilizationPercent: creditUtil,
-      goalsOnTrackRatio,
-    });
-
     let previousPillars;
     if (prevSnap?.pressureScore != null) {
       previousPillars = computePerovoScore({

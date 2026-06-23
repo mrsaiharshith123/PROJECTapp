@@ -64,7 +64,7 @@ npm run audit:platform   # architecture, features
 | `audit:charts` (duplicates) | Resolved: net worth categories → `wealthCategories.js` | Bill categories stay in `constants/categories.js` |
 | `audit:governance` | Large page files (AuthGate, HouseholdRoom, Analytics) | Extract sections when touching those files |
 | `audit:performance` | Main JS chunk ~510 kB | Code-split when adding heavy routes |
-| Baseline | **105** chaos QA tests / colocated `src/**/__tests__` / governance tree + Knip clean | Update docs when counts change |
+| Baseline | **120** QA tests / colocated `src/**/__tests__` / governance tree + Knip clean | Update docs when counts change |
 
 ### Flags
 

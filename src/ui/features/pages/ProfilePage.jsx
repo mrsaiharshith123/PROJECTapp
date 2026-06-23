@@ -8,6 +8,8 @@ import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
 import ProfileUpgradeRow from "../profile/hub/ProfileUpgradeRow.jsx";
 import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
+import PlanGoalsSection from "../plan/PlanGoalsSection.jsx";
+import ProfileToolsSection from "../profile/hub/ProfileToolsSection.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
 
 /** @param {string | undefined} fromNav @returns {string | null} */
@@ -43,10 +45,17 @@ const Profile = () => {
   const { settings, updateSettings } = usePerovo();
   const { t } = useTranslation();
   const [signingOut, setSigningOut] = useState(false);
+  const [openGoalSheet] = useState(() => Boolean(location.state?.openGoal));
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  useEffect(() => {
+    if (!location.state?.openGoal) return;
+    document.getElementById("profile-goals")?.scrollIntoView({ behavior: "smooth" });
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.openGoal, location.pathname, navigate]);
 
   useEffect(() => {
     const route = resolveYouRoute(location.state?.openSection);
@@ -107,6 +116,13 @@ const Profile = () => {
 
       <ProfileAdminEntry />
 
+      <section id="profile-goals" className="ct-stack">
+        <div className="ct-stat-tile goal mb-1 pos-tile goal">
+          <p className="ct-analytics-section-title">{t("you.goals.sectionTitle")}</p>
+        </div>
+        <PlanGoalsSection requestOpen={openGoalSheet} />
+      </section>
+
       <div className="ct-stat-tile indigo mx-0 mb-1" id="profile-settings">
         <p className="ct-analytics-section-title">{t("profileHub.settingsTitle")}</p>
         <p className="ct-analytics-section-sub">{t("profileHub.settingsSubtitle")}</p>
@@ -118,6 +134,8 @@ const Profile = () => {
         privacyMode={privacyMode}
         onTogglePrivacyMode={togglePrivacyMode}
       />
+
+      <ProfileToolsSection />
 
       <ProfileHubFooter
         isLoggedIn={isLoggedIn}

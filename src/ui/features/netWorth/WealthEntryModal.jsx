@@ -5,7 +5,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { computeAssetCagr } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { Modal, inputClassName, Caption } from "../../index.js";
+import { Modal, inputClassName } from "../../index.js";
 
 const PROPERTY_IDS = new Set([
   "property",

@@ -3,7 +3,7 @@ export { CtIcon } from "./icons/CtIcon.jsx";
 
 export { Text, Heading, Eyebrow, Body, Caption } from "./primitives/Text.jsx";
 export { Card } from "./primitives/Card.jsx";
-export { Button, Fab } from "./primitives/Button.jsx";
+export { Button } from "./primitives/Button.jsx";
 export { Input, inputClassName, fieldInputClass } from "./primitives/Input.jsx";
 export { PasswordInput } from "./primitives/PasswordInput.jsx";
 export { Badge } from "./primitives/Badge.jsx";
@@ -61,7 +61,7 @@ export { Screen, ScreenSection, MainContent } from "./layout/Screen.jsx";
 export { Navbar } from "./layout/Navbar.jsx";
 
 export { insightToneClass } from "./tokens/severity.js";
-export { statusTone, pressureTone } from "./utils/statusColor.js";
+export { pressureTone } from "./utils/statusColor.js";
 
 export { SettingsGroup, SettingsGroupRow, SettingsGroupContent, SettingsGroupToggleRow } from "./features/profile/SettingsGroup.jsx";
 

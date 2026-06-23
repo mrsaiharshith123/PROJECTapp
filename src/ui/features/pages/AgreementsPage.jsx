@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { Button, fieldInputClass, EmptyState, inputClassName } from "../../";
-import { exportLendingToExcel } from "../../../utils/excelExport.js";
+import { useCallback, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Button, EmptyState, fieldInputClass, inputClassName, PageShell } from "../../index.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
-import LendingEntryCard from "../lending/LendingEntryCard.jsx";
 import LendingPageDialogs from "../lending/LendingPageDialogs.jsx";
 import { useLendingLists } from "../lending/useLendingLists.js";
-import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
 import LendingOverduePanel from "../lending/LendingOverduePanel.jsx";
-import LendingHeroSummary from "../money/LendingHeroSummary.jsx";
-import MoneyOverflowMenu from "../money/MoneyOverflowMenu.jsx";
+import AgreementCard from "../agreements/AgreementCard.jsx";
+import AgreementDocumentsList from "../agreements/AgreementDocumentsList.jsx";
+import AgreementsHeroSummary from "../agreements/AgreementsHeroSummary.jsx";
+import AgreementsHeaderActions from "../agreements/AgreementsHeaderActions.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -30,11 +30,15 @@ const emptyLendingForm = () => ({
   notes: "",
 });
 
-const Lending = () => {
+/** Top-level Agreements tab — informal lending + legal documents. */
+export default function AgreementsPage() {
   const { t } = useTranslation();
-  const { lendings, settings, todayStr, addLending, updateLending, deleteLending, addLendingPayment } =
+  const location = useLocation();
+  const { lendings, settings, todayStr, addLending, updateLending, addLendingPayment } =
     usePerovo();
-  const [showAdd, setShowAdd] = useState(false);
+
+  const [listTab, setListTab] = useState(/** @type {"lent" | "borrowed" | "documents"} */ ("lent"));
+  const [showAdd, setShowAdd] = useState(() => Boolean(location.state?.openAdd));
   const [editing, setEditing] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
   const [form, setForm] = useState(emptyLendingForm);
@@ -44,23 +48,32 @@ const Lending = () => {
   const [detailFor, setDetailFor] = useState(null);
   const [showRequest, setShowRequest] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [listTab, setListTab] = useState("lent");
 
-  const { borrowedList, lentList, totals, trustScore } = useLendingLists(lendings, searchQuery);
+  const { borrowedList, lentList, totals, trustScore, trustByEntryId } = useLendingLists(lendings, searchQuery);
 
-  const owed = Math.max(0, Number(totals?.lentRemaining ?? totals?.lentOutstanding) || 0);
-  const owe = Math.max(0, Number(totals?.borrowedRemaining ?? totals?.borrowedOutstanding) || 0);
+  const owed = Math.max(0, Number(totals?.lentOutstanding) || 0);
+  const owe = Math.max(0, Number(totals?.borrowedOutstanding) || 0);
   const isEmpty = lendings.length === 0 && owed === 0 && owe === 0;
-
-  const openAdd = () => {
-    resetForm();
-    setShowAdd(true);
-  };
 
   const resetForm = () => {
     setForm(emptyLendingForm());
     setFormErrors({});
   };
+
+  const openAdd = useCallback(() => {
+    setForm(emptyLendingForm());
+    setFormErrors({});
+    setShowAdd(true);
+  }, []);
+
+  const openRequest = useCallback(() => setShowRequest(true), []);
+
+  const detailLending = useMemo(
+    () => (detailFor ? lendings.find((l) => l.id === detailFor.id) || detailFor : null),
+    [detailFor, lendings],
+  );
+
+  const anyDialogOpen = Boolean(showAdd || editing || showRequest || detailLending || paymentFor);
 
   const validateForm = () => {
     const errs = {};
@@ -118,26 +131,6 @@ const Lending = () => {
     setEditing(null);
   };
 
-  const openEdit = (l) => {
-    if (!canEditLending(l)) return;
-    setEditing(l);
-    setForm({
-      personName: l.personName,
-      type: l.type,
-      totalAmount: String(l.principalAmount ?? l.totalAmount),
-      dueDate: l.dueDate || "",
-      startDate: l.startDate || l.dueDate || "",
-      endDate: l.endDate || "",
-      interestRate: String(l.interestRate ?? 0),
-      interestType: l.interestType || "simple",
-      repaymentFrequency: l.repaymentFrequency || l.repaymentType || "monthly",
-      repaymentType: l.repaymentType || "monthly",
-      relationshipTag: l.relationshipTag || "Other",
-      notes: l.notes || "",
-    });
-    setFormErrors({});
-  };
-
   const openPayment = (l) => {
     setPaymentFor(l);
     setPayAmount("");
@@ -172,33 +165,17 @@ const Lending = () => {
     resetForm();
   };
 
-  const overflowItems = [
-    {
-      id: "export",
-      label: t("export.excel.lending"),
-      onClick: () => exportLendingToExcel(lendings),
-    },
-    {
-      id: "request",
-      label: t("lending.requestMoney"),
-      onClick: () => setShowRequest(true),
-    },
-  ];
-
-  const visibleList = listTab === "lent" ? lentList : borrowedList;
+  const overflowItems = useMemo(
+    () => (listTab === "lent" ? lentList : borrowedList),
+    [listTab, lentList, borrowedList],
+  );
 
   return (
-    <div className="ct-page ct-stack ct-money-lending-page">
-      <div className="ct-row-between gap-2 mb-1">
-        <p className="ct-analytics-section-title">{t("money.tab.lending")}</p>
-        <div className="ct-header-actions">
-          <MoneyOverflowMenu items={overflowItems} />
-          <button type="button" className="ct-btn ct-btn-primary ct-btn-sm" onClick={openAdd}>
-            + {t("lending.addShort")}
-          </button>
-        </div>
-      </div>
-
+    <PageShell
+      title={t("nav.agreements")}
+      action={<AgreementsHeaderActions lendings={lendings} onAdd={openAdd} onRequestMoney={openRequest} />}
+      className="ct-agreements-page"
+    >
       {!canAddLendingRecord(settings, lendings).ok && (
         <TierLimitBanner
           className="ct-tier-banner-warm"
@@ -215,89 +192,95 @@ const Lending = () => {
           <p className="ct-lending-empty-title">{t("lending.emptyWarmTitle")}</p>
           <p className="ct-lending-empty-body">{t("lending.emptyWarmBody")}</p>
           <Button type="button" className="mt-3" onClick={openAdd}>
-            {t("lending.recordLoan")}
+            {t("agreements.recordCta")}
           </Button>
         </div>
       ) : (
-        <LendingHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+        <AgreementsHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
       )}
 
       {!isEmpty && (
         <>
-          <input
-            className={inputClassName()}
-            placeholder={t("bills.searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-
-          <LendingOverduePanel />
-
-          <div className="ct-lending-pill-switcher">
+          <div className="pos-ledger-pill-switcher mb-2">
             {[
-              { id: "lent", label: t("lending.pillYouLent") },
-              { id: "owe", label: t("lending.pillYouOwe") },
+              { id: "lent", label: t("agreements.tab.lent") },
+              { id: "borrowed", label: t("agreements.tab.borrowed") },
+              { id: "documents", label: t("agreements.tab.documents") },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
-                className={`ct-lending-pill ${listTab === tab.id ? "active" : ""}`}
-                onClick={() => setListTab(tab.id)}
+                className={`pos-ledger-pill ${listTab === tab.id ? "active agreement" : ""}`}
+                onClick={() => setListTab(/** @type {typeof listTab} */ (tab.id))}
               >
                 {tab.label}
               </button>
             ))}
           </div>
 
-          {visibleList.length > 0 && (
-            <section className="ct-stack-sm ct-list-animate">
-              {visibleList.map((item) => (
-                <LendingEntryCard
-                  key={item.id}
-                  item={item}
-                  todayStr={todayStr}
-                  onPayment={openPayment}
-                  onDetail={setDetailFor}
-                  onEdit={openEdit}
-                  onDelete={deleteLending}
-                />
-              ))}
-            </section>
-          )}
+          {listTab === "documents" ? (
+            <AgreementDocumentsList />
+          ) : (
+            <>
+              <input
+                className={inputClassName()}
+                placeholder={t("bills.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
 
-          {visibleList.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
-            <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
+              <LendingOverduePanel />
+
+              {overflowItems.length > 0 && (
+                <section className="ct-stack-sm ct-list-animate">
+                  {overflowItems.map((item) => (
+                    <AgreementCard
+                      key={item.id}
+                      item={item}
+                      todayStr={todayStr}
+                      trustScore={trustByEntryId.get(item.id) ?? 50}
+                      onMakeLegal={setDetailFor}
+                      onRepayment={openPayment}
+                    />
+                  ))}
+                </section>
+              )}
+
+              {overflowItems.length === 0 && (borrowedList.length > 0 || lentList.length > 0) && (
+                <EmptyState icon="handshake" title={t("bills.noMatchFilters")} hint={t("lending.empty")} />
+              )}
+            </>
           )}
         </>
       )}
 
-      <LendingPageDialogs
-        showAdd={showAdd}
-        onCloseAdd={closeAdd}
-        editing={editing}
-        onCloseEdit={closeEdit}
-        showRequest={showRequest}
-        onCloseRequest={() => setShowRequest(false)}
-        detailFor={detailFor}
-        onCloseDetail={() => setDetailFor(null)}
-        paymentFor={paymentFor}
-        onClosePayment={() => setPaymentFor(null)}
-        form={form}
-        setForm={setForm}
-        formErrors={formErrors}
-        fieldClass={fieldClass}
-        todayStr={todayStr}
-        payAmount={payAmount}
-        onPayAmountChange={setPayAmount}
-        payDate={payDate}
-        onPayDateChange={setPayDate}
-        onSubmitAdd={submitAdd}
-        onSubmitEdit={submitEdit}
-        onSubmitPayment={submitPayment}
-        onPayRemaining={payRemaining}
-      />
-    </div>
+      {anyDialogOpen ? (
+        <LendingPageDialogs
+          showAdd={showAdd}
+          onCloseAdd={closeAdd}
+          editing={editing}
+          onCloseEdit={closeEdit}
+          showRequest={showRequest}
+          onCloseRequest={() => setShowRequest(false)}
+          detailFor={detailLending}
+          onCloseDetail={() => setDetailFor(null)}
+          paymentFor={paymentFor}
+          onClosePayment={() => setPaymentFor(null)}
+          form={form}
+          setForm={setForm}
+          formErrors={formErrors}
+          fieldClass={fieldClass}
+          todayStr={todayStr}
+          payAmount={payAmount}
+          onPayAmountChange={setPayAmount}
+          payDate={payDate}
+          onPayDateChange={setPayDate}
+          onSubmitAdd={submitAdd}
+          onSubmitEdit={submitEdit}
+          onSubmitPayment={submitPayment}
+          onPayRemaining={payRemaining}
+        />
+      ) : null}
+    </PageShell>
   );
-};
-
-export default Lending;
+}

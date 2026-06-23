@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
@@ -20,6 +19,7 @@ import {
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
 import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
 import { exportCommitmentsToExcel } from "../../../utils/excelExport.js";
+import { formatInr } from "../../../constants/symbols.js";
 
 const Commitments = () => {
   const navigate = useNavigate();
@@ -37,7 +37,6 @@ const Commitments = () => {
     updateCommitment,
     dailySpends,
     todayStr,
-    settings,
   } = usePerovo();
 
   const [search, setSearch] = useState("");
@@ -105,7 +104,7 @@ const Commitments = () => {
       });
       const loanName = paymentFor.name;
       setPaymentFor(null);
-      navigate("/profile/scores", { state: { showPayoffShare: true, loanName } });
+      navigate("/score-detail", { state: { showPayoffShare: true, loanName } });
       return;
     }
     setCelebration({ type: "checkmark", message: t("celebration.paymentRecorded") });
@@ -139,8 +138,19 @@ const Commitments = () => {
     },
   ];
 
+  const totalMonthly = sortedCommitments.reduce((s, c) => s + (Number(c.monthlyAmount || c.emiAmount || 0)), 0);
+
   return (
     <div className="ct-page ct-stack ct-money-bills-page">
+      <div className="pos-hero liability" style={{ background: "linear-gradient(150deg, rgba(244,63,94,0.12), rgba(13,14,24,0.95) 50%)", borderColor: "var(--pos-liab-border)", marginBottom: 8 }}>
+        <div className="pos-hero-glow liability" aria-hidden />
+        <p className="ct-caption uppercase tracking-wide">{t("bills.heroLabel")}</p>
+        <p className="pos-display-amount" style={{ color: "var(--pos-liab)" }}>
+          {formatInr(totalMonthly)}
+        </p>
+        <p className="ct-caption mt-1">{t("bills.heroSub", { count: sortedCommitments.length })}</p>
+      </div>
+
       <div className="ct-row-between gap-2 mb-1">
         <p className="ct-analytics-section-title">{t("money.tab.bills")}</p>
         <div className="ct-header-actions">

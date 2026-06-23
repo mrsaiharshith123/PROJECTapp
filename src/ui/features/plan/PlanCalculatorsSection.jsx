@@ -16,10 +16,13 @@ const CALCULATOR_TOOLS = [
 ];
 
 /** Financial calculators — 2-column grid on Plan. */
-export default function PlanCalculatorsSection() {
+export default function PlanCalculatorsSection({ initialTool = null }) {
   const { t } = useTranslation();
   const ctx = usePerovo();
-  const [activeTool, setActiveTool] = useState(/** @type {string | null} */ (null));
+  const [activeTool, setActiveTool] = useState(() => {
+    if (!initialTool || initialTool === "retirement") return null;
+    return CALCULATOR_TOOLS.some((x) => x.id === initialTool) ? initialTool : null;
+  });
 
   const activeMeta = CALCULATOR_TOOLS.find((x) => x.id === activeTool);
 

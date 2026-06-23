@@ -72,6 +72,33 @@ const Add = () => {
   const [errors, setErrors] = useState(/** @type {Record<string, string>} */ ({}));
 
   const handlePick = (id) => {
+    if (id === "goal") {
+      navigate("/you", { state: { openGoal: true } });
+      return;
+    }
+    if (id === "agreement") {
+      navigate("/agreements", { state: { openAdd: true } });
+      return;
+    }
+    if (id === "asset") {
+      navigate("/ledger", { state: { tab: "assets", openAdd: true } });
+      return;
+    }
+    if (id === "instrument") {
+      navigate("/ledger", { state: { tab: "instruments", openAdd: true } });
+      return;
+    }
+    if (id === "cashflow") {
+      navigate("/money/spends");
+      return;
+    }
+    if (id === "liability") {
+      setAddKind("bill");
+      setStep("form");
+      setEntryType("scheduled");
+      setForm((f) => ({ ...f, category: f.category || "EMI" }));
+      return;
+    }
     setAddKind(/** @type {"bill" | "spend" | "lending"} */ (id));
     setStep("form");
     if (id === "spend") setEntryType("variable");
@@ -198,8 +225,7 @@ const Add = () => {
     form.startDate,
     form.endDate,
     commitments,
-    settings.monthlyIncome,
-    settings.secondaryMonthlyIncome,
+    settings,
     todayStr,
     getEffectiveStatus,
   ]);

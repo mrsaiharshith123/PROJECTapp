@@ -249,7 +249,7 @@ function FdRdTab() {
         <label className="ct-field-label">{t("tier.fdrd.ifsc")}</label>
         <input
           className={fieldClass}
-          placeholder="HDFC0001234"
+          placeholder={t("tier.fdrd.ifscPlaceholder")}
           value={ifscInput}
           maxLength={11}
           onChange={(e) => {

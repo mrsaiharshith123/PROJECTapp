@@ -22,12 +22,4 @@ export function Button({ variant = "primary", size = "md", className = "", type 
   );
 }
 
-export function Fab({ className = "", children, ...props }) {
-  return (
-    <button type="button" className={cn("ct-btn ct-fab", className)} {...props}>
-      {children}
-    </button>
-  );
-}
-
 export default Button;

@@ -213,7 +213,7 @@ export function BillCard({
           className="ct-suggestion-link mx-4 mb-1"
           onClick={(e) => {
             e.stopPropagation();
-            navigate("/plan", { state: { openTool: "loan" } });
+            navigate("/you/tools?tool=loan");
           }}
         >
           {t("bill.loanPrepaySuggestion")}

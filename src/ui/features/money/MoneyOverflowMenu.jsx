@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
@@ -14,13 +14,29 @@ export default function MoneyOverflowMenu({ items }) {
   useEffect(() => {
     if (!open) return undefined;
     const onDoc = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (ref.current && !ref.current.contains(/** @type {Node} */ (e.target))) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("pointerdown", onDoc);
-    return () => document.removeEventListener("pointerdown", onDoc);
+    // Defer listener so the opening click does not immediately close the menu.
+    const timer = window.setTimeout(() => {
+      document.addEventListener("pointerdown", onDoc, true);
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("pointerdown", onDoc, true);
+    };
   }, [open]);
 
-  if (!items.length) return null;
+  const toggle = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen((v) => !v);
+  }, []);
+
+  const stableItems = items;
+
+  if (!stableItems.length) return null;
 
   return (
     <div className="ct-money-overflow" ref={ref}>
@@ -29,19 +45,26 @@ export default function MoneyOverflowMenu({ items }) {
         className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
         aria-label={t("money.overflowMenu")}
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={toggle}
       >
         <CtIcon name="dots-three-vertical" size={22} />
       </button>
       {open ? (
-        <div className="ct-money-overflow-panel ct-nw-panel !p-1.5" role="menu">
-          {items.map((item) => (
+        <div
+          className="ct-money-overflow-panel ct-nw-panel !p-1.5"
+          role="menu"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {stableItems.map((item) => (
             <button
               key={item.id}
               type="button"
               role="menuitem"
               className="ct-settings-row ct-money-overflow-item ct-pressable"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 item.onClick();
                 setOpen(false);
               }}

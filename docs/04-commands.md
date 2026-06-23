@@ -14,7 +14,7 @@ All commands run from the project root (`PROJECTapp/`).
 | `npm run test:utils` | Utils tests only |
 | `npm run audit -- --strict` | Full gate; merge suggestions stay advisory (not blocking) |
 | `npm run test:watch` | Vitest in watch mode |
-| `npm run lint` | ESLint on the repo |
+| `npm run lint` | ESLint on `src/` (build artifacts under `android/`, `dist-*` ignored) |
 | `npm run lint:fix` | ESLint with auto-fix where safe |
 | `npm run typecheck` | `tsc --noEmit` — TypeScript check on `src/` (JS + `checkJs`) |
 

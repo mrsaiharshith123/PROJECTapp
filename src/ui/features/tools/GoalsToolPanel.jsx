@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import { computeGoalProgress } from "../../../engines/goalsProgress.js";
 import { analyzeSipForGoal } from "../../../engines/sipAdvisor.js";
 import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
@@ -58,11 +58,6 @@ export default function GoalsToolPanel({
   const [celebration, setCelebration] = useState(null);
   const celebratedGoals = useRef(new Set());
   const salariedFamily = isSalariedFamily(settings);
-
-  useEffect(() => {
-    if (initialTitle) setGTitle(initialTitle);
-    if (initialType) setGType(initialType);
-  }, [initialTitle, initialType]);
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;

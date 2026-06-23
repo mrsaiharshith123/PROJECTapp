@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { Button } from "../../primitives/Button.jsx";
-import { Caption } from "../../primitives/Text.jsx";
 
 function tierRingColor(tone) {
   if (tone === "success" || tone === "ok") return "#2dd4bf";

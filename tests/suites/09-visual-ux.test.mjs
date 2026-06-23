@@ -54,8 +54,8 @@ describe("🔁 DUPLICATE DATA: same number shown twice", () => {
 });
 
 describe("➕ MISSING UI: buttons and entry points", () => {
-  it("[P1] Lending view has an add button (not just the handshake FAB)", () => {
-    const content = src("src/ui/features/pages/LendingPage.jsx");
+  it("[P1] Agreements view has an add button (not just the handshake FAB)", () => {
+    const content = src("src/ui/features/pages/AgreementsPage.jsx");
     const hasAdd =
       content.includes("lending") &&
       (content.includes("showAdd") ||

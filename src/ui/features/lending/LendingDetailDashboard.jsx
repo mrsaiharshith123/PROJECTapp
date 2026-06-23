@@ -74,8 +74,12 @@ export default function LendingDetailDashboard({
     [lending, settings],
   );
   const timeline = useMemo(() => buildLendingTimeline(lending), [lending]);
-  const trustRow = lendingTrustByPerson(allLendings).find(
-    (r) => r.personKey === String(lending.personName || "").trim().toLowerCase(),
+  const trustRow = useMemo(
+    () =>
+      lendingTrustByPerson(allLendings).find(
+        (r) => r.personKey === String(lending.personName || "").trim().toLowerCase(),
+      ),
+    [allLendings, lending.personName],
   );
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
