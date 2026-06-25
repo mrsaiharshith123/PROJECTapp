@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { Button } from "../../primitives/Button.jsx";
+import { renderScoreShareCardPng, shareScoreCardImage } from "../../../utils/shareCardImage.js";
 
 function tierRingColor(tone) {
   if (tone === "success" || tone === "ok") return "#2dd4bf";
@@ -20,6 +21,7 @@ function tierRingColor(tone) {
  *   headline?: string,
  *   variant?: "score" | "payoff",
  *   loanName?: string,
+ *   onShareComplete?: () => void,
  * }} props
  */
 export default function PerovoShareCard({
@@ -31,50 +33,52 @@ export default function PerovoShareCard({
   headline,
   variant = "score",
   loanName,
+  onShareComplete,
 }) {
   const { t } = useTranslation();
+  const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const ringColor = tierRingColor(tierTone);
   const filledDeg = Math.max(0, Math.min(360, (score / 100) * 360));
 
-  const shareText = useMemo(() => {
-    const runway =
-      runwayMonths != null && Number.isFinite(runwayMonths)
-        ? `${Number(runwayMonths).toFixed(1)} ${t("scoreDetail.monthsShort")}`
-        : "—";
-    if (variant === "payoff" && loanName) {
-      return t("share.payoffText", { name: loanName, score, tier: tierLabel, freeCash: formatInr(freeCash) });
-    }
-    return t("share.scoreText", {
-      score,
-      tier: tierLabel,
-      freeCash: formatInr(freeCash),
-      runway,
-    });
-  }, [variant, loanName, score, tierLabel, freeCash, runwayMonths, t]);
+  const runway =
+    runwayMonths != null && Number.isFinite(runwayMonths)
+      ? `${Number(runwayMonths).toFixed(1)} ${t("scoreDetail.monthsShort")}`
+      : "—";
 
-  const displayHeadline =
-    headline ||
-    (variant === "payoff" && loanName
-      ? t("share.payoffHeadline", { name: loanName })
-      : headline);
+  const displayHeadline = useMemo(() => {
+    if (headline) return headline;
+    if (variant === "payoff" && loanName) return t("share.payoffHeadline", { name: loanName });
+    return null;
+  }, [headline, variant, loanName, t]);
 
   const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: t("share.title"),
-          text: shareText,
-          url: "https://perovo.app",
-        });
-        return;
+      const blob = await renderScoreShareCardPng({
+        score,
+        tierLabel,
+        tierTone,
+        freeCashLabel: t("home.freeCash"),
+        freeCash: formatInr(freeCash),
+        runwayLabel: t("scoreDetail.runway"),
+        runway,
+        brandName: t("brand.appName"),
+        subtitle: t("share.subtitle"),
+        brandLine: t("share.brandLine"),
+      });
+      const result = await shareScoreCardImage(blob, { title: t("share.title") });
+      if (result.method === "download") {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
       }
-      await navigator.clipboard.writeText(`${shareText}\nhttps://perovo.app`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      onShareComplete?.();
     } catch {
       /* user cancelled share */
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -128,9 +132,7 @@ export default function PerovoShareCard({
           <div>
             <p className="text-[10px] uppercase tracking-wide text-[var(--ct-text-muted)]">{t("scoreDetail.runway")}</p>
             <p className="font-semibold ct-numeral" style={{ color: "#fbbf24" }}>
-              {runwayMonths != null && Number.isFinite(runwayMonths)
-                ? `${Number(runwayMonths).toFixed(1)} ${t("scoreDetail.monthsShort")}`
-                : "—"}
+              {runway}
             </p>
           </div>
         </div>
@@ -146,8 +148,8 @@ export default function PerovoShareCard({
         </div>
       </div>
 
-      <Button type="button" variant="ghost" className="w-full" onClick={handleShare}>
-        {copied ? t("share.copied") : t("share.shareButton")}
+      <Button type="button" variant="primary" className="w-full" onClick={handleShare} disabled={sharing}>
+        {copied ? t("share.copied") : sharing ? t("common.loading") : t("share.shareButton")}
       </Button>
     </div>
   );

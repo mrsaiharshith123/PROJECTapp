@@ -1,5 +1,13 @@
 /** Wealth category ids shown under Instruments (not core Assets tab). */
-export const INSTRUMENT_WEALTH_IDS = new Set(["insurance", "sip", "fd", "rd", "pf_epf"]);
+export const INSTRUMENT_WEALTH_IDS = new Set([
+  "insurance",
+  "sip",
+  "fd",
+  "rd",
+  "pf_epf",
+  "stocks",
+  "mutual_fund",
+]);
 
 /** Commitment categories treated as liabilities in the ledger. */
 export const LIABILITY_COMMITMENT_CATEGORIES = new Set([

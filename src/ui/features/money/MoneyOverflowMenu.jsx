@@ -42,14 +42,14 @@ export default function MoneyOverflowMenu({ items }) {
     <div className="ct-money-overflow" ref={ref}>
       <button
         type="button"
-        className="ct-btn ct-btn-ghost ct-btn-sm ct-header-icon-btn"
+        className="ct-money-overflow-trigger"
         aria-label={t("money.overflowMenu")}
         aria-expanded={open}
         aria-haspopup="menu"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={toggle}
       >
-        <CtIcon name="dots-three-vertical" size={22} />
+        <CtIcon name="dots-three" size={16} />
       </button>
       {open ? (
         <div

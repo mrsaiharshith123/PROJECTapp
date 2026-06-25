@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { PageShell } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -19,7 +19,7 @@ function resolveTab(tabParam, stateTab) {
   return "assets";
 }
 
-/** Ledger — assets, liabilities, and instruments in one scrollable shell. */
+/** @route /ledger — Assets, Liabilities, Instruments */
 export default function LedgerPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -28,12 +28,15 @@ export default function LedgerPage() {
   const tabParam = searchParams.get("tab");
   const stateTab = location.state?.tab;
   const tab = useMemo(() => resolveTab(tabParam, stateTab), [tabParam, stateTab]);
+  const didClearStateRef = useRef(false);
 
   useEffect(() => {
+    if (didClearStateRef.current) return;
     if (!stateTab || !TABS.some((x) => x.id === stateTab)) return;
+    didClearStateRef.current = true;
     setSearchParams({ tab: stateTab }, { replace: true });
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [stateTab, location.pathname, navigate, setSearchParams]);
+    window.history.replaceState({}, "", window.location.href);
+  }, [stateTab, setSearchParams]);
 
   const openAddOnMount = Boolean(location.state?.openAdd);
 

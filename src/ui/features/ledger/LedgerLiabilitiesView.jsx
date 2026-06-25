@@ -11,6 +11,7 @@ import {
 } from "../../../utils/ledger/ledgerBuckets.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 const SECURED = new Set(["Home Loan", "Car Loan", "EMI"]);
 const UNSECURED = new Set(["Personal Loan", "Credit Card", "BNPL", "Loan"]);
@@ -80,7 +81,10 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
     <div className="ct-stack">
       <div className="pos-hero liability">
         <div className="pos-hero-glow liability" aria-hidden />
-        <p className="ct-caption uppercase tracking-wide">{t("ledger.totalLiabilities")}</p>
+        <div className="pos-hero-head">
+          <p className="ct-caption uppercase tracking-wide">{t("ledger.totalLiabilities")}</p>
+          <ViewLink label={t("ledger.viewCommitments")} onClick={() => navigate("/money/bills")} />
+        </div>
         <p className="pos-display-amount liability">{formatInr(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.debtRatio", { ratio: debtRatio })}</p>
       </div>

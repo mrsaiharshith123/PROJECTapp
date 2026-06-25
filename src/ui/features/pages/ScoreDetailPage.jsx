@@ -12,6 +12,7 @@ import { computeCurrentMonthSummary } from "../../../utils/monthPaymentSummary.j
 import { formatInr } from "../../../constants/symbols.js";
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
 import { useCountUp } from "../../hooks/useCountUp.js";
 import { Button } from "../../primitives/Button.jsx";
 import PerovoShareCard from "../sharing/PerovoShareCard.jsx";
@@ -21,6 +22,16 @@ function tierRingColor(tone) {
   if (tone === "success" || tone === "ok") return "#2dd4bf";
   if (tone === "warning" || tone === "warn" || tone === "mid") return "#fbbf24";
   return "#f87171";
+}
+
+function pillarLedgerPath(pillarId) {
+  if (pillarId === "cashflow" || pillarId === "debt") return "/ledger?tab=liabilities";
+  return "/ledger?tab=instruments";
+}
+
+function pillarViewLabelKey(pillarId) {
+  if (pillarId === "cashflow" || pillarId === "debt") return "scoreDetail.viewLiabilities";
+  return "scoreDetail.viewInstruments";
 }
 
 function pillarStatusKey(pillarId, score, survivalMonths, debtRatio, goalsRatio) {
@@ -44,6 +55,7 @@ function pillarStatusKey(pillarId, score, survivalMonths, debtRatio, goalsRatio)
   return "scoreDetail.pillarStatus.behind";
 }
 
+/** @route /score-detail — Perovo Score + 4 pillar view */
 export default function ScoreDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -105,13 +117,7 @@ export default function ScoreDetailPage() {
   return (
     <div className="ct-page ct-score-detail pb-8">
       {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
-      <header className="ct-subpage-header">
-        <button type="button" className="ct-back-btn" onClick={() => navigate(-1)} aria-label={t("common.back")}>
-          <CtIcon name="arrow-left" size={18} />
-        </button>
-        <span className="ct-subpage-title">{t("scoreDetail.pageTitle")}</span>
-        <span className="ct-subpage-spacer" aria-hidden />
-      </header>
+      <SubPageHeader title={t("scoreDetail.pageTitle")} />
 
       <div className="pos-tile instrument mx-4">
         <div
@@ -183,7 +189,12 @@ export default function ScoreDetailPage() {
             displayValue = `${Number(survivalMonths).toFixed(1)}${t("scoreDetail.monthsShort")}`;
           }
           return (
-            <div key={pillar.id} className={`ct-stat-tile ${pillar.tone} text-center py-3 px-2.5`}>
+            <button
+              key={pillar.id}
+              type="button"
+              className={`ct-stat-tile ${pillar.tone} text-center py-3 px-2.5 ct-pressable w-full`}
+              onClick={() => navigate(pillarLedgerPath(pillar.id))}
+            >
               <CtIcon name={pillar.icon} size={22} className={pillar.tone === "teal" ? "text-teal-300" : pillar.tone === "amber" ? "text-amber-300" : "text-violet-300"} />
               <p className="ct-stat-label mt-1">{t(`perovoScore.pillar.${pillar.id}`)}</p>
               <p className="ct-stat-value ct-numeral mt-0.5" style={{ color }}>
@@ -192,7 +203,10 @@ export default function ScoreDetailPage() {
               <p className="text-[10px] text-[var(--ct-text-muted)] mt-0.5">
                 {t(pillarStatusKey(pillar.id, score, survivalMonths, debtRatio, goalsOnTrackRatio))}
               </p>
-            </div>
+              <span className="pos-view-link mt-1.5 inline-flex">
+                {t(pillarViewLabelKey(pillar.id))} <span aria-hidden>→</span>
+              </span>
+            </button>
           );
         })}
       </div>
@@ -234,11 +248,11 @@ export default function ScoreDetailPage() {
             }
           />
         </div>
-      ) : null}
-
-      <Button type="button" variant="primary" className="mx-4 w-[calc(100%-2rem)]" onClick={() => setShareOpen(true)}>
-        {t("scoreDetail.shareScore")}
-      </Button>
+      ) : (
+        <Button type="button" variant="primary" className="mx-4 w-[calc(100%-2rem)]" onClick={() => setShareOpen(true)}>
+          {t("scoreDetail.shareScore")}
+        </Button>
+      )}
 
       <Button type="button" variant="outline" className="mx-4 w-[calc(100%-2rem)]" onClick={() => navigate("/money/insights")}>
         {t("scoreDetail.viewAnalytics")}

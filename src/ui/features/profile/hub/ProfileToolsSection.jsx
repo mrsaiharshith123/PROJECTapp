@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
+import { ViewLink } from "../../../patterns/ViewLink.jsx";
 
 const TOOL_ROWS = [
   { icon: "chart-line", labelKey: "you.tools.insights", path: "/money/insights", color: /** @type {const} */ ("teal") },
@@ -16,22 +17,21 @@ export default function ProfileToolsSection() {
   const navigate = useNavigate();
 
   return (
-    <SettingsGroup title={t("you.tools.groupTitle")} icon="calculator">
-      {TOOL_ROWS.map((row) => (
-        <SettingsGroupRow
-          key={row.labelKey}
-          icon={row.icon}
-          iconColor={row.color}
-          label={t(row.labelKey)}
-          onClick={() => navigate(row.path)}
-        />
-      ))}
-      <SettingsGroupRow
-        icon="wrench"
-        iconColor="violet"
-        label={t("you.tools.seeAll")}
-        onClick={() => navigate("/you/tools")}
-      />
-    </SettingsGroup>
+    <div className="ct-profile-tools-section">
+      <SettingsGroup title={t("you.tools.groupTitle")} icon="calculator">
+        {TOOL_ROWS.map((row) => (
+          <SettingsGroupRow
+            key={row.labelKey}
+            icon={row.icon}
+            iconColor={row.color}
+            label={t(row.labelKey)}
+            onClick={() => navigate(row.path)}
+          />
+        ))}
+      </SettingsGroup>
+      <div className="px-4 mt-2">
+        <ViewLink label={t("you.tools.seeAllShort")} onClick={() => navigate("/you/tools")} />
+      </div>
+    </div>
   );
 }

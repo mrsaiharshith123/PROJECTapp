@@ -11,6 +11,9 @@ import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
 import PlanGoalsSection from "../plan/PlanGoalsSection.jsx";
 import ProfileToolsSection from "../profile/hub/ProfileToolsSection.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
+
+/** @route /you — Profile, goals, settings */
 
 /** @param {string | undefined} fromNav @returns {string | null} */
 function resolveYouRoute(fromNav) {
@@ -117,8 +120,9 @@ const Profile = () => {
       <ProfileAdminEntry />
 
       <section id="profile-goals" className="ct-stack">
-        <div className="ct-stat-tile goal mb-1 pos-tile goal">
+        <div className="ct-stat-tile goal mb-1 pos-tile goal ct-row-between items-center">
           <p className="ct-analytics-section-title">{t("you.goals.sectionTitle")}</p>
+          <ViewLink label={t("you.goals.viewAll")} onClick={() => navigate("/you/tools")} />
         </div>
         <PlanGoalsSection requestOpen={openGoalSheet} />
       </section>

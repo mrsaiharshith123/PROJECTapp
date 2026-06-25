@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { usePerovo } from "./PerovoContext.jsx";
 import { isSalariedFamily } from "../constants/modeExperience.js";
@@ -32,6 +32,11 @@ import { detectNewMilestones } from "../engines/netWorth/milestones.js";
 
 /** @type {import('react').Context<NetWorthStoreValue | null>} */
 const NetWorthContext = createContext(/** @type {NetWorthStoreValue | null} */ (null));
+
+function hasTodayDailySnapshot(snapshots) {
+  const today = format(new Date(), "yyyy-MM-dd");
+  return (snapshots || []).some((s) => s.day === today || s.month === today);
+}
 
 function withSnapshots(prev, profileEntries) {
   const core = computeNetWorthCore(profileEntries);
@@ -83,12 +88,19 @@ export function NetWorthProvider({ children }) {
     persist((prev) => withSnapshots(prev, profileEntries));
   }, [persist, profileEntries]);
 
+  const dailySnapshotGuardRef = useRef("");
+
   useEffect(() => {
     if (!profileEntries.length) return;
     const today = format(new Date(), "yyyy-MM-dd");
-    if ((state.dailySnapshots || []).some((s) => s.day === today)) return;
+    if (dailySnapshotGuardRef.current === today) return;
+    if (hasTodayDailySnapshot(state.dailySnapshots)) {
+      dailySnapshotGuardRef.current = today;
+      return;
+    }
+    dailySnapshotGuardRef.current = today;
     queueMicrotask(() => recordDailySnapshot());
-  }, [profileEntries, state.dailySnapshots, recordDailySnapshot]);
+  }, [profileEntries.length, state.dailySnapshots, recordDailySnapshot]);
 
   const addEntry = useCallback(
     (raw) => {

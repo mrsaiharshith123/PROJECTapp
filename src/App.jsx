@@ -35,7 +35,7 @@ import Home from "./ui/features/pages/HomePage.jsx";
 import Ledger from "./ui/features/pages/LedgerPage.jsx";
 import Agreements from "./ui/features/pages/AgreementsPage.jsx";
 import Add from "./ui/features/pages/AddPage.jsx";
-import Profile from "./ui/features/pages/ProfilePage.jsx";
+import Profile from "./ui/features/pages/YouPage.jsx";
 import MoneyShell from "./ui/features/pages/MoneyShellPage.jsx";
 import Commitments from "./ui/features/pages/CommitmentsPage.jsx";
 import Spends from "./ui/features/pages/SpendsPage.jsx";
@@ -51,6 +51,8 @@ const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const YouPersonalPage = lazy(() => import("./ui/features/profile/pages/YouPersonalPage.jsx"));
 const YouAccountPage = lazy(() => import("./ui/features/profile/pages/YouAccountPage.jsx"));
 const YouMoneyPage = lazy(() => import("./ui/features/profile/pages/YouMoneyPage.jsx"));
+// Household UI reserved for v1.1 — routes redirect; lazy imports keep modules reachable for audit.
+// eslint-disable-next-line no-unused-vars -- v1.1 household routes
 const YouHouseholdPage = lazy(() => import("./ui/features/profile/pages/YouHouseholdPage.jsx"));
 const YouAppearancePage = lazy(() => import("./ui/features/profile/pages/YouAppearancePage.jsx"));
 const YouSecurityPage = lazy(() => import("./ui/features/profile/pages/YouSecurityPage.jsx"));
@@ -60,6 +62,7 @@ const YouHistoryPage = lazy(() => import("./ui/features/profile/pages/YouHistory
 const YouSupportPage = lazy(() => import("./ui/features/profile/pages/YouSupportPage.jsx"));
 const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage.jsx"));
 const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
+// eslint-disable-next-line no-unused-vars -- v1.1 household routes
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
 const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
 
@@ -100,7 +103,7 @@ function AppRoutes() {
         <Route path="/plan" element={<Navigate to="/you/tools" replace />} />
         <Route path="/tools" element={<Navigate to="/you/tools" replace />} />
         <Route path="/paycheck" element={<Navigate to="/money/insights" replace />} />
-        <Route path="/family-room" element={<Suspense fallback={<RouteFallback />}><HouseholdRoom /></Suspense>} />
+        <Route path="/family-room" element={<Navigate to="/you" replace />} />
         <Route path="/profile/analytics" element={<Navigate to="/money/wealth" replace />} />
         <Route path="/net-worth" element={<Navigate to="/ledger" replace />} />
         <Route path="/profile" element={<Navigate to="/you" replace />} />
@@ -109,7 +112,7 @@ function AppRoutes() {
         <Route path="/you/personal" element={<Suspense fallback={<RouteFallback />}><YouPersonalPage /></Suspense>} />
         <Route path="/you/account" element={<Suspense fallback={<RouteFallback />}><YouAccountPage /></Suspense>} />
         <Route path="/you/money" element={<Suspense fallback={<RouteFallback />}><YouMoneyPage /></Suspense>} />
-        <Route path="/you/household" element={<Suspense fallback={<RouteFallback />}><YouHouseholdPage /></Suspense>} />
+        <Route path="/you/household" element={<Navigate to="/you" replace />} />
         <Route path="/you/appearance" element={<Suspense fallback={<RouteFallback />}><YouAppearancePage /></Suspense>} />
         <Route path="/you/security" element={<Suspense fallback={<RouteFallback />}><YouSecurityPage /></Suspense>} />
         <Route path="/you/backup" element={<Suspense fallback={<RouteFallback />}><YouBackupPage /></Suspense>} />

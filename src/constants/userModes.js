@@ -11,7 +11,7 @@ export const NAV_ITEMS = [
 export const USER_MODE_IDS = ["salaried"];
 
 /** Removed modes — migrated to salaried on load. */
-export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
+export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business", "household"];
 
 const NAV_FULL = [
   "/",

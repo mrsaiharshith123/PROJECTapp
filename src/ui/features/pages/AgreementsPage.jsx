@@ -30,7 +30,7 @@ const emptyLendingForm = () => ({
   notes: "",
 });
 
-/** Top-level Agreements tab — informal lending + legal documents. */
+/** Top-level Agreements tab — informal lending + legal documents. @route /agreements */
 export default function AgreementsPage() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -196,7 +196,12 @@ export default function AgreementsPage() {
           </Button>
         </div>
       ) : (
-        <AgreementsHeroSummary totals={totals} trustScore={trustScore} dealCount={lendings.length} />
+        <AgreementsHeroSummary
+          totals={totals}
+          trustScore={trustScore}
+          dealCount={lendings.length}
+          onViewDocuments={() => setListTab("documents")}
+        />
       )}
 
       {!isEmpty && (

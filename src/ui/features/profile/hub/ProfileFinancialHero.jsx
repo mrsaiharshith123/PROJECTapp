@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { isSalariedFamily, getHouseholdModeDisplay } from "../../../../constants/modeExperience.js";
 import { getTier } from "../../../../utils/tierAccess.js";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { useNetWorthIntel } from "../../../../hooks/useNetWorthIntel.js";
@@ -43,13 +42,18 @@ export default function ProfileFinancialHero({
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const [plansOpen, setPlansOpen] = useState(false);
 
-  const modeDisplay = getHouseholdModeDisplay(settings);
-  const name = settings.displayName?.trim() || t("brand.defaultUser");
   const tier = getTier(settings);
   const tierBadgeClass =
     tier === "power" ? "ct-tier-badge-power" : tier === "pro" ? "ct-tier-badge-pro" : "ct-tier-badge-free";
   const tierLabel =
     tier === "power" ? t("plans.tier.power") : tier === "pro" ? t("plans.tier.pro") : t("plans.tier.free");
+  const tierModeLabel =
+    tier === "power"
+      ? t("tier.power.member")
+      : tier === "pro"
+        ? t("tier.pro.member")
+        : t("tier.free.member");
+  const name = settings.displayName?.trim() || t("brand.defaultUser");
 
   const animatedNw = useCountUp(intel.core.netWorth);
   const netWorthDisplay = privacyMode ? "••••••" : formatInr(animatedNw);
@@ -97,8 +101,8 @@ export default function ProfileFinancialHero({
 
   return (
     <>
-      <section className="ct-hero-card wealth ct-profile-identity-hero ct-reveal">
-        <div className="ct-hero-glow teal" aria-hidden />
+      <section className="pos-hero asset ct-profile-identity-hero ct-reveal">
+        <div className="pos-hero-glow asset" aria-hidden />
 
         <div className="ct-profile-identity-actions">
           <button
@@ -128,9 +132,8 @@ export default function ProfileFinancialHero({
               </Heading>
               <Caption className="block">
                 <span className="inline-flex items-center gap-1">
-                  <CtIcon name={modeDisplay.icon} size={14} />
-                  {t(modeDisplay.labelKey)}
-                  {isSalariedFamily(settings) ? ` · ${t("brand.familySuffix")}` : ""}
+                  {tier === "power" ? "⚡" : tier === "pro" ? "✦" : null}
+                  {tierModeLabel}
                 </span>
               </Caption>
             </div>

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { CtIcon } from "../../../icons/CtIcon.jsx";
+import { SubPageHeader } from "../../../patterns/SubPageHeader.jsx";
 
 /**
- * @param {{ titleKey?: string, title?: string, children: import('react').ReactNode, action?: import('react').ReactNode }} props
+ * @param {{ titleKey?: string, title?: string, children: import('react').ReactNode, action?: import('react').ReactNode, backTo?: string }} props
  */
-export default function YouSubPageShell({ titleKey, title, children, action }) {
+export default function YouSubPageShell({ titleKey, title, children, action, backTo }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const pageTitle = titleKey ? t(titleKey) : title || "";
@@ -18,22 +18,11 @@ export default function YouSubPageShell({ titleKey, title, children, action }) {
     };
   }, [pageTitle, t]);
 
+  const handleBack = backTo ? () => navigate(backTo) : undefined;
+
   return (
     <div className="ct-page ct-you-subpage pb-8">
-      <header className="ct-subpage-header">
-        <button
-          type="button"
-          className="ct-back-btn"
-          onClick={() => navigate("/profile")}
-          aria-label={t("common.back")}
-        >
-          <span className="ct-icon-tile ct-icon-tile-sm slate" aria-hidden>
-            <CtIcon name="arrow-left" size={16} weight="duotone" />
-          </span>
-        </button>
-        <span className="ct-subpage-title">{pageTitle}</span>
-        {action ? <span className="ct-subpage-action">{action}</span> : <span className="ct-subpage-spacer" aria-hidden />}
-      </header>
+      <SubPageHeader title={pageTitle} onBack={handleBack} action={action} />
       <div className="ct-subpage-content ct-stack">{children}</div>
     </div>
   );

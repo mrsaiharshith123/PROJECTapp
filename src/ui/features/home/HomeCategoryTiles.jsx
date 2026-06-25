@@ -7,6 +7,7 @@ import { formatInr } from "../../../constants/symbols.js";
 import {
   isCoreAssetEntry,
   isInstrumentWealthEntry,
+  isInstrumentCommitment,
   sumEntryValues,
 } from "../../../utils/ledger/ledgerBuckets.js";
 
@@ -15,11 +16,17 @@ export default function HomeCategoryTiles() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { entries, core } = useNetWorth();
-  const { lendings } = usePerovo();
+  const { lendings, sortedCommitments } = usePerovo();
 
   const { assetCount, instrumentsTotal, instrumentCount, netLent } = useMemo(() => {
     const assets = entries.filter(isCoreAssetEntry);
     const instruments = entries.filter(isInstrumentWealthEntry);
+    const instrumentCommitments = sortedCommitments.filter(isInstrumentCommitment);
+    const wealthInstrumentTotal = sumEntryValues(instruments);
+    const commitmentInstrumentTotal = instrumentCommitments.reduce(
+      (sum, c) => sum + Number(c.amount ?? 0),
+      0,
+    );
     const lent = lendings.filter((l) => l.type === "lent");
     const owed = lent.reduce((s, l) => s + (Number(l.remainingAmount ?? l.principalAmount) || 0), 0);
   const borrowed = lendings
@@ -27,11 +34,11 @@ export default function HomeCategoryTiles() {
       .reduce((s, l) => s + (Number(l.remainingAmount ?? l.principalAmount) || 0), 0);
     return {
       assetCount: assets.length,
-      instrumentsTotal: sumEntryValues(instruments),
-      instrumentCount: instruments.length,
+      instrumentsTotal: wealthInstrumentTotal + commitmentInstrumentTotal,
+      instrumentCount: instruments.length + instrumentCommitments.length,
       netLent: Math.max(0, owed - borrowed),
     };
-  }, [entries, lendings]);
+  }, [entries, lendings, sortedCommitments]);
 
   const debtRatio =
     core.totalAssets > 0

@@ -1,10 +1,12 @@
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 /**
  * Agreements hero — owed vs owe split with trust meta.
+ * @param {{ totals: object, trustScore?: number, dealCount?: number, onViewDocuments?: () => void }} props
  */
-export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 0 }) {
+export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 0, onViewDocuments }) {
   const { t } = useTranslation();
   const owed = Math.max(0, Number(totals?.lentRemaining ?? totals?.lentOutstanding) || 0);
   const owe = Math.max(0, Number(totals?.borrowedRemaining ?? totals?.borrowedOutstanding) || 0);
@@ -33,6 +35,11 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
         <p className="ct-caption mt-2">
           {t("money.lending.trustMeta", { score: Math.round(trustScore), deals: dealCount })}
         </p>
+      ) : null}
+      {onViewDocuments ? (
+        <div className="mt-2">
+          <ViewLink label={t("agreements.viewDocuments")} onClick={onViewDocuments} />
+        </div>
       ) : null}
     </div>
   );

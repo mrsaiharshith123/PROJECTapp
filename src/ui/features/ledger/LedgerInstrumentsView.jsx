@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
@@ -11,6 +12,7 @@ import {
   sumEntryValues,
 } from "../../../utils/ledger/ledgerBuckets.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 const GROUP_INSURANCE = new Set(["insurance"]);
 const GROUP_RETIREMENT = new Set(["pf_epf"]);
@@ -44,6 +46,7 @@ function billInstrumentLabel(bill, t) {
  */
 export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { entries, privacyMode } = useNetWorth();
   const { sortedCommitments } = usePerovo();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
@@ -88,7 +91,10 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
     <div className="ct-stack">
       <div className="pos-hero instrument">
         <div className="pos-hero-glow instrument" aria-hidden />
-        <p className="ct-caption uppercase tracking-wide">{t("ledger.tab.instruments")}</p>
+        <div className="pos-hero-head">
+          <p className="ct-caption uppercase tracking-wide">{t("ledger.tab.instruments")}</p>
+          <ViewLink label={t("scoreDetail.viewAnalytics")} onClick={() => navigate("/money/insights")} />
+        </div>
         <p className="pos-display-amount instrument">{formatInr(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.instrumentsMeta", { count })}</p>
       </div>

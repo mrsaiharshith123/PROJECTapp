@@ -14,6 +14,7 @@ export { InfoTip } from "./primitives/InfoTip.jsx";
 
 export { PageHeader, AppHeader } from "./patterns/PageHeader.jsx";
 export { PageShell } from "./patterns/PageShell.jsx";
+export { SubPageHeader } from "./patterns/SubPageHeader.jsx";
 export { PageHeaderWithNotifications } from "./patterns/PageHeaderWithNotifications.jsx";
 export { FormField } from "./patterns/FormField.jsx";
 export { MetricTile } from "./patterns/MetricTile.jsx";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Caption, Body, Button, inputClassName } from "../../index.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { ALL_APP_LANGUAGES } from "../../../i18n/languages.js";
@@ -84,7 +84,6 @@ export default function ProfilePersonalSection({
   part = "full",
 }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const userMode = resolveUserMode(settings);
@@ -261,18 +260,9 @@ export default function ProfilePersonalSection({
               </select>
             </ProfileField>
 
-            {userMode === "salaried" && (
-              <Caption className="block mt-2">
-                {t("settings.household.personalHint")}{" "}
-                <button
-                  type="button"
-                  className="ct-suggestion-link"
-                  onClick={() => navigate("/you/household")}
-                >
-                  {t("settings.household.personalLink")}
-                </button>
-              </Caption>
-            )}
+            {userMode === "salaried" ? (
+              <Caption className="block mt-2">{t("settings.household.personalHint")}</Caption>
+            ) : null}
           </SettingsGroupContent>
         </SettingsGroup>
       )}

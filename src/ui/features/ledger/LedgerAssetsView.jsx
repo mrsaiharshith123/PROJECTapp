@@ -4,6 +4,7 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
 import {
   ASSET_GROUP_LIQUID,
   ASSET_GROUP_MARKET,
@@ -39,7 +40,10 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
     <div className="ct-stack">
       <div className="pos-hero asset">
         <div className="pos-hero-glow asset" aria-hidden />
-        <p className="ct-caption uppercase tracking-wide">{t("ledger.totalAssets")}</p>
+        <div className="pos-hero-head">
+          <p className="ct-caption uppercase tracking-wide">{t("ledger.totalAssets")}</p>
+          <ViewLink label={t("ledger.addAsset")} onClick={openAdd} />
+        </div>
         <p className="pos-display-amount">{formatInr(total)}</p>
         <p className="ct-caption mt-1">
           {t("ledger.assetsMeta", {

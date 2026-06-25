@@ -6,7 +6,7 @@ import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
-import { lifeScoreSharePlainText, openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
+import { openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
 import { Card } from "../../primitives/Card.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
@@ -175,7 +175,6 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                     survivalLabel: stable.survival?.tierLabel,
                     displayName: settings.displayName || t("brand.defaultUser"),
                   };
-                  await shareOrCopyPlainText(lifeScoreSharePlainText(data), { title: "Financial Life" });
                   openLifeScoreShareCard(data);
                 }}
               >

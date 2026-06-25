@@ -1,15 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
+import { IS_DEV } from "../../../../utils/devOverride.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
 
-/** Admin-only shortcut to /admin — hidden for everyone else. */
+/** Admin-only shortcut to /admin — dev builds with admin flag only. */
 export default function ProfileAdminEntry() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  if (!isAdmin) return null;
+  if (!IS_DEV || !isAdmin) return null;
 
   return (
     <section className="ct-profile-admin-entry ct-reveal ct-reveal-delay-3 ct-settings-row-static">

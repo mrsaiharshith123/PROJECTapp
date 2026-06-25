@@ -3,7 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
-import { InstallAppBanner, PlansButton } from "../../";
+import { getTier } from "../../../utils/tierAccess.js";
+import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
+import { InstallAppBanner } from "../../";
+import PlansModal from "../profile/PlansModal.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import { NotificationPanel } from "../NotificationPanel.jsx";
 import { NotificationBell } from "../../patterns/NotificationBell.jsx";
@@ -15,13 +18,35 @@ import HomeUpcomingSection from "../home/HomeUpcomingSection.jsx";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
 import HomeToolsPreview from "../home/HomeToolsPreview.jsx";
 
-/** Home — financial position dashboard. */
+function HomeAvatarButton({ settings }) {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { imageUrl, initials } = resolveProfileAvatar(settings);
+
+  return (
+    <button
+      type="button"
+      className="ct-home-avatar-btn"
+      onClick={() => navigate("/you")}
+      aria-label={t("nav.you")}
+    >
+      {imageUrl ? (
+        <img src={imageUrl} alt="" className="ct-home-avatar-img" />
+      ) : (
+        <span className="ct-home-avatar-initials">{initials}</span>
+      )}
+    </button>
+  );
+}
+
+/** @route / — Home dashboard */
 const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { settings, updateSettings } = usePerovo();
   const { notificationUnread } = useCommitIntel();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
   const [tourActive, setTourActive] = useState(
     () => Boolean(location.state?.replayGuide || location.state?.startGuide),
   );
@@ -47,15 +72,9 @@ const Home = () => {
       : new Date().getHours() < 17
         ? "home.greetingAfternoon"
         : "home.greetingEvening";
-  const initials =
-    displayName !== "there"
-      ? displayName
-          .split(/\s+/)
-          .map((w) => w[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase()
-      : "?";
+  const tier = getTier(settings);
+  const tierLabel =
+    tier === "power" ? t("plans.tier.power") : tier === "pro" ? t("plans.tier.pro") : t("plans.tier.free");
 
   return (
     <div className="ct-page ct-home-page ct-stack pb-8">
@@ -69,18 +88,27 @@ const Home = () => {
       />
 
       <div className="ct-home-top">
-        <div className="ct-home-greeting-row">
-          <div>
-            <p className="text-xs text-[var(--ct-text-muted)] uppercase tracking-wide">{t(greetingKey)}</p>
-            <h1 className="text-lg font-semibold text-[var(--ct-text)] mt-0.5">{displayName}</h1>
-          </div>
+        <div className="ct-home-greeting">
+          <p className="ct-home-greeting-time">{t(greetingKey)}</p>
+          <h1 className="ct-home-greeting-name">{displayName}</h1>
         </div>
         <div className="ct-home-top-actions">
-          <span className="ct-home-avatar" aria-hidden>{initials}</span>
-          <PlansButton />
+          <HomeAvatarButton settings={settings} />
+          {tier !== "free" ? (
+            <button
+              type="button"
+              className={`ct-home-tier-chip ${tier}`}
+              onClick={() => setPlansOpen(true)}
+              aria-label={t("profileHub.heroTierAria", { tier: tierLabel })}
+            >
+              {tier === "power" ? "⚡" : "✦"} {tierLabel}
+            </button>
+          ) : null}
           <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
         </div>
       </div>
+
+      <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
 
       {showNotifications ? <NotificationPanel onClose={() => setShowNotifications(false)} /> : null}
 

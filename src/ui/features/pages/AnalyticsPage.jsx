@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
+import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
@@ -269,10 +270,12 @@ const Analytics = () => {
   const showSelfView = !isFamily || analyticsView === "self";
 
   return (
-    <PageShell
-      title={t("analytics.title")}
-      subtitle={isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
-    >
+    <div className="ct-page ct-analytics-page pb-8">
+      <SubPageHeader title={t("analytics.title")} />
+      <p className="ct-page-shell-subtitle px-4 pb-2">
+        {isFamily ? t("analytics.homeSnapshotHintHousehold") : t("analytics.homeSnapshotHint")}
+      </p>
+      <PageShell className="!pt-0">
 
       {isFamily ? (
         <div>
@@ -357,6 +360,7 @@ const Analytics = () => {
         ) : null}
       </TabContent>
     </PageShell>
+    </div>
   );
 };
 
