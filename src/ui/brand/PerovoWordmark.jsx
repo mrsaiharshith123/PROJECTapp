@@ -22,6 +22,7 @@ export function PerovoWordmark({ size = "md", className = "", alt = "Perovo" }) 
 
   return (
     <img
+      role="presentation"
       src={assetUrl(`brand/${file}`)}
       alt={alt}
       height={height}

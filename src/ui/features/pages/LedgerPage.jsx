@@ -28,14 +28,25 @@ export default function LedgerPage() {
   const tabParam = searchParams.get("tab");
   const stateTab = location.state?.tab;
   const tab = useMemo(() => resolveTab(tabParam, stateTab), [tabParam, stateTab]);
-  const didClearStateRef = useRef(false);
+  const stateTabClearedRef = useRef(false);
 
   useEffect(() => {
-    if (didClearStateRef.current) return;
-    if (!stateTab || !TABS.some((x) => x.id === stateTab)) return;
-    didClearStateRef.current = true;
-    setSearchParams({ tab: stateTab }, { replace: true });
-    window.history.replaceState({}, "", window.location.href);
+    if (stateTabClearedRef.current) return;
+    if (!stateTab) return;
+    if (!TABS.some((x) => x.id === stateTab)) return;
+
+    stateTabClearedRef.current = true;
+
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", stateTab);
+        return next;
+      },
+      { replace: true },
+    );
+
+    window.history.replaceState({}, document.title, window.location.href);
   }, [stateTab, setSearchParams]);
 
   const openAddOnMount = Boolean(location.state?.openAdd);

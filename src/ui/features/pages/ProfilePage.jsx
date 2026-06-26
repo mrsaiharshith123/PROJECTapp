@@ -6,10 +6,8 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
 import ProfileUpgradeRow from "../profile/hub/ProfileUpgradeRow.jsx";
-import ProfileAdminEntry from "../profile/hub/ProfileAdminEntry.jsx";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
 import PlanGoalsSection from "../plan/PlanGoalsSection.jsx";
-import ProfileToolsSection from "../profile/hub/ProfileToolsSection.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
 import { ViewLink } from "../../patterns/ViewLink.jsx";
 
@@ -103,7 +101,7 @@ const Profile = () => {
   }, [user, t, deleteInput]);
 
   return (
-    <div className="ct-page ct-profile-hub pb-8">
+    <div className="ct-page ct-profile-hub pb-8 ct-stack-tight">
       <ProfileFinancialHero
         settings={settings}
         updateSettings={updateSettings}
@@ -117,20 +115,13 @@ const Profile = () => {
 
       <ProfileUpgradeRow settings={settings} />
 
-      <ProfileAdminEntry />
-
-      <section id="profile-goals" className="ct-stack">
-        <div className="ct-stat-tile goal mb-1 pos-tile goal ct-row-between items-center">
+      <section id="profile-goals" className="ct-stat-tile goal pos-tile goal">
+        <div className="ct-row-between items-center gap-2">
           <p className="ct-analytics-section-title">{t("you.goals.sectionTitle")}</p>
           <ViewLink label={t("you.goals.viewAll")} onClick={() => navigate("/you/tools")} />
         </div>
-        <PlanGoalsSection requestOpen={openGoalSheet} />
+        <PlanGoalsSection variant="profile" requestOpen={openGoalSheet} />
       </section>
-
-      <div className="ct-stat-tile indigo mx-0 mb-1" id="profile-settings">
-        <p className="ct-analytics-section-title">{t("profileHub.settingsTitle")}</p>
-        <p className="ct-analytics-section-sub">{t("profileHub.settingsSubtitle")}</p>
-      </div>
 
       <ProfileSettingsGroups
         settings={settings}
@@ -138,8 +129,6 @@ const Profile = () => {
         privacyMode={privacyMode}
         onTogglePrivacyMode={togglePrivacyMode}
       />
-
-      <ProfileToolsSection />
 
       <ProfileHubFooter
         isLoggedIn={isLoggedIn}

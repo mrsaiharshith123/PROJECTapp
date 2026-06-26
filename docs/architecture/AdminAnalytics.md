@@ -13,7 +13,7 @@ Admin status is **never self-granted** from the app API. Grant via Supabase SQL 
 
 ## User-facing entry points
 
-1. **Profile** — `ProfileAdminEntry.jsx` renders only when `useAuth().isAdmin` is true. Placed below the control-center tile grid, above expandable settings panels. Label: **Internal** → tile **Product intelligence** → navigates to `/admin`.
+1. **Admin FAB** — `AdminFloatingButton.jsx` renders only when `useAuth().isAdmin` is true. Fixed bottom-left chart-bar FAB → navigates to `/admin`. No profile tile.
 2. **Direct URL** — `/admin` (guarded by `RequireAdmin`).
 
 There is **no** bottom-nav item for admin — intentional, to keep the product surface clean for non-admins.
@@ -48,7 +48,7 @@ Admin opens /admin
 | Dashboard UI | `src/ui/features/pages/AdminPage.jsx` | Full page |
 | Widgets | `src/ui/features/admin/*` | `AdminMetricCard`, `AdminGrowthChart`, `AdminUsersPanel` |
 | User admin API | `src/services/adminUsers.js` | List, verify PAN, grant admin, edit profile, delete user |
-| Profile entry | `src/ui/features/profile/hub/ProfileAdminEntry.jsx` | Admin-only tile |
+| Admin FAB | `src/ui/admin/AdminFloatingButton.jsx` | Admin-only left FAB |
 | Auth flag | `src/context/AuthContext.jsx` | Exposes `isAdmin: Boolean(profile?.is_admin)` |
 
 Auth and onboarding also call `trackEvent()` from `AuthContext.jsx` and `OnboardingPage.jsx`.

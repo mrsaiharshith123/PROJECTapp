@@ -4,7 +4,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { sumDailySpendsInRange } from "../../../utils/dailySpends.js";
 import { getTransactionLifeCategoryMeta, TRANSACTION_LIFE_CATEGORIES } from "../../../constants/transactionCategories.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import {
   Card,
   Stack,
@@ -39,6 +39,7 @@ function formatSpendDate(dateStr) {
 export default function DailySpendPanel() {
   const { dailySpends, deleteDailySpend, todayStr } = usePerovo();
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const [period, setPeriod] = useState("30d");
   const [lifeFilter, setLifeFilter] = useState("");
   const [search, setSearch] = useState("");
@@ -108,7 +109,7 @@ export default function DailySpendPanel() {
       <div className="ct-grid-2">
         <div className="ct-stat-tile">
           <p className="ct-stat-label">{t("bills.dailySpend.total")}</p>
-          <p className="ct-stat-value">{formatInr(total)}</p>
+          <p className="ct-stat-value">{formatAmount(total)}</p>
         </div>
         <div className="ct-stat-tile indigo">
           <p className="ct-stat-label">{t("bills.dailySpend.entries")}</p>
@@ -165,7 +166,7 @@ export default function DailySpendPanel() {
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <Body className="ct-numeral font-bold block">{formatInr(spend.amount)}</Body>
+                    <Body className="ct-numeral font-bold block">{formatAmount(spend.amount)}</Body>
                     <Badge tone="neutral" className="mt-1">
                       {life.label}
                     </Badge>

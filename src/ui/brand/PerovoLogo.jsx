@@ -22,6 +22,7 @@ export function PerovoLogo({ size = "md", className = "", alt = "" }) {
 
   return (
     <img
+      role="presentation"
       src={assetUrl(`brand/${file}`)}
       alt={alt}
       width={px}

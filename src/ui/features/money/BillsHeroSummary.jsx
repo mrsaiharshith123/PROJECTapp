@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 
 /**
  * Bills hero — committed total + paid/pending/overdue bar.
@@ -8,6 +8,7 @@ import { formatInr } from "../../../constants/symbols.js";
  */
 export default function BillsHeroSummary({ activeBills, counts }) {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
 
   const { total, paidAmt, pendingAmt, overdueAmt } = useMemo(() => {
     let paid = 0;
@@ -38,7 +39,7 @@ export default function BillsHeroSummary({ activeBills, counts }) {
   return (
     <div className="ct-hero-card lending ct-money-bills-hero">
       <p className="ct-hero-label">{t("money.bills.committedLabel")}</p>
-      <p className="ct-money-hero-amount">{formatInr(total)}</p>
+      <p className="ct-money-hero-amount">{formatAmount(total)}</p>
       <div className="ct-money-commit-bar" aria-hidden>
         {paidPct > 0 ? (
           <span className="ct-money-commit-seg paid" style={{ width: `${paidPct}%` }} />

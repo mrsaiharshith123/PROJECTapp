@@ -12,7 +12,7 @@ import { suggestedCyclePaymentAmount } from "../../../utils/commitmentPayments.j
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { scoreBillHealth } from "../../../engines/billHealth.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import BillsHeroSummary from "../money/BillsHeroSummary.jsx";
 import BillsCategorySheet from "../money/BillsCategorySheet.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
@@ -56,6 +56,7 @@ export default function CommitmentsBillsTab({
   getEffectiveStatus: _getEffectiveStatus,
 }) {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const stable = useStabilityIntel();
   const topStressorName = stable.stress?.top?.[0]?.name ?? null;
   const [categoryOpen, setCategoryOpen] = useState(false);
@@ -190,7 +191,7 @@ export default function CommitmentsBillsTab({
       {activeBills.length > 0 && monthlyCommitted > 0 && (
         <div className="ct-stat-tile teal ct-row-between gap-2 items-center">
           <Caption className="ct-stat-tile-label">{t("bills.monthlyCommitted")}</Caption>
-          <Body className="ct-stat-tile-value ct-numeral">{formatInr(monthlyCommitted)}</Body>
+          <Body className="ct-stat-tile-value ct-numeral">{formatAmount(monthlyCommitted)}</Body>
         </div>
       )}
 

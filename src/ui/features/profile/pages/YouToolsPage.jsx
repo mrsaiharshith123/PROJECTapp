@@ -15,9 +15,6 @@ export default function YouToolsPage() {
     <YouSubPageShell titleKey="you.tools.title">
       <p className="ct-page-shell-subtitle mb-2">{t("you.tools.subtitle")}</p>
       <div className="ct-stack-lg">
-        <div className="ct-stat-tile goal mb-1 pos-tile goal">
-          <p className="ct-analytics-section-title">{t("you.goals.sectionTitle")}</p>
-        </div>
         <PlanGoalsSection />
         <PlanCalculatorsSection initialTool={initialTool} />
         <PlanGrowthSection initialTool={initialTool === "retirement" ? "retirement" : null} />

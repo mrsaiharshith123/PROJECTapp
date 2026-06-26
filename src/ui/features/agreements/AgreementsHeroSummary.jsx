@@ -1,5 +1,5 @@
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 /**
@@ -8,6 +8,7 @@ import { ViewLink } from "../../patterns/ViewLink.jsx";
  */
 export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 0, onViewDocuments }) {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const owed = Math.max(0, Number(totals?.lentRemaining ?? totals?.lentOutstanding) || 0);
   const owe = Math.max(0, Number(totals?.borrowedRemaining ?? totals?.borrowedOutstanding) || 0);
 
@@ -18,7 +19,7 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
         <div>
           <p className="ct-stat-label">{t("money.lending.youAreOwed")}</p>
           <p className="pos-display-amount" style={{ fontSize: "clamp(20px, 5vw, 26px)", color: "var(--pos-agr)" }}>
-            {formatInr(owed)}
+            {formatAmount(owed)}
           </p>
         </div>
         <div>
@@ -27,7 +28,7 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
             className="pos-display-amount liability"
             style={{ fontSize: "clamp(20px, 5vw, 26px)" }}
           >
-            {formatInr(owe)}
+            {formatAmount(owe)}
           </p>
         </div>
       </div>

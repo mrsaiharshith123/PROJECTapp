@@ -59,6 +59,7 @@ export function NotificationPanel({ onClose }) {
         ref={panelRef}
         className="ct-notif-panel"
         role="dialog"
+        aria-modal="true"
         aria-label={t("notifications.panel.title")}
       >
         <div className="ct-nw-panel !p-0 overflow-hidden">

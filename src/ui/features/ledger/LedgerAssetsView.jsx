@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import { ViewLink } from "../../patterns/ViewLink.jsx";
+import { CORE_ASSET_CATEGORIES } from "../../../constants/netWorth/wealthCategories.js";
 import {
   ASSET_GROUP_LIQUID,
   ASSET_GROUP_MARKET,
@@ -24,6 +25,7 @@ const GROUPS = [
 export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const { entries, privacyMode, growth } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
   const [editEntry, setEditEntry] = useState(null);
 
@@ -44,7 +46,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
           <p className="ct-caption uppercase tracking-wide">{t("ledger.totalAssets")}</p>
           <ViewLink label={t("ledger.addAsset")} onClick={openAdd} />
         </div>
-        <p className="pos-display-amount">{formatInr(total)}</p>
+        <p className="pos-display-amount">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">
           {t("ledger.assetsMeta", {
             count: assets.length,
@@ -61,7 +63,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
           <section key={group.id}>
             <div className="pos-group-header">
               <span>{t(group.labelKey)}</span>
-              <span className="ct-numeral">{formatInr(subtotal)}</span>
+              <span className="ct-numeral">{formatAmount(subtotal)}</span>
             </div>
             <div className="pos-group-card">
               {groupEntries.map((entry) => (
@@ -88,6 +90,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
         open={modalOpen}
         kind={editEntry?.kind || "asset"}
         entry={editEntry}
+        restrictedCategories={CORE_ASSET_CATEGORIES}
         onClose={() => {
           setModalOpen(false);
           setEditEntry(null);

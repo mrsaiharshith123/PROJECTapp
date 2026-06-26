@@ -19,6 +19,7 @@ export function CelebrationOverlay({ type = "confetti", show, onComplete, messag
     <div
       className="ct-celebration-overlay"
       role="dialog"
+      aria-modal="true"
       aria-label={message || t("celebration.defaultTitle")}
       onClick={onComplete}
       onKeyDown={(e) => e.key === "Escape" && onComplete?.()}

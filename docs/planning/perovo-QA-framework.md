@@ -403,8 +403,7 @@ EXPLORATION 01 — Navigate to every route directly via URL:
   /profile/analytics     (Wealth analytics)
   /net-worth             (same as profile/analytics)
   /tools                 (Tools — IS this in the nav?)
-  /admin                 (Admin — as non-admin user, what happens?)
-  /dev                   (Dev panel — as non-dev, what happens in prod?)
+  /admin                 (Admin — as non-admin user, what happens? FAB hidden?)
   /nonexistent-route     (404 handling)
 
 For each: does it load? Does it crash? Does it show an error? Is it accessible

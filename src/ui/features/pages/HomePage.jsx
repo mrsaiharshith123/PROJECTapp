@@ -5,12 +5,13 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { getTier } from "../../../utils/tierAccess.js";
 import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
-import { InstallAppBanner } from "../../";
+import { InstallAppBanner, ToolsDiscoveryToast } from "../../";
 import PlansModal from "../profile/PlansModal.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import { NotificationPanel } from "../NotificationPanel.jsx";
 import { NotificationBell } from "../../patterns/NotificationBell.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
+import { PrivacyToggleButton } from "../../patterns/PrivacyToggleButton.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
 import HomeNeedsAttention from "../home/HomeNeedsAttention.jsx";
 import HomeGoodNewsLine from "../home/HomeGoodNewsLine.jsx";
@@ -79,6 +80,7 @@ const Home = () => {
   return (
     <div className="ct-page ct-home-page ct-stack pb-8">
       <InstallAppBanner />
+      <ToolsDiscoveryToast variant="home" blocked={tourOpen} />
 
       <AppTourModal
         settings={settings}
@@ -87,24 +89,28 @@ const Home = () => {
         onDismiss={completeTour}
       />
 
-      <div className="ct-home-top">
-        <div className="ct-home-greeting">
+      <div className="ct-home-header">
+        <div className="ct-home-appbar">
+          <span className="ct-home-brand">{t("brand.appName")}</span>
+          <div className="ct-home-top-actions">
+            <PrivacyToggleButton />
+            <HomeAvatarButton settings={settings} />
+            {tier !== "free" ? (
+              <button
+                type="button"
+                className={`ct-home-tier-chip ${tier}`}
+                onClick={() => setPlansOpen(true)}
+                aria-label={t("profileHub.heroTierAria", { tier: tierLabel })}
+              >
+                {tier === "power" ? "⚡" : "✦"} {tierLabel}
+              </button>
+            ) : null}
+            <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
+          </div>
+        </div>
+        <div className="ct-home-greeting-block">
           <p className="ct-home-greeting-time">{t(greetingKey)}</p>
           <h1 className="ct-home-greeting-name">{displayName}</h1>
-        </div>
-        <div className="ct-home-top-actions">
-          <HomeAvatarButton settings={settings} />
-          {tier !== "free" ? (
-            <button
-              type="button"
-              className={`ct-home-tier-chip ${tier}`}
-              onClick={() => setPlansOpen(true)}
-              aria-label={t("profileHub.heroTierAria", { tier: tierLabel })}
-            >
-              {tier === "power" ? "⚡" : "✦"} {tierLabel}
-            </button>
-          ) : null}
-          <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
         </div>
       </div>
 

@@ -18,6 +18,18 @@ export async function notifyNativeAppReady() {
   }
 }
 
+/** @returns {Promise<{ status?: string, version?: string } | null>} */
+export async function getNativeBundleInfo() {
+  if (!canUseNativeOta()) return null;
+  try {
+    const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
+    const current = await CapacitorUpdater.current();
+    return current?.bundle ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Roll back to the built-in APK bundle (recovery from failed OTA). */
 export async function resetNativeOtaBundle() {
   if (!canUseNativeOta()) return;
@@ -57,6 +69,7 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
     });
     onProgress?.({ phase: "restarting", percent: 100, bytesLoaded: total || undefined, bytesTotal: total || undefined });
     await CapacitorUpdater.set(bundle);
+    await notifyNativeAppReady();
   } finally {
     await listener.remove();
   }

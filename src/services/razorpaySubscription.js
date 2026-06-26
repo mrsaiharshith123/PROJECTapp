@@ -1,4 +1,4 @@
-import { getTierPaise, isRazorpayConfigured } from "./razorpayConfig.js";
+import { getTierPaise, isRazorpayConfigured, isRazorpayTestMode } from "./razorpayConfig.js";
 import { getSupabaseClient, saveSubscriptionTier } from "./supabase/auth.js";
 
 const SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
@@ -218,14 +218,19 @@ export async function startSubscriptionCheckout({
     try {
       serverOrder = await createServerOrder(tier, cycle, userId);
     } catch (err) {
-      onError(
-        err instanceof Error && err.message === "order_create_failed"
-          ? new Error("order_create_failed")
-          : err instanceof Error
-            ? err
-            : new Error(String(err)),
-      );
-      return;
+      if (isRazorpayTestMode() || import.meta.env.DEV) {
+        console.warn("[razorpay] Server order unavailable — opening client checkout", err);
+        serverOrder = null;
+      } else {
+        onError(
+          err instanceof Error && err.message === "order_create_failed"
+            ? new Error("order_create_failed")
+            : err instanceof Error
+              ? err
+              : new Error(String(err)),
+        );
+        return;
+      }
     }
   }
 

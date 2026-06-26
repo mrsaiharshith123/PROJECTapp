@@ -124,13 +124,14 @@ Full guide: [MOBILE.md](./MOBILE.md).
 | `npm run site:customer-off` | Localhost → full app (default, restart dev) |
 | `npm run git:ship` | Alias for `npm run ship` |
 
-### Dev-only (local `npm run dev`)
+### Admin (local `npm run dev`)
 
 | Surface | What it does |
 |---------|----------------|
-| `/dev` route | Developer panel — integration status, modals, state presets (`DevPanel.jsx`) |
-| 🔧 floating button | Bottom-left; opens `/dev` when overrides active |
-| `__perovoDev.help()` | Console shortcuts — presets, force-show, tier simulation (`devSubscriptionTools.js`) |
+| Left FAB (chart-bar) | `AdminFloatingButton.jsx` — visible when `profiles.is_admin`; opens `/admin` |
+| `/admin` route | Admin dashboard (`AdminPage.jsx`) — `RequireAdmin` guard |
+
+Legacy `/dev` wrench panel removed. Console dev helpers (`__perovoDev.help()`) remain in `devSubscriptionTools.js` for tier simulation when Razorpay is not configured.
 
 Bill OCR scan is on the **+ FAB menu**, not the Home tools grid.
 

@@ -10,6 +10,7 @@ const config: CapacitorConfig = {
   plugins: {
     CapacitorUpdater: {
       autoUpdate: false,
+      directUpdate: false,
       /** Full app needs time to load chunks before notifyAppReady — avoid rollback black screen. */
       appReadyTimeout: 120000,
       autoDeleteFailed: true,

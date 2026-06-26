@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { getEffectiveLendingStatus } from "../../../utils/lendingStatus.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateLendingStatus } from "../../../i18n/domainLabels.js";
 import { cn } from "../../utils/cn.js";
@@ -42,6 +42,7 @@ function trustFilledDots(score) {
  */
 function AgreementCard({ item, todayStr, trustScore = 50, onMakeLegal, onRepayment }) {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const eff = getEffectiveLendingStatus(item, todayStr);
   const filled = trustFilledDots(trustScore);
   const days = daysUntil(item.dueDate, todayStr);
@@ -60,7 +61,7 @@ function AgreementCard({ item, todayStr, trustScore = 50, onMakeLegal, onRepayme
           <div className="min-w-0 flex-1">
             <p className="pos-agreement-name">{item.personName}</p>
             <p className="pos-agreement-meta">
-              {formatInr(item.totalAmount)} · {lentLabel} {formatShortDate(item.startDate || item.dueDate)} ·{" "}
+              {formatAmount(item.totalAmount)} · {lentLabel} {formatShortDate(item.startDate || item.dueDate)} ·{" "}
               {t("agreements.due")} {formatShortDate(item.dueDate)}
             </p>
             <div className="pos-trust-dots" aria-label={t("agreements.trustScoreAria", { score: trustScore })}>

@@ -9,13 +9,8 @@ export default function MoneyWealthPage() {
 
   return (
     <div className="ct-page ct-money-wealth pb-8">
-      <SubPageHeader title={t("money.tab.wealth")} />
+      <SubPageHeader title={t("money.tab.wealth")} subtitle={t("analytics.wealth.subtitle")} />
       <div className="ct-stack ct-money-wealth-body">
-        <div className="ct-hero-card wealth relative mx-4">
-          <div className="ct-hero-glow teal" aria-hidden />
-          <p className="ct-analytics-section-title relative">{t("money.tab.wealth")}</p>
-          <p className="ct-analytics-section-sub mt-1 relative">{t("analytics.wealth.subtitle")}</p>
-        </div>
         <WealthAnalyticsSection
           showSimulation={false}
           showPressureAsLink

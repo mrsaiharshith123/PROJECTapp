@@ -1,0 +1,35 @@
+---
+description: Admin dashboard FAB and /admin route (replaces legacy dev spanner)
+globs:
+  - src/ui/admin/**
+  - src/ui/features/pages/AdminPage.jsx
+  - src/ui/features/admin/**
+  - src/App.jsx
+  - src/context/AuthContext.jsx
+---
+
+# Admin dashboard
+
+Full handbook: `docs/architecture/AdminAnalytics.md`
+
+## Product surface
+
+- **Dashboard** — `/admin` (`AdminPage.jsx`, `src/ui/features/admin/`). No separate admin site.
+- **Entry** — `AdminFloatingButton.jsx` — bottom-left FAB with chart-bar icon; **only when `isAdmin`** (`profiles.is_admin`). Not on `Navbar` or You settings.
+- **Route guard** — `RequireAdmin` in `App.jsx` checks `AuthContext.isAdmin`; server RPC `admin_product_overview()` for data.
+
+## Removed (do not re-add)
+
+- `/dev` route, `DevPanel.jsx`, wrench FAB, `ProfileAdminEntry` Internal tile on You.
+
+## Access control
+
+- **Flag** — `profiles.is_admin = true` only.
+- **Grant** — Supabase: `SELECT grant_perovo_admin('<uuid>');`
+- **Client** — `isAdmin` from `AuthContext`; users cannot self-promote.
+
+## After changes
+
+1. Update `docs/09-implementation-status.md` if admin surface changes
+2. Update `src/governance/registries/features.js` admin-intelligence paths
+3. `npm run audit:registry-sync` + `npm run audit:docs-sync`

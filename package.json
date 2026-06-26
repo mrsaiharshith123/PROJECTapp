@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.4",
   "type": "module",
+  "overrides": {
+    "uuid": "^11.1.1"
+  },
   "scripts": {
     "dev": "vite",
     "dev:simulate-pay": "node scripts/dev-simulate-pay.mjs",

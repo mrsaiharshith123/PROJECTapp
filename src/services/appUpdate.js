@@ -3,7 +3,9 @@ import {
   compareSemver,
   getRemoteManifestUrl,
 } from "../utils/updateServer.js";
-import { applyNativeOtaUpdate, canUseNativeOta } from "./nativeOtaUpdate.js";
+import { applyNativeOtaUpdate, canUseNativeOta, getNativeBundleInfo } from "./nativeOtaUpdate.js";
+
+let _hasCheckedThisSession = false;
 
 const LOCAL_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
 const LOCAL_BUILT_AT = import.meta.env.VITE_APP_BUILT_AT || "";
@@ -57,11 +59,27 @@ export async function checkForAppUpdate() {
     bundleSize: remote.bundleSize,
   };
 
+  if (canUseNativeOta()) {
+    const bundle = await getNativeBundleInfo();
+    if (bundle?.status === "success" && !manifestIsNewer(remote, LOCAL_VERSION)) {
+      return { status: "current", ...base };
+    }
+  }
+
   if (!manifestIsNewer(remote, LOCAL_VERSION)) {
     return { status: "current", ...base };
   }
 
   return { status: "available", ...base };
+}
+
+/** Debounced update check — once per cold JS session. */
+export async function checkForAppUpdateOnce() {
+  if (_hasCheckedThisSession) {
+    return { status: "current", localVersion: LOCAL_VERSION, remoteVersion: LOCAL_VERSION };
+  }
+  _hasCheckedThisSession = true;
+  return checkForAppUpdate();
 }
 
 function waitForServiceWorkerActivation(reg) {

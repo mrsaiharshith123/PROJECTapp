@@ -27,10 +27,10 @@ function ToolsDiscoveryCard({ variant, onGo, onDismiss, t }) {
         <div className="min-w-0 flex-1">
           <Body className="!text-[11px] font-semibold leading-tight">{t("tools.calculators")}</Body>
           <Caption className="mt-0.5 block leading-snug">
-            {variant === "analytics" ? t("tools.availableOnHome") : t("tools.plannerSubtitle")}
+            {variant === "analytics" ? t("tools.availableOnHome") : t("home.tools.nudgeHint")}
           </Caption>
           <Caption className="ct-text-teal font-semibold mt-1 block">
-            {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("tools.viewCalculatorsLink")} ↓`}
+            {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("home.tools.nudgeCta")}`}
           </Caption>
         </div>
       </button>

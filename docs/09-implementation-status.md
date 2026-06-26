@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update this when you land a major feature or defer UI work.
 
-Last reviewed: **23 June 2026** (governance pass — dead code, lint, i18n sync, lending→Agreements cleanup).
+Last reviewed: **26 June 2026** (full audit pass — admin FAB, dead code cleanup, privacy toggle wiring).
 
 Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-analysis.md) · [`docs/planning/perovo-QA-framework.md`](./planning/perovo-QA-framework.md) · [`docs/planning/perovo-qa-system-prompt.md`](./planning/perovo-qa-system-prompt.md) · [`docs/qa-findings.md`](./qa-findings.md)
 
@@ -21,7 +21,7 @@ Planning docs: [`docs/planning/perovo-gap-analysis.md`](./planning/perovo-gap-an
 
 | Removed from screen | Kept in repo (engine/UI file) | Replacement |
 |---------------------|-------------------------------|-------------|
-| Bill split modal entry | `BillSplitModal.jsx` | — (Splitwise-style flows deferred) |
+| Bill split modal + engine | *(removed — deferred)* | Splitwise-style flows out of V1 scope |
 | Bond advisor tool grid | `BondAdvisor.jsx` | — |
 | Festival planner card | *(file deleted — unused)* | Smart notifications when relevant |
 | Family calendar widget | *(file deleted — unused)* | `CashflowCalendarStrip` on Insights |
@@ -116,7 +116,7 @@ These files had no route/import chain from `App.jsx` and were deleted:
 |------|--------|-----------|
 | Identity hero + vital stats | ✅ | `ProfileFinancialHero.jsx` |
 | Settings colored rows | ✅ | `ProfileSettingsGroups.jsx` |
-| Admin entry | ✅ | `ProfileAdminEntry.jsx` |
+| Admin FAB (left) → `/admin` | ✅ | `AdminFloatingButton.jsx` — `isAdmin` only |
 | Sub-page push navigation | ✅ | `/you/*` |
 
 ## Shipped — Admin (A1–A2)

@@ -27,8 +27,8 @@ import BootShell from "./boot/BootShell.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
-import { DevFloatingButton } from "./ui/dev/DevFloatingButton.jsx";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
+import { AdminFloatingButton } from "./ui/admin/AdminFloatingButton.jsx";
 
 /** Eager — bottom nav pages load instantly with no Suspense stall on tap */
 import Home from "./ui/features/pages/HomePage.jsx";
@@ -64,11 +64,9 @@ const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage
 const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
 // eslint-disable-next-line no-unused-vars -- v1.1 household routes
 const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
-const DevPanel = lazy(() => import("./ui/features/dev/DevPanel.jsx"));
-
 function RequireAdmin({ children }) {
-  const { settings } = usePerovo();
-  if (settings?.userMode !== "admin") return <Navigate to="/" replace />;
+  const { isAdmin } = useAuth();
+  if (!isAdmin) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -123,7 +121,6 @@ function AppRoutes() {
         <Route path="/you/tools" element={<Suspense fallback={<RouteFallback />}><YouToolsPage /></Suspense>} />
         <Route path="/you/plans" element={<Suspense fallback={<RouteFallback />}><YouPlansPage /></Suspense>} />
         <Route path="/admin" element={<RequireAdmin><Suspense fallback={<RouteFallback />}><Admin /></Suspense></RequireAdmin>} />
-        {import.meta.env.DEV && <Route path="/dev" element={<Suspense fallback={<RouteFallback />}><DevPanel /></Suspense>} />}
         <Route path="/privacy" element={<Suspense fallback={<RouteFallback />}><Privacy /></Suspense>} />
         <Route path="/auth" element={<Navigate to="/you" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -175,7 +172,7 @@ function MainShell() {
       <MainContent>
         <AppRoutes />
       </MainContent>
-      {import.meta.env.DEV ? <DevFloatingButton /> : null}
+      <AdminFloatingButton />
     </Screen>
   );
 }

@@ -5,9 +5,8 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { ScreenSection } from "../../layout/Screen.jsx";
 import { cn } from "../../utils/cn.js";
 
 function daysUntil(dueDate, todayStr) {
@@ -29,7 +28,7 @@ function attentionBillTitle(commitment) {
   return full.length > 28 ? `${full.slice(0, 26)}…` : full;
 }
 
-function AttentionRow({ item, navigate }) {
+function AttentionRow({ item, navigate, formatAmount }) {
   const rowClass = item.overdue
     ? "ct-attention-row"
     : item.upcoming
@@ -71,7 +70,7 @@ function AttentionRow({ item, navigate }) {
       <span
         className={cn("ct-attention-row-amount", item.upcoming && "ct-attention-row-amount-muted")}
       >
-        {formatInr(item.amount)}
+        {formatAmount(item.amount)}
       </span>
     </button>
   );
@@ -81,6 +80,7 @@ export default function HomeNeedsAttention() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { sortedCommitments, lendings, getEffectiveStatus, todayStr } = usePerovo();
+  const { formatAmount } = usePrivacyAmount();
 
   const { overdue, dueSoon } = useMemo(() => {
     /** @type {object[]} */
@@ -159,20 +159,20 @@ export default function HomeNeedsAttention() {
   const sectionTitle = t("home.requiresAction");
 
   return (
-    <ScreenSection
-      title={sectionTitle}
-      action={
-        hasOverdue ? <span className="ct-count-badge danger">{overdue.length}</span> : null
-      }
-    >
+    <section className="ct-home-attention-section">
+      <div className="ct-home-attention-label">
+        <span className="ct-home-attention-dot" aria-hidden />
+        <span>{sectionTitle}</span>
+        {hasOverdue ? <span className="ct-count-badge danger">{overdue.length}</span> : null}
+      </div>
       <div className="ct-stack-sm">
         {overdue.map((item) => (
-          <AttentionRow key={item.id} item={item} navigate={navigate} />
+          <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
         ))}
         {dueSoon.map((item) => (
-          <AttentionRow key={item.id} item={item} navigate={navigate} />
+          <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
         ))}
       </div>
-    </ScreenSection>
+    </section>
   );
 }

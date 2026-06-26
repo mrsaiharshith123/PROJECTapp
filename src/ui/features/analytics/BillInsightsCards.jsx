@@ -6,14 +6,13 @@ import { repeatTypeLabel } from "../../../constants/repeatTypes.js";
 import { formatInr, EM_DASH } from "../../../constants/symbols.js";
 import { computeBiggestOpenCategory, computeHighestRecurring } from "../../../utils/billInsightStats.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { cn } from "../../utils/cn.js";
 
 /**
  * @param {{ eyebrow: string, title?: import('react').ReactNode, detail?: string, empty?: string, icon?: string, tone?: "positive"|"warning"|"danger", iconTone?: string }} props
  */
-function InsightStatCard({ eyebrow, title, detail, empty, icon, tone = "positive", iconTone = "violet" }) {
+function InsightStatCard({ eyebrow, title, detail, empty, icon, tone: _tone = "positive", iconTone = "violet" }) {
   return (
-    <div className={cn("ct-stat-tile ct-insight-stat", tone === "warning" ? "warning" : tone === "danger" ? "danger" : "positive", iconTone && `icon-${iconTone}`)}>
+    <div className="ct-analytics-insight-card">
       <div className="ct-row gap-2 items-start">
         {icon ? (
           <span className={`ct-icon-tile ct-icon-tile-sm ${iconTone} shrink-0`} aria-hidden>

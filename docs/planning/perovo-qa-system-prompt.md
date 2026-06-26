@@ -860,10 +860,10 @@ describe("🏗️ ARCHITECTURE: critical files must exist", () => {
     expect(content).not.toMatch(/IS_DEV\s*=\s*true/);
   });
 
-  it("[P1] DevPanel only renders in dev mode", () => {
-    if (!fileExists("src/ui/features/dev/DevPanel.jsx")) return;
-    const content = fileContent("src/ui/features/dev/DevPanel.jsx");
-    expect(content).toContain("IS_DEV");
+  it("[P1] Admin FAB only renders for admin users", () => {
+    if (!fileExists("src/ui/admin/AdminFloatingButton.jsx")) return;
+    const content = fileContent("src/ui/admin/AdminFloatingButton.jsx");
+    expect(content).toContain("isAdmin");
   });
 
   // Navigation: check for nav items

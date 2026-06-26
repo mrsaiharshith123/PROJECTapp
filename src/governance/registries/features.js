@@ -121,16 +121,16 @@ export const FEATURES = [
   },
   {
     id: "admin-intelligence",
-    name: "Product intelligence (internal)",
+    name: "Admin dashboard (internal)",
     layer: "platform",
     ui: [
       "ui/features/pages/AdminPage.jsx",
       "ui/features/admin/",
-      "ui/features/profile/hub/ProfileAdminEntry.jsx",
+      "ui/admin/AdminFloatingButton.jsx",
     ],
     engines: [],
     hooks: ["hooks/useAdminOverview.js"],
-    notes: "Requires profiles.is_admin + Supabase admin migrations; see docs/architecture/AdminAnalytics.md",
+    notes: "Requires profiles.is_admin; FAB on left for admins only; route /admin",
   },
   {
     id: "goals",
@@ -160,14 +160,6 @@ export const FEATURES = [
     engines: ["engines/bankStatementParser.js"],
     hooks: [],
     notes: "Pro tier — bank_import gate",
-  },
-  {
-    id: "bill-split",
-    name: "Bill split & share",
-    layer: "product",
-    ui: ["ui/features/modals/BillSplitModal.jsx"],
-    engines: ["engines/billSplit.js"],
-    hooks: [],
   },
   {
     id: "sms-detect",

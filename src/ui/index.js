@@ -13,6 +13,7 @@ export { Stack, Row, Grid } from "./primitives/Stack.jsx";
 export { InfoTip } from "./primitives/InfoTip.jsx";
 
 export { PageHeader, AppHeader } from "./patterns/PageHeader.jsx";
+export { PrivacyToggleButton } from "./patterns/PrivacyToggleButton.jsx";
 export { PageShell } from "./patterns/PageShell.jsx";
 export { SubPageHeader } from "./patterns/SubPageHeader.jsx";
 export { PageHeaderWithNotifications } from "./patterns/PageHeaderWithNotifications.jsx";

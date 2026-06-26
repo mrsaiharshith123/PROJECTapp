@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
+import { INSTRUMENT_CATEGORIES } from "../../../constants/netWorth/wealthCategories.js";
 import {
   isInstrumentCommitment,
   isInstrumentWealthEntry,
@@ -47,7 +48,8 @@ function billInstrumentLabel(bill, t) {
 export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { entries, privacyMode } = useNetWorth();
+  const { entries } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
   const { sortedCommitments } = usePerovo();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
 
@@ -95,7 +97,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
           <p className="ct-caption uppercase tracking-wide">{t("ledger.tab.instruments")}</p>
           <ViewLink label={t("scoreDetail.viewAnalytics")} onClick={() => navigate("/money/insights")} />
         </div>
-        <p className="pos-display-amount instrument">{formatInr(total)}</p>
+        <p className="pos-display-amount instrument">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.instrumentsMeta", { count })}</p>
       </div>
 
@@ -107,7 +109,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
           <section key={key}>
             <div className="pos-group-header">
               <span>{t(groupLabels[key])}</span>
-              <span className="ct-numeral">{formatInr(subtotal)}</span>
+              <span className="ct-numeral">{formatAmount(subtotal)}</span>
             </div>
             <div className="pos-group-card ct-stack-sm">
               {group.wealth.map((entry) => (
@@ -122,7 +124,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
                     </div>
                   </div>
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-inst)" }}>
-                    {privacyMode ? "••••" : formatInr(entry.value)}
+                    {formatAmount(entry.value)}
                   </span>
                 </div>
               ))}
@@ -143,7 +145,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
                     </div>
                   </div>
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-inst)" }}>
-                    {formatInr(displayAmount)}
+                    {formatAmount(displayAmount)}
                   </span>
                 </div>
               );
@@ -169,6 +171,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
         kind="asset"
         entry={null}
         defaultCategoryId="insurance"
+        restrictedCategories={INSTRUMENT_CATEGORIES}
         onClose={() => setModalOpen(false)}
         onSave={() => setModalOpen(false)}
       />

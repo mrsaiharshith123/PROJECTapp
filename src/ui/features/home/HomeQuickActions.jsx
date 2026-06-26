@@ -28,7 +28,8 @@ export default function HomeQuickActions({ onOpenScanBill }) {
 
   return (
     <>
-      <QuickActionRow>
+      <div className="ct-home-quick-actions-panel">
+        <QuickActionRow>
         <QuickAction
           icon="+"
           label={t("copy.addBill")}
@@ -54,6 +55,7 @@ export default function HomeQuickActions({ onOpenScanBill }) {
           onClick={() => setMathCalcOpen(true)}
         />
       </QuickActionRow>
+      </div>
 
       {mathCalcOpen ? <MathCalculatorModal onClose={() => setMathCalcOpen(false)} /> : null}
 

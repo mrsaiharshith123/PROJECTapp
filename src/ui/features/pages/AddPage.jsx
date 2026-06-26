@@ -93,10 +93,7 @@ const Add = () => {
       return;
     }
     if (id === "liability") {
-      setAddKind("bill");
-      setStep("form");
-      setEntryType("scheduled");
-      setForm((f) => ({ ...f, category: f.category || "EMI" }));
+      navigate("/ledger", { state: { tab: "liabilities", openAdd: true } });
       return;
     }
     setAddKind(/** @type {"bill" | "spend" | "lending"} */ (id));

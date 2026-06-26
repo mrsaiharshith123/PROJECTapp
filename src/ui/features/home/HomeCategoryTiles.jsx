@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import {
   isCoreAssetEntry,
   isInstrumentWealthEntry,
@@ -16,6 +16,7 @@ export default function HomeCategoryTiles() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { entries, core } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
   const { lendings, sortedCommitments } = usePerovo();
 
   const { assetCount, instrumentsTotal, instrumentCount, netLent } = useMemo(() => {
@@ -77,7 +78,9 @@ export default function HomeCategoryTiles() {
   ];
 
   return (
-    <div className="pos-category-grid">
+    <section className="ct-home-category-section">
+      <p className="ct-home-section-label">{t("home.section.yourPosition")}</p>
+      <div className="pos-category-grid">
       {tiles.map((item) => (
         <button
           key={item.cat}
@@ -97,10 +100,11 @@ export default function HomeCategoryTiles() {
           >
             {item.label}
           </p>
-          <p className="text-base font-semibold ct-numeral">{formatInr(item.value)}</p>
+          <p className="text-base font-semibold ct-numeral">{formatAmount(item.value)}</p>
           <p className="ct-caption mt-0.5">{item.sub}</p>
         </button>
       ))}
-    </div>
+      </div>
+    </section>
   );
 }

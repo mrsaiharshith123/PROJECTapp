@@ -23,3 +23,9 @@ export const TOOL_ICONS = {
 export function formatInr(amount) {
   return `${INR}${Number(amount || 0).toLocaleString("en-IN")}`;
 }
+
+/** Mask currency when privacy mode is on. */
+export function formatPrivateInr(privacyMode, amount, mask = "••••") {
+  if (privacyMode) return mask;
+  return formatInr(amount);
+}

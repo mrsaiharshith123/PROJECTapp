@@ -9,6 +9,7 @@ import { PriorityBadge } from "./PriorityBadge.jsx";
 import { BILL_STATUS_UI } from "../tokens/billStatus.js";
 import { getBillDisplayName } from "../../utils/billDisplayName.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
+import { usePrivacyAmount } from "../../hooks/usePrivacyAmount.js";
 import { translateBillStatus, translateRepeatType } from "../../i18n/domainLabels.js";
 import { formatLocaleDate } from "../../i18n/formatLocale.js";
 import { cn } from "../utils/cn.js";
@@ -98,6 +99,7 @@ export function BillCard({
   health = null,
 }) {
   const { t, locale } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const navigate = useNavigate();
   const statusIconRef = useRef(null);
   const prevMonthPaid = useRef(monthPaid);
@@ -192,13 +194,10 @@ export function BillCard({
           )}
         </div>
         <div className="ct-bill-card-amount ct-bill-card-amount-right">
-          <p className="ct-display ct-amount ct-numeral">
-            {"\u20b9"}
-            {total.toLocaleString()}
-          </p>
+          <p className="ct-display ct-amount ct-numeral">{formatAmount(total)}</p>
           {partial && (
             <p className="ct-caption ct-amount-warn ct-numeral">
-              {t("bill.dueNow", { amount: `\u20b9${cycleDue.toLocaleString("en-IN")}` })}
+              {t("bill.dueNow", { amount: formatAmount(cycleDue) })}
             </p>
           )}
           <span className={classes}>{statusLabel}</span>
@@ -225,8 +224,7 @@ export function BillCard({
       {(eff === "pending" || eff === "overdue") && (
         <div className="ct-bill-card-actions">
           <Button variant="success" size="sm" type="button" className="ct-bill-pay-btn" onClick={onPay}>
-            {t("common.pay")} {"\u20b9"}
-            {cycleDue.toLocaleString("en-IN")}
+            {t("common.pay")} {formatAmount(cycleDue)}
           </Button>
           <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
             {t("common.edit")}

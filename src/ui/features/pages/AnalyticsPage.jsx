@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
 import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
+import { ViewLink } from "../../patterns/ViewLink.jsx";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
 import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
 import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
@@ -212,6 +213,9 @@ const Analytics = () => {
           creditCard={cardPressureAnalytics}
         />
       </div>
+      <div className="ct-row justify-end px-4 -mt-1 mb-1">
+        <ViewLink label={t("scoreDetail.viewInstruments")} onClick={() => navigate("/ledger?tab=instruments")} />
+      </div>
 
       {lendings.length > 0 && (
         <div className="pos-tile agreement ct-stack mx-4 mb-2.5">
@@ -291,6 +295,9 @@ const Analytics = () => {
         {showSelfView ? (
         <div className="ct-stack">
           <FinancialPulseCard />
+          <div className="ct-row justify-end px-4 -mt-2">
+            <ViewLink label={t("home.position.tapLedger")} onClick={() => navigate("/ledger?tab=liabilities")} />
+          </div>
           <div className="ct-animate-fade-up" style={{ animationDelay: "60ms" }}>
             <CashflowCalendarStrip />
           </div>

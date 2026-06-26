@@ -1,19 +1,27 @@
 import { cn } from "../utils/cn.js";
+import { PrivacyToggleButton } from "./PrivacyToggleButton.jsx";
 
 /**
  * Standard page layout — title, optional subtitle, header action, scrollable body.
- * @param {import('react').PropsWithChildren<{ title?: string, subtitle?: string, action?: import('react').ReactNode, scroll?: boolean, className?: string }>} props
+ * @param {import('react').PropsWithChildren<{ title?: string, subtitle?: string, action?: import('react').ReactNode, scroll?: boolean, className?: string, hidePrivacyToggle?: boolean }>} props
  */
-export function PageShell({ title, subtitle, action, children, scroll = true, className = "" }) {
+export function PageShell({ title, subtitle, action, children, scroll = true, className = "", hidePrivacyToggle = false }) {
+  const showHead = Boolean(title || subtitle || action);
+
   return (
     <div className={cn("ct-page-shell", className)}>
-      {(title || action) && (
+      {showHead && (
         <header className="ct-page-shell-head">
           <div className="ct-page-shell-titles">
             {title ? <h1 className="ct-page-shell-title">{title}</h1> : null}
             {subtitle ? <p className="ct-page-shell-subtitle">{subtitle}</p> : null}
           </div>
-          {action ? <div className="ct-page-shell-action">{action}</div> : null}
+          {(action || !hidePrivacyToggle) ? (
+            <div className="ct-page-shell-action">
+              {!hidePrivacyToggle ? <PrivacyToggleButton /> : null}
+              {action}
+            </div>
+          ) : null}
         </header>
       )}
       <div className={cn("ct-page-shell-body", scroll && "ct-page-shell-scroll")}>{children}</div>

@@ -14,16 +14,20 @@ export function LandingBrandLockup({ className = "" }) {
   return (
     <div className={cn("ct-landing-lockup", className)} role="img" aria-label={t("brand.appName")}>
       <img
+        role="presentation"
         src={assetUrl(`brand/${iconFile}`)}
         alt=""
+        aria-hidden="true"
         width={80}
         height={80}
         className="ct-landing-app-icon"
         draggable={false}
       />
       <img
+        role="presentation"
         src={assetUrl(`brand/${wordmarkFile}`)}
         alt=""
+        aria-hidden="true"
         height={52}
         className="ct-perovo-wordmark ct-perovo-wordmark-lg"
         draggable={false}

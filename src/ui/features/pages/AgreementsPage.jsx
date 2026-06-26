@@ -171,11 +171,7 @@ export default function AgreementsPage() {
   );
 
   return (
-    <PageShell
-      title={t("nav.agreements")}
-      action={<AgreementsHeaderActions lendings={lendings} onAdd={openAdd} onRequestMoney={openRequest} />}
-      className="ct-agreements-page"
-    >
+    <PageShell title={t("nav.agreements")} subtitle={t("money.agreements.sectionSub")} className="ct-agreements-page">
       {!canAddLendingRecord(settings, lendings).ok && (
         <TierLimitBanner
           className="ct-tier-banner-warm"
@@ -183,6 +179,8 @@ export default function AgreementsPage() {
           message={t("tier.limit.lendingMessage", { limit: 5 })}
         />
       )}
+
+      <AgreementsHeaderActions lendings={lendings} onAdd={openAdd} onRequestMoney={openRequest} />
 
       {isEmpty ? (
         <div className="ct-lending-empty-warm">

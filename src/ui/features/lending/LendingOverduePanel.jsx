@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Card, Heading, Caption, Body, Button } from "../../index.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   getOverdueInstallments,
@@ -14,6 +14,7 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 
 export default function LendingOverduePanel() {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const { lendings, settings, addLendingPayment, todayStr } = usePerovo();
 
   const rows = useMemo(() => {
@@ -53,12 +54,12 @@ export default function LendingOverduePanel() {
               <div className="min-w-0">
                 <Body className="font-semibold">{row.lending.personName}</Body>
                 <Caption className="block">
-                  {t("lending.overdueCount", { count: row.overdue.length })} · {formatInr(row.total)}
+                  {t("lending.overdueCount", { count: row.overdue.length })} · {formatAmount(row.total)}
                   {row.days > 0 ? ` · ${t("lending.overdueDays", { days: row.days })}` : ""}
                 </Caption>
               </div>
               <div className="ct-stat-tile danger shrink-0 text-right min-w-[5.5rem]">
-                <p className="ct-stat-tile-value ct-numeral">{formatInr(row.total)}</p>
+                <p className="ct-stat-tile-value ct-numeral">{formatAmount(row.total)}</p>
                 <p className="ct-stat-tile-label">{t("lending.overdueTitle")}</p>
               </div>
             </div>
@@ -66,7 +67,7 @@ export default function LendingOverduePanel() {
               {row.overdue.slice(0, 4).map((inst) => (
                 <li key={`${inst.dueDate}-${inst.installmentNumber ?? ""}`} className="ct-row-between gap-2">
                   <span>{inst.dueDate}</span>
-                  <span className="ct-numeral font-semibold">{formatInr(Number(inst.totalPayment) || 0)}</span>
+                  <span className="ct-numeral font-semibold">{formatAmount(Number(inst.totalPayment) || 0)}</span>
                 </li>
               ))}
             </ul>

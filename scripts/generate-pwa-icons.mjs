@@ -4,10 +4,10 @@ import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = path.join(root, "public");
-const source = path.join(publicDir, "brand", "icon-light.png");
+const source = path.join(publicDir, "brand", "icon-dark.png");
 
 if (!fs.existsSync(source)) {
-  console.warn("Skip PWA icons: public/brand/icon-light.png missing");
+  console.warn("Skip PWA icons: public/brand/icon-dark.png missing");
   process.exit(0);
 }
 

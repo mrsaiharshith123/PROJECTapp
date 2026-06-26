@@ -14,7 +14,7 @@ export default function HomeToolsPreview() {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <section id="dashboard-tools" className="ct-home-tools-section">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <p className="ct-analytics-section-title">{t("home.tools.sectionTitle")}</p>
         <button
@@ -37,6 +37,6 @@ export default function HomeToolsPreview() {
           />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

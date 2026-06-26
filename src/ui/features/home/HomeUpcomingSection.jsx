@@ -4,7 +4,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { ScreenSection } from "../../layout/Screen.jsx";
 
@@ -26,7 +26,7 @@ function attentionBillTitle(commitment) {
   return full.length > 28 ? `${full.slice(0, 26)}…` : full;
 }
 
-function UpcomingRow({ item, navigate }) {
+function UpcomingRow({ item, navigate, formatAmount }) {
   return (
     <button
       key={item.id}
@@ -42,7 +42,7 @@ function UpcomingRow({ item, navigate }) {
           <p className="ct-body-strong truncate">{item.name}</p>
           <p className="ct-caption">{item.statusText}</p>
         </div>
-        <span className="ct-numeral shrink-0">{formatInr(item.amount)}</span>
+        <span className="ct-numeral shrink-0">{formatAmount(item.amount)}</span>
       </div>
     </button>
   );
@@ -53,6 +53,7 @@ export default function HomeUpcomingSection() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { sortedCommitments, getEffectiveStatus, todayStr } = usePerovo();
+  const { formatAmount } = usePrivacyAmount();
 
   const upcoming = useMemo(() => {
     const rows = [];
@@ -80,7 +81,7 @@ export default function HomeUpcomingSection() {
     <ScreenSection title={t("home.comingUp")}>
       <div className="ct-stack-sm">
         {upcoming.map((item) => (
-          <UpcomingRow key={item.id} item={item} navigate={navigate} />
+          <UpcomingRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
         ))}
       </div>
     </ScreenSection>

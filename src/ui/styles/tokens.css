@@ -201,7 +201,7 @@ html[data-ui="ct"] {
   --ct-card-grad-mid: rgba(18, 18, 37, 0.9);
   --ct-list-grad-to: rgba(18, 18, 37, 0.55);
   --ct-insight-surface-end: rgba(18, 18, 37, 0.88);
-  --ct-nav-bar-bg: var(--ct-life-nav-bg);
+  --ct-nav-bar-bg: rgba(18, 16, 36, 0.82);
   --ct-top-nav-bg: rgba(7, 7, 10, 0.82);
   --ct-hero-inset-bg: var(--ct-life-inset-bg);
   --ct-hero-inset-border: var(--ct-life-inset-border);

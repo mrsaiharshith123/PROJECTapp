@@ -1,13 +1,12 @@
 import { useMemo, useState } from "react";
 import { CALC_HELP } from "../../../constants/calculationHelp.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
-import { Card } from "../../primitives/Card.jsx";
 import { Badge } from "../../primitives/Badge.jsx";
 import { InfoTip } from "../../primitives/InfoTip.jsx";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
@@ -80,6 +79,7 @@ function mergeTips(intel, stable, settings) {
 /** One card with Summary / Pressure / Tips — Analytics financial pulse. */
 export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "auto" }) {
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const { settings } = usePerovo();
@@ -122,7 +122,8 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
     : [];
 
   return (
-    <Card className="ct-stack pos-tile instrument ct-pulse-modern">
+    <section className="ct-stack pos-hero liability ct-pulse-modern">
+      <div className="pos-hero-glow liability" aria-hidden />
       <div className="ct-row-between relative" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
         <Heading level={2}>
           {t("pulse.title")}
@@ -277,7 +278,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                     className="ct-inset p-2 text-xs"
                   >
                     <p className="font-semibold">{w.label || t("pulse.weekN", { n: (w.week ?? 0) + 1 })}</p>
-                    <Caption className="block mt-0.5">{formatInr(w.amount || 0)}</Caption>
+                    <Caption className="block mt-0.5">{formatAmount(w.amount || 0)}</Caption>
                     {w.items?.length > 0 && (
                       <ul className="mt-1 ct-stack-sm text-[11px] truncate opacity-80">
                         {w.items.slice(0, 3).map((it) => (
@@ -301,7 +302,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                   <li key={m.monthKey || m.month} className="flex justify-between gap-2">
                     <span>{m.month}</span>
                     <span className="shrink-0">
-                      {t("pulse.dueFree", { due: formatInr(m.due), free: formatInr(m.free) })}
+                      {t("pulse.dueFree", { due: formatAmount(m.due), free: formatAmount(m.free) })}
                     </span>
                   </li>
                 ))}
@@ -318,7 +319,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                     key={m.monthKey}
                     className="text-xs ct-insight-warning rounded-lg px-2 py-1.5"
                   >
-                    {t("pulse.heavyDue", { label: m.label, amount: formatInr(m.amount) })}
+                    {t("pulse.heavyDue", { label: m.label, amount: formatAmount(m.amount) })}
                   </li>
                 ))}
               </ul>
@@ -331,7 +332,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               <ul className="text-xs ct-stack-sm">
                 {family.heavyRenewals.slice(0, 5).map((r) => (
                   <li key={`${r.name}-${r.dueDate}`}>
-                    {r.name} — {formatInr(r.amount)}
+                    {r.name} — {formatAmount(r.amount)}
                     {r.dueDate ? ` · ${r.dueDate}` : ""}
                   </li>
                 ))}
@@ -343,7 +344,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             <p className="ct-insight-violet">
               {t("pulse.highestObligations", {
                 month: ahead.heavyMonths[0].month,
-                due: formatInr(ahead.heavyMonths[0].due),
+                due: formatAmount(ahead.heavyMonths[0].due),
               })}
             </p>
           )}
@@ -356,7 +357,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                   <li key={g.id} className="flex justify-between gap-2">
                     <span className="truncate">{g.name}</span>
                     <span className={`shrink-0 ${g.feasible ? "ct-text-success" : "ct-text-warning"}`}>
-                      {formatInr(g.neededPerMonth)}/mo
+                      {formatAmount(g.neededPerMonth)}/mo
                     </span>
                   </li>
                 ))}
@@ -369,14 +370,14 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
               <Caption className="block font-semibold mb-1">
                 {ahead.billPriority.coversAll
                   ? t("pulse.suggestedPayOrder")
-                  : t("pulse.suggestedPayOrderShort", { amount: formatInr(ahead.billPriority.shortfall) })}
+                  : t("pulse.suggestedPayOrderShort", { amount: formatAmount(ahead.billPriority.shortfall) })}
               </Caption>
               <ol className="ct-stack-sm text-xs list-decimal list-inside">
                 {ahead.billPriority.plan.map((row) => (
                   <li key={row.id}>
                     {row.name}{" "}
                     <span className={row.canPay ? "ct-text-success" : "ct-text-warning"}>
-                      ({formatInr(row.amount)}
+                      ({formatAmount(row.amount)}
                       {row.canPay ? ` — ${t("pulse.withinFreeCash")}` : ` — ${t("pulse.exceedsFreeCash")}`})
                     </span>
                   </li>
@@ -414,7 +415,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                   <span>
                     {i + 1}. {cat}
                   </span>
-                  <span className="font-semibold shrink-0">{formatInr(Math.round(amt))}</span>
+                  <span className="font-semibold shrink-0">{formatAmount(Math.round(amt))}</span>
                 </li>
               ))}
             </ol>
@@ -428,7 +429,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
                       {i + 1}. {r.name}
                       <span className="ct-caption opacity-75 text-xs ml-1">({r.category})</span>
                     </span>
-                    <span className="font-semibold shrink-0">{formatInr(Math.round(r.weight))}/mo</span>
+                    <span className="font-semibold shrink-0">{formatAmount(Math.round(r.weight))}/mo</span>
                   </li>
                 ))}
               </ol>
@@ -479,6 +480,6 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
           )}
         </div>
       </TabContent>
-    </Card>
+    </section>
   );
 }

@@ -88,19 +88,17 @@ export function NetWorthProvider({ children }) {
     persist((prev) => withSnapshots(prev, profileEntries));
   }, [persist, profileEntries]);
 
-  const dailySnapshotGuardRef = useRef("");
+  const snapshotBootRef = useRef(false);
 
+  // Record today's snapshot once on boot — never re-run on dailySnapshots churn (avoids update loops).
   useEffect(() => {
+    if (snapshotBootRef.current) return;
+    snapshotBootRef.current = true;
     if (!profileEntries.length) return;
-    const today = format(new Date(), "yyyy-MM-dd");
-    if (dailySnapshotGuardRef.current === today) return;
-    if (hasTodayDailySnapshot(state.dailySnapshots)) {
-      dailySnapshotGuardRef.current = today;
-      return;
-    }
-    dailySnapshotGuardRef.current = today;
+    if (hasTodayDailySnapshot(state.dailySnapshots)) return;
     queueMicrotask(() => recordDailySnapshot());
-  }, [profileEntries.length, state.dailySnapshots, recordDailySnapshot]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-shot boot
+  }, []);
 
   const addEntry = useCallback(
     (raw) => {

@@ -5,8 +5,8 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { PageShell } from "../../index.js";
 
 const MONEY_TABS = [
-  { id: "bills", path: "/money/bills", labelKey: "money.tab.bills" },
-  { id: "spends", path: "/money/spends", labelKey: "money.tab.spends" },
+  { id: "bills", path: "/money/bills", labelKey: "money.tab.bills", subtitleKey: "money.bills.sectionSub" },
+  { id: "spends", path: "/money/spends", labelKey: "money.tab.spends", subtitleKey: "money.spends.sectionSub" },
 ];
 
 /** Money tab shell — Bills / Spends. */
@@ -19,13 +19,14 @@ export default function MoneyShellPage() {
   const segment = location.pathname.split("/")[2] || "bills";
   const tabs = MONEY_TABS;
   const activeTab = tabs.some((tab) => tab.id === segment) ? segment : "bills";
+  const activeMeta = tabs.find((tab) => tab.id === activeTab) || tabs[0];
 
   useEffect(() => {
     fadeKey.current = location.pathname;
   }, [location.pathname]);
 
   return (
-    <PageShell title={t("nav.money")} className="ct-money-shell">
+    <PageShell title={t("nav.money")} subtitle={t(activeMeta.subtitleKey)} className="ct-money-shell">
       <div
         className="ct-seg-scroll"
         style={{

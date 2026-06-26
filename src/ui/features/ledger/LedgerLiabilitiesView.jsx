@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
+import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import {
   isLiabilityCommitment,
   sumEntryValues,
@@ -31,11 +32,14 @@ function statusStripe(effectiveStatus) {
 /**
  * @param {{ onAdd?: () => void, openAddOnMount?: boolean }} props
  */
-export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddOnMount = false }) {
+export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { entries, core, privacyMode } = useNetWorth();
+  const { entries, core } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
   const { sortedCommitments, commitments, getEffectiveStatus, todayStr } = usePerovo();
+  const [modalOpen, setModalOpen] = useState(openAddOnMount);
+  const [editEntry, setEditEntry] = useState(null);
 
   const wealthLiabs = useMemo(() => entries.filter((e) => e.kind === "liability"), [entries]);
   const loanBills = useMemo(() => {
@@ -85,7 +89,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
           <p className="ct-caption uppercase tracking-wide">{t("ledger.totalLiabilities")}</p>
           <ViewLink label={t("ledger.viewCommitments")} onClick={() => navigate("/money/bills")} />
         </div>
-        <p className="pos-display-amount liability">{formatInr(total)}</p>
+        <p className="pos-display-amount liability">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.debtRatio", { ratio: debtRatio })}</p>
       </div>
 
@@ -97,7 +101,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
           <section key={key}>
             <div className="pos-group-header">
               <span>{t(groupLabels[key])}</span>
-              <span className="ct-numeral">{formatInr(subtotal)}</span>
+              <span className="ct-numeral">{formatAmount(subtotal)}</span>
             </div>
             <div className="pos-group-card ct-stack-sm">
               {group.wealth.map((entry) => (
@@ -109,12 +113,12 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
                     <div className="min-w-0">
                       <p className="ct-body-strong truncate">{entry.name}</p>
                       <p className="ct-caption">
-                        {entry.emi ? t("ledger.emiPerMonth", { amount: formatInr(entry.emi) }) : t("ledger.outstanding")}
+                        {entry.emi ? t("ledger.emiPerMonth", { amount: formatAmount(entry.emi) }) : t("ledger.outstanding")}
                       </p>
                     </div>
                   </div>
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
-                    {privacyMode ? "••••" : formatInr(entry.value)}
+                    {formatAmount(entry.value)}
                   </span>
                 </div>
               ))}
@@ -136,13 +140,13 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
                         <div className="min-w-0">
                           <p className="ct-body-strong truncate">{getBillDisplayName(bill)}</p>
                           <p className="ct-caption">
-                            {t("ledger.emiPerMonth", { amount: formatInr(Number(bill.amount) || 0) })}
+                            {t("ledger.emiPerMonth", { amount: formatAmount(Number(bill.amount) || 0) })}
                             {progress.label ? ` · ${progress.label}` : ""}
                           </p>
                         </div>
                       </div>
                       <span className="ct-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
-                        {formatInr(Number(bill.amount) || 0)}
+                        {formatAmount(Number(bill.amount) || 0)}
                       </span>
                     </div>
                     {progress.totalCycles > 0 && (
@@ -177,11 +181,26 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount: _openAddO
         className="ct-btn ct-btn-ghost w-full"
         onClick={() => {
           onAdd?.();
-          navigate("/add", { state: { category: "liability" } });
+          setEditEntry(null);
+          setModalOpen(true);
         }}
       >
         + {t("ledger.addLiability")}
       </button>
+
+      <WealthEntryModal
+        open={modalOpen}
+        kind={editEntry?.kind || "liability"}
+        entry={editEntry}
+        onClose={() => {
+          setModalOpen(false);
+          setEditEntry(null);
+        }}
+        onSave={() => {
+          setModalOpen(false);
+          setEditEntry(null);
+        }}
+      />
 
       <button
         type="button"

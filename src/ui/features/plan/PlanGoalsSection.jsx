@@ -68,7 +68,7 @@ function ringTone(status) {
 }
 
 /** Goals hero + cards — top of Plan tab. */
-export default function PlanGoalsSection({ requestOpen = false }) {
+export default function PlanGoalsSection({ requestOpen = false, variant = "full" }) {
   const { t } = useTranslation();
   const ctx = usePerovo();
   const { goals, commitments, getEffectiveStatus, todayStr } = ctx;
@@ -147,6 +147,79 @@ export default function PlanGoalsSection({ requestOpen = false }) {
           : "#2dd4bf";
 
   const nearest = sorted[0];
+  const topGoal = sorted.find((r) => r.intel.status === "behind") || nearest;
+
+  const sheet = (
+    <PlanToolSheet
+      open={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      icon="target"
+      title={t("home.goals")}
+      accent="teal"
+    >
+      {renderPlanToolPanel("goals", { ...ctx, goalDraft })}
+    </PlanToolSheet>
+  );
+
+  if (variant === "profile") {
+    if (activeGoals.length === 0) {
+      return (
+        <>
+          <div className="mt-2">
+            <Caption className="block mb-2">{t("plan.goals.emptyQuestion")}</Caption>
+            <div className="ct-row-wrap gap-1">
+              {SUGGESTED_GOALS.map((s) => (
+                <button
+                  key={s.titleKey}
+                  type="button"
+                  className="ct-chip"
+                  onClick={() => openGoals({ type: s.type, title: t(s.titleKey) })}
+                >
+                  {t(s.titleKey)}
+                </button>
+              ))}
+            </div>
+            <Button type="button" size="sm" className="mt-2" onClick={() => openGoals()}>
+              {t("plan.goals.setFirst")}
+            </Button>
+          </div>
+          {sheet}
+        </>
+      );
+    }
+
+    const { goal, intel, cap, monthsLeft } = topGoal;
+    return (
+      <>
+        <button
+          type="button"
+          className="ct-plan-goal-glimpse ct-pressable mt-2 w-full text-left"
+          onClick={() => openGoals()}
+          aria-label={t("plan.goals.cardAria", { title: goal.title, pct: intel.progressPercent })}
+        >
+          <div className="ct-row gap-3 items-center">
+            <GoalProgressRing percent={intel.progressPercent} tone={ringTone(intel.status)} size={36} />
+            <div className="min-w-0 flex-1">
+              <Body className="font-semibold truncate block">{goal.title}</Body>
+              <Caption className="block">{t(goalTypeI18nKey(goal.type))}</Caption>
+              {cap?.neededPerMonth > 0 ? (
+                <Caption className="block">{formatInr(cap.neededPerMonth)}/mo</Caption>
+              ) : null}
+            </div>
+            <div className="text-right shrink-0">
+              <Body className="font-semibold" style={{ color: "#2dd4bf" }}>
+                {intel.progressPercent}%
+              </Body>
+              {monthsLeft != null ? (
+                <Caption className="block">{t("plan.goals.monthsLeft", { count: monthsLeft })}</Caption>
+              ) : null}
+            </div>
+          </div>
+        </button>
+        {sheet}
+      </>
+    );
+  }
 
   if (activeGoals.length === 0) {
     return (
@@ -169,15 +242,7 @@ export default function PlanGoalsSection({ requestOpen = false }) {
             {t("plan.goals.setFirst")}
           </Button>
         </div>
-        <PlanToolSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-          icon="target"
-          title={t("home.goals")}
-          accent="teal"
-        >
-          {renderPlanToolPanel("goals", { ...ctx, goalDraft })}
-        </PlanToolSheet>
+        {sheet}
       </section>
     );
   }
@@ -245,15 +310,7 @@ export default function PlanGoalsSection({ requestOpen = false }) {
         {t("plan.goals.addGoal")}
       </Button>
 
-      <PlanToolSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        icon="target"
-        title={t("home.goals")}
-        accent="teal"
-      >
-        {renderPlanToolPanel("goals", { ...ctx, goalDraft })}
-      </PlanToolSheet>
+      {sheet}
     </section>
   );
 }

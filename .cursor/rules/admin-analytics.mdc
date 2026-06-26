@@ -1,9 +1,10 @@
 ---
 description: Admin intelligence and product analytics conventions
 globs:
-  - src/**/*
-  - supabase/**/*
-  - docs/**/*
+  - src/services/analytics/**
+  - src/app/AnalyticsBridge.jsx
+  - supabase/**
+  - docs/architecture/AdminAnalytics.md
 ---
 
 # Admin intelligence
@@ -12,9 +13,9 @@ Full handbook: `docs/architecture/AdminAnalytics.md`
 
 ## Product surface
 
-- **Dashboard** — `/admin` inside Perovo (`src/ui/features/pages/AdminPage.jsx`, `src/ui/features/admin/`). No separate admin site.
-- **Profile entry** — `ProfileAdminEntry.jsx` below Control center; **render only when `isAdmin`**; hidden for all other users. Do not add admin to `Navbar.jsx`.
-- **Route guard** — `RequireAdmin` + server RPC `admin_product_overview()` — never expose cross-user data without admin check.
+- **Dashboard** — `/admin` (`AdminPage.jsx`, `src/ui/features/admin/`).
+- **Entry** — `AdminFloatingButton.jsx` (left FAB, `isAdmin` only). See `.cursor/rules/admin-dashboard.mdc`.
+- **Route guard** — `RequireAdmin` + RPC `admin_product_overview()`.
 
 ## Access control
 
@@ -41,5 +42,4 @@ Track modules, onboarding steps, sessions — **not** PAN, bill amounts, SMS con
 
 ## i18n
 
-- Profile: `profileHub.adminLabel`, `profileHub.adminTile`
-- Dashboard: `admin.*` keys — run `npm run sync:i18n` after adding English keys.
+- FAB: `admin.fabAria`, dashboard: `admin.*` — run `npm run sync:i18n` after adding English keys.

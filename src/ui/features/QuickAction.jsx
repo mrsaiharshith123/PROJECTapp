@@ -12,6 +12,7 @@ export function QuickAction({ icon, label, onClick, disabled = false, primary = 
     <div className="ct-icon-tile-wrap">
       <button
         type="button"
+        aria-label={label}
         onClick={onClick}
         disabled={inactive}
         className={cn(

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
@@ -6,7 +6,8 @@ import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
 import CommitmentsBillsTab from "../../features/commitments/CommitmentsBillsTab.jsx";
 import CommitmentsPaymentModal from "../../features/commitments/CommitmentsPaymentModal.jsx";
 import PaymentDeadlineCalendarModal from "../../features/dashboard/PaymentDeadlineCalendarModal.jsx";
-import MoneyOverflowMenu from "../../features/money/MoneyOverflowMenu.jsx";
+import { CtIcon } from "../../icons/CtIcon.jsx";
+import { Button } from "../../primitives/Button.jsx";
 import { useCommitmentsBillData } from "../../features/commitments/useCommitmentsBillData.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
@@ -19,12 +20,13 @@ import {
 import { computeContractPaymentLedger } from "../../../utils/billPaymentProgress.js";
 import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
 import { exportCommitmentsToExcel } from "../../../utils/excelExport.js";
-import { formatInr } from "../../../constants/symbols.js";
+import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 
 const Commitments = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { formatAmount } = usePrivacyAmount();
   const copy = useCopy();
   const [searchParams] = useSearchParams();
   const {
@@ -55,6 +57,7 @@ const Commitments = () => {
   const [smsOpen, setSmsOpen] = useState(false);
   const [celebration, setCelebration] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const billIdHandledRef = useRef(false);
 
   useEffect(() => {
     if (searchParams.get("tab") === "spend") {
@@ -63,13 +66,14 @@ const Commitments = () => {
   }, [searchParams, navigate]);
 
   useEffect(() => {
+    if (billIdHandledRef.current) return;
     const openBillId = location.state?.openBillId;
     if (!openBillId) return;
+    billIdHandledRef.current = true;
     const bill = commitments.find((c) => c.id === openBillId);
-    navigate(location.pathname + location.search, { replace: true, state: {} });
-    if (!bill) return;
-    queueMicrotask(() => setDetailFor(bill));
-  }, [location.state?.openBillId, commitments, location.pathname, location.search, navigate]);
+    window.history.replaceState({}, "", window.location.href);
+    if (bill) queueMicrotask(() => setDetailFor(bill));
+  }, [location.state?.openBillId, commitments]);
 
   const { activeBills, historyBills, counts } = useCommitmentsBillData({
     sortedCommitments,
@@ -120,24 +124,6 @@ const Commitments = () => {
   const cycleAlreadyPaid =
     paymentFor && isCurrentCyclePaid(paymentFor, todayStr, sortedCommitments);
 
-  const overflowItems = [
-    {
-      id: "export",
-      label: t("export.excel.commitments"),
-      onClick: () => exportCommitmentsToExcel(commitments),
-    },
-    {
-      id: "calendar",
-      label: t("home.actionCalendar"),
-      onClick: () => setCalendarOpen(true),
-    },
-    {
-      id: "sms",
-      label: t("bills.detectSms"),
-      onClick: () => setSmsOpen(true),
-    },
-  ];
-
   const totalMonthly = sortedCommitments.reduce((s, c) => s + (Number(c.monthlyAmount || c.emiAmount || 0)), 0);
 
   return (
@@ -146,24 +132,27 @@ const Commitments = () => {
         <div className="pos-hero-glow liability" aria-hidden />
         <p className="ct-caption uppercase tracking-wide">{t("bills.heroLabel")}</p>
         <p className="pos-display-amount" style={{ color: "var(--pos-liab)" }}>
-          {formatInr(totalMonthly)}
+          {formatAmount(totalMonthly)}
         </p>
         <p className="ct-caption mt-1">{t("bills.heroSub", { count: sortedCommitments.length })}</p>
       </div>
 
-      <div className="ct-row-between gap-2 mb-1">
-        <p className="ct-analytics-section-title">{t("money.tab.bills")}</p>
-        <div className="ct-header-actions">
-          <MoneyOverflowMenu items={overflowItems} />
-          <button
-            type="button"
-            className="ct-back-btn ct-bills-add-btn"
-            onClick={() => navigate("/add")}
-            aria-label={t("bills.actionAddBill")}
-          >
-            +
-          </button>
-        </div>
+      <div className="ct-money-import-row">
+        <Button type="button" size="sm" variant="secondary" onClick={() => exportCommitmentsToExcel(commitments)}>
+          <CtIcon name="clipboard-text" size={16} />
+          {t("export.excel.commitments")}
+        </Button>
+        <Button type="button" size="sm" variant="secondary" onClick={() => setCalendarOpen(true)}>
+          <CtIcon name="calendar" size={16} />
+          {t("home.actionCalendar")}
+        </Button>
+        <Button type="button" size="sm" variant="secondary" onClick={() => setSmsOpen(true)}>
+          <CtIcon name="device-mobile" size={16} />
+          {t("bills.detectSms")}
+        </Button>
+        <Button type="button" size="sm" onClick={() => navigate("/add")}>
+          {t("bills.actionAddBill")}
+        </Button>
       </div>
 
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />

@@ -39,6 +39,21 @@ export const LIABILITY_CATEGORIES = [
   { id: "other", labelKey: "netWorth.liability.other", icon: "minus-circle", tier: "liquid" },
 ];
 
+/** Asset categories shown under Instruments (not core Assets tab). */
+export const INSTRUMENT_CATEGORY_IDS = new Set([
+  "insurance",
+  "sip",
+  "fd",
+  "rd",
+  "pf_epf",
+  "stocks",
+  "mutual_fund",
+]);
+
+export const CORE_ASSET_CATEGORIES = ASSET_CATEGORIES.filter((c) => !INSTRUMENT_CATEGORY_IDS.has(c.id));
+
+export const INSTRUMENT_CATEGORIES = ASSET_CATEGORIES.filter((c) => INSTRUMENT_CATEGORY_IDS.has(c.id));
+
 const ASSET_MAP = new Map(ASSET_CATEGORIES.map((c) => [c.id, c]));
 const LIABILITY_MAP = new Map(LIABILITY_CATEGORIES.map((c) => [c.id, c]));
 

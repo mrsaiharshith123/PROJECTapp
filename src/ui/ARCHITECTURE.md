@@ -81,7 +81,7 @@ Charts live on **Analytics only** — one chart at a time with `FilterChips` to 
 | Net worth section | `ProfileNetWorthSection.jsx` | Tabs: Overview · Milestones · Assets · Liabilities; bill-derived read-only rows |
 | Financial life overview | `hub/FinancialLifeOverviewPanel.jsx` | Overview tab — journey snippets and stability context |
 | Milestones panel | `hub/ProfileMilestonesPanel.jsx` | Milestones tab — wins: goals, cleared bills/loans, wealth milestones, payment streaks |
-| Admin entry | `hub/ProfileAdminEntry.jsx` | **Admin only** — Product intelligence → `/admin` |
+| Admin entry | `admin/AdminFloatingButton.jsx` | **Admin only** — left FAB → `/admin` |
 | Settings / backup | `ProfileBackupSection.jsx`, `ProfileCloudSyncSection.jsx`, `ProfileSettingsSheet.jsx` | Appearance, language, income, local export, cloud backup + restore history |
 | Security | `ProfileSecuritySection.jsx` | Settings → Account → Security — sign-in, device, backup times |
 | Lending profile card | `lending/LendingProfileCard.jsx` | Financial-life hero on Lending page — totals, trust, share, privacy eye |

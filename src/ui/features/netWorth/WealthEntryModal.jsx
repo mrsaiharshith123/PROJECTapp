@@ -63,11 +63,12 @@ function isPhysicalCategory(categoryId) {
   return PHYSICAL_ASSET_TYPES.includes(categoryId);
 }
 
-function WealthEntryForm({ kind, entry, defaultCategoryId, onClose, onSave }) {
+function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories, onClose, onSave }) {
   const { t } = useTranslation();
   const [form, setForm] = useState(() => entryToForm(entry, kind, defaultCategoryId));
 
-  const categories = form.kind === "asset" ? ASSET_CATEGORIES : LIABILITY_CATEGORIES;
+  const categories =
+    restrictedCategories ?? (form.kind === "asset" ? ASSET_CATEGORIES : LIABILITY_CATEGORIES);
   const fieldClass = `${inputClassName()} ct-input-tint`;
   const physical = form.kind === "asset" && isPhysicalCategory(form.categoryId);
   const isProperty = PROPERTY_IDS.has(form.categoryId);
@@ -353,7 +354,15 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, onClose, onSave }) {
   );
 }
 
-export default function WealthEntryModal({ open, kind, entry, defaultCategoryId = undefined, onClose, onSave }) {
+export default function WealthEntryModal({
+  open,
+  kind,
+  entry,
+  defaultCategoryId = undefined,
+  restrictedCategories = undefined,
+  onClose,
+  onSave,
+}) {
   const { t } = useTranslation();
   if (!open) return null;
 
@@ -367,6 +376,7 @@ export default function WealthEntryModal({ open, kind, entry, defaultCategoryId 
         kind={kind}
         entry={entry}
         defaultCategoryId={defaultCategoryId}
+        restrictedCategories={restrictedCategories}
         onClose={onClose}
         onSave={onSave}
       />

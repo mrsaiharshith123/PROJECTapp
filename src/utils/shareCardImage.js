@@ -128,9 +128,10 @@ export async function renderScoreShareCardPng(props) {
 /**
  * Share PNG + link via Web Share API, or download + clipboard fallback.
  * @param {Blob} blob
- * @param {{ title: string, url?: string }} opts
+ * @param {{ title?: string, url?: string }} [opts]
  */
-export async function shareScoreCardImage(blob, { title, url = SHARE_URL } = {}) {
+export async function shareScoreCardImage(blob, opts = {}) {
+  const { title = "Perovo", url = SHARE_URL } = opts;
   const file = new File([blob], "perovo-score.png", { type: "image/png" });
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({ title, files: [file], url });

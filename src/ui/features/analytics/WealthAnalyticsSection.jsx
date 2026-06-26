@@ -73,8 +73,8 @@ export default function WealthAnalyticsSection({
 
   return (
     <section className="ct-analytics-section ct-stack" id="wealth-analytics">
-      <div className="ct-hero-card wealth ct-wealth-net-hero">
-        <div className="ct-hero-glow teal" aria-hidden />
+      <div className="pos-hero asset ct-wealth-net-hero">
+        <div className="pos-hero-glow asset" aria-hidden />
         <div className="relative">
           <Heading level={2} className="!text-base !font-semibold">
             {isFamily ? t("analytics.wealth.titleHousehold") : t("analytics.wealth.title")}
@@ -87,7 +87,7 @@ export default function WealthAnalyticsSection({
               <p className="ct-hero-label">
                 {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
               </p>
-              <p className="ct-hero-number ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}</p>
+              <p className="pos-display-amount asset ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}</p>
             </div>
             {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
           </div>
@@ -100,11 +100,11 @@ export default function WealthAnalyticsSection({
       </div>
 
       <div className="ct-grid-2 gap-2">
-        <div className="ct-stat-tile teal">
+        <div className="pos-tile asset">
           <p className="ct-stat-label">{t("netWorth.chart.assets")}</p>
           <p className="ct-stat-value ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalAssets ?? 0)}</p>
         </div>
-        <div className="ct-stat-tile danger">
+        <div className="pos-tile liability">
           <p className="ct-stat-label">{t("netWorth.chart.debt")}</p>
           <p className="ct-stat-value ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalLiabilities ?? 0)}</p>
         </div>
