@@ -49,13 +49,13 @@ function run(label, command, args, opts = {}) {
   }
 }
 
-function git(args) {
+function git(args, extraEnv = {}) {
   console.log(`\n▶ git ${args[0]}`);
   const r = spawnSync("git", args, {
     cwd: ROOT,
     stdio: "inherit",
     shell: false,
-    env: envWithFreshPath(),
+    env: envWithFreshPath({ ...process.env, ...extraEnv }),
   });
   if (r.error) {
     console.error(r.error.message);
@@ -132,7 +132,8 @@ console.log("Perovo — ship (commit → push → APK → GitHub Release)\n");
 if (!releaseOnly) {
   git(["add", "-A"]);
   git(["status", "--short"]);
-  git(["commit", "-m", message]);
+  // Skip auto-gc after commit — OneDrive locks .git/objects on Windows and prompts interactively.
+  git(["-c", "gc.auto=0", "commit", "-m", message]);
 
   const branch = getBranch();
   if (!branch) {
