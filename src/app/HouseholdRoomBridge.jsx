@@ -23,6 +23,7 @@ export default function HouseholdRoomBridge() {
 
     const sessionKey = `${user.id}:family`;
     if (syncedRef.current === sessionKey) return;
+    syncedRef.current = sessionKey;
 
     let cancelled = false;
 

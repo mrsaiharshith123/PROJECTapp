@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useOnceFromState } from "../../../hooks/useOnceFromState.js";
 import { InfoTip, PageShell, Body, Caption, Heading, Button } from "../../";
 import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
 import { ViewLink } from "../../patterns/ViewLink.jsx";
@@ -51,7 +52,6 @@ function AnalyticsSectionHead({ title, subtitle, tone = "indigo" }) {
 
 const Analytics = () => {
   const { t } = useTranslation();
-  const location = useLocation();
   const navigate = useNavigate();
   const {
     commitments,
@@ -75,20 +75,10 @@ const Analytics = () => {
   const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
   const isFamily = isSalariedFamily(settings);
-  const [householdView, setHouseholdView] = useState(() =>
-    location.state?.openHousehold ? "household" : "self",
-  );
-  const analyticsView = householdView === "household" ? "household" : "self";
+  const [householdView, setHouseholdView] = useState("self");
 
-  useEffect(() => {
-    if (!location.state?.openHousehold) return;
-    // Use setTimeout to avoid synchronous navigate-in-effect infinite loop
-    const id = setTimeout(() => {
-      navigate(location.pathname, { replace: true, state: {} });
-    }, 0);
-    return () => clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useOnceFromState("openHousehold", () => setHouseholdView("household"));
+  const analyticsView = householdView === "household" ? "household" : "self";
   const profileScope = resolveAnalyticsProfileScope(settings, isFamily ? analyticsView : "self");
   const today = todayStr || todayYmd();
 

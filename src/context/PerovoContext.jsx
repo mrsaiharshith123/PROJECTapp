@@ -158,6 +158,7 @@ export function PerovoProvider({ children }) {
   const persistSettings = useCallback((updater) => {
     setSettings((prev) => {
       const merged = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
+      if (merged === prev) return prev;
       const next = { ...merged, updatedAt: new Date().toISOString() };
       try {
         localStorage.setItem("perovo_settings", JSON.stringify(next));
@@ -206,24 +207,29 @@ export function PerovoProvider({ children }) {
     });
   }, []);
 
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
   const todayStr = todayYmd();
 
   useEffect(() => {
     const monthKey = format(new Date(), "yyyy-MM");
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- append at most one snapshot per calendar month
+    const s = settingsRef.current;
     persistSnapshots((prev) => {
-      if (prev.some((s) => s.month === monthKey)) return prev;
-      const scoped = filterByProfile(commitments, settings.activeProfileId || "default");
+      if (prev.some((snap) => snap.month === monthKey)) return prev;
+      const scoped = filterByProfile(commitments, s.activeProfileId || "default");
       const snap = buildMonthlySnapshot(
         monthKey,
         scoped,
-        settings.monthlyIncome,
+        s.monthlyIncome,
         (c) => getEffectiveStatus(c, todayStr),
         prev
       );
       return [...prev, snap].sort((a, b) => a.month.localeCompare(b.month)).slice(-48);
     });
-  }, [commitments, settings.monthlyIncome, settings.activeProfileId, todayStr, persistSnapshots]);
+  }, [commitments, todayStr, persistSnapshots]);
 
   const crud = usePerovoCrud({
     commitments,
@@ -239,31 +245,48 @@ export function PerovoProvider({ children }) {
   });
 
   const { updateSettings, updateCommitment } = crud;
+  const updateCommitmentRef = useRef(updateCommitment);
+  useEffect(() => {
+    updateCommitmentRef.current = updateCommitment;
+  }, [updateCommitment]);
 
   useEffect(() => {
     registerDevSubscriptionTools({ updateSettings, userId: user?.id ?? null });
     return () => unregisterDevSubscriptionTools();
   }, [updateSettings, user?.id]);
 
+  const goldFetchRef = useRef(false);
   useEffect(() => {
-    const last = settings.goldRateLastFetched ? new Date(settings.goldRateLastFetched).getTime() : 0;
+    if (goldFetchRef.current) return;
+    const s = settingsRef.current;
+    const last = s.goldRateLastFetched ? new Date(s.goldRateLastFetched).getTime() : 0;
     const stale = !last || Date.now() - last > 24 * 60 * 60 * 1000;
-    if (!stale) return;
+    if (!stale) {
+      goldFetchRef.current = true;
+      return;
+    }
+    goldFetchRef.current = true;
     let cancelled = false;
     fetchGoldPricePerGram().then((result) => {
       if (cancelled || !result) return;
-      if (
-        settings.goldRatePerGram === result.perGram &&
-        settings.goldRateLastFetched === result.date
-      ) {
-        return;
-      }
-      updateSettings({ goldRatePerGram: result.perGram, goldRateLastFetched: result.date });
+      persistSettings((prev) => {
+        if (
+          prev.goldRatePerGram === result.perGram &&
+          prev.goldRateLastFetched === result.date
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          goldRatePerGram: result.perGram,
+          goldRateLastFetched: result.date,
+        };
+      });
     });
     return () => {
       cancelled = true;
     };
-  }, [settings.goldRateLastFetched, settings.goldRatePerGram, updateSettings]);
+  }, [persistSettings]);
 
   const commitmentsRef = useRef(commitments);
   useEffect(() => {
@@ -306,7 +329,7 @@ export function PerovoProvider({ children }) {
           if (fetched === todayStr) continue;
           const nav = await fetchFundNav(c.schemeCode);
           if (cancelled || !nav) continue;
-          updateCommitment(c.id, { currentNav: nav.nav, navFetchedAt: todayStr });
+          updateCommitmentRef.current(c.id, { currentNav: nav.nav, navFetchedAt: todayStr });
         }
       } finally {
         if (!cancelled) navRefreshRef.current.inFlight = false;
@@ -317,11 +340,11 @@ export function PerovoProvider({ children }) {
       cancelled = true;
       navRefreshRef.current.inFlight = false;
     };
-  }, [navStaleSig, todayStr, updateCommitment]);
+  }, [navStaleSig, todayStr]);
 
   const getEffectiveStatusForCtx = useCallback(
-    (c) => getEffectiveStatus(c, todayStr, commitments),
-    [todayStr, commitments],
+    (c) => getEffectiveStatus(c, todayStr, commitmentsRef.current),
+    [todayStr],
   );
 
   const getEffectiveLendingStatusForCtx = useCallback(
@@ -351,11 +374,11 @@ export function PerovoProvider({ children }) {
     (payload, options = {}) => {
       const merged = mergeImportedAppState(
         {
-          commitments,
+          commitments: commitmentsRef.current,
           lendings,
           goals,
           dailySpends,
-          settings,
+          settings: settingsRef.current,
           monthlySnapshots,
         },
         payload,
@@ -372,11 +395,9 @@ export function PerovoProvider({ children }) {
       return merged.summary;
     },
     [
-      commitments,
       lendings,
       goals,
       dailySpends,
-      settings,
       monthlySnapshots,
       persistCommitments,
       persistLendings,

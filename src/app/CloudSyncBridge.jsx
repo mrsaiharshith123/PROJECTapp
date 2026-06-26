@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import { DATA_CHANGED_EVENT } from "../storage/events.js";
@@ -18,6 +18,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export default function CloudSyncBridge() {
   const { user, isLoggedIn, isReady } = useAuth();
   const track = usePerovo();
+  const importAppDataRef = useRef(track.importAppData);
+  useEffect(() => {
+    importAppDataRef.current = track.importAppData;
+  }, [track.importAppData]);
 
   useEffect(() => {
     if (!isReady || !isLoggedIn || !user?.id) {
@@ -30,7 +34,7 @@ export default function CloudSyncBridge() {
     const ctx = {
       userId: user.id,
       getState: loadFullAppStateForSync,
-      applySnapshot: track.importAppData,
+      applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
     };
 
     tryAutoRestoreFromCloud(ctx).catch(() => {
@@ -64,7 +68,6 @@ export default function CloudSyncBridge() {
     isReady,
     isLoggedIn,
     user?.id,
-    track.importAppData,
     track.settings.cloudSyncEnabled,
     track.settings.subscriptionTier,
   ]);

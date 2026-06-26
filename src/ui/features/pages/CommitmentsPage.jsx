@@ -59,11 +59,14 @@ const Commitments = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const billIdHandledRef = useRef(false);
 
+  const spendRedirectRef = useRef(false);
   useEffect(() => {
-    if (searchParams.get("tab") === "spend") {
-      navigate("/money/spends", { replace: true });
-    }
-  }, [searchParams, navigate]);
+    if (spendRedirectRef.current) return;
+    if (searchParams.get("tab") !== "spend") return;
+    spendRedirectRef.current = true;
+    navigate("/money/spends", { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (billIdHandledRef.current) return;

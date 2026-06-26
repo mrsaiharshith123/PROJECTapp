@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useEffect } from "react";
 import { normalizeCommitmentStatusForSave, getEffectiveStatus } from "../utils/commitmentStatus.js";
 import { applyPaymentToCommitment, totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { advanceRecurringCommitment } from "../utils/commitmentRecurring.js";
@@ -53,25 +53,42 @@ export function usePerovoCrud({
   persistDailySpends,
   setSupplementalNotifications,
 }) {
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  const userIdRef = useRef(userId);
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
+
+  const commitmentsRef = useRef(commitments);
+  useEffect(() => {
+    commitmentsRef.current = commitments;
+  }, [commitments]);
+
   const addCommitment = useCallback(
     (raw) => {
       const now = Date.now();
+      const currentSettings = settingsRef.current;
+      const currentUserId = userIdRef.current;
       const c = normalizeCommitment({
         ...raw,
         id: raw.id ?? now,
-        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        profileId: raw.profileId ?? currentSettings.activeProfileId ?? "default",
         createdAt: now,
         updatedAt: now,
       });
       persistCommitments((prev) => [...prev, c]);
       trackEvent(EVENTS.COMMITMENT_ADDED, { category: c.category });
-      emitRoomEvent(settings, userId, "bill_added", {
+      emitRoomEvent(currentSettings, currentUserId, "bill_added", {
         name: c.name,
         amount: c.amount,
         category: c.category,
       });
     },
-    [persistCommitments, settings, userId]
+    [persistCommitments]
   );
 
   const updateCommitment = useCallback(
@@ -113,7 +130,7 @@ export function usePerovoCrud({
             goalCredit = { goalId: updated.goalId, amount: applied };
           }
           if (applied > 0) {
-            emitRoomEvent(settings, userId, "bill_paid", {
+            emitRoomEvent(settingsRef.current, userIdRef.current, "bill_paid", {
               name: updated.name,
               amount: applied,
             });
@@ -139,7 +156,7 @@ export function usePerovoCrud({
         );
       }
     },
-    [persistCommitments, persistGoals, todayStr, settings, userId]
+    [persistCommitments, persistGoals, todayStr]
   );
 
   const removeCommitmentPayment = useCallback(
@@ -166,7 +183,7 @@ export function usePerovoCrud({
       const l = normalizeLending({
         ...raw,
         id: raw.id ?? now,
-        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        profileId: raw.profileId ?? settingsRef.current.activeProfileId ?? "default",
         createdAt: now,
         updatedAt: now,
         totalAmount: total,
@@ -177,7 +194,7 @@ export function usePerovoCrud({
       persistLendings((prev) => [...prev, l]);
       trackEvent(EVENTS.LENDING_CREATED, { type: l.type });
     },
-    [persistLendings, settings.activeProfileId]
+    [persistLendings]
   );
 
   const updateLending = useCallback(
@@ -255,7 +272,7 @@ export function usePerovoCrud({
 
   const addGoal = useCallback(
     (raw) => {
-      const scoped = filterByProfile(commitments, settings.activeProfileId || "default");
+      const scoped = filterByProfile(commitmentsRef.current, settingsRef.current.activeProfileId || "default");
       const openSumScoped = scoped.reduce((s, c) => {
         if (getEffectiveStatus(c, todayStr) === "paid") return s;
         return s + Math.max(0, Number(c.remainingAmount ?? 0));
@@ -263,12 +280,12 @@ export function usePerovoCrud({
       const g = normalizeGoal({
         ...raw,
         id: raw.id ?? Date.now(),
-        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        profileId: raw.profileId ?? settingsRef.current.activeProfileId ?? "default",
         baselineOpenRemaining: raw.baselineOpenRemaining ?? openSumScoped,
       });
       persistGoals((prev) => [...prev, g]);
     },
-    [commitments, settings.activeProfileId, persistGoals, todayStr]
+    [persistGoals, todayStr]
   );
 
   const updateGoal = useCallback(
@@ -300,12 +317,12 @@ export function usePerovoCrud({
     (raw) => {
       const spend = normalizeDailySpend({
         ...raw,
-        profileId: raw.profileId ?? settings.activeProfileId ?? "default",
+        profileId: raw.profileId ?? settingsRef.current.activeProfileId ?? "default",
         createdAt: Date.now(),
       });
       persistDailySpends((prev) => [spend, ...prev].slice(0, 500));
     },
-    [persistDailySpends, settings.activeProfileId]
+    [persistDailySpends]
   );
 
   const deleteDailySpend = useCallback(

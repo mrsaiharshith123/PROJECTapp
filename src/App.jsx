@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
 import { isCustomerModeEnabled } from "./utils/embeddedApp.js";
@@ -181,30 +181,39 @@ function AppShell() {
   const { settings, updateSettings } = usePerovo();
   const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
   const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
+  const authSeededRef = useRef(false);
+  const settingsRef = useRef(settings);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   useEffect(() => {
-    if (!isLoggedIn || !user?.id) return;
-    const meta = user.user_metadata || {};
+    if (!isLoggedIn || !user?.id || authSeededRef.current) return;
     const key = `perovo_auth_seeded_${user.id}`;
-    if (localStorage.getItem(key) === "1") return;
+    if (localStorage.getItem(key) === "1") {
+      authSeededRef.current = true;
+      return;
+    }
+    const s = settingsRef.current;
+    const meta = user.user_metadata || {};
     const patch = {};
-    if (!settings.displayName && meta.display_name) patch.displayName = String(meta.display_name);
-    if (!settings.phoneNumber && meta.phone) patch.phoneNumber = normalizeIndianPhone(meta.phone);
-    if (profile?.phone && !settings.phoneNumber) patch.phoneNumber = normalizeIndianPhone(profile.phone);
-    if ((!settings.monthlyIncome || Number(settings.monthlyIncome) <= 0) && Number(meta.monthly_income) > 0) {
+    if (!s.displayName && meta.display_name) patch.displayName = String(meta.display_name);
+    if (!s.phoneNumber && meta.phone) patch.phoneNumber = normalizeIndianPhone(meta.phone);
+    if (profile?.phone && !s.phoneNumber) patch.phoneNumber = normalizeIndianPhone(profile.phone);
+    if ((!s.monthlyIncome || Number(s.monthlyIncome) <= 0) && Number(meta.monthly_income) > 0) {
       patch.monthlyIncome = Number(meta.monthly_income);
     }
     if (meta.user_mode) patch.userMode = String(meta.user_mode);
-    if (meta.household_scope && settings.householdScope !== "family" && settings.householdScope !== "single") {
+    if (meta.household_scope && s.householdScope !== "family" && s.householdScope !== "single") {
       patch.householdScope = meta.household_scope === "family" ? "family" : "single";
     }
-    if (profile?.onboarding_complete === true && !settings.onboardingComplete) {
+    if (profile?.onboarding_complete === true && !s.onboardingComplete) {
       patch.onboardingComplete = true;
     }
-    if (!profile) patch.onboardingComplete = false;
     if (Object.keys(patch).length > 0) updateSettings(patch);
     localStorage.setItem(key, "1");
-  }, [isLoggedIn, user, profile, settings, updateSettings]);
+    authSeededRef.current = true;
+  }, [isLoggedIn, user, profile, updateSettings]);
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id || !setupComplete) return;
@@ -215,17 +224,17 @@ function AppShell() {
       return;
     }
     saveProfile({
-      username: settings.displayName || profile?.username || "",
-      display_name: settings.displayName || "",
-      phone: settings.phoneNumber || profile?.phone || "",
-      user_mode: settings.userMode || "salaried",
-      household_scope: settings.householdScope || "single",
-      monthly_income: Number(settings.monthlyIncome) || 0,
+      username: settingsRef.current.displayName || profile?.username || "",
+      display_name: settingsRef.current.displayName || "",
+      phone: settingsRef.current.phoneNumber || profile?.phone || "",
+      user_mode: settingsRef.current.userMode || "salaried",
+      household_scope: settingsRef.current.householdScope || "single",
+      monthly_income: Number(settingsRef.current.monthlyIncome) || 0,
       onboarding_complete: true,
       pan: profile?.pan || "",
       pan_verified: Boolean(profile?.pan_verified),
     }).then(() => localStorage.setItem(key, "1")).catch(() => {});
-  }, [isLoggedIn, user, profile, settings, saveProfile, setupComplete]);
+  }, [isLoggedIn, user?.id, profile, saveProfile, setupComplete]);
 
   if (!isReady || (isLoggedIn && !profileResolved)) return <BootShell />;
   if (!isLoggedIn) return <AuthGateShell />;

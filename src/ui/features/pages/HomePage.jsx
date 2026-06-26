@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useOnceFromState } from "../../../hooks/useOnceFromState.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
@@ -42,22 +43,16 @@ function HomeAvatarButton({ settings }) {
 
 /** @route / — Home dashboard */
 const Home = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { settings, updateSettings } = usePerovo();
   const { notificationUnread } = useCommitIntel();
   const [showNotifications, setShowNotifications] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
-  const [tourActive, setTourActive] = useState(
-    () => Boolean(location.state?.replayGuide || location.state?.startGuide),
-  );
+  const [tourActive, setTourActive] = useState(false);
   const [tourDismissed, setTourDismissed] = useState(false);
   const tourOpen = tourActive && !tourDismissed;
 
-  useEffect(() => {
-    if (!location.state?.replayGuide && !location.state?.startGuide) return;
-    navigate(location.pathname + location.hash, { replace: true, state: {} });
-  }, [location.state?.replayGuide, location.state?.startGuide, location.pathname, location.hash, navigate]);
+  useOnceFromState("replayGuide", () => setTourActive(true));
+  useOnceFromState("startGuide", () => setTourActive(true));
 
   const completeTour = () => {
     updateSettings({ appGuideComplete: true });

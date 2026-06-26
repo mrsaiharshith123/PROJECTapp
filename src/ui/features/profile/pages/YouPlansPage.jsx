@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PlansModal from "../PlansModal.jsx";
 import YouSubPageShell from "./YouSubPageShell.jsx";
@@ -7,8 +7,11 @@ export default function YouPlansPage() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(true);
 
+  const closedRef = useRef(false);
   useEffect(() => {
-    if (!open) navigate("/profile", { replace: true });
+    if (open || closedRef.current) return;
+    closedRef.current = true;
+    navigate("/you", { replace: true });
   }, [open, navigate]);
 
   return (

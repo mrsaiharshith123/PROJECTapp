@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useOnceFromState } from "../../../hooks/useOnceFromState.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
@@ -40,30 +41,28 @@ function resolveYouRoute(fromNav) {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isLoggedIn, signOut, user } = useAuth();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
   const { settings, updateSettings } = usePerovo();
   const { t } = useTranslation();
   const [signingOut, setSigningOut] = useState(false);
-  const [openGoalSheet] = useState(() => Boolean(location.state?.openGoal));
+  const [openGoalSheet, setOpenGoalSheet] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  useEffect(() => {
-    if (!location.state?.openGoal) return;
-    document.getElementById("profile-goals")?.scrollIntoView({ behavior: "smooth" });
-    navigate(location.pathname, { replace: true, state: {} });
-  }, [location.state?.openGoal, location.pathname, navigate]);
+  useOnceFromState("openGoal", () => {
+    setOpenGoalSheet(true);
+    setTimeout(() => {
+      document.getElementById("profile-goals")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  });
 
-  useEffect(() => {
-    const route = resolveYouRoute(location.state?.openSection);
-    if (!route) return;
-    navigate(location.pathname, { replace: true, state: {} });
-    navigate(route);
-  }, [location.state?.openSection, location.pathname, navigate]);
+  useOnceFromState("openSection", (section) => {
+    const route = resolveYouRoute(typeof section === "string" ? section : undefined);
+    if (route) navigate(route);
+  });
 
   const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
 
