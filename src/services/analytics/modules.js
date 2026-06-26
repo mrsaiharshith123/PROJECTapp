@@ -1,8 +1,10 @@
 /** Map routes to modular OS labels for analytics. */
 const ROUTE_MODULES = {
   "/": "home",
-  "/money/bills": "commitments",
+  "/ledger/bills": "commitments",
+  "/ledger/spends": "spends",
   "/money/lending": "lending",
+  "/insights": "stability_reports",
   "/money/insights": "stability_reports",
   "/commitments": "commitments",
   "/add": "add_bill",

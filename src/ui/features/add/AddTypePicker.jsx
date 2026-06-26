@@ -24,13 +24,6 @@ const CATEGORIES = [
     colorClass: "instrument",
   },
   {
-    id: "agreement",
-    icon: "handshake",
-    labelKey: "add.category.agreement",
-    subKey: "add.category.agreementSub",
-    colorClass: "agreement",
-  },
-  {
     id: "goal",
     icon: "target",
     labelKey: "add.category.goal",

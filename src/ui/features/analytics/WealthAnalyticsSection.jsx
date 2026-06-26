@@ -27,6 +27,7 @@ export default function WealthAnalyticsSection({
   showSimulation = false,
   showPressureAsLink = false,
   ledgerSlot = null,
+  embedded = false,
 }) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
@@ -72,34 +73,89 @@ export default function WealthAnalyticsSection({
       : null;
 
   return (
-    <section className="ct-analytics-section ct-stack" id="wealth-analytics">
-      <div className="pos-hero asset ct-wealth-net-hero">
-        <div className="pos-hero-glow asset" aria-hidden />
-        <div className="relative">
-          <Heading level={2} className="!text-base !font-semibold">
-            {isFamily ? t("analytics.wealth.titleHousehold") : t("analytics.wealth.title")}
-          </Heading>
-          <Caption className="block mt-1">
-            {isFamily ? t("analytics.wealth.subtitleHousehold") : t("analytics.wealth.subtitle")}
-          </Caption>
-          <div className="ct-row-between items-end mt-4">
-            <div>
-              <p className="ct-hero-label">
-                {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
-              </p>
-              <p className="pos-display-amount asset ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}</p>
+    <section className={embedded ? "ct-stack" : "ct-analytics-section ct-stack"} id={embedded ? undefined : "wealth-analytics"}>
+      {!embedded ? (
+        <div
+          style={{
+            margin: "0 16px 12px",
+            borderRadius: 20,
+            padding: "18px 18px 16px",
+            border: "0.5px solid var(--pos-asset-border)",
+            background: "linear-gradient(150deg,rgba(16,185,129,0.12),rgba(13,14,24,0.95) 50%)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: -20,
+              right: -10,
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              pointerEvents: "none",
+              background: "radial-gradient(circle,rgba(16,185,129,0.2),transparent 70%)",
+            }}
+          />
+          <div className="relative">
+            <Heading level={2} className="!text-base !font-semibold">
+              {isFamily ? t("analytics.wealth.titleHousehold") : t("analytics.wealth.title")}
+            </Heading>
+            <Caption className="block mt-1">
+              {isFamily ? t("analytics.wealth.subtitleHousehold") : t("analytics.wealth.subtitle")}
+            </Caption>
+            <div className="ct-row-between items-end mt-4">
+              <div>
+                <p className="ct-hero-label">
+                  {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+                </p>
+                <p
+                  className="ct-numeral"
+                  style={{
+                    fontSize: "clamp(26px,7vw,36px)",
+                    fontWeight: 700,
+                    color: "#fcd34d",
+                    fontVariantNumeric: "tabular-nums",
+                    margin: "6px 0 2px",
+                  }}
+                >
+                  {privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}
+                </p>
+              </div>
+              {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
             </div>
-            {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
+            {!privacyMode && sparkSeries.length > 1 ? (
+              <div className="mt-3">
+                <NetWorthGrowthSparkline data={sparkSeries} />
+              </div>
+            ) : null}
           </div>
-          {!privacyMode && sparkSeries.length > 1 ? (
-            <div className="mt-3">
-              <NetWorthGrowthSparkline data={sparkSeries} />
-            </div>
-          ) : null}
         </div>
-      </div>
+      ) : (
+        <div className="ct-row-between items-end">
+          <div>
+            <p className="ct-hero-label">
+              {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+            </p>
+            <p
+              className="ct-numeral"
+              style={{
+                fontSize: "clamp(22px,6vw,30px)",
+                fontWeight: 700,
+                color: "#fcd34d",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}
+            </p>
+          </div>
+          {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
+        </div>
+      )}
 
-      <div className="ct-grid-2 gap-2">
+      <div className={`ct-grid-2 gap-2${embedded ? "" : ""}`}>
         <div className="pos-tile asset">
           <p className="ct-stat-label">{t("netWorth.chart.assets")}</p>
           <p className="ct-stat-value ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalAssets ?? 0)}</p>
@@ -110,6 +166,12 @@ export default function WealthAnalyticsSection({
         </div>
       </div>
 
+      {embedded && !privacyMode && sparkSeries.length > 1 ? (
+        <NetWorthGrowthSparkline data={sparkSeries} />
+      ) : null}
+
+      {!embedded ? (
+        <>
       <AllocationCharts intel={intel} privacyMode={privacyMode} />
 
       {ledgerSlot}
@@ -140,6 +202,8 @@ export default function WealthAnalyticsSection({
         <PressureWealthPanel pressure={intel.pressure} cashFlow={intel.cashFlow} privacyMode={privacyMode} />
       )}
       {showSimulation ? <SimulationPanel simulationBase={intel.simulationBase} /> : null}
+        </>
+      ) : null}
     </section>
   );
 }

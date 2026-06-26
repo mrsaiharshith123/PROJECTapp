@@ -2,8 +2,12 @@ import { Heading, Caption } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 /** Monthly bills, paycheck, and spend charts — grouped for clarity on Analytics. */
-export default function MonthlySpendAnalyticsSection({ children }) {
+export default function MonthlySpendAnalyticsSection({ children, embedded = false }) {
   const { t } = useTranslation();
+
+  if (embedded) {
+    return <div className="ct-stack">{children}</div>;
+  }
 
   return (
     <section className="ct-analytics-section ct-stack" id="monthly-spend-analytics">

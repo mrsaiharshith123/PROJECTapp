@@ -13,23 +13,39 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
   const owe = Math.max(0, Number(totals?.borrowedRemaining ?? totals?.borrowedOutstanding) || 0);
 
   return (
-    <div className="pos-hero agreement">
-      <div className="pos-hero-glow agreement" aria-hidden />
-      <div className="ct-money-lending-split">
+    <div
+      className="pos-hero agreement"
+      style={{
+        margin: "0 16px 12px",
+        borderRadius: 20,
+        padding: "18px 18px 16px",
+        border: "0.5px solid var(--pos-agr-border)",
+        background: "linear-gradient(150deg,rgba(99,102,241,0.12),rgba(13,14,24,0.95) 50%)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -20,
+          right: -10,
+          width: 100,
+          height: 100,
+          borderRadius: "50%",
+          pointerEvents: "none",
+          background: "radial-gradient(circle,rgba(99,102,241,0.2),transparent 70%)",
+        }}
+      />
+      <div className="ct-money-lending-split relative">
         <div>
           <p className="ct-stat-label">{t("money.lending.youAreOwed")}</p>
-          <p className="pos-display-amount" style={{ fontSize: "clamp(20px, 5vw, 26px)", color: "var(--pos-agr)" }}>
-            {formatAmount(owed)}
-          </p>
+          <p style={{ color: "var(--pos-agr)", fontSize: 22, fontWeight: 700 }}>{formatAmount(owed)}</p>
         </div>
         <div>
           <p className="ct-stat-label">{t("money.lending.youOwe")}</p>
-          <p
-            className="pos-display-amount liability"
-            style={{ fontSize: "clamp(20px, 5vw, 26px)" }}
-          >
-            {formatAmount(owe)}
-          </p>
+          <p style={{ color: "#fbbf24", fontSize: 22, fontWeight: 700 }}>{formatAmount(owe)}</p>
         </div>
       </div>
       {trustScore != null ? (

@@ -42,7 +42,7 @@ export default function PlanGrowthSection({ initialTool = null }) {
 
   const openTool = (id) => {
     if (id === "cibil") {
-      navigate("/score-detail");
+      navigate("/insights/score");
       return;
     }
     setActiveTool(id);

@@ -14,6 +14,7 @@ import AgreementCard from "../agreements/AgreementCard.jsx";
 import AgreementDocumentsList from "../agreements/AgreementDocumentsList.jsx";
 import AgreementsHeroSummary from "../agreements/AgreementsHeroSummary.jsx";
 import AgreementsHeaderActions from "../agreements/AgreementsHeaderActions.jsx";
+import LendingAcceptCodeModal from "../lending/LendingAcceptCodeModal.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -34,11 +35,10 @@ const emptyLendingForm = () => ({
 export default function AgreementsPage() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { lendings, settings, todayStr, addLending, updateLending, addLendingPayment } =
+  const { lendings, settings, todayStr, updateLending, addLendingPayment } =
     usePerovo();
 
   const [listTab, setListTab] = useState(/** @type {"lent" | "borrowed" | "documents"} */ ("lent"));
-  const [showAdd, setShowAdd] = useState(() => Boolean(location.state?.openAdd));
   const [editing, setEditing] = useState(null);
   const [paymentFor, setPaymentFor] = useState(null);
   const [form, setForm] = useState(emptyLendingForm);
@@ -46,7 +46,10 @@ export default function AgreementsPage() {
   const [payDate, setPayDate] = useState(() => todayYmd());
   const [formErrors, setFormErrors] = useState({});
   const [detailFor, setDetailFor] = useState(null);
-  const [showRequest, setShowRequest] = useState(false);
+  const [showRequest, setShowRequest] = useState(
+    () => Boolean(location.state?.openRequest || location.state?.openAdd),
+  );
+  const [showAcceptCode, setShowAcceptCode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const { borrowedList, lentList, totals, trustScore, trustByEntryId } = useLendingLists(lendings, searchQuery);
@@ -60,20 +63,15 @@ export default function AgreementsPage() {
     setFormErrors({});
   };
 
-  const openAdd = useCallback(() => {
-    setForm(emptyLendingForm());
-    setFormErrors({});
-    setShowAdd(true);
-  }, []);
-
   const openRequest = useCallback(() => setShowRequest(true), []);
+  const openEnterCode = useCallback(() => setShowAcceptCode(true), []);
 
   const detailLending = useMemo(
     () => (detailFor ? lendings.find((l) => l.id === detailFor.id) || detailFor : null),
     [detailFor, lendings],
   );
 
-  const anyDialogOpen = Boolean(showAdd || editing || showRequest || detailLending || paymentFor);
+  const anyDialogOpen = Boolean(editing || showRequest || showAcceptCode || detailLending || paymentFor);
 
   const validateForm = () => {
     const errs = {};
@@ -105,19 +103,6 @@ export default function AgreementsPage() {
         repaymentType: form.repaymentType,
       },
     });
-
-  const submitAdd = () => {
-    const errs = validateForm();
-    if (Object.keys(errs).length) {
-      setFormErrors(errs);
-      return;
-    }
-    const gate = canAddLendingRecord(settings, lendings);
-    if (!gate.ok) return;
-    addLending(lendingPayload());
-    resetForm();
-    setShowAdd(false);
-  };
 
   const submitEdit = () => {
     if (!editing) return;
@@ -155,11 +140,6 @@ export default function AgreementsPage() {
 
   const fieldClass = (field) => `${fieldInputClass(Boolean(formErrors[field]))} ct-input-tint`;
 
-  const closeAdd = () => {
-    setShowAdd(false);
-    resetForm();
-  };
-
   const closeEdit = () => {
     setEditing(null);
     resetForm();
@@ -180,7 +160,11 @@ export default function AgreementsPage() {
         />
       )}
 
-      <AgreementsHeaderActions lendings={lendings} onAdd={openAdd} onRequestMoney={openRequest} />
+      <AgreementsHeaderActions
+        lendings={lendings}
+        onRequestMoney={openRequest}
+        onEnterCode={openEnterCode}
+      />
 
       {isEmpty ? (
         <div className="ct-lending-empty-warm">
@@ -189,8 +173,8 @@ export default function AgreementsPage() {
           </div>
           <p className="ct-lending-empty-title">{t("lending.emptyWarmTitle")}</p>
           <p className="ct-lending-empty-body">{t("lending.emptyWarmBody")}</p>
-          <Button type="button" className="mt-3" onClick={openAdd}>
-            {t("agreements.recordCta")}
+          <Button type="button" className="mt-3" onClick={openRequest}>
+            {t("lending.requestMoney")}
           </Button>
         </div>
       ) : (
@@ -259,8 +243,8 @@ export default function AgreementsPage() {
 
       {anyDialogOpen ? (
         <LendingPageDialogs
-          showAdd={showAdd}
-          onCloseAdd={closeAdd}
+          showAdd={false}
+          onCloseAdd={() => {}}
           editing={editing}
           onCloseEdit={closeEdit}
           showRequest={showRequest}
@@ -278,12 +262,13 @@ export default function AgreementsPage() {
           onPayAmountChange={setPayAmount}
           payDate={payDate}
           onPayDateChange={setPayDate}
-          onSubmitAdd={submitAdd}
+          onSubmitAdd={() => {}}
           onSubmitEdit={submitEdit}
           onSubmitPayment={submitPayment}
           onPayRemaining={payRemaining}
         />
       ) : null}
+      {showAcceptCode ? <LendingAcceptCodeModal onClose={() => setShowAcceptCode(false)} /> : null}
     </PageShell>
   );
 }

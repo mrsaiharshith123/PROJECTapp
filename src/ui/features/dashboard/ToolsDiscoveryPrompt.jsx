@@ -10,11 +10,19 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 const SHOW_DELAY_MS = 700;
 const SCROLL_IDLE_MS = 220;
 
+function getNavAndToastReservePx() {
+  const root = document.documentElement;
+  const navH = parseFloat(getComputedStyle(root).getPropertyValue("--ct-nav-h")) || 64;
+  return navH + 72;
+}
+
+/** Hide the floating nudge once Quick tools enters the visible area above the nav. */
 function isToolsSectionReached() {
   const el = document.getElementById("dashboard-tools");
   if (!el) return false;
   const rect = el.getBoundingClientRect();
-  return rect.top < window.innerHeight * 0.55;
+  const visibleBottom = window.innerHeight - getNavAndToastReservePx();
+  return rect.top < visibleBottom && rect.bottom > 0;
 }
 
 function ToolsDiscoveryCard({ variant, onGo, onDismiss, t }) {

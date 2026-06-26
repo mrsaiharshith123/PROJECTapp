@@ -101,7 +101,7 @@ export default function HomeNeedsAttention() {
         statusText: t("home.attention.overdueDays", { days: daysLate }),
         overdue: true,
         upcoming: false,
-        to: "/money/bills",
+        to: "/ledger/bills",
         icon: "warning-circle",
       });
     }
@@ -144,7 +144,7 @@ export default function HomeNeedsAttention() {
             : t("home.attention.dueInDays", { days }),
         overdue: false,
         upcoming: false,
-        to: "/money/bills",
+        to: "/ledger/bills",
         icon: "clock",
       });
     }

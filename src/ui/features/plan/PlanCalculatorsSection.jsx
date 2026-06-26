@@ -4,11 +4,13 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import PlanToolSheet from "./PlanToolSheet.jsx";
 import { renderPlanToolPanel } from "./planToolPanels.jsx";
+import MathCalculatorModal from "../modals/MathCalculatorModal.jsx";
 
 const CALCULATOR_TOOLS = [
   { id: "tax", icon: "currency-inr", accent: "indigo", titleKey: "plan.tools.tax", subtitleKey: "plan.tools.taxSub" },
   { id: "loan", icon: "chart-line-down", accent: "teal", titleKey: "plan.tools.loanPayoff", subtitleKey: "plan.tools.loanPayoffSub" },
   { id: "safety", icon: "shield", accent: "teal", titleKey: "plan.tools.safety", subtitleKey: "plan.tools.safetySub" },
+  { id: "math", icon: "calculator", accent: "violet", titleKey: "tools.mathCalc.short", subtitleKey: "tools.mathCalc.sub" },
   { id: "expense", icon: "calculator", accent: "violet", titleKey: "plan.tools.expense", subtitleKey: "plan.tools.expenseSub" },
   { id: "planner", icon: "coins", accent: "amber", titleKey: "plan.tools.planner", subtitleKey: "plan.tools.plannerSub" },
   { id: "loantools", icon: "bank", accent: "indigo", titleKey: "plan.tools.loanTools", subtitleKey: "plan.tools.loanToolsSub" },
@@ -23,10 +25,15 @@ export default function PlanCalculatorsSection({ initialTool = null }) {
     if (!initialTool || initialTool === "retirement") return null;
     return CALCULATOR_TOOLS.some((x) => x.id === initialTool) ? initialTool : null;
   });
+  const [mathOpen, setMathOpen] = useState(initialTool === "math");
 
   const activeMeta = CALCULATOR_TOOLS.find((x) => x.id === activeTool);
 
   const openTool = (id) => {
+    if (id === "math") {
+      setMathOpen(true);
+      return;
+    }
     setActiveTool(id);
   };
 
@@ -60,6 +67,8 @@ export default function PlanCalculatorsSection({ initialTool = null }) {
           {renderPlanToolPanel(activeTool, ctx)}
         </PlanToolSheet>
       ) : null}
+
+      {mathOpen ? <MathCalculatorModal onClose={() => setMathOpen(false)} /> : null}
     </section>
   );
 }

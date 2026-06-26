@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { PageShell } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
 import LedgerAssetsView from "../ledger/LedgerAssetsView.jsx";
 import LedgerLiabilitiesView from "../ledger/LedgerLiabilitiesView.jsx";
 import LedgerInstrumentsView from "../ledger/LedgerInstrumentsView.jsx";
@@ -55,30 +54,56 @@ export default function LedgerPage() {
     setSearchParams({ tab: id }, { replace: true });
   };
 
-  const insightsAction = (
+  const headerAux = (
     <button
       type="button"
-      className="ct-btn ct-btn-ghost ct-btn-sm"
-      onClick={() => navigate("/money/wealth")}
+      className="ct-btn ct-btn-ghost ct-btn-sm ct-ledger-bills-chip"
+      onClick={() => navigate("/ledger/bills")}
     >
-      <CtIcon name="chart-bar" size={15} />
-      {t("ledger.insightsBtn")}
+      {t("ledger.headerBills")}
     </button>
   );
 
+  const posToken = (tabId) => (tabId === "assets" ? "asset" : tabId === "liabilities" ? "liab" : "inst");
+
   return (
-    <PageShell title={t("nav.ledger")} action={insightsAction} className="ct-ledger-page">
-      <div className="pos-ledger-pill-switcher">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`pos-ledger-pill ${tab === item.id ? `active ${item.tone}` : ""}`}
-            onClick={() => switchTab(item.id)}
-          >
-            {t(item.labelKey)}
-          </button>
-        ))}
+    <PageShell title={t("nav.ledger")} headerAux={headerAux} className="ct-ledger-page">
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          padding: "12px 16px 8px",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+        }}
+      >
+        {TABS.map((item) => {
+          const token = posToken(item.id);
+          const active = tab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className="ct-pressable"
+              onClick={() => switchTab(item.id)}
+              style={{
+                padding: "7px 18px",
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                border: active
+                  ? `1px solid var(--pos-${token}-border)`
+                  : "0.5px solid rgba(255,255,255,0.08)",
+                background: active ? `var(--pos-${token}-bg)` : "rgba(255,255,255,0.04)",
+                color: active ? `var(--pos-${token})` : "var(--ct-text-muted)",
+              }}
+            >
+              {t(item.labelKey)}
+            </button>
+          );
+        })}
       </div>
 
       {tab === "assets" ? <LedgerAssetsView openAddOnMount={openAddOnMount} /> : null}

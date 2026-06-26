@@ -31,6 +31,7 @@ export function computeSafeToSpendDaily(input) {
   let daysUntil = salaryDay - dom;
   if (daysUntil <= 0) daysUntil += 28;
 
-  const daily = daysUntil > 0 ? Math.round(buffer / daysUntil) : buffer;
+  const dailyRaw = daysUntil > 0 ? Math.round(buffer / daysUntil) : buffer;
+  const daily = Number.isFinite(dailyRaw) ? Math.max(0, dailyRaw) : 0;
   return { daily, daysUntilSalary: daysUntil, bufferAfterBills: buffer };
 }

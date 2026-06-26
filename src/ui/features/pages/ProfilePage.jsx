@@ -5,14 +5,11 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import ProfileFinancialHero from "../profile/hub/ProfileFinancialHero.jsx";
-import ProfileUpgradeRow from "../profile/hub/ProfileUpgradeRow.jsx";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
-import PlanGoalsSection from "../plan/PlanGoalsSection.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
-import { ViewLink } from "../../patterns/ViewLink.jsx";
+import { PageShell } from "../../index.js";
 
-/** @route /you — Profile, goals, settings */
+/** @route /you — Settings hub (identity in profile glimpse menu). */
 
 /** @param {string | undefined} fromNav @returns {string | null} */
 function resolveYouRoute(fromNav) {
@@ -20,11 +17,13 @@ function resolveYouRoute(fromNav) {
   const map = {
     personal: "/you/personal",
     "personal-identity": "/you/personal",
-    "personal-account": "/you/account",
-    "personal-money": "/you/money",
-    money: "/you/money",
-    "household-mode": "/you/household",
+    "personal-account": "/you/personal",
+    "personal-money": "/you/personal",
+    money: "/you/personal",
+    account: "/you/personal",
+    "household-mode": "/you",
     "personal-appearance": "/you/appearance",
+    appearance: "/you/appearance",
     "security-sessions": "/you/security",
     security: "/you/security",
     backup: "/you/backup",
@@ -34,6 +33,8 @@ function resolveYouRoute(fromNav) {
     history: "/you/history",
     guide: "/you/support",
     support: "/you/about",
+    plans: "/you/plans",
+    subscription: "/you/plans",
   };
   if (fromNav === "financial-life" || fromNav === "net-worth") return null;
   return map[fromNav] || null;
@@ -46,25 +47,19 @@ const Profile = () => {
   const { settings, updateSettings } = usePerovo();
   const { t } = useTranslation();
   const [signingOut, setSigningOut] = useState(false);
-  const [openGoalSheet, setOpenGoalSheet] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
-
-  useOnceFromState("openGoal", () => {
-    setOpenGoalSheet(true);
-    setTimeout(() => {
-      document.getElementById("profile-goals")?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-  });
 
   useOnceFromState("openSection", (section) => {
     const route = resolveYouRoute(typeof section === "string" ? section : undefined);
     if (route) navigate(route);
   });
 
-  const incomeMissing = !settings.monthlyIncome || Number(settings.monthlyIncome) <= 0;
+  useOnceFromState("openGoal", () => {
+    navigate("/you/tools");
+  });
 
   const handleSignOut = useCallback(async () => {
     setSigningOut(true);
@@ -100,50 +95,31 @@ const Profile = () => {
   }, [user, t, deleteInput]);
 
   return (
-    <div className="ct-page ct-profile-hub pb-8 ct-stack-tight">
-      <ProfileFinancialHero
-        settings={settings}
-        updateSettings={updateSettings}
-        onOpenAccount={() => navigate("/you/personal")}
-        onOpenSettings={() => {
-          document.getElementById("profile-settings")?.scrollIntoView({ behavior: "smooth" });
-        }}
-        onOpenIncome={() => navigate("/you/money")}
-        incomeMissing={incomeMissing}
-      />
+    <PageShell title={t("nav.you")} className="ct-profile-hub">
+      <div className="ct-stack-tight pb-8">
+        <ProfileSettingsGroups
+          settings={settings}
+          updateSettings={updateSettings}
+          privacyMode={privacyMode}
+          onTogglePrivacyMode={togglePrivacyMode}
+        />
 
-      <ProfileUpgradeRow settings={settings} />
-
-      <section id="profile-goals" className="ct-stat-tile goal pos-tile goal">
-        <div className="ct-row-between items-center gap-2">
-          <p className="ct-analytics-section-title">{t("you.goals.sectionTitle")}</p>
-          <ViewLink label={t("you.goals.viewAll")} onClick={() => navigate("/you/tools")} />
-        </div>
-        <PlanGoalsSection variant="profile" requestOpen={openGoalSheet} />
-      </section>
-
-      <ProfileSettingsGroups
-        settings={settings}
-        updateSettings={updateSettings}
-        privacyMode={privacyMode}
-        onTogglePrivacyMode={togglePrivacyMode}
-      />
-
-      <ProfileHubFooter
-        isLoggedIn={isLoggedIn}
-        signingOut={signingOut}
-        onSignOut={handleSignOut}
-        onDeleteData={handleDeleteData}
-        deleting={deleting}
-        deleteError={deleteError}
-        confirmDeleteOpen={confirmDelete}
-        onCloseDelete={() => !deleting && setConfirmDelete(false)}
-        deleteConfirmValue={deleteInput}
-        onDeleteConfirmChange={setDeleteInput}
-        onConfirmDelete={confirmDeleteAll}
-        userHasCloud={Boolean(user?.id)}
-      />
-    </div>
+        <ProfileHubFooter
+          isLoggedIn={isLoggedIn}
+          signingOut={signingOut}
+          onSignOut={handleSignOut}
+          onDeleteData={handleDeleteData}
+          deleting={deleting}
+          deleteError={deleteError}
+          confirmDeleteOpen={confirmDelete}
+          onCloseDelete={() => !deleting && setConfirmDelete(false)}
+          deleteConfirmValue={deleteInput}
+          onDeleteConfirmChange={setDeleteInput}
+          onConfirmDelete={confirmDeleteAll}
+          userHasCloud={Boolean(user?.id)}
+        />
+      </div>
+    </PageShell>
   );
 };
 

@@ -36,7 +36,11 @@ Styles: `ct-load-*`, `ct-skeleton`, `ct-spin-*` in `components.css`. Respects `p
 
 ## Navigation
 
-Bottom bar (mobile): **Home · Bills · Add (FAB) · Lending · Profile** — see `NAV_ITEMS` in `constants/userModes.js` and `layout/Navbar.jsx`.
+Bottom bar: **Home · Ledger · + (FAB) · Agreements · Insights** — see `NAV_ITEMS` in `constants/userModes.js` and `layout/Navbar.jsx`.
+
+**You** (`/you`) is opened from the header avatar, not the bottom bar.
+
+Full route map: [docs/encyclopedia/01-routes-and-navigation.md](../../docs/encyclopedia/01-routes-and-navigation.md).
 
 Analytics opens from the Home month hero card (`/analytics`). Lending is the full borrow/lend flow at `/lending`.
 

@@ -35,7 +35,7 @@ function statusStripe(effectiveStatus) {
 export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { entries, core } = useNetWorth();
+  const { entries, core, addEntry, updateEntry } = useNetWorth();
   const { formatAmount } = usePrivacyAmount();
   const { sortedCommitments, commitments, getEffectiveStatus, todayStr } = usePerovo();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
@@ -87,7 +87,10 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
         <div className="pos-hero-glow liability" aria-hidden />
         <div className="pos-hero-head">
           <p className="ct-caption uppercase tracking-wide">{t("ledger.totalLiabilities")}</p>
-          <ViewLink label={t("ledger.viewCommitments")} onClick={() => navigate("/money/bills")} />
+          <ViewLink
+            label={t("ledger.viewInsights")}
+            onClick={() => navigate("/insights/liabilities")}
+          />
         </div>
         <p className="pos-display-amount liability">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.debtRatio", { ratio: debtRatio })}</p>
@@ -163,7 +166,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                       <button
                         type="button"
                         className="ct-btn ct-btn-sm ct-btn-primary w-fit"
-                        onClick={() => navigate("/money/bills")}
+                        onClick={() => navigate("/ledger/bills")}
                       >
                         {t("common.pay")}
                       </button>
@@ -196,7 +199,9 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
           setModalOpen(false);
           setEditEntry(null);
         }}
-        onSave={() => {
+        onSave={(payload) => {
+          if (editEntry) updateEntry(editEntry.id, payload);
+          else addEntry(payload);
           setModalOpen(false);
           setEditEntry(null);
         }}
@@ -205,7 +210,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
       <button
         type="button"
         className="ct-settings-row ct-pressable"
-        onClick={() => navigate("/money/spends")}
+        onClick={() => navigate("/ledger/spends")}
         style={{ marginTop: 4 }}
       >
         <span className="ct-settings-row-label" style={{ color: "var(--pos-text-muted)" }}>

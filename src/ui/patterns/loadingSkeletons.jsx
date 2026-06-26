@@ -4,11 +4,11 @@ import { Skeleton } from "./Loading.jsx";
 function skeletonKindForPath(pathname) {
   const path = pathname.replace(/\/$/, "") || "/";
   if (path === "/") return "dashboard";
-  if (path.startsWith("/money/bills") || path.startsWith("/commitments")) return "list";
+  if (path.startsWith("/ledger/bills") || path.startsWith("/money/bills") || path.startsWith("/commitments")) return "list";
   if (path.startsWith("/money/lending") || path.startsWith("/lending")) return "list";
   if (path.startsWith("/plan") || path.startsWith("/tools")) return "dashboard";
   if (path.startsWith("/add") || path.startsWith("/onboarding")) return "form";
-  if (path.startsWith("/money/insights") || path.startsWith("/analytics") || path.startsWith("/net-worth") || path.startsWith("/profile/analytics") || path.startsWith("/paycheck")) return "analytics";
+  if (path.startsWith("/insights") || path.startsWith("/money/insights") || path.startsWith("/analytics") || path.startsWith("/net-worth") || path.startsWith("/profile/analytics") || path.startsWith("/paycheck")) return "analytics";
   if (path.startsWith("/profile")) return "profile";
   if (path.startsWith("/admin")) return "admin";
   return "generic";

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
@@ -24,7 +25,8 @@ const GROUPS = [
 /** @param {{ onAdd?: () => void, openAddOnMount?: boolean }} props */
 export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
-  const { entries, privacyMode, growth } = useNetWorth();
+  const navigate = useNavigate();
+  const { entries, privacyMode, growth, addEntry, updateEntry } = useNetWorth();
   const { formatAmount } = usePrivacyAmount();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
   const [editEntry, setEditEntry] = useState(null);
@@ -44,7 +46,10 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
         <div className="pos-hero-glow asset" aria-hidden />
         <div className="pos-hero-head">
           <p className="ct-caption uppercase tracking-wide">{t("ledger.totalAssets")}</p>
-          <ViewLink label={t("ledger.addAsset")} onClick={openAdd} />
+          <ViewLink
+            label={t("ledger.viewInsights")}
+            onClick={() => navigate("/insights/assets")}
+          />
         </div>
         <p className="pos-display-amount">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">
@@ -95,7 +100,9 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
           setModalOpen(false);
           setEditEntry(null);
         }}
-        onSave={() => {
+        onSave={(payload) => {
+          if (editEntry) updateEntry(editEntry.id, payload);
+          else addEntry(payload);
           setModalOpen(false);
           setEditEntry(null);
         }}

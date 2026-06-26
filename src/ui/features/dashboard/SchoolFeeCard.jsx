@@ -71,7 +71,7 @@ export default function SchoolFeeCard() {
         </div>
       ) : null}
 
-      <Button type="button" variant="outline" size="sm" className="relative" onClick={() => navigate("/money/bills?filter=School")}>
+      <Button type="button" variant="outline" size="sm" className="relative" onClick={() => navigate("/ledger/bills?filter=School")}>
         {t("family.school.viewAll")}
       </Button>
     </section>

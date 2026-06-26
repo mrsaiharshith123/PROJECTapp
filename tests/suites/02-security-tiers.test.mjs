@@ -93,3 +93,30 @@ describe("SECURITY: tier gate integrity", () => {
     expect(tierHasFeature("unlimited_lending", SETTINGS.power)).toBe(true);
   });
 });
+
+describe("SECURITY: device sessions", () => {
+  it("[P1] parses Windows + Chrome versions from user agent", async () => {
+    const { parseDeviceInfo } = await import("../../src/utils/deviceInfo.js");
+    const ua =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.114 Safari/537.36";
+    const info = parseDeviceInfo(ua);
+    expect(info.os.family).toBe("windows");
+    expect(info.os.name).toContain("Windows");
+    expect(info.browser.family).toBe("chrome");
+    expect(info.browser.name).toBe("Chrome 126");
+    expect(info.label).toBe("Windows 10/11 · Chrome 126");
+  });
+
+  it("[P1] dedupes duplicate Windows Chrome sessions to one row", async () => {
+    const { dedupeSessionRows, findStaleSessionDeviceIds } = await import("../../src/utils/deviceInfo.js");
+    const rows = [
+      { device_id: "a", device_label: "Windows · Chrome", last_active_at: "2026-06-27T00:14:00Z" },
+      { device_id: "b", device_label: "Windows · Chrome", last_active_at: "2026-06-27T00:15:00Z" },
+      { device_id: "c", device_label: "Windows 11 · Chrome 126", last_active_at: "2026-06-27T00:13:00Z" },
+    ];
+    const deduped = dedupeSessionRows(rows, "b");
+    expect(deduped).toHaveLength(1);
+    expect(deduped[0].device_id).toBe("b");
+    expect(findStaleSessionDeviceIds(rows, "b").sort()).toEqual(["a", "c"]);
+  });
+});

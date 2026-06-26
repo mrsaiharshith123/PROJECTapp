@@ -73,11 +73,7 @@ const Add = () => {
 
   const handlePick = (id) => {
     if (id === "goal") {
-      navigate("/you", { state: { openGoal: true } });
-      return;
-    }
-    if (id === "agreement") {
-      navigate("/agreements", { state: { openAdd: true } });
+      navigate("/you/tools");
       return;
     }
     if (id === "asset") {
@@ -89,7 +85,7 @@ const Add = () => {
       return;
     }
     if (id === "cashflow") {
-      navigate("/money/spends");
+      navigate("/ledger/spends");
       return;
     }
     if (id === "liability") {
@@ -292,7 +288,7 @@ const Add = () => {
       ...draft,
       status: effective === "overdue" ? "overdue" : "pending",
     });
-    navigate("/money/bills");
+    navigate("/ledger/bills");
   };
 
   const submitLending = () => {
@@ -434,7 +430,7 @@ const Add = () => {
           <AddCommitmentForm
             entryType={entryType}
             onEntryTypeChange={setEntryType}
-            onVariableSaved={() => navigate("/money/spends")}
+            onVariableSaved={() => navigate("/ledger/spends")}
             form={form}
             errors={errors}
             fieldClass={fieldClass}

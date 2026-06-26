@@ -242,7 +242,7 @@ export function computeSurvivalAnalysis({
         ? `Includes ~₹${lifestyle.dailyInr.toLocaleString("en-IN")}/day living costs for ${lifestyle.cityLabel}.`
         : null;
 
-  return {
+  const result = {
     survivalMonths: baseline.runwayMonths,
     monthlyBurn: baseline.requiredMonthlyBurn,
     lifestyleMonthlyBurn: lifestyleBurn,
@@ -263,6 +263,13 @@ export function computeSurvivalAnalysis({
     timeToSafetyMonths: timeToSafety,
     narrativeLines,
   };
+  if (result.survivalMonths != null && !Number.isFinite(result.survivalMonths)) {
+    result.survivalMonths = 0;
+  } else if (result.survivalMonths != null) {
+    result.survivalMonths = Math.max(0, result.survivalMonths);
+  }
+  if (!Number.isFinite(result.monthlyBurn)) result.monthlyBurn = 0;
+  return result;
 }
 
 /** Monthly outflow from borrowed money (debt) still owed. */

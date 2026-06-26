@@ -74,7 +74,7 @@ export default function HomeNetPositionHero() {
         type="button"
         className="ct-pressable ct-row gap-3 items-center mt-4 pt-3 w-full text-left"
         style={{ background: "none", border: "none", borderTop: "0.5px solid rgba(255,255,255,0.06)", padding: "12px 0 0" }}
-        onClick={() => navigate("/score-detail")}
+        onClick={() => navigate("/insights?card=score")}
       >
         <div
           className="shrink-0"

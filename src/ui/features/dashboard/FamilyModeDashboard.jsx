@@ -130,7 +130,7 @@ export default function FamilyModeDashboard() {
           <MetricOwnerLink
             label={t("family.dashboard.householdRunway")}
             value={t("netWorth.liquidity.months", { count: runwayMonths })}
-            to="/money/insights"
+            to="/insights"
           />
           <div className="ct-stat-tile teal">
             <p className="ct-stat-label">{t("family.emergency.fundTitle")}</p>

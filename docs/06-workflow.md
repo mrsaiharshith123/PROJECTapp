@@ -3,7 +3,7 @@
 ## First day setup
 
 1. Clone the repo and `npm install`
-2. Read [01-overview.md](./01-overview.md) and [02-project-structure.md](./02-project-structure.md)
+2. Read [encyclopedia/00-index.md](./encyclopedia/00-index.md), [01-overview.md](./01-overview.md), and [02-project-structure.md](./02-project-structure.md)
 3. Copy `.env.example` → `.env` if you need Supabase auth locally
 4. `npm run dev` — open the app, click through Home, Commitments, Add, Profile
 5. Skim [03-rules.md](./03-rules.md) — especially **UI only in `src/ui/`**

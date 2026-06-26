@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "../../storage/keys.js";
+import { getDeviceInfo, refineDeviceInfoAsync } from "../../utils/deviceInfo.js";
 
 const DEVICE_KEY = "perovo_device_id";
 
@@ -6,9 +7,18 @@ function readDeviceId() {
   try {
     let id = localStorage.getItem(DEVICE_KEY);
     if (!id) {
-      id = `dev_${crypto.randomUUID?.() || Date.now()}`;
-      localStorage.setItem(DEVICE_KEY, id);
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.syncMeta);
+        const meta = raw ? JSON.parse(raw) : null;
+        if (meta?.deviceId) id = meta.deviceId;
+      } catch {
+        /* ignore */
+      }
     }
+    if (!id) {
+      id = `dev_${crypto.randomUUID?.() || Date.now()}`;
+    }
+    localStorage.setItem(DEVICE_KEY, id);
     return id;
   } catch {
     return "dev_unknown";
@@ -48,23 +58,16 @@ export function getDeviceId() {
 
 /** @returns {string} */
 export function getDeviceLabel() {
-  const meta = loadSyncMeta();
-  if (meta.deviceLabel) return meta.deviceLabel;
-  let label = "This device";
-  try {
-    const ua = navigator.userAgent || "";
-    if (/iPhone|iPad/i.test(ua)) label = "iPhone / iPad";
-    else if (/Android/i.test(ua)) label = "Android";
-    else if (/Windows/i.test(ua)) label = "Windows";
-    else if (/Mac/i.test(ua)) label = "Mac";
-    else if (/Linux/i.test(ua)) label = "Linux";
-    const browser = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "";
-    if (browser) label = `${label} · ${browser}`;
-  } catch {
-    /* ignore */
-  }
+  const { label } = getDeviceInfo();
   saveSyncMeta({ deviceLabel: label });
   return label;
+}
+
+/** Rich label with Client Hints when available (Windows 11, full Chrome build). */
+export async function getDeviceLabelAsync() {
+  const refined = await refineDeviceInfoAsync(getDeviceInfo());
+  saveSyncMeta({ deviceLabel: refined.label });
+  return refined.label;
 }
 
 /** @param {Omit<BackupLogEntry, 'deviceId' | 'deviceLabel'> & Partial<Pick<BackupLogEntry, 'deviceId' | 'deviceLabel'>>} entry */

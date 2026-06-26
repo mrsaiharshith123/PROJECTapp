@@ -77,7 +77,7 @@ function mergeTips(intel, stable, settings) {
 }
 
 /** One card with Summary / Pressure / Tips — Analytics financial pulse. */
-export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "auto" }) {
+export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "auto", embedded = false }) {
   const { t } = useTranslation();
   const { formatAmount } = usePrivacyAmount();
   const intel = useCommitIntel();
@@ -122,13 +122,18 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
     : [];
 
   return (
-    <section className="ct-stack pos-hero liability ct-pulse-modern">
-      <div className="pos-hero-glow liability" aria-hidden />
-      <div className="ct-row-between relative" style={{ flexWrap: "wrap", alignItems: "flex-start" }}>
-        <Heading level={2}>
-          {t("pulse.title")}
-          <ConceptHelp conceptId="stability" />
-        </Heading>
+    <section className={embedded ? "ct-stack" : "ct-stack pos-hero liability ct-pulse-modern"}>
+      {!embedded ? <div className="pos-hero-glow liability" aria-hidden /> : null}
+      <div
+        className={embedded ? "ct-row justify-end relative" : "ct-row-between relative"}
+        style={{ flexWrap: "wrap", alignItems: "flex-start" }}
+      >
+        {!embedded ? (
+          <Heading level={2}>
+            {t("pulse.title")}
+            <ConceptHelp conceptId="stability" />
+          </Heading>
+        ) : null}
         <div className="ct-row gap-2 items-center flex-wrap shrink-0">
           <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
         </div>
@@ -198,7 +203,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
 
           {stable.survival?.scenarios ? (
             <div className="ct-inset ct-stack-sm">
-              <MetricOwnerLink label={t("tier.survival.title")} to="/money/insights" />
+              <MetricOwnerLink label={t("tier.survival.title")} to="/insights" />
               {[
                 { key: "baseline", label: t("tier.survival.baseline"), data: stable.survival.scenarios.baseline, fill: "" },
                 { key: "stressed", label: t("tier.survival.stressed"), data: stable.survival.scenarios.stressed, fill: "stressed" },

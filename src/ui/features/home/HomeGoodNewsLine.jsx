@@ -45,7 +45,7 @@ export default function HomeGoodNewsLine() {
       type="button"
       className="ct-home-good-news ct-stat-tile teal ct-home-enter-item ct-pressable"
       style={{ animationDelay: "180ms" }}
-      onClick={isShare ? () => navigate("/score-detail") : undefined}
+      onClick={isShare ? () => navigate("/insights/score") : undefined}
       disabled={!isShare}
     >
       <span className="ct-good-news-dot" aria-hidden />

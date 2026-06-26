@@ -235,7 +235,7 @@ export function buildContextualReminderFeed({
       suffixParams,
       osBodyKey: "notifications.reminder.osBody",
       osBodyParams: { name: r.name, amount: amt > 0 ? amt.toLocaleString("en-IN") : "" },
-      href: r.href || "/money/bills",
+      href: r.href || "/ledger/bills",
       actionKey: dueToday ? "notifications.payBillToday" : "notifications.viewBills",
     };
   });

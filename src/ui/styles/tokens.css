@@ -7,6 +7,10 @@
 html[data-ui="ct"] {
   color-scheme: dark;
 
+  /* ── Native app: disable browser UI behaviors (selection only in Capacitor — see renderApp.jsx) ── */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+
   /* ── Financial Life palette (Obsidian Financial) ── */
   --ct-life-violet: #6366f1;
   --ct-life-violet-deep: #4f46e5;

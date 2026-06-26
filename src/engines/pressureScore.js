@@ -238,7 +238,9 @@ export function computePressureAnalysis({
  * Canonical 0–100 pressure score (higher = more stressed).
  */
 export function computeCanonicalPressureScore(params) {
-  return computePressureAnalysis(params).score;
+  const result = computePressureAnalysis(params).score;
+  if (!Number.isFinite(result)) return 0;
+  return Math.max(0, Math.min(100, result));
 }
 
 /** Semantic tone for badges — engines return tokens only. */

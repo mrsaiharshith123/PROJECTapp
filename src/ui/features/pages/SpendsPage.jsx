@@ -29,6 +29,22 @@ export default function SpendsPage() {
 
   return (
     <div className="ct-page ct-stack ct-money-spends-page">
+      <div className="pos-tile instrument" style={{ margin: "0 0 10px" }}>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: "var(--pos-inst)",
+            marginBottom: 4,
+          }}
+        >
+          {t("money.spends.cashFlowLabel")}
+        </div>
+        <div style={{ fontSize: 12, color: "var(--ct-text-muted)" }}>{t("money.spends.cashFlowSub")}</div>
+      </div>
+
       <div className="ct-money-import-row">
         <Button type="button" size="sm" variant="secondary" onClick={() => setSpendSmsOpen(true)}>
           <CtIcon name="device-mobile" size={16} />

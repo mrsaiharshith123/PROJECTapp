@@ -25,6 +25,8 @@ npm run audit        # full quality gate before PR
 | How audit works (deep) | [docs/05-audit-and-quality.md](./docs/05-audit-and-quality.md) |
 | Day-to-day workflow | [docs/06-workflow.md](./docs/06-workflow.md) |
 | What's built vs planned (V1) | [docs/09-implementation-status.md](./docs/09-implementation-status.md) |
+| Version history | [docs/CHANGELOG.md](./docs/CHANGELOG.md) |
+| Product encyclopedia | [docs/encyclopedia/00-index.md](./docs/encyclopedia/00-index.md) |
 | i18n (22 languages) | [docs/10-i18n.md](./docs/10-i18n.md) |
 | Admin intelligence (internal) | [docs/architecture/AdminAnalytics.md](./docs/architecture/AdminAnalytics.md) |
 | `dist` / `dev-dist` clutter | [docs/07-repo-folders.md](./docs/07-repo-folders.md) |
@@ -35,7 +37,7 @@ npm run audit        # full quality gate before PR
 |---------|---------|
 | `npm run dev` | Dev server |
 | `npm run build` | Production build + PWA |
-| `npm run test` | Vitest (**386** tests, 141 files) |
+| `npm run test` | Vitest (**122** tests, 9 suite files) |
 | `npm run test:sync` | Snapshot + cloud backup meta tests |
 | `npm run test:engines` | Engine tests only |
 | `npm run test:utils` | Utils tests only |

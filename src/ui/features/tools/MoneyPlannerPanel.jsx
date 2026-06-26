@@ -44,7 +44,7 @@ export default function MoneyPlannerPanel() {
         <ProGate featureId="survival_scenarios">
           <div className="ct-stat-tile">
             <Caption>{t("dedup.survivalOnInsights")}</Caption>
-            <MetricOwnerLink label={t("money.tab.insights")} to="/money/insights" />
+            <MetricOwnerLink label={t("money.tab.insights")} to="/insights" />
           </div>
         </ProGate>
       )}

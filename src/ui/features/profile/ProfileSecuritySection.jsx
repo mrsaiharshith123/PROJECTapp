@@ -14,6 +14,14 @@ import {
 import { signOutOtherSessions } from "../../../services/supabase/auth.js";
 import { SettingsGroup, SettingsGroupContent } from "./SettingsGroup.jsx";
 
+function sessionIconName(label) {
+  const l = (label || "").toLowerCase();
+  if (l.includes("iphone") || l.includes("ipad") || l.includes("android") || l.includes("ios")) {
+    return "device-mobile";
+  }
+  return "laptop";
+}
+
 function formatWhen(iso) {
   if (!iso) return "—";
   try {
@@ -157,12 +165,13 @@ export default function ProfileSecuritySection() {
             {sessions.map((row) => {
               const isCurrent = row.device_id === currentId;
               const location = row.city || row.region || t("security.locationUnknown");
+              const deviceIcon = sessionIconName(row.device_label);
               return (
                 <div key={row.device_id} className={`ct-hero-inset ct-stack-sm${isCurrent ? " ct-option-card-active" : ""}`}>
                   <div className="ct-row-between gap-2">
                     <div className="ct-row gap-2 min-w-0">
                       <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0">
-                        <CtIcon name="device-mobile" size={18} weight="duotone" />
+                        <CtIcon name={deviceIcon} size={18} weight="duotone" />
                       </span>
                       <Body className="!text-sm font-semibold truncate">
                         {row.device_label || t("security.unknownDevice")}

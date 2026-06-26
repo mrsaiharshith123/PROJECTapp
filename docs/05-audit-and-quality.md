@@ -1,5 +1,8 @@
 # Audit & quality (deep dive)
 
+> **Testing & QA overview:** [encyclopedia/04-testing-and-qa.md](./encyclopedia/04-testing-and-qa.md)  
+> This doc covers **audit scripts** only (what each check does).
+
 The project uses **one command** for pre-merge quality: `npm run audit`.
 
 It runs `scripts/audit-all.mjs`, which orchestrates smaller scripts and prints a **color report** (PASS / WARN / FAIL).

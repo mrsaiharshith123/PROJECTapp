@@ -1,4 +1,5 @@
 import { usePwaInstall } from "../../hooks/usePwaInstall.js";
+import { isNativeCapacitorShell } from "../../utils/nativePermissions.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { Button } from "../primitives/Button.jsx";
 import { CtIcon } from "../icons/CtIcon.jsx";
@@ -6,6 +7,8 @@ import { CtIcon } from "../icons/CtIcon.jsx";
 export function InstallAppBanner() {
   const { t } = useTranslation();
   const { canInstall, showIosHint, showAndroidHint, showInstallUi, install, dismiss } = usePwaInstall();
+
+  if (isNativeCapacitorShell()) return null;
 
   if (!showInstallUi) return null;
 

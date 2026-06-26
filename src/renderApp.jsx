@@ -7,6 +7,14 @@ import "./ui/styles/index.css";
 import { I18nProvider } from "./i18n/index.js";
 import App from "./App.jsx";
 import { log } from "./utils/logger.js";
+import { isNativeCapacitorShell } from "./utils/nativePermissions.js";
+
+if (isNativeCapacitorShell()) {
+  document.documentElement.style.webkitUserSelect = "none";
+  document.documentElement.style.userSelect = "none";
+  document.addEventListener("contextmenu", (e) => e.preventDefault(), true);
+  document.addEventListener("dragstart", (e) => e.preventDefault(), true);
+}
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 const sentryEnabled =

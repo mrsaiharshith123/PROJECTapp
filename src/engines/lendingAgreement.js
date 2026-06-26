@@ -33,6 +33,7 @@ function twoDigits(n) {
 
 /** Converts integer rupees to Indian English words (lakhs/crores). */
 export function numberToWords(n) {
+  if (n == null || !Number.isFinite(Number(n))) return "Zero";
   const num = Math.floor(Math.max(0, Number(n) || 0));
   if (num === 0) return "Zero";
   const parts = [];

@@ -1,10 +1,10 @@
-/** Primary bottom nav — Home · Ledger · Add · Agreements · You */
+/** Primary bottom nav — Home · Ledger · Add · Agreements · Insights */
 export const NAV_ITEMS = [
   { to: "/", labelKey: "nav.home", icon: "house" },
   { to: "/ledger", labelKey: "nav.ledger", icon: "scales", navGroup: "ledger" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
   { to: "/agreements", labelKey: "nav.agreements", icon: "handshake", navGroup: "agreements" },
-  { to: "/you", labelKey: "nav.you", icon: "user-circle" },
+  { to: "/insights", labelKey: "nav.insights", icon: "chart-bar", navGroup: "insights" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */
@@ -18,11 +18,13 @@ const NAV_FULL = [
   "/ledger",
   "/agreements",
   "/money",
-  "/money/bills",
-  "/money/spends",
+  "/ledger/bills",
+  "/ledger/spends",
   "/money/lending",
-  "/money/insights",
-  "/money/wealth",
+  "/insights",
+  "/insights/score",
+  "/insights/spending",
+  "/insights/networth",
   "/add",
   "/you",
   "/profile",

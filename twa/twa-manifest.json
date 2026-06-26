@@ -11,8 +11,8 @@
   "startUrl": "/",
   "iconUrl": "https://perovo.app/pwa-512.png",
   "maskableIconUrl": "https://perovo.app/pwa-512.png",
-  "appVersion": "1",
-  "appVersionCode": 1,
+  "appVersion": "1.5.0",
+  "appVersionCode": 5,
   "signingKey": {
     "path": "./perovo.keystore",
     "alias": "perovo"

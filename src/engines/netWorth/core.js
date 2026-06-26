@@ -43,6 +43,11 @@ export function sumByLiquidityTier(assets) {
   return tiers;
 }
 
+function finiteNum(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 /**
  * @param {WealthEntry[]} entries
  */
@@ -58,8 +63,8 @@ export function computeNetWorthCore(entries) {
     id: a.id,
     categoryId: a.categoryId,
     name: a.name,
-    value: a.value,
-    pct: totalAssets > 0 ? (a.value / totalAssets) * 100 : 0,
+    value: finiteNum(a.value),
+    pct: totalAssets > 0 ? finiteNum((a.value / totalAssets) * 100) : 0,
     tier: getAssetCategory(a.categoryId).tier,
   })).sort((a, b) => b.value - a.value);
 
@@ -67,19 +72,19 @@ export function computeNetWorthCore(entries) {
     id: l.id,
     categoryId: l.categoryId,
     name: l.name,
-    value: l.value,
-    pct: totalLiabilities > 0 ? (l.value / totalLiabilities) * 100 : 0,
+    value: finiteNum(l.value),
+    pct: totalLiabilities > 0 ? finiteNum((l.value / totalLiabilities) * 100) : 0,
     emi: l.emi,
     interestRate: l.interestRate,
   })).sort((a, b) => b.value - a.value);
 
   return {
-    totalAssets,
-    totalLiabilities,
-    netWorth,
-    liquidNetWorth,
-    accessibleSafety: Math.max(0, liquidNetWorth),
-    debtAdjustedPosition: netWorth,
+    totalAssets: finiteNum(totalAssets),
+    totalLiabilities: finiteNum(totalLiabilities),
+    netWorth: finiteNum(netWorth),
+    liquidNetWorth: finiteNum(liquidNetWorth),
+    accessibleSafety: Math.max(0, finiteNum(liquidNetWorth)),
+    debtAdjustedPosition: finiteNum(netWorth),
     liquidityBreakdown,
     assetAllocation,
     liabilityAllocation,

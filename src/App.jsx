@@ -36,15 +36,54 @@ import Ledger from "./ui/features/pages/LedgerPage.jsx";
 import Agreements from "./ui/features/pages/AgreementsPage.jsx";
 import Add from "./ui/features/pages/AddPage.jsx";
 import Profile from "./ui/features/pages/YouPage.jsx";
-import MoneyShell from "./ui/features/pages/MoneyShellPage.jsx";
+import LedgerRootLayout from "./ui/features/pages/LedgerRootLayout.jsx";
+import LedgerOpsShell from "./ui/features/pages/MoneyShellPage.jsx";
 import Commitments from "./ui/features/pages/CommitmentsPage.jsx";
 import Spends from "./ui/features/pages/SpendsPage.jsx";
 
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
-const ProfileScoresDetail = lazy(() => import("./ui/features/pages/ProfileScoresDetailPage.jsx"));
 const ScoreDetail = lazy(() => import("./ui/features/pages/ScoreDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
-const MoneyWealth = lazy(() => import("./ui/features/pages/MoneyWealthPage.jsx"));
+const InsightsSpendingBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsSpendingBreakdownPage,
+  })),
+);
+const InsightsYearlyBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsYearlyBreakdownPage,
+  })),
+);
+const InsightsNetWorthBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsNetWorthBreakdownPage,
+  })),
+);
+const InsightsCashflowBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsCashflowBreakdownPage,
+  })),
+);
+const InsightsPulseBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsPulseBreakdownPage,
+  })),
+);
+const InsightsAssetsBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsAssetsBreakdownPage,
+  })),
+);
+const InsightsLiabilitiesBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsLiabilitiesBreakdownPage,
+  })),
+);
+const InsightsInstrumentsBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsInstrumentsBreakdownPage,
+  })),
+);
 const YouToolsPage = lazy(() => import("./ui/features/profile/pages/YouToolsPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
@@ -77,36 +116,55 @@ function RequireAuth({ children }) {
   return children;
 }
 
+function LegacyInsightsRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={`/insights${search}`} replace />;
+}
+
 function AppRoutes() {
   const location = useLocation();
   return (
     <Suspense fallback={<RouteFallback />} key={location.key}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
-        <Route path="/ledger" element={<Ledger />} />
+        <Route path="/ledger" element={<LedgerRootLayout />}>
+          <Route index element={<Ledger />} />
+          <Route element={<LedgerOpsShell />}>
+            <Route path="bills" element={<Commitments />} />
+            <Route path="spends" element={<Spends />} />
+          </Route>
+        </Route>
         <Route path="/agreements" element={<Agreements />} />
         <Route path="/add" element={<Add />} />
         <Route path="/you" element={<Profile />} />
-        <Route path="/money" element={<MoneyShell />}>
-          <Route index element={<Navigate to="bills" replace />} />
-          <Route path="bills" element={<Commitments />} />
-          <Route path="spends" element={<Spends />} />
-        </Route>
+        <Route path="/money" element={<Navigate to="/ledger/bills" replace />} />
+        <Route path="/money/bills" element={<Navigate to="/ledger/bills" replace />} />
+        <Route path="/money/spends" element={<Navigate to="/ledger/spends" replace />} />
         <Route path="/money/lending" element={<Navigate to="/agreements" replace />} />
-        <Route path="/money/insights" element={<Suspense fallback={<RouteFallback />}><Analytics /></Suspense>} />
-        <Route path="/money/wealth" element={<Suspense fallback={<RouteFallback />}><MoneyWealth /></Suspense>} />
-        <Route path="/commitments" element={<Navigate to="/money/bills" replace />} />
+        <Route path="/insights" element={<Suspense fallback={<RouteFallback />}><Analytics /></Suspense>} />
+        <Route path="/insights/score" element={<Suspense fallback={<RouteFallback />}><ScoreDetail /></Suspense>} />
+        <Route path="/insights/spending" element={<Suspense fallback={<RouteFallback />}><InsightsSpendingBreakdown /></Suspense>} />
+        <Route path="/insights/spending/yearly" element={<Suspense fallback={<RouteFallback />}><InsightsYearlyBreakdown /></Suspense>} />
+        <Route path="/insights/networth" element={<Suspense fallback={<RouteFallback />}><InsightsNetWorthBreakdown /></Suspense>} />
+        <Route path="/insights/assets" element={<Suspense fallback={<RouteFallback />}><InsightsAssetsBreakdown /></Suspense>} />
+        <Route path="/insights/liabilities" element={<Suspense fallback={<RouteFallback />}><InsightsLiabilitiesBreakdown /></Suspense>} />
+        <Route path="/insights/instruments" element={<Suspense fallback={<RouteFallback />}><InsightsInstrumentsBreakdown /></Suspense>} />
+        <Route path="/insights/cashflow" element={<Suspense fallback={<RouteFallback />}><InsightsCashflowBreakdown /></Suspense>} />
+        <Route path="/insights/pulse" element={<Suspense fallback={<RouteFallback />}><InsightsPulseBreakdown /></Suspense>} />
+        <Route path="/money/insights" element={<LegacyInsightsRedirect />} />
+        <Route path="/money/wealth" element={<Navigate to="/insights/networth" replace />} />
+        <Route path="/commitments" element={<Navigate to="/ledger/bills" replace />} />
         <Route path="/lending" element={<Navigate to="/agreements" replace />} />
-        <Route path="/analytics" element={<Navigate to="/money/insights" replace />} />
+        <Route path="/analytics" element={<Navigate to="/insights" replace />} />
         <Route path="/plan" element={<Navigate to="/you/tools" replace />} />
         <Route path="/tools" element={<Navigate to="/you/tools" replace />} />
-        <Route path="/paycheck" element={<Navigate to="/money/insights" replace />} />
+        <Route path="/paycheck" element={<Navigate to="/insights?card=paycheck" replace />} />
         <Route path="/family-room" element={<Navigate to="/you" replace />} />
-        <Route path="/profile/analytics" element={<Navigate to="/money/wealth" replace />} />
+        <Route path="/profile/analytics" element={<Navigate to="/insights/networth" replace />} />
         <Route path="/net-worth" element={<Navigate to="/ledger" replace />} />
         <Route path="/profile" element={<Navigate to="/you" replace />} />
-        <Route path="/profile/scores" element={<Suspense fallback={<RouteFallback />}><ProfileScoresDetail /></Suspense>} />
-        <Route path="/score-detail" element={<Suspense fallback={<RouteFallback />}><ScoreDetail /></Suspense>} />
+        <Route path="/profile/scores" element={<Navigate to="/insights/score" replace />} />
+        <Route path="/score-detail" element={<Navigate to="/insights/score" replace />} />
         <Route path="/you/personal" element={<Suspense fallback={<RouteFallback />}><YouPersonalPage /></Suspense>} />
         <Route path="/you/account" element={<Suspense fallback={<RouteFallback />}><YouAccountPage /></Suspense>} />
         <Route path="/you/money" element={<Suspense fallback={<RouteFallback />}><YouMoneyPage /></Suspense>} />

@@ -1,16 +1,13 @@
 import { useMemo, useState } from "react";
 import { Modal, Button, Caption, Body, ToneSurface, inputClassName } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import {
-  buildAgreementText,
-  borrowerTrustSnapshot,
-  buildOfferShareUrl,
-  encodeOfferPayload,
-} from "../../../engines/lendingAgreement.js";
+import { buildAgreementText, borrowerTrustSnapshot } from "../../../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { INR } from "../../../constants/symbols.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
+import { saveLendingOffer } from "../../../services/lending/offerRegistry.js";
+import { encodeOfferPayload } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
@@ -29,8 +26,10 @@ export default function LendingRequestModal({ onClose }) {
   const [purpose, setPurpose] = useState("");
   const [signName, setSignName] = useState("");
   const [agree, setAgree] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
+  const [offerCode, setOfferCode] = useState("");
+  const [offerPacket, setOfferPacket] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copiedPacket, setCopiedPacket] = useState(false);
 
   const trust = useMemo(
     () => borrowerTrustSnapshot(lendings, borrowerName.trim() || "You"),
@@ -58,11 +57,9 @@ export default function LendingRequestModal({ onClose }) {
 
   const finishAndShare = () => {
     if (!signName.trim() || !agree) return;
-    const offerId = `offer-${Date.now()}`;
     const signedAt = Date.now();
     const offer = {
       v: 1,
-      offerId,
       borrowerName: borrowerName.trim(),
       lenderName: lenderName.trim(),
       amount: Number(amount),
@@ -79,6 +76,9 @@ export default function LendingRequestModal({ onClose }) {
       trustLate: trust.late,
     };
 
+    const code = saveLendingOffer(offer);
+    const packet = encodeOfferPayload({ ...offer, offerCode: code, offerId: code });
+
     addLending(
       buildLendingRecord({
         type: "borrowed",
@@ -92,7 +92,8 @@ export default function LendingRequestModal({ onClose }) {
           agreementLocked: true,
           agreementAccepted: true,
           agreementAcceptedAt: signedAt,
-          offerId,
+          offerId: code,
+          offerCode: code,
           borrowerSignName: signName.trim(),
           borrowerSignedAt: signedAt,
           collateralDescription: collateral.trim(),
@@ -100,21 +101,26 @@ export default function LendingRequestModal({ onClose }) {
       }),
     );
 
-    const url = buildOfferShareUrl(offer);
-    setShareUrl(url);
-    try {
-      localStorage.setItem(`perovo_offer_${offerId}`, encodeOfferPayload(offer));
-    } catch {
-      /* ignore */
-    }
+    setOfferCode(code);
+    setOfferPacket(packet);
     setStep("share");
   };
 
-  const copyLink = async () => {
+  const copyCode = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(offerCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const copyPacket = async () => {
+    try {
+      await navigator.clipboard.writeText(offerPacket);
+      setCopiedPacket(true);
+      setTimeout(() => setCopiedPacket(false), 2000);
     } catch {
       /* ignore */
     }
@@ -249,12 +255,21 @@ export default function LendingRequestModal({ onClose }) {
       {step === "share" && (
         <div className="ct-stack">
           <div className="ct-stat-tile teal !p-3">
-            <Body className="!text-sm font-semibold ct-text-success">{t("lending.request.linkReady")}</Body>
-            <Caption className="block mt-1">{t("lending.request.shareHint")}</Caption>
+            <Body className="!text-sm font-semibold ct-text-success">{t("lending.request.codeReady")}</Body>
+            <Caption className="block mt-1">{t("lending.request.codeHint")}</Caption>
           </div>
-          <input readOnly className={`${fieldClass} text-xs`} value={shareUrl} />
-          <Button type="button" variant="outline" className="w-full" onClick={copyLink}>
-            {copied ? t("lending.request.copied") : t("lending.request.copyLink")}
+          <div
+            className="ct-numeral text-center text-2xl font-bold tracking-[0.2em] py-3 rounded-xl"
+            style={{ background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)" }}
+          >
+            {offerCode}
+          </div>
+          <Button type="button" variant="outline" className="w-full" onClick={copyCode}>
+            {copied ? t("lending.request.copied") : t("lending.request.copyCode")}
+          </Button>
+          <Caption className="block text-center opacity-80">{t("lending.request.packetHint")}</Caption>
+          <Button type="button" variant="ghost" className="w-full" onClick={copyPacket}>
+            {copiedPacket ? t("lending.request.copied") : t("lending.request.copyPacket")}
           </Button>
         </div>
       )}

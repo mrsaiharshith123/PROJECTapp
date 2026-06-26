@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card, Button, Caption, Body, Eyebrow, ToneSurface, inputClassName } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { decodeOfferPayload, trustScoreLabel } from "../../../engines/lendingAgreement.js";
+import { loadLendingOffer } from "../../../services/lending/offerRegistry.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { trustScoreToTone } from "../../../engines/lendingTrust.js";
@@ -22,30 +23,13 @@ export default function LendingOfferReview() {
   const [agree, setAgree] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
-  const offer = useMemo(() => decodeOfferPayload(params.get("d")), [params]);
+  const codeParam = params.get("code");
+  const payloadParam = params.get("d");
+  const offer =
+    (codeParam ? loadLendingOffer(codeParam) : null) ?? decodeOfferPayload(payloadParam);
 
-  if (!offer) {
-    return (
-      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
-        <Card className="ct-stack-sm text-center py-10">
-          <span className="ct-icon-tile danger mx-auto" aria-hidden>
-            <CtIcon name="warning" size={24} context="status" />
-          </span>
-          <Body className="font-semibold">{t("lending.offer.invalidTitle")}</Body>
-          <Caption className="block">{t("lending.offer.invalidLink")}</Caption>
-          <Link to="/" className="ct-link text-sm font-semibold mt-2 inline-block">
-            {t("lending.offer.goHome")}
-          </Link>
-        </Card>
-      </div>
-    );
-  }
-
-  const score = Number(offer.trustScore) || 50;
-  const label = trustScoreLabel(score);
-
-  const acceptLoan = () => {
-    if (!signName.trim() || !agree) return;
+  const acceptLoan = useCallback(() => {
+    if (!offer || !signName.trim() || !agree) return;
     const signedAt = Date.now();
     addLending(
       buildLendingRecord({
@@ -70,7 +54,27 @@ export default function LendingOfferReview() {
       }),
     );
     setAccepted(true);
-  };
+  }, [addLending, agree, offer, signName]);
+
+  if (!offer) {
+    return (
+      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
+        <Card className="ct-stack-sm text-center py-10">
+          <span className="ct-icon-tile danger mx-auto" aria-hidden>
+            <CtIcon name="warning" size={24} context="status" />
+          </span>
+          <Body className="font-semibold">{t("lending.offer.invalidTitle")}</Body>
+          <Caption className="block">{t("lending.offer.invalidCode")}</Caption>
+          <Link to="/" className="ct-link text-sm font-semibold mt-2 inline-block">
+            {t("lending.offer.goHome")}
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  const score = Number(offer.trustScore) || 50;
+  const label = trustScoreLabel(score);
 
   if (accepted) {
     return (
@@ -83,7 +87,7 @@ export default function LendingOfferReview() {
           <Caption className="block">
             {t("lending.offer.acceptedBody", { name: offer.borrowerName })}
           </Caption>
-          <Link to="/money/lending" className="ct-link text-sm font-semibold mt-4 inline-block">
+          <Link to="/agreements" className="ct-link text-sm font-semibold mt-4 inline-block">
             {t("lending.offer.openTracker")}
           </Link>
         </Card>

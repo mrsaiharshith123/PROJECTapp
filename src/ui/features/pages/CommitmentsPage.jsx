@@ -64,7 +64,7 @@ const Commitments = () => {
     if (spendRedirectRef.current) return;
     if (searchParams.get("tab") !== "spend") return;
     spendRedirectRef.current = true;
-    navigate("/money/spends", { replace: true });
+    navigate("/ledger/spends", { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -111,7 +111,7 @@ const Commitments = () => {
       });
       const loanName = paymentFor.name;
       setPaymentFor(null);
-      navigate("/score-detail", { state: { showPayoffShare: true, loanName } });
+      navigate("/insights/score", { state: { showPayoffShare: true, loanName } });
       return;
     }
     setCelebration({ type: "checkmark", message: t("celebration.paymentRecorded") });

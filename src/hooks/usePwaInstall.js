@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
+import { isNativeCapacitorShell } from "../utils/nativePermissions.js";
 import {
   INSTALL_OPT_IN_EVENT,
   readInstallOptIn,
@@ -16,7 +17,7 @@ function readStandalone() {
 }
 
 export function usePwaInstall() {
-  const embedded = isEmbeddedApp();
+  const embedded = isEmbeddedApp() || isNativeCapacitorShell();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [optIn, setOptIn] = useState(readInstallOptIn);
   const [platform, setPlatform] = useState(readInstallPlatform);

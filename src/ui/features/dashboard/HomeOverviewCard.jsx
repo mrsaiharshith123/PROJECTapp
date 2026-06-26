@@ -132,7 +132,7 @@ export default function HomeOverviewCard() {
             className="ct-link !text-xs"
             onClick={(e) => {
               e.stopPropagation();
-              navigate("/you/money");
+              navigate("/you/personal");
             }}
           >
             {t("profile.setIncome")}
@@ -205,7 +205,7 @@ export default function HomeOverviewCard() {
         statusLine={statusLine}
         privacyMode={privacyMode}
         onTogglePrivacy={togglePrivacyMode}
-        onClick={() => navigate("/score-detail")}
+        onClick={() => navigate("/insights/score")}
       />
       {isFamily ? (
         <HouseholdDependentsEditorModal open={editHouseholdOpen} onClose={() => setEditHouseholdOpen(false)} />

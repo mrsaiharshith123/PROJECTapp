@@ -38,7 +38,7 @@ export default function ProfileNetWorthSection() {
   );
 
   const billSourceLabel = isFamily ? t("netWorth.fromBillsHousehold") : t("netWorth.fromBills");
-  const openBill = (commitmentId) => navigate("/money/bills", { state: { openBillId: commitmentId } });
+  const openBill = (commitmentId) => navigate("/ledger/bills", { state: { openBillId: commitmentId } });
 
   const openAdd = (kind) => setModal({ kind });
   const openEdit = (entry) => setModal({ kind: entry.kind, entry });

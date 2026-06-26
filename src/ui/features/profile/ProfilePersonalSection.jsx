@@ -76,7 +76,7 @@ function LanguagePickerBlock({ updateSettings }) {
 }
 
 /**
- * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'appearance' | 'identity' | 'money' | 'account' }} props
+ * @param {{ settings: object, updateSettings: (p: object) => void, part?: 'full' | 'profile' | 'appearance' | 'identity' | 'money' | 'account' }} props
  */
 export default function ProfilePersonalSection({
   settings,
@@ -87,10 +87,11 @@ export default function ProfilePersonalSection({
   const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const userMode = resolveUserMode(settings);
+  const isProfileHub = part === "profile";
   const showAppearance = part === "full" || part === "appearance";
-  const showIdentity = part === "full" || part === "identity";
-  const showMoney = part === "full" || part === "money";
-  const showAccount = part === "full" || part === "account";
+  const showIdentity = part === "full" || part === "identity" || isProfileHub;
+  const showMoney = part === "full" || part === "money" || isProfileHub;
+  const showAccount = part === "full" || part === "account" || isProfileHub;
 
   const appearanceField = (
     <SettingsGroup title={t("profile.appearance")} icon="palette" description={t("profile.aboutYou.subtitle")}>

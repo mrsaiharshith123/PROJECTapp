@@ -48,7 +48,7 @@ function billInstrumentLabel(bill, t) {
 export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { entries } = useNetWorth();
+  const { entries, addEntry } = useNetWorth();
   const { formatAmount } = usePrivacyAmount();
   const { sortedCommitments } = usePerovo();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
@@ -95,7 +95,10 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
         <div className="pos-hero-glow instrument" aria-hidden />
         <div className="pos-hero-head">
           <p className="ct-caption uppercase tracking-wide">{t("ledger.tab.instruments")}</p>
-          <ViewLink label={t("scoreDetail.viewAnalytics")} onClick={() => navigate("/money/insights")} />
+          <ViewLink
+            label={t("ledger.viewInsights")}
+            onClick={() => navigate("/insights/instruments")}
+          />
         </div>
         <p className="pos-display-amount instrument">{formatAmount(total)}</p>
         <p className="ct-caption mt-1">{t("ledger.instrumentsMeta", { count })}</p>
@@ -173,7 +176,10 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
         defaultCategoryId="insurance"
         restrictedCategories={INSTRUMENT_CATEGORIES}
         onClose={() => setModalOpen(false)}
-        onSave={() => setModalOpen(false)}
+        onSave={(payload) => {
+          addEntry(payload);
+          setModalOpen(false);
+        }}
       />
     </div>
   );

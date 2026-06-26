@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
-import { PrivacyToggleButton } from "./PrivacyToggleButton.jsx";
+import { AppHeaderActions } from "./AppHeaderActions.jsx";
 
 /**
  * Sticky sub-page title row with back navigation.
@@ -24,8 +24,7 @@ export function SubPageHeader({ title, subtitle, onBack, action, hidePrivacyTogg
         </button>
         <span className="ct-subpage-title">{title}</span>
         <span className="ct-subpage-action">
-          {!hidePrivacyToggle ? <PrivacyToggleButton /> : null}
-          {action}
+          <AppHeaderActions hidePrivacyToggle={hidePrivacyToggle} action={action} />
         </span>
       </div>
       {subtitle ? <p className="ct-subpage-subtitle">{subtitle}</p> : null}

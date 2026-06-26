@@ -4,15 +4,13 @@ import { exportLendingToExcel } from "../../../utils/excelExport.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Button } from "../../primitives/Button.jsx";
 
-/** Visible action row for Agreements — export, request, add (no overflow menu). */
-export default function AgreementsHeaderActions({ lendings, onAdd, onRequestMoney }) {
+/** Agreements actions — export, request money, enter lender code (no manual add). */
+export default function AgreementsHeaderActions({ lendings, onRequestMoney, onEnterCode }) {
   const { t } = useTranslation();
 
   const handleExport = useCallback(() => {
     void exportLendingToExcel(lendings);
   }, [lendings]);
-
-  const handleAdd = useCallback(() => onAdd(), [onAdd]);
 
   return (
     <div className="ct-money-import-row">
@@ -24,8 +22,9 @@ export default function AgreementsHeaderActions({ lendings, onAdd, onRequestMone
         <CtIcon name="handshake" size={16} />
         {t("lending.requestMoney")}
       </Button>
-      <Button type="button" size="sm" onClick={handleAdd}>
-        {t("lending.addShort")}
+      <Button type="button" size="sm" variant="secondary" onClick={onEnterCode}>
+        <CtIcon name="lock" size={16} />
+        {t("lending.acceptCode.short")}
       </Button>
     </div>
   );

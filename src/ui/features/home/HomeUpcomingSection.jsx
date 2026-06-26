@@ -69,7 +69,7 @@ export default function HomeUpcomingSection() {
         name: attentionBillTitle(c),
         amount: Number(c.amount ?? 0),
         statusText: t("home.attention.inDays", { days }),
-        to: "/money/bills",
+        to: "/ledger/bills",
       });
     }
     return rows;

@@ -25,7 +25,17 @@ function Brand() {
 function isNavItemActive(item, location) {
   const path = location.pathname;
   if (item.navGroup === "ledger") {
-    return path.startsWith("/ledger") || path.startsWith("/money");
+    return (
+      path.startsWith("/ledger") ||
+      path.startsWith("/ledger/bills") ||
+      path.startsWith("/ledger/spends") ||
+      path === "/money/bills" ||
+      path === "/money/spends" ||
+      path === "/commitments"
+    );
+  }
+  if (item.navGroup === "insights") {
+    return path === "/insights" || path.startsWith("/insights/") || path.startsWith("/insights?") || path === "/analytics";
   }
   if (item.navGroup === "agreements") {
     return path.startsWith("/agreements") || path.startsWith("/lending") || path.startsWith("/money/lending");
@@ -42,7 +52,6 @@ function isNavItemActive(item, location) {
     return path === "/plan" || path === "/tools";
   }
   if (item.to === "/") return path === "/";
-  if (item.to === "/you") return path === "/you" || path === "/profile" || path.startsWith("/you/");
   return path === item.to || path.startsWith(`${item.to}/`);
 }
 
@@ -53,7 +62,7 @@ function NavIcon({ item, active = false }) {
   return <CtIcon name={item.icon} size={22} context={active ? "nav" : "nav-off"} />;
 }
 
-function FabRadialMenu({ open, onClose, navTo, onScanBill }) {
+function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {
   const { t } = useTranslation();
   if (!open) return null;
 
@@ -90,7 +99,7 @@ function FabRadialMenu({ open, onClose, navTo, onScanBill }) {
           className="ct-fab-item"
           role="menuitem"
           onClick={() => {
-            navTo("/money/spends");
+            navTo("/ledger/spends");
             onClose();
           }}
         >
@@ -102,12 +111,12 @@ function FabRadialMenu({ open, onClose, navTo, onScanBill }) {
           className="ct-fab-item"
           role="menuitem"
           onClick={() => {
-            navTo("/agreements");
+            onRequestMoney();
             onClose();
           }}
         >
           <CtIcon name="handshake" size={16} />
-          {t("nav.fabRecordLending")}
+          {t("nav.fabRequestMoney")}
         </button>
       </div>
     </>
@@ -139,12 +148,17 @@ export function Navbar() {
   }, [fabOpen]);
 
   const hideOnYouSubpage = location.pathname.startsWith("/you/");
+  const hideOnInsightsSubpage = /^\/insights\/.+/.test(location.pathname);
   const navItems = navItemsForMode(resolveUserMode(settings));
   const tabItems = navItems.filter((item) => !item.fab);
   const fabItem = navItems.find((item) => item.fab);
   const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
 
-  if (hideOnYouSubpage) return null;
+  const openRequestMoney = useCallback(() => {
+    navigate("/agreements", { state: { openRequest: true } });
+  }, [navigate]);
+
+  if (hideOnYouSubpage || hideOnInsightsSubpage) return null;
 
   const clearLongPressTimer = () => {
     if (longPressTimerRef.current != null) window.clearTimeout(longPressTimerRef.current);
@@ -192,6 +206,7 @@ export function Navbar() {
         onClose={closeFab}
         navTo={navTo}
         onScanBill={() => setScanBillOpen(true)}
+        onRequestMoney={openRequestMoney}
       />
 
       <header className="ct-top-nav">
@@ -220,7 +235,7 @@ export function Navbar() {
         </div>
       </header>
 
-      <nav className="ct-bottom-nav" aria-label={t("nav.mainAria")} style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <nav className="ct-bottom-nav" aria-label={t("nav.mainAria")}>
         <div className="ct-bottom-nav-inner">
           {navItems.map((item) => {
             if (item.fab) {

@@ -1,0 +1,38 @@
+---
+description: Master product encyclopedia — routes, pages, engines, tests. Read before UI/product work.
+globs:
+  - src/**
+  - docs/**
+alwaysApply: false
+---
+
+# Project encyclopedia
+
+For **any** question about what a page does, where a route goes, how a score is calculated, or how tests work — read the encyclopedia first:
+
+**Index:** `docs/encyclopedia/00-index.md`
+
+| Volume | Path |
+|--------|------|
+| Routes & nav | `docs/encyclopedia/01-routes-and-navigation.md` |
+| Pages & clicks | `docs/encyclopedia/02-pages-and-clicks.md` |
+| Engines & math | `docs/encyclopedia/03-engines-and-math.md` |
+| Testing & QA | `docs/encyclopedia/04-testing-and-qa.md` |
+| File tree & data | `docs/encyclopedia/05-file-tree-and-data.md` |
+
+## Product UX invariants (2026)
+
+- **You (`/you`)**: settings list only — no goals hero, no duplicate score/net rows. Identity in avatar popover.
+- **Settings**: Personal details merges income + email + city (`/you/personal`). No separate Money/Account rows on hub.
+- **Ledger**: bills/spends at `/ledger/bills`, `/ledger/spends` — not `/money/*`.
+- **Insights**: hub uses `PageShell`; breakdowns at `/insights/*`.
+- **Cloud**: local-first; restore manual only (`cloud-sync-local-first.mdc`).
+
+## Before shipping
+
+```bash
+npm run audit
+npm test
+```
+
+Update `docs/09-implementation-status.md` if routes or major UX change.
