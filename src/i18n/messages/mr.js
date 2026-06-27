@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "या महिन्यात आवर्ती खर्च {percent}% कमी झाला",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "जलद साधने",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "सर्व पहा →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

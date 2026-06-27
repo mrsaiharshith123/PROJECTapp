@@ -4,7 +4,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getTier } from "../../../utils/tierAccess.js";
 import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
-import { InstallAppBanner, ToolsDiscoveryToast } from "../../";
+import { ToolsDiscoveryToast } from "../../";
 import PlansModal from "../profile/PlansModal.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
@@ -45,7 +45,6 @@ const Home = () => {
 
   return (
     <div className="ct-page ct-home-page ct-stack pb-8">
-      <InstallAppBanner />
       <ToolsDiscoveryToast variant="home" blocked={tourOpen} />
 
       <AppTourModal

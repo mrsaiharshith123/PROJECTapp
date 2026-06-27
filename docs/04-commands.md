@@ -6,7 +6,8 @@ All commands run from the project root (`PROJECTapp/`).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run dev` | Start Vite dev server with HMR (default `http://localhost:5173`) — full app; use `npm run site:customer-on` to preview landing locally |
+| `npm run dev` | Start Vite dev server — full app in **localhost phone shell** (`http://localhost:5173`) |
+| `npm run roger:all` | **Full maintenance pass** — sync i18n, docs-sync, full audit (use when you say "roger all") |
 | `npm run preview` | Serve production build locally (run `build` first) |
 | `npm test` | Run Vitest once (all unit tests — engines, utils, storage, sync, i18n) |
 | `npm run test:sync` | Snapshot + sync meta tests only |
@@ -90,7 +91,7 @@ Use when the repo looks messy locally. See [07-repo-folders.md](./07-repo-folder
 
 | Command | What it does |
 |---------|----------------|
-| `npm run build` | Generate PWA icons → Vite production build → copy `404.html` for GitHub Pages SPA |
+| `npm run build` | Generate app icons → Vite production build → OTA bundle → copy `404.html` for GitHub Pages SPA |
 | `npm run predeploy` | Runs `build` (npm lifecycle before deploy) |
 | `npm run deploy` | `gh-pages -d dist` — publish `dist/` to GitHub Pages |
 
@@ -111,18 +112,26 @@ Use when the repo looks messy locally. See [07-repo-folders.md](./07-repo-folder
 
 Full guide: [MOBILE.md](./MOBILE.md).
 
+## Roger all (full maintenance)
+
+| Command | What it does |
+|---------|----------------|
+| `npm run roger:all` | Sync i18n → docs-sync → full `audit` gate |
+| `npm run roger:all -- --fix` | ESLint auto-fix first, then roger pass |
+| `npm run roger:all -- --strict` | Fail on advisories too |
+
+See [11-roger-all.md](./11-roger-all.md). Cursor: say **"roger all"** to run this workflow.
+
 ## Optional / internal
 
 | Command | What it does |
 |---------|----------------|
-| `npm run ship` | Commit, push, build dev APK, publish to GitHub Releases (`latest` + `Perovo-dev-latest.apk`) |
+| `npm run ship` | Commit, push, build dev APK, publish to GitHub Releases |
 | `npm run ship -- --no-apk "msg"` | Commit and push only (skip APK build + release) |
 | `npm run ship -- --release-only` | Upload existing `releases/Perovo-dev-latest.apk` to GitHub Releases (no commit) |
 | `npm run gh:login` | GitHub CLI login (works when `gh` is not on PATH yet — Windows) |
-| `npm run site:mode` | Customer mode status for **localhost** (`npm run dev`) |
-| `npm run site:customer-on` | Localhost → landing page (writes `.env.local`, restart dev) |
-| `npm run site:customer-off` | Localhost → full app (default, restart dev) |
-| `npm run git:ship` | Alias for `npm run ship` |
+
+Legacy `site:customer-on/off` scripts remain for local env toggles but marketing web mode is **disabled in code**.
 
 ### Admin (local `npm run dev`)
 
@@ -150,13 +159,9 @@ Developers normally only need `npm run audit`. Internally:
 ```bash
 npm install
 cp .env.example .env    # if using Supabase locally
-npm run dev             # develop
+npm run dev             # develop (phone shell on localhost)
+npm run roger:all       # before push / release — full health pass
 npm test                # after engine/utils changes
-npm run audit:governance:quick  # during large UI refactors
-npm run audit:household         # family mode + profile scope (after household work)
-npm run audit:docs-sync         # implementation status doc matches code
-npm run audit:pre-release       # gate + governance + docs + engine tests
-npm run audit           # before push / PR
 ```
 
 ## If `npm run audit` fails with many errors at once

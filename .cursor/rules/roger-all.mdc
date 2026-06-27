@@ -1,0 +1,51 @@
+---
+description: Run full project maintenance when user says "roger all"
+alwaysApply: true
+---
+
+# Roger all
+
+When the user says **"roger all"** (any casing), run the full maintenance pass — do not skip steps.
+
+## Command
+
+```bash
+npm run roger:all
+```
+
+Optional flags (pass through if user asks for strict/fix):
+
+```bash
+npm run roger:all -- --fix      # ESLint auto-fix, then full gate
+npm run roger:all -- --strict   # Advisories also fail the gate
+```
+
+## What roger:all runs
+
+1. `npm run lint:fix` — only with `--fix`
+2. `npm run sync:i18n` — key parity from `en.js`
+3. `npm run audit:docs-sync` — `09-implementation-status.md` vs code
+4. `npm run audit` — full gate (deps, CSS, UI, i18n, code, tests, types, build, governance, sync)
+
+## After the script
+
+Fix every **blocking FAIL** until `npm run roger:all` exits 0. Then:
+
+- Update docs/rules if product direction changed (mobile-only, no PWA install, localhost phone shell)
+- Update `docs/CHANGELOG.md` for user-visible changes
+- Do **not** commit unless the user asks
+
+## Product defaults (keep docs/code aligned)
+
+- **Distribution:** Android APK (Capacitor dev) + Play Store TWA + iOS Capacitor — not a consumer web/PWA product
+- **Localhost dev:** full-screen phone shell via `src/ui/dev/DevPhoneFrame.jsx` — always on, no exit toggle
+- **UI shell:** bottom nav only — no desktop top nav
+- **Loading:** single `PageLoader` (P logo + Starting Perovo) for boot and route Suspense
+- **Cloud:** local-first; manual restore only (`cloud-sync-local-first` rule)
+- **i18n:** `t("key")` only in UI; run sync after new `en.js` keys
+
+## Reference
+
+- Commands: `docs/04-commands.md`
+- Workflow: `docs/06-workflow.md`
+- Roger detail: `docs/11-roger-all.md`

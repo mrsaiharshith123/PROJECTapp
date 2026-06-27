@@ -142,7 +142,7 @@ html[data-ui="ct"] {
   --ct-border-accent-soft: rgba(99, 102, 241, 0.22);
   --ct-border-success: rgba(20, 184, 166, 0.35);
   --ct-page-inset-top: 1.25rem;
-  --ct-page-inset-x: 1rem;
+  --ct-page-inset-x: 0.75rem;
   --ct-accent: #6366f1;
   --ct-accent-hover: #818cf8;
   --ct-accent-muted: #a5b4fc;
@@ -396,20 +396,13 @@ html[data-ui="ct"][data-theme="light"] {
 
 html[data-ui="ct"] body {
   font-family: var(--ct-font);
-  background:
-    radial-gradient(ellipse 90% 55% at 50% -8%, var(--ct-body-gradient-a) 0%, transparent 52%),
-    radial-gradient(ellipse 70% 50% at 95% 15%, var(--ct-body-gradient-c) 0%, transparent 50%),
-    radial-gradient(ellipse 100% 70% at 80% 0%, rgba(99, 102, 241, 0.04) 0%, transparent 45%),
-    radial-gradient(ellipse 120% 80% at 50% -20%, var(--ct-body-gradient-b) 0%, var(--ct-bg) 50%, var(--ct-bg-deep) 100%);
+  background: var(--ct-bg);
   color: var(--ct-text);
   -webkit-font-smoothing: antialiased;
 }
 
 html[data-ui="ct"][data-theme="light"] body {
-  background:
-    radial-gradient(ellipse 80% 45% at 50% -5%, rgba(109, 74, 255, 0.08) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    var(--ct-bg);
+  background: var(--ct-bg);
 }
 
 html[data-ui="ct"] .ct-display {

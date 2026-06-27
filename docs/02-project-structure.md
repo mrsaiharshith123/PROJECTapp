@@ -1,9 +1,9 @@
 # Project structure
 
 ```
-PROJECTapp/                  ← repo root (Vite + React PWA)
+PROJECTapp/                  ← repo root (Vite + React mobile web shell)
 ├── docs/                    Developer handbook
-├── public/                  PWA assets, notification-handler.js, icons
+├── public/                  App icons, notification-handler.js (legacy)
 ├── scripts/                 Build & audit tooling
 ├── src/                     App source (see below)
 ├── supabase/                Migrations + edge functions
@@ -20,14 +20,14 @@ PROJECTapp/                  ← repo root (Vite + React PWA)
 ```
 PROJECTapp/
 ├── docs/                    ← You are here (developer handbook)
-├── public/                  PWA assets, notification-handler.js, icons
+├── public/                  App icons, notification-handler.js (legacy)
 ├── tailwind.config.js       Color bridge (`--ct-tw-*`) for legacy Tailwind utilities in ui/
 ├── scripts/                 Build & audit tooling (Node, not app runtime)
 ├── src/
 │   ├── main.jsx, App.jsx    App entry + routing + I18nProvider
 │   ├── app/                 App glue (ThemeSync, AnalyticsBridge, RequireAdmin, ModeRoute, ToolsRedirect)
 │   ├── context/             React providers (Perovo, Auth)
-│   ├── hooks/               React hooks (intel, PWA install, …)
+│   ├── hooks/               React hooks (intel, …)
 │   ├── i18n/                Translations — 22 langs + en (see docs/10-i18n.md)
 │   ├── engines/             Pure finance logic + __tests__/
 │   ├── constants/           Modes, categories, copy keys, symbols (no React)
@@ -37,7 +37,7 @@ PROJECTapp/
 │   ├── storage/             App snapshot export shape (`appSnapshot.js`) for cloud sync
 │   ├── utils/               Storage, dates, lending, repayment, migration, spend series (`monthSpendSeries.js`, `salarySpendBar.js`)
 │   ├── types/               TypeScript types (context, global augmentations)
-│   └── ui/                  ★ ALL visual UI (see below)
+│   └── ui/                  ★ ALL visual UI — includes `ui/dev/` phone shell for localhost
 ├── supabase/                Migrations + schema snapshot (see supabase/README.md)
 ├── tsconfig.json            TypeScript (checkJs on src/)
 ├── eslint.config.js

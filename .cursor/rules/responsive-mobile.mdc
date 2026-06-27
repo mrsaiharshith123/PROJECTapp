@@ -1,5 +1,5 @@
 ---
-description: Responsive layout, device resize, safe-area for PWA/TWA/Capacitor.
+description: Responsive layout, safe-area — mobile APK/TWA/Capacitor + localhost phone shell.
 globs:
   - src/ui/**/*.jsx
   - src/ui/styles/**/*.css
@@ -7,42 +7,40 @@ globs:
   - vite.config.js
 ---
 
-# Responsive & device resize (PWA / TWA / Capacitor)
+# Responsive & mobile shell
 
-Perovo ships as **browser PWA**, **Play Store TWA**, and **Capacitor APK/iOS**. One codebase must resize correctly on all devices.
+Perovo ships as **Capacitor APK**, **Play Store TWA**, and **iOS Capacitor**. One codebase; **bottom nav only** (no desktop top bar).
+
+## Localhost dev
+
+- `src/ui/dev/DevPhoneFrame.jsx` wraps the app on `localhost` — full-screen phone frame with device size picker
+- `html[data-dev-phone-frame="1"]` forces mobile shell CSS even on wide laptop viewports
+- Helpers: `src/utils/devPhoneFrame.js`
 
 ## Viewport & safe area
 
-- `index.html` must keep `viewport-fit=cover` and boot styles using `100dvh`.
-- Page padding uses `env(safe-area-inset-*)` via `.ct-page` in `components.css` — do not bypass with raw `padding: 16px` on page roots.
-- Bottom nav, FAB, and sticky CTAs account for `safe-area-inset-bottom`.
+- `index.html` keeps `viewport-fit=cover` and boot styles using `100dvh`
+- Page padding uses `env(safe-area-inset-*)` via `.ct-main` — do not stack extra `16px` margins on page sections
+- Bottom nav, FAB, and sticky CTAs account for `safe-area-inset-bottom`
 
 ## Layout rules
 
-- **No fixed page widths** ≥300px without `max-width` or a `@media` breakpoint.
-- Prefer `ct-stack`, `ct-row-between`, `ct-grid-2`, `ct-form-narrow` over ad-hoc flex with pixel widths.
-- Use `min-w-0` on flex children that contain truncating text or horizontal scroll regions.
-- Avoid `100vw` on full-width elements (scrollbar overflow). Use `100%` or `ct-page` instead.
-- Prefer `dvh` over `vh` for full-screen panels, sheets, and auth gates.
-
-## Shell-specific
-
-- **PWA install prompt**: hide when `isEmbeddedApp()` is true (`src/utils/embeddedApp.js`).
-- **TWA**: requires `public/.well-known/assetlinks.json` on production host.
-- **Capacitor**: `webDir: "dist"` in `capacitor.config.ts`; run `npm run cap:sync` after build changes.
+- **No fixed page widths** ≥300px without `max-width` or a `@media` breakpoint
+- Prefer `ct-stack`, `ct-row-between`, `ct-grid-2` over ad-hoc flex with pixel widths
+- Use `min-w-0` on flex children that contain truncating text
+- Avoid `100vw` on full-width elements — use `100%` or `ct-page` instead
+- Prefer `dvh` over `vh` for full-screen panels and auth gates
 
 ## Components
 
-- `PageShell` for top-level pages; nested tabs (Money shell) omit duplicate shells intentionally.
-- Bottom sheets (`Modal sheet`) max-height uses `dvh` + safe-area — see `.ct-modal-panel--sheet`.
-- Segmented controls and chip rows wrap or scroll horizontally — never clip on 320px screens.
+- `PageShell` for top-level pages
+- Bottom sheets (`Modal sheet`) max-height uses `dvh` + safe-area
+- Segmented controls and chip rows wrap or scroll — never clip on 320px screens
 
 ## Governance
 
 ```bash
-npm run audit:mobile   # responsive heuristics
-npm run audit:pwa      # viewport, manifest, safe-area
-npm run audit:native-shells  # TWA + Capacitor config
+npm run audit:mobile
+npm run audit:native-shells
+npm run roger:all
 ```
-
-Both are included in `npm run audit`.

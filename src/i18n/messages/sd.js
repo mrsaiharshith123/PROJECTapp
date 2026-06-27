@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "بار بار خرچ هيٺ {percent}% هن مهيني",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "تڪڙو اوزار",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "سڀ ڏسو →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

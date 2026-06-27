@@ -1,4 +1,5 @@
 import { parseISO } from "date-fns";
+import { safeNum } from "./_guard.js";
 
 /**
  * Daily safe-to-spend until next salary credit after scheduled bills.
@@ -17,21 +18,20 @@ export function computeSafeToSpendDaily(input) {
       : null;
 
   if (!salaryDay || !todayStr || buffer <= 0) {
-    return { daily: 0, daysUntilSalary: null, bufferAfterBills: buffer };
+    return { daily: 0, daysUntilSalary: null, bufferAfterBills: safeNum(buffer, 0) };
   }
 
   let today;
   try {
     today = parseISO(`${todayStr}T12:00:00`);
   } catch {
-    return { daily: 0, daysUntilSalary: null, bufferAfterBills: buffer };
+    return { daily: 0, daysUntilSalary: null, bufferAfterBills: safeNum(buffer, 0) };
   }
 
   const dom = today.getDate();
   let daysUntil = salaryDay - dom;
   if (daysUntil <= 0) daysUntil += 28;
 
-  const dailyRaw = daysUntil > 0 ? Math.round(buffer / daysUntil) : buffer;
-  const daily = Number.isFinite(dailyRaw) ? Math.max(0, dailyRaw) : 0;
-  return { daily, daysUntilSalary: daysUntil, bufferAfterBills: buffer };
+  const daily = daysUntil > 0 ? safeNum(Math.round(buffer / daysUntil), 0) : safeNum(buffer, 0);
+  return { daily, daysUntilSalary: daysUntil, bufferAfterBills: safeNum(buffer, 0) };
 }

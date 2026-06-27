@@ -21,12 +21,6 @@ html[data-ui="ct"] .ct-main {
   padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 8px);
   isolation: isolate;
 }
-@media (min-width: 768px) {
-  html[data-ui="ct"] .ct-main {
-    padding-bottom: 2rem;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 4.5rem);
-  }
-}
 html[data-ui="ct"] .ct-page {
   display: flex;
   flex-direction: column;
@@ -119,21 +113,6 @@ html[data-ui="ct"] .ct-checkbox {
   height: 1.25rem;
   accent-color: var(--ct-accent);
   flex-shrink: 0;
-}
-html[data-ui="ct"] .ct-top-nav-links { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: flex-end; }
-html[data-ui="ct"] .ct-top-link {
-  padding: 0.4rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ct-text-muted);
-  text-decoration: none;
-  border-radius: var(--ct-radius-sm);
-}
-html[data-ui="ct"] .ct-top-link-active {
-  color: var(--ct-accent-muted);
-  background: var(--ct-life-inset-bg);
-  border: 1px solid var(--ct-life-inset-border);
-  box-shadow: 0 0 16px -6px var(--ct-accent-glow);
 }
 
 /* ── Hero month (Aurora glass) ── */
@@ -1429,38 +1408,7 @@ html[data-ui="ct"] .ct-nav-fab-icon {
   line-height: 1;
 }
 html[data-ui="ct"] .ct-top-link-fab {
-  color: var(--ct-accent-muted) !important;
-  border: 1px solid var(--ct-border-accent);
-}
-
-/* Desktop top bar */
-html[data-ui="ct"] .ct-top-nav {
   display: none;
-}
-@media (min-width: 768px) {
-  html[data-ui="ct"] .ct-bottom-nav { display: none; }
-  html[data-ui="ct"] .ct-bottom-nav::before { display: none; }
-  html[data-ui="ct"] .ct-top-nav {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    background: var(--ct-top-nav-bg);
-    border-bottom: 1px solid var(--ct-border);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1rem 0.75rem;
-  }
-  html[data-ui="ct"] .ct-top-nav-inner {
-    max-width: 42rem;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
 }
 
 /* ── Modal ── */
@@ -1472,12 +1420,6 @@ html[data-ui="ct"] .ct-modal-overlay {
   align-items: flex-end;
   justify-content: center;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-@media (min-width: 768px) {
-  html[data-ui="ct"] .ct-modal-overlay {
-    align-items: center;
-    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px));
-  }
 }
 html[data-ui="ct"] .ct-modal-backdrop {
   position: absolute;
@@ -1506,9 +1448,6 @@ html[data-ui="ct"] .ct-modal-panel {
 html[data-ui="ct"] .ct-modal-panel .overflow-y-auto {
   min-height: 0;
   -webkit-overflow-scrolling: touch;
-}
-@media (min-width: 768px) {
-  html[data-ui="ct"] .ct-modal-panel { border-radius: var(--ct-radius-2xl); }
 }
 html[data-ui="ct"] .ct-modal-panel:has(.ct-profile-settings-grid) {
   max-width: 36rem;
@@ -3091,9 +3030,6 @@ html[data-ui="ct"] .ct-tools-toast {
   pointer-events: none;
 }
 html[data-ui="ct"] .ct-tools-toast-visible { pointer-events: auto; }
-@media (min-width: 768px) {
-  html[data-ui="ct"] .ct-tools-toast { bottom: auto; top: 4.75rem; }
-}
 html[data-ui="ct"] .ct-tools-toast-visible { transform: translateX(0); opacity: 1; }
 html[data-ui="ct"] .ct-tools-toast-hidden {
   transform: translateX(1rem);
@@ -4923,8 +4859,11 @@ html[data-ui="ct"] .ct-settings-row-danger .ct-settings-row-label {
 html[data-ui="ct"] .ct-page-shell {
   max-width: 540px;
   margin: 0 auto;
-  padding: 0 var(--ct-page-inset-x);
+  padding: 0;
   padding-bottom: 6rem;
+}
+html[data-ui="ct"] .ct-main .ct-page-shell {
+  max-width: none;
 }
 html[data-ui="ct"] .ct-page-shell-head {
   display: flex;
@@ -5390,9 +5329,7 @@ html[data-ui="ct"] .ct-metric-card:active {
   transform: scale(0.98);
 }
 html[data-ui="ct"] .ct-home-page {
-  background:
-    radial-gradient(ellipse 80% 30% at 50% 0%, rgba(99, 102, 241, 0.07) 0%, transparent 70%),
-    var(--ct-bg);
+  background: var(--ct-bg);
 }
 html[data-ui="ct"] .ct-home-page .ct-home-sections {
   gap: 1rem;
@@ -5417,7 +5354,7 @@ html[data-ui="ct"] .ct-home-greeting-row {
   min-width: 0;
 }
 html[data-ui="ct"] .ct-home-header {
-  padding: max(12px, env(safe-area-inset-top, 0px)) 16px 0;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
 }
 html[data-ui="ct"] .ct-home-appbar {
   display: flex;
@@ -5440,7 +5377,7 @@ html[data-ui="ct"] .ct-home-top {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: max(12px, env(safe-area-inset-top, 0px)) 16px 12px;
+  margin: max(12px, env(safe-area-inset-top, 0px)) 0 12px;
   padding: 0;
   border: none;
   border-radius: 0;
@@ -6309,7 +6246,7 @@ html[data-ui="ct"] .ct-home-section-label {
   margin: 0 0 8px;
 }
 html[data-ui="ct"] .ct-home-category-section {
-  padding: 0 16px;
+  padding: 0;
 }
 html[data-ui="ct"] .ct-home-quick-actions-panel {
   background: rgba(255, 255, 255, 0.02);
@@ -6318,7 +6255,7 @@ html[data-ui="ct"] .ct-home-quick-actions-panel {
   padding: 10px 12px;
 }
 html[data-ui="ct"] .ct-home-attention-section {
-  padding: 0 16px;
+  padding: 0;
 }
 html[data-ui="ct"] .ct-home-attention-label {
   display: flex;
@@ -7574,10 +7511,32 @@ html[data-ui="ct"] .pos-display-amount {
 }
 html[data-ui="ct"] .pos-display-amount.liability { color: var(--pos-liab); }
 html[data-ui="ct"] .pos-display-amount.instrument { color: var(--pos-inst); }
+html[data-ui="ct"] .ct-insight-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+html[data-ui="ct"] .ct-insight-stat-card {
+  border-radius: 12px;
+  padding: 14px 14px;
+  min-height: 72px;
+}
+html[data-ui="ct"] .ct-insight-stat-card .ct-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+html[data-ui="ct"] .ct-insight-stat-card .ct-stat-value {
+  font-size: 15px;
+  font-weight: 600;
+}
 html[data-ui="ct"] .pos-category-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
+}
+html[data-ui="ct"] .pos-category-grid .pos-tile {
+  min-height: 92px;
+  padding: 14px;
 }
 
 html[data-ui="ct"] .pos-agreement-card {

@@ -8,6 +8,10 @@ const ACCENT_TILE = {
   violet: "violet",
   gold: "amber",
   rose: "danger",
+  instrument: "indigo",
+  liability: "danger",
+  goal: "amber",
+  asset: "teal",
 };
 
 /**

@@ -14,6 +14,7 @@
 | [08-governance.md](./08-governance.md) | Audit system, registries, engineering governance |
 | [09-implementation-status.md](./09-implementation-status.md) | **What’s built vs deferred** — V1 scope, payments, legal lending, i18n coverage, roadmap |
 | [10-i18n.md](./10-i18n.md) | **22 languages + English** — keys, scripts, wiring rules |
+| [11-roger-all.md](./11-roger-all.md) | **"Roger all"** — full maintenance pass (audit + sync + docs) |
 | [CHANGELOG.md](./CHANGELOG.md) | **Version history** |
 | **[encyclopedia/00-index.md](./encyclopedia/00-index.md)** | **Full product encyclopedia** — every route, page, click, engine math, tests |
 | [MOBILE.md](./MOBILE.md) | **Android TWA + Capacitor dev APK + iOS** |

@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "આ મહિને રિકરિંગ ખર્ચમાં {percent}% ઘટાડો",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "ઝડપી સાધનો",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "બધા જુઓ →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

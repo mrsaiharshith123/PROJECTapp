@@ -14,6 +14,7 @@ function InsightStatCard({ eyebrow, title, detail, empty, icon, tone = "positive
   const borderToken = tone === "positive" ? "asset" : tone === "warning" ? "warning" : "liab";
   return (
     <div
+      className="ct-insight-stat-card"
       style={{
         background:
           tone === "positive"
@@ -22,15 +23,12 @@ function InsightStatCard({ eyebrow, title, detail, empty, icon, tone = "positive
               ? "rgba(245,158,11,0.08)"
               : "rgba(244,63,94,0.08)",
         borderLeft: `3px solid var(--pos-${borderToken})`,
-        borderRadius: 10,
-        padding: "10px 12px",
-        marginBottom: 8,
       }}
     >
-      <div className="ct-row gap-2 items-start">
+      <div className="ct-row gap-3 items-start">
         {icon ? (
-          <span className={`ct-icon-tile ct-icon-tile-sm ${iconTone} shrink-0`} aria-hidden>
-            <CtIcon name={icon} size={18} />
+          <span className={`ct-icon-tile ${iconTone} shrink-0`} style={{ width: 40, height: 40 }} aria-hidden>
+            <CtIcon name={icon} size={20} />
           </span>
         ) : null}
         <div className="min-w-0 flex-1">
@@ -38,10 +36,10 @@ function InsightStatCard({ eyebrow, title, detail, empty, icon, tone = "positive
           {title ? (
             <>
               <p className="ct-stat-value truncate">{title}</p>
-              {detail ? <p className="ct-stat-label mt-0.5 ct-numeral">{detail}</p> : null}
+              {detail ? <p className="ct-stat-label mt-1 ct-numeral">{detail}</p> : null}
             </>
           ) : (
-            <p className="ct-stat-label mt-0.5">{empty}</p>
+            <p className="ct-stat-label mt-1">{empty}</p>
           )}
         </div>
       </div>
@@ -65,7 +63,7 @@ export default function BillInsightsCards() {
   );
 
   return (
-    <div className="ct-grid-2 gap-2">
+    <div className="ct-insight-stat-grid">
       <InsightStatCard
         eyebrow={t("home.biggestCategory")}
         tone="positive"

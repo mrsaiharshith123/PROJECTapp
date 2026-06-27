@@ -307,6 +307,7 @@ export default {
   "home.goodNews.spendDown": "Recurring spend down {percent}% this month",
   "home.goodNews.shareLink": "Share →",
   "home.tools.sectionTitle": "Quick tools",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "See all →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

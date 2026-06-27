@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#4A6CF7" />
     <meta name="description" content="Perovo — finance simplified. Track bills, pressure, repayments, and lending on your device." />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Perovo" />
     <link rel="apple-touch-icon" href="pwa-192.png" />
@@ -48,6 +46,85 @@
         min-height: 100dvh;
         background: inherit;
       }
+      #boot-loader {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, sans-serif;
+        color: #f0eff9;
+      }
+      #boot-loader .boot-spin {
+        position: relative;
+        width: 3.25rem;
+        height: 3.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #boot-loader .boot-spin-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(155, 109, 255, 0.18);
+        border-top-color: #b8a4ff;
+        border-right-color: rgba(52, 211, 153, 0.55);
+        animation: boot-spin 0.85s linear infinite;
+      }
+      #boot-loader .boot-spin-core {
+        width: 72%;
+        height: 72%;
+        animation: boot-spin-pulse 2s ease-in-out infinite;
+      }
+      #boot-loader .boot-spin-core img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
+      #boot-loader .boot-message-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.85rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.125rem;
+      }
+      #boot-loader .boot-wordmark {
+        height: 13px;
+        width: auto;
+        display: block;
+      }
+      #boot-loader .boot-progress {
+        width: min(12rem, 70vw);
+        height: 3px;
+        border-radius: 999px;
+        background: rgba(155, 109, 255, 0.15);
+        overflow: hidden;
+        margin-top: 0.85rem;
+      }
+      #boot-loader .boot-progress-bar {
+        display: block;
+        height: 100%;
+        width: 35%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #b8a4ff, #34d399);
+        animation: boot-progress 1.4s ease-in-out infinite;
+      }
+      @keyframes boot-spin {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes boot-spin-pulse {
+        0%, 100% { opacity: 0.75; transform: scale(0.96); }
+        50% { opacity: 1; transform: scale(1); }
+      }
+      @keyframes boot-progress {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(320%); }
+      }
     </style>
     <script>
       (function () {
@@ -72,10 +149,34 @@
   </head>
   <body>
     <div id="root">
-      <p id="boot-status" style="margin:0;padding:2rem 1rem;text-align:center;font-family:system-ui,sans-serif;font-size:0.9rem;color:#8b8aa3">
-        Starting Perovo…
-      </p>
+      <div id="boot-loader" role="status" aria-live="polite" aria-busy="true">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:2rem 1.5rem">
+          <div class="boot-spin">
+            <span class="boot-spin-ring" aria-hidden="true"></span>
+            <span class="boot-spin-core">
+              <img id="boot-icon" src="brand/icon-dark.png" alt="" width="36" height="36" />
+            </span>
+          </div>
+          <div class="boot-message-row">
+            <span>Starting</span>
+            <img id="boot-wordmark" class="boot-wordmark" src="brand/wordmark-dark.png" alt="Perovo" />
+            <span aria-hidden="true">…</span>
+          </div>
+          <div class="boot-progress" aria-hidden="true"><span class="boot-progress-bar"></span></div>
+        </div>
+      </div>
     </div>
+    <script>
+      (function () {
+        var theme = document.documentElement.dataset.theme || "dark";
+        if (theme === "light") {
+          var icon = document.getElementById("boot-icon");
+          var wordmark = document.getElementById("boot-wordmark");
+          if (icon) icon.src = "brand/icon-light.png";
+          if (wordmark) wordmark.src = "brand/wordmark-light.png";
+        }
+      })();
+    </script>
     <script type="module" src="/src/capgo-notify-only.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

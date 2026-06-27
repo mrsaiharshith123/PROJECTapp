@@ -1,4 +1,5 @@
 import { computeNetWorthCore } from "./core.js";
+import { safeNum, safeScore } from "../_guard.js";
 
 /**
  * @param {object} input
@@ -10,18 +11,17 @@ import { computeNetWorthCore } from "./core.js";
 export function computeLiquidityIntelligence(input) {
   const core = computeNetWorthCore(input.entries);
   const { liquidityBreakdown, liquidNetWorth, totalAssets } = core;
-  const obligations = Math.max(1, Number(input.monthlyObligations) || 1);
-  const income = Math.max(0, Number(input.monthlyIncome) || 0);
-
-  const pureLiquid = liquidityBreakdown.liquid || 0;
-  const survivalMonths = pureLiquid / obligations;
+  const obligations = Math.max(1, safeNum(input.monthlyObligations, 1));
+  const income = safeNum(input.monthlyIncome, 0);
+  const pureLiquid = safeNum(liquidityBreakdown.liquid, 0);
+  const survivalMonths = obligations > 0 ? pureLiquid / obligations : 0;
   const accessibleSafetyRatio = income > 0 ? pureLiquid / (income * 3) : pureLiquid / obligations;
-  const lockedPct = totalAssets > 0 ? ((liquidityBreakdown.locked || 0) / totalAssets) * 100 : 0;
-  const flexibilityScore = Math.max(0, Math.min(100, Math.round(
+  const lockedPct = totalAssets > 0 ? safeNum(((liquidityBreakdown.locked || 0) / totalAssets) * 100, 0) : 0;
+  const flexibilityScore = safeScore(
     (survivalMonths / 6) * 40 +
     (accessibleSafetyRatio * 30) +
     (liquidNetWorth > 0 ? 30 : 0)
-  )));
+  );
 
   /** @type {'strong' | 'moderate' | 'weak' | 'critical'} */
   let strength;
@@ -31,15 +31,15 @@ export function computeLiquidityIntelligence(input) {
   else strength = "critical";
 
   return {
-    pureLiquid,
-    liquidNetWorth: core.liquidNetWorth,
-    survivalMonths: Math.round(survivalMonths * 10) / 10,
-    accessibleSafetyRatio: Math.round(accessibleSafetyRatio * 100) / 100,
+    pureLiquid: safeNum(pureLiquid),
+    liquidNetWorth: safeNum(core.liquidNetWorth),
+    survivalMonths: safeNum(Math.round(survivalMonths * 10) / 10),
+    accessibleSafetyRatio: safeNum(Math.round(accessibleSafetyRatio * 100) / 100),
     emergencyLiquidityStrength: strength,
     flexibilityScore,
-    lockedWealthPct: Math.round(lockedPct),
-    semiLiquid: liquidityBreakdown["semi-liquid"] || 0,
-    highRisk: liquidityBreakdown["high-risk"] || 0,
+    lockedWealthPct: safeNum(Math.round(lockedPct)),
+    semiLiquid: safeNum(liquidityBreakdown["semi-liquid"], 0),
+    highRisk: safeNum(liquidityBreakdown["high-risk"], 0),
     insightKeys: buildLiquidityInsightKeys({
       survivalMonths,
       lockedPct,

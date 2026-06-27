@@ -8,6 +8,10 @@ import { I18nProvider } from "./i18n/index.js";
 import App from "./App.jsx";
 import { log } from "./utils/logger.js";
 import { isNativeCapacitorShell } from "./utils/nativePermissions.js";
+import { applyDevPhoneFrameBootAttrs } from "./utils/devPhoneFrame.js";
+import DevPhoneFrame from "./ui/dev/DevPhoneFrame.jsx";
+
+applyDevPhoneFrameBootAttrs();
 
 if (isNativeCapacitorShell()) {
   document.documentElement.style.webkitUserSelect = "none";
@@ -44,17 +48,14 @@ if (import.meta.env.VITE_POSTHOG_KEY && import.meta.env.PROD) {
   });
 }
 
-if (import.meta.env.PROD && import.meta.env.VITE_EMBEDDED_APP !== "1") {
-  const { registerSW } = await import("virtual:pwa-register");
-  registerSW({ immediate: true });
-}
-
 log.app.info("Perovo starting", { mode: import.meta.env.MODE });
 
 const app = (
   <StrictMode>
     <I18nProvider>
-      <App />
+      <DevPhoneFrame>
+        <App />
+      </DevPhoneFrame>
     </I18nProvider>
   </StrictMode>
 );

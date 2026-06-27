@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "परत परत खर्च ह्या म्हयन्यांत {percent}% सकयल",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "जलद साधनां",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "सगळें पळयात →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

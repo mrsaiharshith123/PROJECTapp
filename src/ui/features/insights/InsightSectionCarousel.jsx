@@ -49,7 +49,7 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
 
   return (
     <section id={`insight-section-${section.id}`} className="ct-insight-section" style={{ marginBottom: 28 }}>
-      <div className="ct-row-between items-start" style={{ padding: "0 16px 10px" }}>
+      <div className="ct-row-between items-start" style={{ padding: "0 0 10px" }}>
         <div className="min-w-0">
           <h2 className="ct-analytics-section-title" style={{ fontSize: 15, margin: 0 }}>
             {t(section.titleKey)}
@@ -76,7 +76,7 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
           style={{
             display: "flex",
             gap: 8,
-            padding: "0 16px 10px",
+            padding: "0 0 10px",
             overflowX: "auto",
             scrollbarWidth: "none",
           }}
@@ -111,7 +111,7 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
         </div>
       ) : null}
 
-      <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ padding: "0 16px" }}>
+      <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div key={`${section.id}-${activeIdx}`} className={enterClass}>
           <InsightCardContent card={activeCard} data={data} showBreakdownCta />
         </div>
@@ -141,7 +141,7 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
       ) : null}
 
       {cardBreakdown && !sectionBreakdown ? (
-        <div style={{ padding: "10px 16px 0", display: "flex", justifyContent: "center" }}>
+        <div style={{ padding: "10px 0 0", display: "flex", justifyContent: "center" }}>
           <button
             type="button"
             className="ct-btn ct-btn-ghost ct-btn-sm"

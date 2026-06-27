@@ -2,6 +2,7 @@
  * Simplified India income-tax estimate for salaried users (education only — not filing advice).
  * FY 2025–26 style new regime slabs + Section 87A rebate cap.
  */
+import { safeNum } from "./_guard.js";
 
 /** @type {[number, number][]} */
 const NEW_REGIME_SLABS = [
@@ -172,24 +173,24 @@ export function estimateIncomeTax(input) {
 
   const result = {
     regime,
-    annualGrossIncome: gross,
-    standardDeduction: std,
-    deduction80c: c80,
-    deduction80d: d80,
-    deduction80ccd1b: ccd1b,
-    professionalTax: profTax,
-    hraExemption,
-    chapterViaDeductions: chapterVia,
-    taxableIncome: taxable,
-    taxBeforeRebate,
-    rebate87a,
-    taxAfterRebate,
-    cess,
-    totalTax,
-    monthlyTds,
-    effectiveRatePercent: effectiveRate,
-    takeHomeAnnual,
-    takeHomeMonthly: Math.round(takeHomeAnnual / 12),
+    annualGrossIncome: safeNum(gross),
+    standardDeduction: safeNum(std),
+    deduction80c: safeNum(c80),
+    deduction80d: safeNum(d80),
+    deduction80ccd1b: safeNum(ccd1b),
+    professionalTax: safeNum(profTax),
+    hraExemption: safeNum(hraExemption),
+    chapterViaDeductions: safeNum(chapterVia),
+    taxableIncome: safeNum(taxable),
+    taxBeforeRebate: safeNum(taxBeforeRebate),
+    rebate87a: safeNum(rebate87a),
+    taxAfterRebate: safeNum(taxAfterRebate),
+    cess: safeNum(cess),
+    totalTax: safeNum(totalTax),
+    monthlyTds: safeNum(monthlyTds),
+    effectiveRatePercent: safeNum(effectiveRate),
+    takeHomeAnnual: safeNum(takeHomeAnnual),
+    takeHomeMonthly: safeNum(Math.round(takeHomeAnnual / 12)),
     disclaimer:
       "Rough estimate for planning only. Actual tax depends on exemptions, other income, and your CA or the tax portal.",
     optimizationInsights: [],

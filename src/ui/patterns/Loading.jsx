@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { PerovoLogo } from "../brand/PerovoLogo.jsx";
 import { PerovoWordmark } from "../brand/PerovoWordmark.jsx";
 import { useTranslationOptional } from "../../i18n/I18nProvider.js";
-import { RouteSkeleton } from "./loadingSkeletons.jsx";
 
 const LOADING_HINT_KEYS = [
   "common.loadingHint1",
@@ -119,24 +117,10 @@ export function PageLoader({ message, hint = true }) {
 }
 
 /**
- * Route-aware Suspense fallback — skeleton matches the destination page.
+ * Route-aware Suspense fallback — same boot loader as auth/session wait.
  */
 export function RouteFallback() {
-  const { pathname } = useLocation();
-  const { t } = useTranslationOptional();
-
-  return (
-    <div className="ct-route-load" role="status" aria-live="polite" aria-busy="true">
-      <div className="ct-route-load-top" aria-hidden>
-        <span className="ct-route-load-bar" />
-        <div className="ct-route-load-pill">
-          <LoadingSpinner size="sm" />
-          <span>{t("common.loadingPage")}</span>
-        </div>
-      </div>
-      <RouteSkeleton pathname={pathname} />
-    </div>
-  );
+  return <PageLoader hint={false} />;
 }
 
 /**

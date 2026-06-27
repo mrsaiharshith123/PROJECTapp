@@ -16,7 +16,7 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
     <div
       className="pos-hero agreement"
       style={{
-        margin: "0 16px 12px",
+        margin: "0 0 12px",
         borderRadius: 20,
         padding: "18px 18px 16px",
         border: "0.5px solid var(--pos-agr-border)",

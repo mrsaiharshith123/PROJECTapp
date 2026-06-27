@@ -262,6 +262,7 @@ export default {
   "home.goodNews.spendDown": "اس مہینے بار بار ہونے والے اخراجات میں {percent}% کی کمی",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "فوری ٹولز",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "سبھی دیکھیں →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

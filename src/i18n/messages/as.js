@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "এই মাহত পুনৰাবৃত্তিমূলক খৰচ {percent}% হ্ৰাস পাইছে",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "দ্ৰুত সঁজুলি",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "সকলো চাওক →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

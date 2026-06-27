@@ -6,20 +6,11 @@ import { resolveUserMode } from "../../constants/modeExperience.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
-import { PerovoBrand } from "../brand/PerovoBrand.jsx";
 import { Modal } from "../primitives/Modal.jsx";
 import LogSpendModal from "../features/modals/LogSpendModal.jsx";
 import { FAB_CHANGE_EVENT } from "../../constants/fabEvents.js";
 
 const BillScannerTool = lazy(() => import("../features/tools/BillScannerTool.jsx"));
-
-function Brand() {
-  return (
-    <div className="ct-brand">
-      <PerovoBrand layout="row" iconSize="sm" wordmarkSize="xs" />
-    </div>
-  );
-}
 
 /** @param {{ to: string, navGroup?: string }} item @param {{ pathname: string }} location */
 function isNavItemActive(item, location) {
@@ -150,8 +141,6 @@ export function Navbar() {
   const hideOnYouSubpage = location.pathname.startsWith("/you/");
   const hideOnInsightsSubpage = /^\/insights\/.+/.test(location.pathname);
   const navItems = navItemsForMode(resolveUserMode(settings));
-  const tabItems = navItems.filter((item) => !item.fab);
-  const fabItem = navItems.find((item) => item.fab);
   const navLabel = (item) => (item.labelKey ? t(item.labelKey) : item.label);
 
   const openRequestMoney = useCallback(() => {
@@ -208,32 +197,6 @@ export function Navbar() {
         onScanBill={() => setScanBillOpen(true)}
         onRequestMoney={openRequestMoney}
       />
-
-      <header className="ct-top-nav">
-        <div className="ct-top-nav-inner">
-          <Brand />
-          <div className="ct-top-nav-links">
-            {tabItems.map((item) => {
-              const active = isNavItemActive(item, location);
-              return (
-                <a
-                  key={item.to}
-                  href={item.to}
-                  onClick={(e) => { e.preventDefault(); navTo(item.to); }}
-                  className={cn("ct-top-link", active && "ct-top-link-active")}
-                >
-                  {navLabel(item)}
-                </a>
-              );
-            })}
-            {fabItem && (
-              <button type="button" className="ct-top-link ct-top-link-fab" {...fabPointerHandlers}>
-                {navLabel(fabItem)}
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
 
       <nav className="ct-bottom-nav" aria-label={t("nav.mainAria")}>
         <div className="ct-bottom-nav-inner">

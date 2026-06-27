@@ -1,5 +1,17 @@
 # Developer workflow
 
+### Before every push or release
+
+```bash
+npm run roger:all
+```
+
+This syncs i18n keys, checks docs vs code, and runs the full audit gate. Say **"roger all"** in Cursor for the same workflow. Details: [11-roger-all.md](./11-roger-all.md).
+
+### Localhost development
+
+`npm run dev` wraps the app in a **full-screen phone frame** (`src/ui/dev/DevPhoneFrame.jsx`) so you test mobile layout on a laptop without browser devtools. Change device size from the top bar.
+
 ## First day setup
 
 1. Clone the repo and `npm install`

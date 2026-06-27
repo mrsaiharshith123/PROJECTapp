@@ -8,17 +8,11 @@ export function isEmbeddedApp() {
 }
 
 /**
- * Customer mode = public landing page (not the dashboard).
- * - **localhost (`npm run dev`)**: opt-in via `.env.local` → `VITE_CUSTOMER_MODE=1` (`npm run site:customer-on`)
- * - **GitHub Pages**: always on (production web is landing-only)
- * - **APK / Capacitor**: always off (full app)
+ * Marketing / download landing site — disabled; mobile APK is the only distribution channel.
+ * Localhost dev (`npm run dev`) always loads the full app shell for testing.
  */
 export function isCustomerModeEnabled() {
-  if (isEmbeddedApp()) return false;
-  if (import.meta.env.DEV) {
-    return import.meta.env.VITE_CUSTOMER_MODE === "1";
-  }
-  return true;
+  return false;
 }
 
 /** @deprecated use isCustomerModeEnabled */

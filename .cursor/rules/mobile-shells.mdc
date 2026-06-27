@@ -1,5 +1,5 @@
 ---
-description: Mobile distribution — TWA (Play Store), Capacitor (dev APK + iOS). No Expo/appversion.
+description: Mobile distribution — TWA, Capacitor APK/iOS. No PWA consumer web.
 globs:
   - twa/**/*
   - capacitor.config.ts
@@ -7,6 +7,7 @@ globs:
   - scripts/governance/native-shells.mjs
   - docs/MOBILE.md
   - src/utils/embeddedApp.js
+  - src/ui/dev/**/*
 ---
 
 # Mobile shells (single web codebase)
@@ -15,31 +16,26 @@ globs:
 
 | Channel | Wrapper | Command | Package id |
 |---------|---------|---------|------------|
-| **Play Store** | TWA → live `perovo.app` | `npm run apk:twa` | `app.perovo.twa` |
+| **Play Store** | TWA → live site | `npm run apk:twa` | `app.perovo.twa` |
 | **Dev / sideload APK** | Capacitor + bundled `dist/` | `npm run apk:dev` | `app.perovo.mobile` |
 | **iOS** | Capacitor | `npm run cap:sync` + `npm run cap:ios` | `app.perovo.mobile` |
-| **Browser** | PWA | `npm run build` + deploy | — |
+| **Localhost dev** | Phone shell in browser | `npm run dev` | — |
 
 ## Rules
 
-1. **No `appversion/` or `webversion/` folders** — one repo root app only.
-2. **Product UI** lives in `src/` — never duplicate for mobile.
-3. **`isEmbeddedApp()`** in `src/utils/embeddedApp.js` — hide PWA install when TWA/Capacitor.
-4. **TWA** needs `public/.well-known/assetlinks.json` deployed with production site.
-5. **Dev APK** output: `releases/Perovo-dev-latest.apk` (gitignored) — share with remote developers.
+1. **No consumer PWA / web landing** — `vite-plugin-pwa` removed; no install banners or download sheets
+2. **Product UI** lives in `src/ui/` — never duplicate for mobile
+3. **`isCustomerModeEnabled()`** always `false` — full app on localhost for testing
+4. **Localhost** uses `DevPhoneFrame` (`src/ui/dev/`) — always on, no desktop layout
+5. **TWA** needs `public/.well-known/assetlinks.json` on production host
+6. **Dev APK** output: `releases/Perovo-dev-latest.apk` (gitignored)
 
 ## Governance
 
 ```bash
-npm run audit                  # full gate — includes mobile, PWA, a11y, theme, cleanup
-npm run audit:mobile           # responsive & device resize heuristics
-npm run audit:pwa              # viewport, safe-area, manifest assets
-npm run audit:native-shells    # capacitor + twa + scripts + no legacy folders
-npm run audit:cleanup          # stale public.zip, appversion/, rebrand scripts
+npm run roger:all           # full pass including mobile + governance
+npm run audit:mobile
+npm run audit:native-shells
 ```
 
-Included in `npm run audit` and `npm run audit:governance:quick`.
-
-## Docs
-
-Handbook: `docs/MOBILE.md` · Commands: `docs/04-commands.md`
+Docs: `docs/MOBILE.md` · `docs/11-roger-all.md`

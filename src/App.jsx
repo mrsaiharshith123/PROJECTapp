@@ -1,16 +1,14 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
-import { isCustomerModeEnabled } from "./utils/embeddedApp.js";
 import { isUpdateTestShell } from "./utils/updateTestShell.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
-import { Navbar, InstallAppBanner, Screen, MainContent, RouteFallback } from "./ui";
-import { I18nProvider, PerovoLocaleSync } from "./i18n/index.js";
+import { Navbar, Screen, MainContent, RouteFallback } from "./ui";
+import { PerovoLocaleSync } from "./i18n/index.js";
 import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
-import WebLandingPage from "./ui/features/pages/WebLandingPage.jsx";
 import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
 import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
 import UpdateTestShellApp from "./app/UpdateTestShellApp.jsx";
@@ -204,7 +202,6 @@ function OnboardingShell() {
     <Screen narrow>
       <ThemeSync />
       <AnalyticsBridge />
-      <div className="mb-6"><InstallAppBanner /></div>
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/onboarding" element={<Onboarding />} />
@@ -301,25 +298,8 @@ function AppShell() {
   return <MainShell />;
 }
 
-function MarketingShell() {
-  return (
-    <BrowserRouter basename={routerBasename()}>
-      <I18nProvider standalone>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/auth/confirm" element={<AuthConfirmPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="*" element={<WebLandingPage />} />
-          </Routes>
-        </ErrorBoundary>
-      </I18nProvider>
-    </BrowserRouter>
-  );
-}
-
 function App() {
   if (isUpdateTestShell()) return <UpdateTestShellApp />;
-  if (isCustomerModeEnabled()) return <MarketingShell />;
 
   return (
     <BrowserRouter basename={routerBasename()} useTransitions={false}>

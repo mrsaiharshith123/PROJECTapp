@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { InstallAppBanner, Body, Caption, Button, Modal, inputClassName } from "../../../index.js";
+import { Body, Caption, Button, Modal, inputClassName } from "../../../index.js";
 import { CtIcon } from "../../../icons/CtIcon.jsx";
 import ProfileBrandFooter from "../ProfileBrandFooter.jsx";
 
@@ -118,7 +118,6 @@ export default function ProfileHubFooter({
         </Modal>
       ) : null}
 
-      <InstallAppBanner />
       <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none">
         <Caption className="text-center block pb-1 opacity-75">{t("profile.savedLocally")}</Caption>
       </div>

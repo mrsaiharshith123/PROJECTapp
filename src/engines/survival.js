@@ -1,6 +1,7 @@
 import { addMonths, format, parseISO } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
 import { resolveDailyLivingCost } from "./lifestyleBurn.js";
+import { safeNum } from "./_guard.js";
 
 /** @typedef {"critical" | "weak" | "moderate" | "healthy" | "strong"} SurvivalTier */
 /** @typedef {"stable" | "vulnerable" | "fragile" | "critical"} SurvivalClassification */
@@ -243,7 +244,7 @@ export function computeSurvivalAnalysis({
         : null;
 
   const result = {
-    survivalMonths: baseline.runwayMonths,
+    survivalMonths: baseline.runwayMonths == null ? null : safeNum(baseline.runwayMonths, 0),
     monthlyBurn: baseline.requiredMonthlyBurn,
     lifestyleMonthlyBurn: lifestyleBurn,
     lifestyle,
@@ -268,7 +269,7 @@ export function computeSurvivalAnalysis({
   } else if (result.survivalMonths != null) {
     result.survivalMonths = Math.max(0, result.survivalMonths);
   }
-  if (!Number.isFinite(result.monthlyBurn)) result.monthlyBurn = 0;
+  result.monthlyBurn = safeNum(result.monthlyBurn, 0);
   return result;
 }
 

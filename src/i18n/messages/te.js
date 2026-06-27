@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "ఈ నెలలో పునరావృత వ్యయం {percent}% తగ్గింది",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "త్వరిత సాధనాలు",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "అన్నీ చూడండి →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

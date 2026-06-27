@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "இந்த மாதம் தொடர் செலவு {percent}% குறைந்தது",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "விரைவான கருவிகள்",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "அனைத்தையும் பார்க்கவும் →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

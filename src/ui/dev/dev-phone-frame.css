@@ -1,0 +1,144 @@
+/* Localhost dev — full-screen phone shell (html[data-dev-phone-frame="1"]) */
+
+.dev-phone-stage {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #09090f;
+  color: #c8c7d8;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+.dev-phone-controls {
+  flex-shrink: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f0f16;
+}
+
+.dev-phone-select,
+.dev-phone-input {
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #eceaf8;
+  font-size: 11px;
+  padding: 5px 8px;
+}
+
+.dev-phone-select {
+  min-width: 132px;
+}
+
+.dev-phone-input {
+  width: 58px;
+}
+
+.dev-phone-times {
+  font-size: 11px;
+  color: #7d7c90;
+}
+
+.dev-phone-btn {
+  border-radius: 6px;
+  border: 1px solid rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.18);
+  color: #eceaf8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.dev-phone-meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: #7d7c90;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dev-phone-viewport {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dev-phone-frame {
+  transform-origin: center center;
+  border-radius: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.65),
+    0 24px 80px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  background: var(--ct-bg, #0d0e18);
+  position: relative;
+  isolation: isolate;
+}
+
+.dev-phone-screen {
+  width: var(--dev-phone-w, 412px);
+  height: var(--dev-phone-h, 915px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Mobile shell only — laptop viewport width must not switch to desktop nav. */
+html[data-dev-phone-frame="1"] .ct-top-nav {
+  display: none !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-bottom-nav {
+  display: block !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-main {
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--ct-page-inset-top)) !important;
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-tools-toast {
+  top: auto !important;
+  bottom: calc(var(--ct-nav-h, 52px) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-modal-overlay:not(.ct-modal-overlay--fullscreen) {
+  align-items: flex-end !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-modal-panel:not(.ct-modal-panel--fullscreen) {
+  border-radius: var(--ct-radius-2xl) var(--ct-radius-2xl) 0 0 !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-screen,
+html[data-dev-phone-frame="1"] .ct-auth-shell {
+  min-height: var(--dev-phone-h) !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-load-scene-full {
+  min-height: var(--dev-phone-h) !important;
+}
+
+html[data-dev-phone-frame="1"] .dev-phone-screen .ct-screen {
+  min-height: var(--dev-phone-h) !important;
+  max-height: var(--dev-phone-h) !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 720px) {
+  .dev-phone-meta {
+    display: none;
+  }
+}

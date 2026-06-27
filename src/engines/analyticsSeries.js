@@ -1,5 +1,6 @@
 import { format, subMonths, parseISO, differenceInCalendarDays } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
+import { safeNum } from "./_guard.js";
 
 export function snapshotsToPressureTrend(snapshots, months = 8) {
   const keys = [];
@@ -9,7 +10,7 @@ export function snapshotsToPressureTrend(snapshots, months = 8) {
   const byMonth = Object.fromEntries((snapshots || []).map((s) => [s.month, s]));
   return keys.map((k) => ({
     month: k.slice(5),
-    pressure: byMonth[k]?.pressureScore ?? 0,
+    pressure: safeNum(byMonth[k]?.pressureScore, 0),
     openRemaining: byMonth[k]?.openRemainingSum ?? null,
     freeMoney: byMonth[k]?.freeMoney ?? null,
   }));
@@ -33,7 +34,7 @@ export function recurringGrowthSeries(commitments, getEffectiveStatusFn, months 
         if ((p.date || "").startsWith(key)) recurringPaid += Number(p.amount) || 0;
       }
     }
-    rows.push({ month: format(d, "MMM"), recurringPaid });
+    rows.push({ month: format(d, "MMM"), recurringPaid: safeNum(recurringPaid) });
   }
   return rows;
 }
@@ -51,8 +52,8 @@ export function freeCashflowTrend(snapshots, months = 8) {
   const sorted = [...(snapshots || [])].sort((a, b) => a.month.localeCompare(b.month)).slice(-months);
   return sorted.map((s) => ({
     month: s.month.slice(5),
-    freeMoney: s.freeMoney,
-    burden: s.monthlyBurden ?? 0,
+    freeMoney: s.freeMoney ?? null,
+    burden: safeNum(s.monthlyBurden, 0),
   }));
 }
 
@@ -76,7 +77,7 @@ export function buildDueHeatmap(commitments, lendings, todayStr, getEffectiveSta
       if (dayOffset < 0 || dayOffset > 27) return;
       const week = Math.min(3, Math.floor(dayOffset / 7));
       buckets[week].count += 1;
-      buckets[week].amount += amount;
+      buckets[week].amount += safeNum(amount);
     } catch {
       /* skip */
     }

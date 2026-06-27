@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "ഈ മാസം ആവർത്തിച്ചുള്ള ചെലവ് {percent}% കുറഞ്ഞു",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "ദ്രുത ഉപകരണങ്ങൾ",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "എല്ലാം കാണുക →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

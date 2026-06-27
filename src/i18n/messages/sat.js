@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "ᱱᱤᱭᱟᱹ ᱪᱟᱸᱫᱚ ᱨᱮ ᱵᱟᱨᱭᱟ ᱠᱷᱚᱨᱪᱟ ᱞᱟᱛᱟᱨ ᱢᱮ {percent}%",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "ᱩᱥᱟᱹᱨᱟ ᱥᱟᱯᱟᱵ ᱠᱚ",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "ᱡᱷᱚᱛᱚ ᱧᱮᱞ ᱢᱮ →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

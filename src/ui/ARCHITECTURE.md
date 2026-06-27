@@ -19,7 +19,7 @@ Full token reference: `docs/architecture/DesignSystem.md`.
 
 ## Layout shell
 
-`layout/Screen.jsx` → `MainContent` uses `max-w-lg` (~512px) centered column — mobile-first PWA width. Auth/onboarding use `ct-screen-narrow` (28rem).
+`layout/Screen.jsx` → `MainContent` uses `max-w-lg` (~512px) centered column — mobile-first width. Auth/onboarding use `ct-screen-narrow` (28rem). Localhost dev wraps the shell in `src/ui/dev/DevPhoneFrame.jsx`.
 
 ## Loading states
 

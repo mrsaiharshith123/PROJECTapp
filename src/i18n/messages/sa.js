@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "पुनरावर्तनीयः व्ययः अस्मिन् मासे {percent}% न्यूनः",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "द्रुतसाधनम्",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "सर्वाणि पश्यन्तु →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

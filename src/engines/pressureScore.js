@@ -3,6 +3,7 @@ import { totalMonthlyBurden } from "./burden.js";
 import { commitmentToIncomeRatio } from "./pressureAdvanced.js";
 import { totalMonthlyLendingBurden } from "./lendingMonthCash.js";
 import { sumDailySpendsInRange } from "../utils/dailySpends.js";
+import { safeScore } from "./_guard.js";
 
 const HOUSING_CATEGORIES = new Set(["Rent", "EMI", "Loan"]);
 const VEHICLE_CATEGORIES = new Set(["EMI", "Loan", "Transport"]);
@@ -217,7 +218,7 @@ export function computePressureAnalysis({
     else if (pressureTrendSlope < -2) trendDirection = "improving";
   }
 
-  score = Math.min(100, Math.max(0, score));
+  score = safeScore(score);
   const pressureDrivers = buildPressureDrivers(commitments, getEffectiveStatus, inc);
 
   const analysis = {
@@ -238,9 +239,7 @@ export function computePressureAnalysis({
  * Canonical 0–100 pressure score (higher = more stressed).
  */
 export function computeCanonicalPressureScore(params) {
-  const result = computePressureAnalysis(params).score;
-  if (!Number.isFinite(result)) return 0;
-  return Math.max(0, Math.min(100, result));
+  return safeScore(computePressureAnalysis(params).score);
 }
 
 /** Semantic tone for badges — engines return tokens only. */

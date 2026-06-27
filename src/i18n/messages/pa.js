@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "ਇਸ ਮਹੀਨੇ ਆਵਰਤੀ ਖਰਚ ਵਿੱਚ {percent}% ਦੀ ਕਮੀ",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "ਤੇਜ਼ ਟੂਲ",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "ਸਭ ਦੇਖੋ →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

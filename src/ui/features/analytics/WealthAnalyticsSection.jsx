@@ -77,7 +77,7 @@ export default function WealthAnalyticsSection({
       {!embedded ? (
         <div
           style={{
-            margin: "0 16px 12px",
+            margin: "0 0 12px",
             borderRadius: 20,
             padding: "18px 18px 16px",
             border: "0.5px solid var(--pos-asset-border)",

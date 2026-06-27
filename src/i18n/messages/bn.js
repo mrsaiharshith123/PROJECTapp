@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "এই মাসে পুনরাবৃত্ত ব্যয় {percent}% কমেছে",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "দ্রুত সরঞ্জাম",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "সব দেখুন →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

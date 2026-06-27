@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { addMonths, differenceInCalendarMonths, format, parseISO } from "date-fns";
 import { isBillDueInMonth } from "../constants/repeatTypes.js";
 import { freeMoneyAfterBurden } from "./pressureScore.js";
+import { safeNum } from "./_guard.js";
 
 export const DEFAULT_FOREMAN_PCT = 5;
 
@@ -401,9 +402,12 @@ export function computeChitIrr(cashFlows, guess = 0.01) {
 
   const monthly = rate;
   const annual = new Decimal(1).plus(monthly).pow(12).minus(1).toNumber();
+  if (!Number.isFinite(monthly) || !Number.isFinite(annual)) {
+    return { monthlyIrr: 0, annualIrrPercent: 0 };
+  }
   return {
-    monthlyIrr: Math.round(monthly * 10000) / 10000,
-    annualIrrPercent: Math.round(annual * 1000) / 10,
+    monthlyIrr: safeNum(Math.round(monthly * 10000) / 10000),
+    annualIrrPercent: safeNum(Math.round(annual * 1000) / 10),
   };
 }
 

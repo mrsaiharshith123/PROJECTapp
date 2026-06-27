@@ -2,6 +2,23 @@
 
 Perovo uses [semantic versioning](https://semver.org/). Version source of truth: `package.json` → build writes `public/app-version.json`.
 
+## Unreleased
+
+### Mobile-only product direction
+- Removed consumer PWA (`vite-plugin-pwa`), web landing, install banners, download sheets
+- Bottom nav only — desktop top bar removed
+- Localhost dev: full-screen phone shell (`src/ui/dev/DevPhoneFrame.jsx`) — always on, device size picker
+
+### Developer workflow
+- **`npm run roger:all`** — sync i18n, docs-sync, full audit gate
+- Cursor rule: say **"roger all"** to run the same pass
+- Docs: `docs/11-roger-all.md`, updated MOBILE, commands, workflow, cursor rules
+
+### Cleanup
+- Removed dead modules: `QuickAction`, `useDocumentTheme`, `apkDownload`, `appReleases`
+- Unified boot loader (`PageLoader`) everywhere
+- Tile width: single horizontal inset on mobile pages
+
 ## 1.5.0 — 26 June 2026
 
 **Why this bump:** The app stayed on `1.0.x` while shipping several minor-scale releases (navigation, insights, i18n, mobile, profile). `1.5.0` catches up semver to the product as it exists today.

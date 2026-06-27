@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import { repeatIntervalMonths, normalizeRepeatType } from "../constants/repeatTypes.js";
+import { safeNum } from "./_guard.js";
 
 /**
  * Approximate monthly cash pressure from a commitment (open items due now, not up next).
@@ -16,10 +17,11 @@ export function monthlyBurdenForCommitment(c, getEffectiveStatusFn) {
 }
 
 export function totalMonthlyBurden(commitments, getEffectiveStatusFn) {
-  return (commitments || []).reduce(
+  const raw = (commitments || []).reduce(
     (s, c) => new Decimal(s).plus(monthlyBurdenForCommitment(c, getEffectiveStatusFn)).toNumber(),
     0,
   );
+  return safeNum(raw, 0);
 }
 
 export function monthlyBurdenForDraft(draft, getEffectiveStatusFn) {

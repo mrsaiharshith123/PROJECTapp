@@ -1,4 +1,5 @@
 import { getAssetCategory, liquidityTierWeight } from "../../constants/netWorth/wealthCategories.js";
+import { safeNum } from "../_guard.js";
 
 /** @typedef {import('../../utils/netWorth/wealthStorage.js').WealthEntry} WealthEntry */
 
@@ -44,8 +45,7 @@ export function sumByLiquidityTier(assets) {
 }
 
 function finiteNum(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return safeNum(Number(value), fallback);
 }
 
 /**

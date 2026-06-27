@@ -21,7 +21,7 @@ const REQUIRED_DIRS = [
   "governance",
 ];
 
-const UI_SUBDIRS = ["primitives", "patterns", "features", "layout", "styles", "guidance", "tokens"];
+const UI_SUBDIRS = ["primitives", "patterns", "features", "layout", "styles", "guidance", "tokens", "dev"];
 
 /** JSX outside ui/ is allowed only here (routing, providers, glue — no product screens). */
 const JSX_SHELL_PREFIXES = [

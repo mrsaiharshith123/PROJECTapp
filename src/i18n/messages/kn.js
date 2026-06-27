@@ -260,6 +260,7 @@ export default {
   "home.goodNews.spendDown": "ಈ ತಿಂಗಳು ಮರುಕಳಿಸುವ ಖರ್ಚು {percent}% ಕಡಿಮೆಯಾಗಿದೆ",
   "home.goodNews.shareLink": "",
   "home.tools.sectionTitle": "ತ್ವರಿತ ಉಪಕರಣಗಳು",
+  "home.tools.compactLink": "Tools & calculators",
   "home.tools.seeAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ →",
   "home.tools.nudgeHint": "Tax, loan payoff, and safety planners live here.",
   "home.tools.nudgeCta": "Scroll to tools ↓",

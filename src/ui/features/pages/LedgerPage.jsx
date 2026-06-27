@@ -98,6 +98,7 @@ export default function LedgerPage() {
                   : "0.5px solid rgba(255,255,255,0.08)",
                 background: active ? `var(--pos-${token}-bg)` : "rgba(255,255,255,0.04)",
                 color: active ? `var(--pos-${token})` : "var(--ct-text-muted)",
+                transition: "all 0.15s",
               }}
             >
               {t(item.labelKey)}

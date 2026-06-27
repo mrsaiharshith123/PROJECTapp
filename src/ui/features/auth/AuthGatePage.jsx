@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, Button, inputClassName, FormField, Caption, Heading, Body, PasswordInput } from "../../index.js";
 import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
-import InstallAppBanner from "../InstallAppBanner.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatAuthError } from "../../../utils/authErrors.js";
@@ -446,9 +445,6 @@ export default function AuthGatePage() {
           )}
         </Card>
 
-        <div className="ct-auth-footer">
-          <InstallAppBanner />
-        </div>
       </div>
     </div>
   );

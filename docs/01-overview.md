@@ -1,6 +1,8 @@
 # What Perovo is
 
-Perovo is a **local-first PWA** for tracking **financial commitments** (bills, EMIs, subscriptions, lending, chit funds) and understanding **pressure** on income — not a full expense tracker.
+Perovo is a **local-first mobile finance app** (Android APK / iOS Capacitor) for tracking **financial commitments** (bills, EMIs, subscriptions, lending, chit funds) and understanding **pressure** on income — not a full expense tracker.
+
+**Localhost dev** runs in a full-screen phone shell (`src/dev/DevPhoneFrame.jsx`) so you can test mobile layouts on a laptop without browser devtools.
 
 ## Core ideas
 
@@ -20,7 +22,7 @@ Perovo is a **local-first PWA** for tracking **financial commitments** (bills, E
 | Layer | Choice |
 |-------|--------|
 | UI | React 19 + React Router |
-| Build | Vite 8 + PWA (`vite-plugin-pwa`) |
+| Build | Vite 8 |
 | Styling | Financial Life design system — `src/ui/styles/` (`ct-*` + `--ct-life-*` tokens); `tailwind.config.js` bridges legacy Tailwind colors in `src/ui/` |
 | Logic | Plain JS modules in `src/engines/` (no React) |
 | Tests | Vitest |
