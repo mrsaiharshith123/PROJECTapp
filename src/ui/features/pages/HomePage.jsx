@@ -1,23 +1,19 @@
 import { useState } from "react";
 import { useOnceFromState } from "../../../hooks/useOnceFromState.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getTier } from "../../../utils/tierAccess.js";
-import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
-import { ToolsDiscoveryToast } from "../../";
-import PlansModal from "../profile/PlansModal.jsx";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
+import HomeEditorialHeader from "../home/HomeEditorialHeader.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
 import HomeNeedsAttention from "../home/HomeNeedsAttention.jsx";
 import HomeGoodNewsLine from "../home/HomeGoodNewsLine.jsx";
 import HomeUpcomingSection from "../home/HomeUpcomingSection.jsx";
-import HomeToolsPreview from "../home/HomeToolsPreview.jsx";
+import HomeToolsSection from "../home/HomeToolsSection.jsx";
 
-/** @route / — Home dashboard */
+/** @route / — Home dashboard (Direction H · Editorial Ledger) */
 const Home = () => {
   const { settings, updateSettings } = usePerovo();
-  const [plansOpen, setPlansOpen] = useState(false);
   const [tourActive, setTourActive] = useState(false);
   const [tourDismissed, setTourDismissed] = useState(false);
   const tourOpen = tourActive && !tourDismissed;
@@ -31,22 +27,10 @@ const Home = () => {
     setTourActive(false);
   };
 
-  const displayName = settings.displayName?.trim() || "there";
-  const greetingKey =
-    new Date().getHours() < 12
-      ? "home.greetingMorning"
-      : new Date().getHours() < 17
-        ? "home.greetingAfternoon"
-        : "home.greetingEvening";
-  const { t } = useTranslation();
   const tier = getTier(settings);
-  const tierLabel =
-    tier === "power" ? t("plans.tier.power") : tier === "pro" ? t("plans.tier.pro") : t("plans.tier.free");
 
   return (
-    <div className="ct-page ct-home-page ct-stack pb-8">
-      <ToolsDiscoveryToast variant="home" blocked={tourOpen} />
-
+    <div className="ct-page ed-paper">
       <AppTourModal
         settings={settings}
         open={tourOpen}
@@ -54,55 +38,24 @@ const Home = () => {
         onDismiss={completeTour}
       />
 
-      <div className="ct-home-header">
-        <div className="ct-home-appbar">
-          <span className="ct-home-brand">{t("brand.appName")}</span>
-          <div className="ct-home-top-actions">
-            <AppHeaderActions
-              headerAux={
-                tier !== "free" ? (
-                  <button
-                    type="button"
-                    className={`ct-home-tier-chip ${tier}`}
-                    onClick={() => setPlansOpen(true)}
-                    aria-label={t("profileHub.heroTierAria", { tier: tierLabel })}
-                  >
-                    {tier === "power" ? "⚡" : "✦"} {tierLabel}
-                  </button>
-                ) : null
-              }
-            />
-          </div>
-        </div>
-        <div className="ct-home-greeting-block">
-          <p className="ct-home-greeting-time">{t(greetingKey)}</p>
-          <h1 className="ct-home-greeting-name">{displayName}</h1>
-        </div>
-      </div>
+      <HomeEditorialHeader tier={tier} />
 
-      <PlansModal open={plansOpen} onClose={() => setPlansOpen(false)} />
-
-      <div className="ct-stack ct-home-sections ct-home-enter">
+      <div className="ct-home-enter">
         <div className="ct-home-enter-item" style={{ animationDelay: "0ms" }}>
           <HomeNetPositionHero />
         </div>
-
-        <div className="ct-home-enter-item" style={{ animationDelay: "60ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "50ms" }}>
           <HomeCategoryTiles />
         </div>
-
-        <div className="ct-home-enter-item" style={{ animationDelay: "120ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "90ms" }}>
           <HomeNeedsAttention />
         </div>
-
-        <div className="ct-home-enter-item" style={{ animationDelay: "160ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "120ms" }}>
           <HomeUpcomingSection />
         </div>
-
         <HomeGoodNewsLine />
-
-        <div className="ct-home-enter-item" style={{ animationDelay: "220ms" }}>
-          <HomeToolsPreview />
+        <div className="ct-home-enter-item" style={{ animationDelay: "155ms" }}>
+          <HomeToolsSection />
         </div>
       </div>
     </div>

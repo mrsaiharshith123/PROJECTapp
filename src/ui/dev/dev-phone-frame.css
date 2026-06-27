@@ -107,6 +107,37 @@ html[data-dev-phone-frame="1"] .ct-main {
   padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 8px) !important;
 }
 
+html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-frame {
+  background: var(--ed-bg);
+}
+
+html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen {
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen .ct-screen {
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  display: block;
+  overflow: visible;
+}
+
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-screen,
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-auth-shell {
+  min-height: 0 !important;
+}
+
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-main {
+  display: block !important;
+  min-height: 0;
+  padding-top: env(safe-area-inset-top, 0px) !important;
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important;
+  background: var(--ed-bg);
+}
+
 html[data-dev-phone-frame="1"] .ct-tools-toast {
   top: auto !important;
   bottom: calc(var(--ct-nav-h, 52px) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;

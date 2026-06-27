@@ -4,7 +4,9 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 
-/** Optional positive insight — hides when nothing genuine to celebrate. */
+import { CtIcon } from "../../icons/CtIcon.jsx";
+
+/** Optional positive insight — editorial "In Brief" line. */
 export default function HomeGoodNewsLine() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -40,21 +42,40 @@ export default function HomeGoodNewsLine() {
 
   const isShare = scoreImprovement != null;
 
-  return (
-    <button
-      type="button"
-      className="ct-home-good-news ct-stat-tile teal ct-home-enter-item ct-pressable"
-      style={{ animationDelay: "180ms" }}
-      onClick={isShare ? () => navigate("/insights/score") : undefined}
-      disabled={!isShare}
-    >
-      <span className="ct-good-news-dot" aria-hidden />
-      <span>{message}</span>
-      {isShare && (
-        <span style={{ marginLeft: 8, fontSize: 11, color: "var(--pos-asset)", flexShrink: 0 }}>
+  const rowContent = (
+    <>
+      <span className="ed-brief-mark positive">+</span>
+      <span className="ed-brief-text">{message}</span>
+      {isShare ? (
+        <span
+          style={{
+            fontSize: 10,
+            color: "var(--ed-gold)",
+            fontWeight: 600,
+            fontFamily: "var(--ct-font)",
+            flexShrink: 0,
+          }}
+        >
           {t("home.goodNews.shareLink")}
         </span>
+      ) : null}
+    </>
+  );
+
+  return (
+    <div className="ed-brief">
+      <div className="ed-brief-head">{t("home.ed.briefHead")}</div>
+      {isShare ? (
+        <button type="button" className="ed-brief-row" onClick={() => navigate("/insights/score")}>
+          {rowContent}
+          <CtIcon name="caret-right" size={14} className="ed-brief-chevron" />
+        </button>
+      ) : (
+        <div className="ed-brief-row">
+          {rowContent}
+          <CtIcon name="caret-right" size={14} className="ed-brief-chevron" />
+        </div>
       )}
-    </button>
+    </div>
   );
 }

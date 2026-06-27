@@ -6,8 +6,6 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
-import { cn } from "../../utils/cn.js";
 
 function daysUntil(dueDate, todayStr) {
   if (!dueDate || !todayStr) return 999;
@@ -28,50 +26,20 @@ function attentionBillTitle(commitment) {
   return full.length > 28 ? `${full.slice(0, 26)}…` : full;
 }
 
-function AttentionRow({ item, navigate, formatAmount }) {
-  const rowClass = item.overdue
-    ? "ct-attention-row"
-    : item.upcoming
-      ? "ct-attention-row upcoming"
-      : "ct-attention-row warning";
+function AttentionRow({ item, navigate, formatAmount, t }) {
+  const isOverdue = item.overdue;
+  const tone = isOverdue ? "danger" : "warning";
+  const kickerText = isOverdue ? t("home.ed.attention.overdueKick") : t("home.ed.attention.dueSoonKick");
 
   return (
-    <button
-      key={item.id}
-      type="button"
-      className={`${rowClass} w-full text-left`}
-      onClick={() => navigate(item.to)}
-    >
-      <div className="ct-row gap-3 min-w-0 flex-1 ct-attention-row-body">
-        <span
-          className={cn(
-            "ct-icon-tile ct-home-attention-icon",
-            item.overdue ? "danger" : item.upcoming ? "slate" : "amber",
-          )}
-        >
-          <CtIcon name={item.icon} size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="ct-attention-row-title">{item.name}</p>
-          <p
-            className="ct-attention-row-sub"
-            style={{
-              color: item.overdue
-                ? "var(--ct-danger-text)"
-                : item.upcoming
-                  ? "var(--ct-text-muted)"
-                  : "var(--ct-warning-text)",
-            }}
-          >
-            {item.statusText}
-          </p>
-        </div>
+    <button type="button" className="ed-break" onClick={() => navigate(item.to)}>
+      <span className={`ed-break-no ${tone}`}>!</span>
+      <div className="ed-break-body">
+        <div className={`ed-break-kick ${tone}`}>{kickerText}</div>
+        <div className="ed-break-head">{item.name}</div>
+        <div className="ed-break-sub">{item.statusText}</div>
       </div>
-      <span
-        className={cn("ct-attention-row-amount", item.upcoming && "ct-attention-row-amount-muted")}
-      >
-        {formatAmount(item.amount)}
-      </span>
+      <span className={`ed-break-amt ${tone}`}>{formatAmount(item.amount)}</span>
     </button>
   );
 }
@@ -100,9 +68,7 @@ export default function HomeNeedsAttention() {
         amount: Number(c.amount ?? 0),
         statusText: t("home.attention.overdueDays", { days: daysLate }),
         overdue: true,
-        upcoming: false,
         to: "/ledger/bills",
-        icon: "warning-circle",
       });
     }
 
@@ -120,9 +86,7 @@ export default function HomeNeedsAttention() {
           amount: Number(r.amount ?? 0),
           statusText: t("home.attention.overdueDays", { days: daysLate }),
           overdue: true,
-          upcoming: false,
           to: "/money/lending",
-          icon: "handshake",
         });
       }
     }
@@ -138,14 +102,9 @@ export default function HomeNeedsAttention() {
         id: `bill-${c.id}`,
         name: attentionBillTitle(c),
         amount: Number(c.amount ?? 0),
-        statusText:
-          days === 0
-            ? t("home.dueSoon")
-            : t("home.attention.dueInDays", { days }),
+        statusText: days === 0 ? t("home.dueSoon") : t("home.attention.dueInDays", { days }),
         overdue: false,
-        upcoming: false,
         to: "/ledger/bills",
-        icon: "clock",
       });
     }
 
@@ -156,23 +115,19 @@ export default function HomeNeedsAttention() {
   if (totalCount === 0) return null;
 
   const hasOverdue = overdue.length > 0;
-  const sectionTitle = t("home.requiresAction");
 
   return (
-    <section className="ct-home-attention-section">
-      <div className="ct-home-attention-label">
-        <span className="ct-home-attention-dot" aria-hidden />
-        <span>{sectionTitle}</span>
-        {hasOverdue ? <span className="ct-count-badge danger">{overdue.length}</span> : null}
+    <section>
+      <div className="ed-break-section">
+        {t("home.ed.attention.section")}
+        {hasOverdue ? <span className="ed-break-section-badge">{overdue.length}</span> : null}
       </div>
-      <div className="ct-stack-sm">
-        {overdue.map((item) => (
-          <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
-        ))}
-        {dueSoon.map((item) => (
-          <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
-        ))}
-      </div>
+      {overdue.map((item) => (
+        <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} t={t} />
+      ))}
+      {dueSoon.map((item) => (
+        <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} t={t} />
+      ))}
     </section>
   );
 }

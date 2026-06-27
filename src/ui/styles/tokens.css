@@ -205,7 +205,7 @@ html[data-ui="ct"] {
   --ct-card-grad-mid: rgba(18, 18, 37, 0.9);
   --ct-list-grad-to: rgba(18, 18, 37, 0.55);
   --ct-insight-surface-end: rgba(18, 18, 37, 0.88);
-  --ct-nav-bar-bg: rgba(18, 16, 36, 0.82);
+  --ct-nav-bar-bg: var(--ed-navbg);
   --ct-top-nav-bg: rgba(7, 7, 10, 0.82);
   --ct-hero-inset-bg: var(--ct-life-inset-bg);
   --ct-hero-inset-border: var(--ct-life-inset-border);
@@ -241,6 +241,25 @@ html[data-ui="ct"] {
   --ct-grad-danger-fill: linear-gradient(90deg, #f87171, #dc2626);
   --ct-shadow-indigo: 0 4px 14px rgba(99, 102, 241, 0.4);
   --ct-shadow-teal: 0 4px 14px rgba(13, 148, 136, 0.35);
+
+  /* ── Direction H · Editorial palette · Dark ── */
+  --ed-bg: #16140f;
+  --ed-ink: #f0ebe0;
+  --ed-ink-soft: #c4bdac;
+  --ed-ink-faint: #7d7665;
+  --ed-rule: rgba(240, 235, 224, 0.13);
+  --ed-rule-soft: rgba(240, 235, 224, 0.07);
+  --ed-gold: #e3c489;
+  --ed-green: #5ec795;
+  --ed-red: #e89490;
+  --ed-violet: #b3a0e8;
+  --ed-indigo: #a0aae8;
+  --ed-zero: #4a4636;
+  --ed-navbg: #faf8f3;
+  --ed-navink: rgba(26, 24, 20, 0.38);
+  --ed-navon: #1a1814;
+  --ed-fab: #1a1814;
+  --ed-fabink: #e3c489;
 }
 
 html[data-ui="ct"][data-theme="light"] {
@@ -381,7 +400,7 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-card-grad-mid: #ffffff;
   --ct-list-grad-to: #f1f5f9;
   --ct-insight-surface-end: #f8fafc;
-  --ct-nav-bar-bg: var(--ct-life-nav-bg);
+  --ct-nav-bar-bg: var(--ed-navbg);
   --ct-top-nav-bg: var(--ct-life-nav-bg);
   --ct-hero-inset-bg: var(--ct-life-inset-bg);
   --ct-hero-inset-border: var(--ct-life-inset-border);
@@ -392,6 +411,25 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-chart-grid-stroke: rgba(15, 23, 42, 0.08);
   --ct-chart-line-glow: transparent;
   --ct-card-danger-grad: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
+
+  /* ── Direction H · Editorial palette · Light ── */
+  --ed-bg: #faf8f3;
+  --ed-ink: #1a1814;
+  --ed-ink-soft: #524d44;
+  --ed-ink-faint: #8a8478;
+  --ed-rule: rgba(26, 24, 20, 0.14);
+  --ed-rule-soft: rgba(26, 24, 20, 0.07);
+  --ed-gold: #b08642;
+  --ed-green: #147a57;
+  --ed-red: #b8453f;
+  --ed-violet: #6d3daa;
+  --ed-indigo: #3d4daa;
+  --ed-zero: #b8b2a4;
+  --ed-navbg: #1a1814;
+  --ed-navink: rgba(250, 248, 243, 0.45);
+  --ed-navon: #e3c489;
+  --ed-fab: #e3c489;
+  --ed-fabink: #1a1814;
 }
 
 html[data-ui="ct"] body {

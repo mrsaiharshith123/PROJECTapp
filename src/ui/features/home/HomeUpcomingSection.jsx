@@ -5,8 +5,6 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
-import { ScreenSection } from "../../layout/Screen.jsx";
 
 function daysUntil(dueDate, todayStr) {
   if (!dueDate || !todayStr) return 999;
@@ -28,27 +26,17 @@ function attentionBillTitle(commitment) {
 
 function UpcomingRow({ item, navigate, formatAmount }) {
   return (
-    <button
-      key={item.id}
-      type="button"
-      className="ct-attention-row upcoming w-full text-left"
-      onClick={() => navigate(item.to)}
-    >
-      <div className="ct-row gap-3 min-w-0 flex-1 ct-attention-row-body">
-        <span className="ct-icon-tile ct-home-attention-icon slate shrink-0">
-          <CtIcon name="calendar" size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="ct-body-strong truncate">{item.name}</p>
-          <p className="ct-caption">{item.statusText}</p>
-        </div>
-        <span className="ct-numeral shrink-0">{formatAmount(item.amount)}</span>
-      </div>
+    <button type="button" className="ed-brief-row" onClick={() => navigate(item.to)}>
+      <span className="ed-brief-mark neutral">·</span>
+      <span className="ed-brief-text">
+        {item.name} — {item.statusText}
+      </span>
+      <span className="ed-brief-amt">{formatAmount(item.amount)}</span>
     </button>
   );
 }
 
-/** Bills due in 4–7 days — separate from requires-action section. */
+/** Bills due in 4–7 days — editorial "Coming Up" brief. */
 export default function HomeUpcomingSection() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -78,12 +66,11 @@ export default function HomeUpcomingSection() {
   if (!upcoming.length) return null;
 
   return (
-    <ScreenSection title={t("home.comingUp")}>
-      <div className="ct-stack-sm">
-        {upcoming.map((item) => (
-          <UpcomingRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
-        ))}
-      </div>
-    </ScreenSection>
+    <div className="ed-brief">
+      <div className="ed-brief-head">{t("home.ed.comingUp")}</div>
+      {upcoming.map((item) => (
+        <UpcomingRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} />
+      ))}
+    </div>
   );
 }
