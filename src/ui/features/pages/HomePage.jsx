@@ -6,9 +6,11 @@ import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import HomeEditorialHeader from "../home/HomeEditorialHeader.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
+import HomeQuickActions from "../home/HomeQuickActions.jsx";
 import HomeNeedsAttention from "../home/HomeNeedsAttention.jsx";
-import HomeGoodNewsLine from "../home/HomeGoodNewsLine.jsx";
 import HomeUpcomingSection from "../home/HomeUpcomingSection.jsx";
+import HomeSavingGoal from "../home/HomeSavingGoal.jsx";
+import HomeFinancialPulse from "../home/HomeFinancialPulse.jsx";
 import HomeToolsSection from "../home/HomeToolsSection.jsx";
 
 /** @route / — Home dashboard (Direction H · Editorial Ledger) */
@@ -44,17 +46,21 @@ const Home = () => {
         <div className="ct-home-enter-item" style={{ animationDelay: "0ms" }}>
           <HomeNetPositionHero />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "50ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "30ms" }}>
           <HomeCategoryTiles />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "90ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "50ms" }}>
+          <HomeQuickActions />
+        </div>
+        <div className="ct-home-enter-item" style={{ animationDelay: "70ms" }}>
           <HomeNeedsAttention />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "120ms" }}>
+        <div className="ct-home-enter-item" style={{ animationDelay: "90ms" }}>
           <HomeUpcomingSection />
         </div>
-        <HomeGoodNewsLine />
-        <div className="ct-home-enter-item" style={{ animationDelay: "155ms" }}>
+        <HomeSavingGoal />
+        <HomeFinancialPulse />
+        <div className="ct-home-enter-item" style={{ animationDelay: "130ms" }}>
           <HomeToolsSection />
         </div>
       </div>

@@ -21,7 +21,6 @@ import BillInsightsCards from "./BillInsightsCards.jsx";
 import PaycheckBreakdown from "./PaycheckBreakdown.jsx";
 import { totalPaidOnPayments } from "../../../utils/commitmentPayments.js";
 import { yearlyBurdenFromCommitments } from "../../../engines/analyticsSeries.js";
-import { INSIGHT_BORDERS, INSIGHT_GLOWS, INSIGHT_GRADIENTS } from "./insightCarouselConfig.js";
 
 const EMI_CATEGORIES = new Set(["Home Loan", "Car Loan", "EMI", "Personal Loan", "Credit Card", "Loan"]);
 
@@ -95,18 +94,19 @@ function ScoreInsightCard({ hideBreakdown = false }) {
           }}
         >
           <div
+            className="ed-insight-score-ring-inner"
             style={{
               width: 62,
               height: 62,
               borderRadius: "50%",
-              background: "var(--ct-bg)",
+              background: "var(--ed-bg)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <span style={{ fontSize: 20, fontWeight: 700, color: "var(--ct-text)", fontVariantNumeric: "tabular-nums" }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: "var(--ed-ink)", fontVariantNumeric: "tabular-nums" }}>
               {formatScore(score)}
             </span>
             <span style={{ fontSize: 9, color: ringColor }}>{t(`perovoScore.tier.${perovo.tier?.id}`)}</span>
@@ -130,7 +130,7 @@ function ScoreInsightCard({ hideBreakdown = false }) {
           ) : null}
         </div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      <div className="ed-insight-pillars" style={{ marginTop: 12 }}>
         {PEROVO_PILLARS.map((pillar) => {
           const pillarData = perovo.pillars[pillar.id];
           const pillarScore = pillarData?.score ?? 0;
@@ -141,18 +141,10 @@ function ScoreInsightCard({ hideBreakdown = false }) {
             displayValue = `${Number(survivalMonths).toFixed(1)}${t("scoreDetail.monthsShort")}`;
           }
           return (
-            <div
-              key={pillar.id}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 10,
-                padding: "8px 10px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: 10, color: "var(--ct-text-muted)" }}>{t(`perovoScore.pillar.${pillar.id}`)}</div>
+            <div key={pillar.id} className="ed-insight-pillar">
+              <div style={{ fontSize: 10, color: "var(--ed-ink-faint)" }}>{t(`perovoScore.pillar.${pillar.id}`)}</div>
               <div style={{ fontSize: 15, fontWeight: 600, color, marginTop: 2 }}>{displayValue}</div>
-              <div style={{ fontSize: 9, color: "var(--ct-text-muted)" }}>
+              <div style={{ fontSize: 9, color: "var(--ed-ink-faint)" }}>
                 {t(pillarStatusKey(pillar.id, pillarScore, survivalMonths, debtRatio, goalsOnTrackRatio))}
               </div>
             </div>
@@ -198,7 +190,7 @@ export function AssetsInsightCard({ hideBreakdown = false }) {
         {t("analytics.insightAssets.across", { count: assetEntries.length })}
       </div>
       {topAsset ? (
-        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+        <div className="ed-insight-stat" style={{ marginBottom: 10 }}>
           <div
             style={{
               fontSize: 10,
@@ -271,7 +263,7 @@ export function LiabilitiesInsightCard({ hideBreakdown = false }) {
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px" }}>
+        <div className="ed-insight-stat">
           <div style={{ fontSize: 10, color: "var(--ct-text-muted)" }}>{t("analytics.insightLiabilities.monthlyEmi")}</div>
           <div
             style={{
@@ -288,7 +280,7 @@ export function LiabilitiesInsightCard({ hideBreakdown = false }) {
             {t("analytics.insightLiabilities.pctIncome", { pct: emiRatio.toFixed(0) })}
           </div>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px" }}>
+        <div className="ed-insight-stat">
           <div style={{ fontSize: 10, color: "var(--ct-text-muted)" }}>{t("analytics.insightLiabilities.totalDebt")}</div>
           <div
             style={{
@@ -304,7 +296,7 @@ export function LiabilitiesInsightCard({ hideBreakdown = false }) {
         </div>
       </div>
       {earliest ? (
-        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
+        <div className="ed-insight-stat" style={{ marginBottom: 8 }}>
           <div
             style={{
               fontSize: 10,
@@ -355,7 +347,7 @@ export function InstrumentsInsightCard({ hideBreakdown = false, showHoldings = f
           <span style={{ color: "#c4b5fd", fontWeight: 600 }}>{formatAmount(totalValue)}</span>
         </div>
         {sipMonthly > 0 ? (
-          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 12px", marginBottom: 8 }}>
+          <div className="ed-insight-stat" style={{ marginBottom: 8 }}>
             <div
               style={{
                 fontSize: 10,
@@ -385,13 +377,11 @@ export function InstrumentsInsightCard({ hideBreakdown = false, showHoldings = f
             {instruments.map((entry) => (
               <div
                 key={entry.id}
+                className="ed-insight-stat"
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   gap: 12,
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  background: "rgba(255,255,255,0.05)",
                 }}
               >
                 <div style={{ minWidth: 0 }}>
@@ -433,11 +423,9 @@ function YearlyBurdenInsightCard() {
 
   return (
     <div style={{ textAlign: "center", padding: "24px 0" }}>
-      <p className="ct-stat-label">{t("analytics.yearly.burdenCard")}</p>
-      <p className="ct-stat-value ct-numeral" style={{ fontSize: 28, marginTop: 8 }}>
-        {formatAmount(yearlyBurden)}
-      </p>
-      <p className="ct-caption mt-2">{t("analytics.yearly.burdenHint")}</p>
+      <p className="ed-insight-stat-label">{t("analytics.yearly.burdenCard")}</p>
+      <p className="ed-insight-bignum">{formatAmount(yearlyBurden)}</p>
+      <p className="ed-insight-stat-meta">{t("analytics.yearly.burdenHint")}</p>
     </div>
   );
 }
@@ -458,11 +446,9 @@ function YearlySpendInsightCard() {
 
   return (
     <div style={{ textAlign: "center", padding: "24px 0" }}>
-      <p className="ct-stat-label">{t("analytics.yearly.variableCard")}</p>
-      <p className="ct-stat-value ct-numeral" style={{ fontSize: 28, marginTop: 8 }}>
-        {formatAmount(yearlyVariable)}
-      </p>
-      <p className="ct-caption mt-2">{t("analytics.yearly.variableShortHint", { year })}</p>
+      <p className="ed-insight-stat-label">{t("analytics.yearly.variableCard")}</p>
+      <p className="ed-insight-bignum">{formatAmount(yearlyVariable)}</p>
+      <p className="ed-insight-stat-meta">{t("analytics.yearly.variableShortHint", { year })}</p>
     </div>
   );
 }
@@ -471,49 +457,10 @@ export default function InsightCardContent({ card, data, showBreakdownCta = fals
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { accent, kickerKey } = card;
-  const borderColor = INSIGHT_BORDERS[accent];
-  const gradient = INSIGHT_GRADIENTS[accent];
-  const glow = INSIGHT_GLOWS[accent];
-
   const shell = (children) => (
-    <div
-      style={{
-        borderRadius: 20,
-        padding: "18px 16px 16px",
-        border: `0.5px solid ${borderColor}`,
-        background: gradient,
-        position: "relative",
-        overflow: "hidden",
-        minHeight: 300,
-      }}
-    >
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: -20,
-          right: -10,
-          width: 100,
-          height: 100,
-          borderRadius: "50%",
-          pointerEvents: "none",
-          background: `radial-gradient(circle,${glow},transparent 70%)`,
-        }}
-      />
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          color: `var(${card.accentVar})`,
-          marginBottom: 14,
-          position: "relative",
-        }}
-      >
-        {t(kickerKey)}
-      </div>
-      <div className="relative">{children}</div>
+    <div className={`ed-insight-card accent-${accent}`}>
+      <div className={`ed-insight-card-kicker accent-${accent}`}>{t(kickerKey)}</div>
+      <div>{children}</div>
     </div>
   );
 

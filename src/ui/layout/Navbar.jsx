@@ -198,7 +198,7 @@ export function Navbar() {
         onRequestMoney={openRequestMoney}
       />
 
-      <nav className="ct-bottom-nav" aria-label={t("nav.mainAria")}>
+      <nav className="ct-bottom-nav ed-nav" aria-label={t("nav.mainAria")}>
         <div className="ct-bottom-nav-inner">
           {navItems.map((item) => {
             if (item.fab) {

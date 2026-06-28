@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import InsightCardContent from "../analytics/InsightCardContent.jsx";
-import { INSIGHT_BORDERS } from "../analytics/insightCarouselConfig.js";
 import { getInsightBreakdownPath, getInsightCard } from "./insightSectionsConfig.js";
 
 /**
@@ -48,22 +47,16 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
   const sectionBreakdown = section.breakdownPath;
 
   return (
-    <section id={`insight-section-${section.id}`} className="ct-insight-section" style={{ marginBottom: 28 }}>
-      <div className="ct-row-between items-start" style={{ padding: "0 0 10px" }}>
-        <div className="min-w-0">
-          <h2 className="ct-analytics-section-title" style={{ fontSize: 15, margin: 0 }}>
-            {t(section.titleKey)}
-          </h2>
-          {section.subtitleKey ? (
-            <p className="ct-analytics-section-sub" style={{ marginTop: 4, marginBottom: 0 }}>
-              {t(section.subtitleKey)}
-            </p>
-          ) : null}
-        </div>
+    <section id={`insight-section-${section.id}`} className="ed-insight-section">
+      <div className="ed-insight-section-head">
+        <div className="ed-insight-section-kicker">{t(section.titleKey)}</div>
+        {section.subtitleKey ? (
+          <p className="ed-insight-section-sub">{t(section.subtitleKey)}</p>
+        ) : null}
         {sectionBreakdown ? (
           <button
             type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm shrink-0"
+            className="ed-insight-breakdown"
             onClick={() => navigate(sectionBreakdown)}
           >
             {t("analytics.insightSectionBreakdown")}
@@ -72,37 +65,13 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
       </div>
 
       {cards.length > 1 ? (
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            padding: "0 0 10px",
-            overflowX: "auto",
-            scrollbarWidth: "none",
-          }}
-        >
+        <div className="ed-insight-pills">
           {cards.map((card, i) => (
             <button
               key={card.id}
               type="button"
+              className={`ed-insight-pill ${i === activeIdx ? "active" : "inactive"}`}
               onClick={() => goTo(i, i > activeIdx ? "right" : "left")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "5px 12px",
-                borderRadius: 999,
-                fontSize: 11,
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-                border:
-                  i === activeIdx
-                    ? `1px solid ${INSIGHT_BORDERS[card.accent]}`
-                    : "0.5px solid rgba(255,255,255,0.08)",
-                background: i === activeIdx ? `var(--pos-${card.accent}-bg)` : "rgba(255,255,255,0.04)",
-                color: i === activeIdx ? `var(${card.accentVar})` : "var(--ct-text-muted)",
-              }}
             >
               <CtIcon name={card.icon} size={11} />
               {t(card.labelKey)}
@@ -118,38 +87,28 @@ export default function InsightSectionCarousel({ section, data, initialCardId = 
       </div>
 
       {cards.length > 1 ? (
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, padding: "10px 0 0" }}>
+        <div className="ed-insight-dots">
           {cards.map((_, i) => (
             <button
               key={i}
               type="button"
+              className={`ed-insight-dot ${i === activeIdx ? "active" : "inactive"}`}
               onClick={() => goTo(i, i > activeIdx ? "right" : "left")}
               aria-label={t("analytics.insightJumpAria", { n: i + 1 })}
-              style={{
-                width: i === activeIdx ? 18 : 6,
-                height: 6,
-                borderRadius: 999,
-                background: i === activeIdx ? `var(${activeCard.accentVar})` : "rgba(255,255,255,0.2)",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-                transition: "width 0.2s ease",
-              }}
             />
           ))}
         </div>
       ) : null}
 
       {cardBreakdown && !sectionBreakdown ? (
-        <div style={{ padding: "10px 0 0", display: "flex", justifyContent: "center" }}>
-          <button
-            type="button"
-            className="ct-btn ct-btn-ghost ct-btn-sm"
-            onClick={() => navigate(cardBreakdown)}
-          >
-            {t("analytics.insightCardBreakdown")} <CtIcon name="caret-right" size={12} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="ed-insight-breakdown"
+          style={{ textAlign: "center", width: "100%", paddingBottom: 14 }}
+          onClick={() => navigate(cardBreakdown)}
+        >
+          {t("analytics.insightCardBreakdown")}
+        </button>
       ) : null}
     </section>
   );

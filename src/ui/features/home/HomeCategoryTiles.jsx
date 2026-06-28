@@ -110,15 +110,8 @@ export default function HomeCategoryTiles() {
     instrument: "ed-val-inst",
     agreement: "ed-val-agr",
   };
-  const ctaVerbs = {
-    asset: t("home.ed.cta.addAsset"),
-    liability: t("home.ed.cta.reviewLiab"),
-    instrument: t("home.ed.cta.manageInst"),
-    agreement: t("home.ed.cta.lend"),
-  };
-
   return (
-    <div className="ed-columns">
+    <div className="ed-columns ed-columns--quiet">
       {tiles.map((item) => {
         const isZero = item.value === 0;
         return (
@@ -136,7 +129,6 @@ export default function HomeCategoryTiles() {
               {formatAmount(item.value)}
             </div>
             <div className="ed-col-meta">{item.sub}</div>
-            <div className="ed-col-cta">{ctaVerbs[item.cat]}</div>
           </button>
         );
       })}

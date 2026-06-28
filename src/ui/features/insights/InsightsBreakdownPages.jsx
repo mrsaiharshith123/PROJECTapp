@@ -2,39 +2,52 @@ import { useMemo } from "react";
 import { useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
-import { ViewLink } from "../../patterns/ViewLink.jsx";
+import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import FinancialPulseCard from "../dashboard/FinancialPulseCard.jsx";
 import AnalyticsChartPanel from "../analytics/AnalyticsChartPanel.jsx";
-import MonthlySpendAnalyticsSection from "../analytics/MonthlySpendAnalyticsSection.jsx";
-import BillInsightsCards from "../analytics/BillInsightsCards.jsx";
-import PaycheckBreakdown from "../analytics/PaycheckBreakdown.jsx";
 import WealthAnalyticsSection from "../analytics/WealthAnalyticsSection.jsx";
 import ProfileNetWorthSection from "../profile/ProfileNetWorthSection.jsx";
-import {
-  AssetsInsightCard,
-  InstrumentsInsightCard,
-  LiabilitiesInsightCard,
-} from "../analytics/InsightCardContent.jsx";
 import { yearlyBurdenFromCommitments } from "../../../engines/analyticsSeries.js";
-import { formatInr } from "../../../constants/symbols.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useInsightsData } from "./useInsightsData.js";
+import { getBillDisplayName } from "../../../utils/billDisplayName.js";
+import {
+  isCoreAssetEntry,
+  isInstrumentWealthEntry,
+  isInstrumentCommitment,
+} from "../../../utils/ledger/ledgerBuckets.js";
+import { computeAssetCagr } from "../../../utils/netWorth/physicalAssetHelpers.js";
+import { ASSET_CATEGORIES } from "../../../constants/netWorth/wealthCategories.js";
 
-function InsightsBreakdownShell({ titleKey, subtitleKey, children }) {
-  const { t } = useTranslation();
+function wealthCategoryLabel(t, categoryId) {
+  const def = ASSET_CATEGORIES.find((c) => c.id === categoryId);
+  return def ? t(def.labelKey) : categoryId;
+}
+
+function InsightsBreakdownShell({ title, subtitle, children }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
-    <div className="ct-page pb-8">
-      <SubPageHeader
-        title={t(titleKey)}
-        subtitle={subtitleKey ? t(subtitleKey) : undefined}
-        onBack={() => navigate("/insights")}
-      />
-      <div className="ct-stack px-4">{children}</div>
+    <div className="ct-page ed-paper ed-ins-page">
+      <div className="ed-ins-sub-mast">
+        <button type="button" className="ed-ins-back" onClick={() => navigate("/insights")}>
+          {t("insights.subpages.back")}
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 className="ed-ins-sub-title">{title}</h1>
+          {subtitle ? <p className="ed-ins-sub-sub">{subtitle}</p> : null}
+        </div>
+      </div>
+      {children}
     </div>
   );
+}
+
+function billStatusLabel(t, status) {
+  const key = `bill.status.${status}`;
+  const translated = t(key);
+  return translated !== key ? translated : status;
 }
 
 /** @route /insights/spending */
@@ -42,28 +55,116 @@ export function InsightsSpendingBreakdownPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const data = useInsightsData();
+  const { sortedCommitments, getEffectiveStatus } = usePerovo();
+  const { formatAmount } = usePrivacyAmount();
+
+  const allBills = useMemo(
+    () => [...sortedCommitments].sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0)),
+    [sortedCommitments],
+  );
+
+  const byCategory = useMemo(() => {
+    const map = {};
+    for (const c of sortedCommitments) {
+      const cat = c.category || "Other";
+      map[cat] = (map[cat] || 0) + Number(c.amount || 0);
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [sortedCommitments]);
+
+  const variableSpend =
+    data.paycheckFlow?.loggedSpendThisMonth ?? data.paycheckFlow?.variableMonthly ?? 0;
+  const freeCash = data.paycheckFlow?.freeCash ?? data.paycheckFlow?.freeMoney ?? 0;
 
   return (
-    <InsightsBreakdownShell titleKey="analytics.monthly.title" subtitleKey="analytics.monthly.subtitle">
-      <MonthlySpendAnalyticsSection embedded>
-        <BillInsightsCards />
-      </MonthlySpendAnalyticsSection>
-      {data.paycheckFlow ? (
-        <PaycheckBreakdown
-          breakdown={data.paycheckFlow}
-          incomeStepLabel={data.incomeLabel}
-          incomeEntryBasis={data.incomeEntryBasis}
-          payerSplit={data.payerSplitForPaycheck}
-          creditCard={data.cardPressureAnalytics}
-        />
+    <InsightsBreakdownShell
+      title={t("analytics.monthly.title")}
+      subtitle={t("analytics.monthly.subtitle")}
+    >
+      {data.paycheckFlow && data.paycheckFlow.income > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.paycheckFlowKicker")}</div>
+          <div className="ed-ins-waterfall">
+            <div className="ed-ins-waterfall-step">
+              <span className="ed-ins-waterfall-label">
+                {data.incomeLabel || t("analytics.freeCashRemaining")}
+              </span>
+              <span className="ed-ins-waterfall-val income">{formatAmount(data.paycheckFlow.income)}</span>
+            </div>
+            <div className="ed-ins-waterfall-step">
+              <span className="ed-ins-waterfall-label">{t("analytics.recurringBills")}</span>
+              <span className="ed-ins-waterfall-val deduct">
+                −{" "}
+                {formatAmount(
+                  data.paycheckFlow.recurringMonthly ?? data.paycheckFlow.fixedMonthly ?? 0,
+                )}
+              </span>
+            </div>
+            {variableSpend > 0 ? (
+              <div className="ed-ins-waterfall-step">
+                <span className="ed-ins-waterfall-label">{t("analytics.variableLoggedSpend")}</span>
+                <span className="ed-ins-waterfall-val deduct">− {formatAmount(variableSpend)}</span>
+              </div>
+            ) : null}
+            <div className="ed-ins-waterfall-step">
+              <span className="ed-ins-waterfall-label" style={{ fontWeight: 600 }}>
+                {t("home.ed.statFree")}
+              </span>
+              <span className="ed-ins-waterfall-val free">{formatAmount(freeCash)}</span>
+            </div>
+          </div>
+        </div>
       ) : null}
-      <AnalyticsChartPanel
-        forecastSeries={data.forecastSeries}
-        paymentsData={data.paymentsData}
-        pressureTrend={data.pressureTrend}
-        dailySpends={data.dailySpends}
-      />
-      <ViewLink label={t("analytics.viewSpendingHistory")} onClick={() => navigate("/ledger/spends")} />
+
+      {byCategory.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.byCategory")}</div>
+          {byCategory.map(([cat, total]) => (
+            <div key={cat} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{cat}</div>
+              </div>
+              <div className="ed-ins-row-val">{formatAmount(total)}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {allBills.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.allBillsMonth")}</div>
+          {allBills.map((c) => {
+            const status = getEffectiveStatus(c);
+            return (
+              <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+                <div className="ed-ins-row-left">
+                  <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+                  {c.category ? <div className="ed-ins-row-sub">{c.category}</div> : null}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <span className={`ed-ins-status ${status}`}>{billStatusLabel(t, status)}</span>
+                  <span className="ed-ins-row-val">{formatAmount(Number(c.amount || 0))}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="ed-ins-story">
+          <p className="ed-ins-empty">{t("insights.subpages.noBills")}</p>
+        </div>
+      )}
+
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/ledger/spends")}
+        >
+          {t("analytics.viewSpendingHistory")}
+        </button>
+      </div>
     </InsightsBreakdownShell>
   );
 }
@@ -80,35 +181,77 @@ export function InsightsYearlyBreakdownPage() {
     [commitments, getEffectiveStatus],
   );
 
-  const yearlyVariable = useMemo(() => {
-    return (dailySpends || []).reduce((sum, row) => {
-      const d = String(row.date || "");
-      if (!d.startsWith(String(year))) return sum;
-      return sum + (Number(row.amount) || 0);
-    }, 0);
-  }, [dailySpends, year]);
+  const yearlyVariable = useMemo(
+    () =>
+      (dailySpends || []).reduce((sum, row) => {
+        const d = String(row.date || "");
+        if (!d.startsWith(String(year))) return sum;
+        return sum + (Number(row.amount) || 0);
+      }, 0),
+    [dailySpends, year],
+  );
 
-  const monthlyAvg = yearlyVariable > 0 ? yearlyVariable / Math.max(1, new Date().getMonth() + 1) : 0;
+  const monthlyAvg =
+    yearlyVariable > 0 ? yearlyVariable / Math.max(1, new Date().getMonth() + 1) : 0;
+
+  const byCatYearly = useMemo(() => {
+    const map = {};
+    for (const c of commitments) {
+      const cat = c.category || "Other";
+      map[cat] = (map[cat] || 0) + Number(c.amount || 0) * 12;
+    }
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [commitments]);
 
   return (
-    <InsightsBreakdownShell titleKey="analytics.yearly.title" subtitleKey="analytics.yearly.subtitle">
-      <div className="pos-tile liab">
-        <p className="ct-stat-label">{t("analytics.yearly.burdenCard")}</p>
-        <p className="ct-stat-value ct-numeral">{formatAmount(yearlyBurden)}</p>
-        <p className="ct-caption mt-1">{t("analytics.yearly.burdenHint")}</p>
+    <InsightsBreakdownShell
+      title={t("analytics.yearly.title")}
+      subtitle={t("insights.subpages.yearlySubtitle", { year })}
+    >
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.annualTotals")}</div>
+        <div className="ed-ins-row" style={{ cursor: "default" }}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("analytics.yearly.burdenCard")}</div>
+            <div className="ed-ins-row-name">{t("insights.subpages.recurringBillsEmi")}</div>
+          </div>
+          <div className="ed-ins-row-val">{formatAmount(yearlyBurden)}</div>
+        </div>
+        <div className="ed-ins-row" style={{ cursor: "default" }}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("analytics.yearly.variableCard")}</div>
+            <div className="ed-ins-row-name">
+              {t("insights.subpages.monthlyAvg", {
+                amount: formatAmount(Math.round(monthlyAvg)),
+              })}
+            </div>
+          </div>
+          <div className="ed-ins-row-val">{formatAmount(yearlyVariable)}</div>
+        </div>
+        <div className="ed-ins-row" style={{ borderBottom: "none", cursor: "default" }}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("insights.subpages.totalOutflowYear")}</div>
+            <div className="ed-ins-row-name">{t("insights.subpages.billsPlusVariable")}</div>
+          </div>
+          <div className="ed-ins-row-val" style={{ color: "var(--ed-red)" }}>
+            {formatAmount(yearlyBurden + yearlyVariable)}
+          </div>
+        </div>
       </div>
-      <div className="pos-tile inst">
-        <p className="ct-stat-label">{t("analytics.yearly.variableCard")}</p>
-        <p className="ct-stat-value ct-numeral">{formatAmount(yearlyVariable)}</p>
-        <p className="ct-caption mt-1">
-          {t("analytics.yearly.variableHint", { year, avg: formatInr(Math.round(monthlyAvg)) })}
-        </p>
-      </div>
-      <div className="pos-tile agr">
-        <p className="ct-stat-label">{t("analytics.yearly.combinedLabel")}</p>
-        <p className="ct-stat-value ct-numeral">{formatAmount(yearlyBurden + yearlyVariable)}</p>
-        <p className="ct-caption mt-1">{t("analytics.yearly.combinedHint")}</p>
-      </div>
+
+      {byCatYearly.length > 0 ? (
+        <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+          <div className="ed-ins-kicker">{t("insights.subpages.billsByCategoryAnnual")}</div>
+          {byCatYearly.map(([cat, total]) => (
+            <div key={cat} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{cat}</div>
+              </div>
+              <div className="ed-ins-row-val">{formatAmount(total)}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </InsightsBreakdownShell>
   );
 }
@@ -124,21 +267,41 @@ export function InsightsNetWorthBreakdownPage() {
   if (tab === "instruments") return <Navigate to="/insights/instruments" replace />;
 
   return (
-    <InsightsBreakdownShell titleKey="analytics.section.networth" subtitleKey="analytics.wealth.subtitle">
-      <WealthAnalyticsSection
-        showSimulation={false}
-        showPressureAsLink
-        ledgerSlot={<ProfileNetWorthSection />}
-      />
-      <div className="ct-row gap-2 flex-wrap">
-        <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => navigate("/ledger?tab=assets")}>
-          {t("ledger.tab.assets")}
+    <InsightsBreakdownShell
+      title={t("insights.subpages.networthTitle")}
+      subtitle={t("analytics.wealth.subtitle")}
+    >
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <WealthAnalyticsSection
+          showSimulation={false}
+          showPressureAsLink
+          ledgerSlot={<ProfileNetWorthSection />}
+        />
+      </div>
+      <div className="ed-ins-story" style={{ borderBottom: "none", display: "flex", gap: 16 }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/insights/assets")}
+        >
+          {t("insights.subpages.assetsLink")}
         </button>
-        <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => navigate("/ledger?tab=liabilities")}>
-          {t("ledger.tab.liabilities")}
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/insights/liabilities")}
+        >
+          {t("insights.subpages.liabilitiesLink")}
         </button>
-        <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => navigate("/ledger?tab=instruments")}>
-          {t("ledger.tab.instruments")}
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/insights/instruments")}
+        >
+          {t("insights.subpages.instrumentsLink")}
         </button>
       </div>
     </InsightsBreakdownShell>
@@ -147,63 +310,292 @@ export function InsightsNetWorthBreakdownPage() {
 
 /** @route /insights/cashflow */
 export function InsightsCashflowBreakdownPage() {
+  const { t } = useTranslation();
   const data = useInsightsData();
+  const { sortedCommitments, todayStr } = usePerovo();
+  const { formatAmount } = usePrivacyAmount();
+
+  const upcoming30 = useMemo(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() + 30);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    const today = todayStr || new Date().toISOString().slice(0, 10);
+    return sortedCommitments
+      .filter((c) => c.dueDate && c.dueDate >= today && c.dueDate <= cutoffStr)
+      .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""))
+      .slice(0, 8);
+  }, [sortedCommitments, todayStr]);
 
   return (
-    <InsightsBreakdownShell titleKey="analytics.insightCard.cashflow" subtitleKey="analytics.section.stabilityHint">
-      <AnalyticsChartPanel
-        forecastSeries={data.forecastSeries}
-        paymentsData={data.paymentsData}
-        pressureTrend={data.pressureTrend}
-        dailySpends={data.dailySpends}
-      />
+    <InsightsBreakdownShell
+      title={t("analytics.insightCard.cashflow")}
+      subtitle={t("insights.subpages.cashflowSubtitle")}
+    >
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.cashflowForecast")}</div>
+        <AnalyticsChartPanel
+          forecastSeries={data.forecastSeries}
+          paymentsData={data.paymentsData}
+          pressureTrend={data.pressureTrend}
+          dailySpends={data.dailySpends}
+        />
+      </div>
+
+      {upcoming30.length > 0 ? (
+        <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+          <div className="ed-ins-kicker">{t("insights.subpages.dueNext30")}</div>
+          {upcoming30.map((c) => (
+            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-cat">{c.dueDate}</div>
+                <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+              </div>
+              <div className="ed-ins-row-val">{formatAmount(Number(c.amount || 0))}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </InsightsBreakdownShell>
   );
 }
 
 /** @route /insights/pulse */
 export function InsightsPulseBreakdownPage() {
+  const { t } = useTranslation();
+
   return (
-    <InsightsBreakdownShell titleKey="analytics.insightCard.pulse" subtitleKey="analytics.section.stabilityHint">
-      <FinancialPulseCard />
+    <InsightsBreakdownShell
+      title={t("analytics.insightCard.pulse")}
+      subtitle={t("insights.subpages.pulseSubtitle")}
+    >
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <FinancialPulseCard />
+      </div>
     </InsightsBreakdownShell>
   );
 }
 
 /** @route /insights/assets */
 export function InsightsAssetsBreakdownPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { entries, core } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
+  const { t } = useTranslation();
+
+  const assetEntries = useMemo(() => entries.filter((e) => isCoreAssetEntry(e)), [entries]);
+  const totalAssets = core?.totalAssets ?? 0;
+
+  const withCagr = useMemo(
+    () =>
+      assetEntries
+        .map((e) => {
+          const cagr = computeAssetCagr(e.purchasePrice, e.purchaseYear, e.value);
+          const yearsHeld = e.purchaseYear ? new Date().getFullYear() - e.purchaseYear : null;
+          return { ...e, cagr, yearsHeld };
+        })
+        .sort((a, b) => (b.value || 0) - (a.value || 0)),
+    [assetEntries],
+  );
 
   return (
     <InsightsBreakdownShell
-      titleKey="analytics.insightCard.assets"
-      subtitleKey="analytics.insightAssets.breakdownSubtitle"
+      title={t("insights.subpages.assetsTitle")}
+      subtitle={t("insights.subpages.assetsSubtitle")}
     >
-      <div className="pos-tile asset">
-        <AssetsInsightCard hideBreakdown />
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.totalAssetsKicker")}</div>
+        <div className="ed-ins-bignum" style={{ marginBottom: 4 }}>
+          {formatAmount(totalAssets)}
+        </div>
+        <p className="ed-ins-body">
+          {assetEntries.length === 1
+            ? t("insights.subpages.assetCountOne")
+            : t("insights.subpages.assetCount", { count: assetEntries.length })}
+        </p>
       </div>
-      <ViewLink label={t("ledger.tab.assets")} onClick={() => navigate("/ledger?tab=assets")} />
+
+      {withCagr.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.allHoldings")}</div>
+          {withCagr.map((e) => (
+            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-cat">
+                  {e.categoryId || t("ledger.tab.assets")}
+                  {e.cagr != null && e.yearsHeld != null
+                    ? ` · ${t("insights.subpages.cagrYearsHeld", {
+                        cagr: e.cagr.toFixed(1),
+                        years: e.yearsHeld,
+                      })}`
+                    : null}
+                </div>
+                <div className="ed-ins-row-name">{e.name}</div>
+                {e.aiInsight ? (
+                  <div className="ed-ins-row-sub">
+                    {e.aiInsight.split("VERDICT:")[1]?.split("\n")[0]?.trim() ||
+                      e.aiInsight.slice(0, 80)}
+                  </div>
+                ) : null}
+              </div>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-green)" }}>
+                {formatAmount(e.value || 0)}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="ed-ins-story">
+          <p className="ed-ins-empty">{t("insights.subpages.noAssets")}</p>
+        </div>
+      )}
+
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/ledger?tab=assets")}
+        >
+          {t("insights.subpages.viewAssetsLedger")}
+        </button>
+      </div>
     </InsightsBreakdownShell>
   );
 }
 
+const LOAN_CATEGORIES = new Set([
+  "Home Loan",
+  "Car Loan",
+  "EMI",
+  "Personal Loan",
+  "Credit Card",
+  "Loan",
+]);
+
 /** @route /insights/liabilities */
 export function InsightsLiabilitiesBreakdownPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { sortedCommitments, getEffectiveStatus } = usePerovo();
+  const { entries, core } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
+
+  const emiCommitments = useMemo(
+    () =>
+      sortedCommitments
+        .filter((c) => LOAN_CATEGORIES.has(c.category || ""))
+        .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0)),
+    [sortedCommitments],
+  );
+  const totalEmi = emiCommitments.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+  const liabEntries = useMemo(() => entries.filter((e) => e.kind === "liability"), [entries]);
+  const totalDebt = core?.totalLiabilities ?? 0;
+
+  const overdueBills = useMemo(
+    () =>
+      sortedCommitments
+        .filter((c) => getEffectiveStatus(c) === "overdue")
+        .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0)),
+    [sortedCommitments, getEffectiveStatus],
+  );
 
   return (
     <InsightsBreakdownShell
-      titleKey="analytics.insightCard.liabilities"
-      subtitleKey="analytics.insightLiabilities.breakdownSubtitle"
+      title={t("insights.subpages.liabilitiesTitle")}
+      subtitle={t("insights.subpages.liabilitiesSubtitle")}
     >
-      <div className="pos-tile liab">
-        <LiabilitiesInsightCard hideBreakdown />
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.debtOverview")}</div>
+        <div className="ed-ins-cols">
+          <div className="ed-ins-col">
+            <span className="ed-ins-col-label">{t("insights.subpages.totalDebtLabel")}</span>
+            <span className="ed-ins-col-val" style={{ color: "var(--ed-red)" }}>
+              {formatAmount(totalDebt)}
+            </span>
+          </div>
+          <div className="ed-ins-col">
+            <span className="ed-ins-col-label">{t("analytics.insightLiabilities.monthlyEmi")}</span>
+            <span className="ed-ins-col-val" style={{ color: "var(--ed-red)" }}>
+              {formatAmount(totalEmi)}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="ct-row gap-2 flex-wrap">
-        <ViewLink label={t("ledger.tab.liabilities")} onClick={() => navigate("/ledger?tab=liabilities")} />
-        <ViewLink label={t("ledger.headerBills")} onClick={() => navigate("/ledger/bills")} />
+
+      {overdueBills.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.overdueActNow")}</div>
+          {overdueBills.map((c) => (
+            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+                <div className="ed-ins-row-sub">{c.category}</div>
+              </div>
+              <div className="ed-ins-row-val danger">{formatAmount(Number(c.amount || 0))}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {emiCommitments.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.emiLoans")}</div>
+          {emiCommitments.map((c) => {
+            const remaining =
+              c.totalInstallments && c.paidInstallments
+                ? c.totalInstallments - c.paidInstallments
+                : null;
+            return (
+              <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+                <div className="ed-ins-row-left">
+                  <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+                  <div className="ed-ins-row-sub">
+                    {remaining != null
+                      ? t("insights.subpages.installmentsLeft", { count: remaining })
+                      : c.category}
+                  </div>
+                </div>
+                <div className="ed-ins-row-val">
+                  {formatAmount(Number(c.amount || 0))}/mo
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {liabEntries.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.recordedLiabilities")}</div>
+          {liabEntries.map((e) => (
+            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{e.name}</div>
+              </div>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-red)" }}>
+                {formatAmount(e.value || 0)}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {emiCommitments.length === 0 && liabEntries.length === 0 ? (
+        <div className="ed-ins-story">
+          <p className="ed-ins-empty">{t("insights.subpages.noDebt")}</p>
+        </div>
+      ) : null}
+
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/ledger/bills")}
+        >
+          {t("insights.subpages.manageBills")}
+        </button>
       </div>
     </InsightsBreakdownShell>
   );
@@ -211,18 +603,118 @@ export function InsightsLiabilitiesBreakdownPage() {
 
 /** @route /insights/instruments */
 export function InsightsInstrumentsBreakdownPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { sortedCommitments } = usePerovo();
+  const { entries } = useNetWorth();
+  const { formatAmount } = usePrivacyAmount();
+
+  const instrumentEntries = useMemo(
+    () => entries.filter(isInstrumentWealthEntry),
+    [entries],
+  );
+  const instrCommitments = useMemo(
+    () => sortedCommitments.filter(isInstrumentCommitment),
+    [sortedCommitments],
+  );
+
+  const totalValue = instrumentEntries.reduce((s, e) => s + Number(e.value || 0), 0);
+  const monthlySip = instrCommitments.reduce((s, c) => s + Number(c.amount || 0), 0);
+
+  const sipItems = instrCommitments.filter((c) => c.category === "SIP");
+  const upcoming = [...instrCommitments]
+    .filter((c) => c.dueDate)
+    .sort((a, b) => (a.dueDate || "").localeCompare(b.dueDate || ""));
 
   return (
     <InsightsBreakdownShell
-      titleKey="analytics.insightCard.instruments"
-      subtitleKey="analytics.insightInstruments.breakdownSubtitle"
+      title={t("analytics.insightCard.instruments")}
+      subtitle={t("insights.subpages.instrumentsSubtitle")}
     >
-      <div className="pos-tile inst">
-        <InstrumentsInsightCard hideBreakdown showHoldings />
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.overview")}</div>
+        <div className="ed-ins-cols">
+          <div className="ed-ins-col">
+            <span className="ed-ins-col-label">{t("insights.subpages.totalValue")}</span>
+            <span className="ed-ins-col-val" style={{ color: "var(--ed-violet)" }}>
+              {formatAmount(totalValue)}
+            </span>
+          </div>
+          {monthlySip > 0 ? (
+            <div className="ed-ins-col">
+              <span className="ed-ins-col-label">{t("analytics.insightInstruments.monthlySip")}</span>
+              <span className="ed-ins-col-val" style={{ color: "var(--ed-violet)" }}>
+                {formatAmount(monthlySip)}
+              </span>
+            </div>
+          ) : null}
+        </div>
       </div>
-      <ViewLink label={t("ledger.tab.instruments")} onClick={() => navigate("/ledger?tab=instruments")} />
+
+      {upcoming.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.upcomingMaturities")}</div>
+          {upcoming.slice(0, 5).map((c) => (
+            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-cat">{c.dueDate}</div>
+                <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+              </div>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-violet)" }}>
+                {formatAmount(Number(c.amount || 0))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {instrumentEntries.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.allHoldings")}</div>
+          {instrumentEntries.map((e) => (
+            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{e.name}</div>
+                <div className="ed-ins-row-sub">{wealthCategoryLabel(t, e.categoryId)}</div>
+              </div>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-violet)" }}>
+                {formatAmount(e.value || 0)}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {sipItems.length > 0 ? (
+        <div className="ed-ins-story">
+          <div className="ed-ins-kicker">{t("insights.subpages.monthlySipPlans")}</div>
+          {sipItems.map((c) => (
+            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div className="ed-ins-row-left">
+                <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
+              </div>
+              <div className="ed-ins-row-val">{formatAmount(Number(c.amount || 0))}/mo</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {instrumentEntries.length === 0 && instrCommitments.length === 0 ? (
+        <div className="ed-ins-story">
+          <p className="ed-ins-empty">{t("insights.subpages.noInstruments")}</p>
+        </div>
+      ) : null}
+
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/ledger?tab=instruments")}
+        >
+          {t("insights.subpages.viewInstrumentsLedger")}
+        </button>
+      </div>
     </InsightsBreakdownShell>
   );
 }

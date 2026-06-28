@@ -5,6 +5,7 @@ import HouseholdCommandPanel from "../analytics/HouseholdCommandPanel.jsx";
 import HouseholdSpendPanel from "../analytics/HouseholdSpendPanel.jsx";
 import FamilyMonthlyReportCard from "../household/FamilyMonthlyReportCard.jsx";
 import InsightsHub from "../insights/InsightsHub.jsx";
+import InsightsEditorialPage from "../insights/InsightsEditorialPage.jsx";
 import { useInsightsData } from "../insights/useInsightsData.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
@@ -36,7 +37,7 @@ const Analytics = () => {
   const showSelfView = !isFamily || analyticsView === "self";
 
   if (!isFamily) {
-    return <InsightsHub data={carouselData} />;
+    return <InsightsEditorialPage data={carouselData} />;
   }
 
   return (

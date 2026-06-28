@@ -26,18 +26,23 @@ function attentionBillTitle(commitment) {
   return full.length > 28 ? `${full.slice(0, 26)}…` : full;
 }
 
-function AttentionRow({ item, navigate, formatAmount, t }) {
+function AttentionRow({ item, navigate, formatAmount, t, primary = false }) {
   const isOverdue = item.overdue;
   const tone = isOverdue ? "danger" : "warning";
   const kickerText = isOverdue ? t("home.ed.attention.overdueKick") : t("home.ed.attention.dueSoonKick");
 
   return (
-    <button type="button" className="ed-break" onClick={() => navigate(item.to)}>
+    <button
+      type="button"
+      className={`ed-break${primary ? " ed-break--primary" : ""}`}
+      onClick={() => navigate(item.to)}
+    >
       <span className={`ed-break-no ${tone}`}>!</span>
       <div className="ed-break-body">
         <div className={`ed-break-kick ${tone}`}>{kickerText}</div>
         <div className="ed-break-head">{item.name}</div>
         <div className="ed-break-sub">{item.statusText}</div>
+        {primary ? <span className="ed-break-cta">{t("home.ed.attention.primaryCta")}</span> : null}
       </div>
       <span className={`ed-break-amt ${tone}`}>{formatAmount(item.amount)}</span>
     </button>
@@ -50,7 +55,7 @@ export default function HomeNeedsAttention() {
   const { sortedCommitments, lendings, getEffectiveStatus, todayStr } = usePerovo();
   const { formatAmount } = usePrivacyAmount();
 
-  const { overdue, dueSoon } = useMemo(() => {
+  const { overdue, dueSoon, totalCount } = useMemo(() => {
     /** @type {object[]} */
     const overdueRows = [];
     /** @type {object[]} */
@@ -108,22 +113,36 @@ export default function HomeNeedsAttention() {
       });
     }
 
-    return { overdue: overdueRows, dueSoon: dueSoonRows };
+    const shownOverdue = overdueRows.slice(0, 1);
+    const shownDueSoon = dueSoonRows.slice(0, shownOverdue.length ? 1 : 2);
+    const total = overdueRows.length + dueSoonRows.length;
+
+    return { overdue: shownOverdue, dueSoon: shownDueSoon, totalCount: total };
   }, [sortedCommitments, lendings, getEffectiveStatus, todayStr, t]);
 
-  const totalCount = overdue.length + dueSoon.length;
   if (totalCount === 0) return null;
 
   const hasOverdue = overdue.length > 0;
+  const sectionTitle =
+    totalCount === 1
+      ? t("home.ed.attention.sectionOne")
+      : t("home.ed.attention.sectionMany", { count: totalCount });
 
   return (
-    <section>
-      <div className="ed-break-section">
-        {t("home.ed.attention.section")}
-        {hasOverdue ? <span className="ed-break-section-badge">{overdue.length}</span> : null}
+    <section className={hasOverdue ? "ed-attention-block ed-attention-block--alert" : "ed-attention-block"}>
+      <div className="ed-break-section ed-break-section--prominent">
+        {sectionTitle}
+        {totalCount > 1 ? <span className="ed-break-section-badge">{totalCount}</span> : null}
       </div>
-      {overdue.map((item) => (
-        <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} t={t} />
+      {overdue.map((item, i) => (
+        <AttentionRow
+          key={item.id}
+          item={item}
+          navigate={navigate}
+          formatAmount={formatAmount}
+          t={t}
+          primary={i === 0}
+        />
       ))}
       {dueSoon.map((item) => (
         <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} t={t} />

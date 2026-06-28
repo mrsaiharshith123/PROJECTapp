@@ -1,12 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { PageShell } from "../../index.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
 import InsightSectionCarousel from "./InsightSectionCarousel.jsx";
 import { findSectionForCard, INSIGHT_SECTIONS } from "./insightSectionsConfig.js";
 
-/** Main Insights hub — stacked category sections, each with its own swipe carousel. */
+/** Main Insights hub — editorial chrome + stacked category carousels. */
 export default function InsightsHub({ data, nested = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -42,20 +40,22 @@ export default function InsightsHub({ data, nested = false }) {
   }
 
   return (
-    <PageShell
-      title={t("nav.insights")}
-      action={
+    <div className="ct-page ed-insights-page">
+      <div className="ed-insights-masthead">
+        <div>
+          <h1 className="ed-insights-masthead-title">{t("nav.insights")}</h1>
+          <p className="ed-insights-masthead-sub">{t("analytics.hub.subtitle")}</p>
+        </div>
         <button
           type="button"
-          className="ct-btn ct-btn-ghost ct-btn-sm"
+          className="ed-byline-link"
+          style={{ fontSize: 10, marginBottom: 2 }}
           onClick={() => navigate("/ledger/spends")}
         >
-          <CtIcon name="list" size={14} /> {t("analytics.spendsHistory")}
+          {t("analytics.spendsHistory")}
         </button>
-      }
-      className="ct-insights-hub"
-    >
+      </div>
       {sections}
-    </PageShell>
+    </div>
   );
 }

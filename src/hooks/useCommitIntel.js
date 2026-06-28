@@ -28,6 +28,7 @@ import {
   buildTransactionInsights,
 } from "../services/transactions/index.js";
 import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
+import { totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { memoIntel, buildIntelCacheKey } from "../utils/intelMemo.js";
 import { applyDevOverrideToCommitIntel, useDevOverrideTick } from "../utils/devOverride.js";
 
@@ -47,9 +48,16 @@ export function useCommitIntel() {
 
   const rawIntel = useMemo(() => {
     const openSum = commitments.reduce((s, c) => s + (Number(c.remainingAmount) || 0), 0);
+    const paymentsLen = commitments.reduce((s, c) => s + (c.payments?.length ?? 0), 0);
+    const paymentsTotal = commitments.reduce(
+      (s, c) => s + totalPaidOnPayments(c.payments),
+      0,
+    );
     const cacheKey = buildIntelCacheKey([
       commitments.length,
       openSum,
+      paymentsLen,
+      Math.round(paymentsTotal),
       lendings.length,
       dailySpends?.length,
       todayStr,

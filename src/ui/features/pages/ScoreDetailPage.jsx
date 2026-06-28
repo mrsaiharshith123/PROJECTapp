@@ -4,17 +4,9 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
-import { SubPageHeader } from "../../patterns/SubPageHeader.jsx";
 import { ShareScoreIconButton } from "../../patterns/ShareScoreIconButton.jsx";
 import { useCountUp } from "../../hooks/useCountUp.js";
 import Confetti from "react-confetti";
-
-function tierRingColor(tone) {
-  if (tone === "success" || tone === "ok") return "#2dd4bf";
-  if (tone === "warning" || tone === "warn" || tone === "mid") return "#fbbf24";
-  return "#f87171";
-}
 
 function pillarStatusKey(pillarId, score, survivalMonths, debtRatio, goalsRatio) {
   if (pillarId === "cashflow") {
@@ -37,6 +29,26 @@ function pillarStatusKey(pillarId, score, survivalMonths, debtRatio, goalsRatio)
   return "scoreDetail.pillarStatus.behind";
 }
 
+function pillarTipKey(pillarId, debtRatio, survivalMonths) {
+  if (pillarId === "cashflow") {
+    return debtRatio < 30
+      ? "scoreDetail.pillarTip.cashflow.healthy"
+      : "scoreDetail.pillarTip.cashflow.constrained";
+  }
+  if (pillarId === "savings") {
+    const mo = survivalMonths ?? 0;
+    if (mo >= 6) return "scoreDetail.pillarTip.savings.strong";
+    if (mo >= 3) return "scoreDetail.pillarTip.savings.moderate";
+    return "scoreDetail.pillarTip.savings.low";
+  }
+  if (pillarId === "debt") {
+    if (debtRatio < 30) return "scoreDetail.pillarTip.debt.healthy";
+    if (debtRatio < 60) return "scoreDetail.pillarTip.debt.watch";
+    return "scoreDetail.pillarTip.debt.high";
+  }
+  return "scoreDetail.pillarTip.protection";
+}
+
 /** @route /insights/score — Perovo Score breakdown (sub-page of Insights) */
 export default function ScoreDetailPage() {
   const navigate = useNavigate();
@@ -53,7 +65,6 @@ export default function ScoreDetailPage() {
   const totalLiabilities = netWorthCore?.totalLiabilities ?? 0;
   const debtRatio = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
 
-  const ringColor = tierRingColor(perovo.tier?.tone);
   const filledDeg = Math.max(0, Math.min(360, (perovo.score / 100) * 360));
 
   const goalsOnTrackRatio =
@@ -61,87 +72,154 @@ export default function ScoreDetailPage() {
 
   const showPayoffShare = Boolean(location.state?.showPayoffShare);
 
-  return (
-    <div className="ct-page ct-score-detail pb-8">
-      {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
-      <SubPageHeader
-        title={t("scoreDetail.pageTitle")}
-        onBack={() => navigate("/insights?card=score")}
-        action={<ShareScoreIconButton />}
-      />
+  const scoreColor =
+    perovo.tier?.tone === "success" || perovo.tier?.tone === "ok"
+      ? "var(--ed-green)"
+      : perovo.tier?.tone === "warning" || perovo.tier?.tone === "mid"
+        ? "var(--ed-gold)"
+        : "var(--ed-red)";
 
-      <div className="pos-tile instrument mx-4">
-        <div
-          className="ct-hero-glow"
-          aria-hidden
-          style={{
-            background:
-              perovo.tier?.tone === "success"
-                ? "var(--ct-glow-teal)"
-                : perovo.tier?.tone === "warning"
-                  ? "var(--ct-glow-amber)"
-                  : "radial-gradient(circle,rgba(220,38,38,0.3),transparent 70%)",
-          }}
-        />
-        <p className="ct-hero-label">{t("perovoScore.title")}</p>
-        <div className="ct-row gap-5 mt-3 items-center relative">
+  return (
+    <div className="ct-page ed-paper ed-ins-page">
+      {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
+
+      <div className="ed-ins-sub-mast">
+        <button type="button" className="ed-ins-back" onClick={() => navigate("/insights")}>
+          {t("insights.subpages.back")}
+        </button>
+        <div style={{ flex: 1 }}>
+          <h1 className="ed-ins-sub-title">{t("insights.subpages.scoreTitle")}</h1>
+          <p className="ed-ins-sub-sub">{t("insights.subpages.scoreSubtitle")}</p>
+        </div>
+        <ShareScoreIconButton />
+      </div>
+
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.scoreKicker")}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div
-            className="ct-conic-ring shrink-0"
             style={{
-              width: 108,
-              height: 108,
-              background: `conic-gradient(${ringColor} 0deg ${filledDeg}deg, rgba(255,255,255,0.08) ${filledDeg}deg 360deg)`,
+              width: 80,
+              height: 80,
+              borderRadius: "50%",
+              flexShrink: 0,
+              background: `conic-gradient(${scoreColor} 0deg ${filledDeg}deg, var(--ed-rule) ${filledDeg}deg 360deg)`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <div className="ct-conic-ring-inner" style={{ width: 84, height: 84 }}>
-              <span className="ct-score-ring-num ct-numeral">{animatedScore}</span>
-              <span className="ct-score-ring-tier" style={{ color: ringColor }}>
+            <div
+              style={{
+                width: 62,
+                height: 62,
+                borderRadius: "50%",
+                background: "var(--ed-bg)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Fraunces', Georgia, serif",
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: "var(--ed-ink)",
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {animatedScore}
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  color: scoreColor,
+                  fontWeight: 600,
+                  fontFamily: "'Inter', system-ui, sans-serif",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  marginTop: 1,
+                }}
+              >
                 {t(`perovoScore.tier.${perovo.tier?.id}`)}
               </span>
             </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="ct-score-status-chip">{t(`home.perovoScoreStatus.${perovo.tier?.id === "on_track" ? "onTrack" : perovo.tier?.id === "coping" ? "coping" : "atRisk"}`)}</p>
+          <div>
+            <div
+              style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontSize: 20,
+                fontWeight: 600,
+                color: "var(--ed-ink)",
+              }}
+            >
+              {t(`perovoScore.tier.${perovo.tier?.id}`)}
+            </div>
+            <div
+              style={{
+                fontFamily: "'Newsreader', Georgia, serif",
+                fontSize: 13,
+                fontStyle: "italic",
+                color: "var(--ed-ink-faint)",
+                marginTop: 4,
+              }}
+            >
+              {t("analytics.insightScore.subtitle")}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="ct-grid-2 gap-2 mx-4">
+      <div className="ed-ins-story">
+        <div className="ed-ins-kicker">{t("insights.subpages.scorePillars")}</div>
         {PEROVO_PILLARS.map((pillar) => {
           const data = perovo.pillars[pillar.id];
-          const score = data?.score ?? 0;
-          const color = tierRingColor(score >= 70 ? "success" : score >= 45 ? "warning" : "danger");
-          let displayValue = privacyMode ? "•••" : `${score}`;
+          const pillarScore = data?.score ?? 0;
+          const color =
+            pillarScore >= 70 ? "var(--ed-green)" : pillarScore >= 45 ? "var(--ed-gold)" : "var(--ed-red)";
+          let displayValue = privacyMode ? "•••" : `${pillarScore}`;
           if (pillar.id === "debt" && !privacyMode) displayValue = `${debtRatio.toFixed(0)}%`;
           if (pillar.id === "savings" && !privacyMode && survivalMonths != null) {
             displayValue = `${Number(survivalMonths).toFixed(1)}${t("scoreDetail.monthsShort")}`;
           }
+          const statusKey = pillarStatusKey(
+            pillar.id,
+            pillarScore,
+            survivalMonths,
+            debtRatio,
+            goalsOnTrackRatio,
+          );
           return (
-            <div key={pillar.id} className={`ct-stat-tile ${pillar.tone} text-center py-3 px-2.5 w-full`}>
-              <CtIcon
-                name={pillar.icon}
-                size={22}
-                className={pillar.tone === "teal" ? "text-teal-300" : pillar.tone === "amber" ? "text-amber-300" : "text-violet-300"}
-              />
-              <p className="ct-stat-label mt-1">{t(`perovoScore.pillar.${pillar.id}`)}</p>
-              <p className="ct-stat-value ct-numeral mt-0.5" style={{ color }}>
+            <div key={pillar.id} className="ed-ins-pillar-row">
+              <div className="ed-ins-pillar-score" style={{ color }}>
                 {displayValue}
-              </p>
-              <p className="text-[10px] text-[var(--ct-text-muted)] mt-0.5">
-                {t(pillarStatusKey(pillar.id, score, survivalMonths, debtRatio, goalsOnTrackRatio))}
-              </p>
+              </div>
+              <div className="ed-ins-pillar-detail">
+                <div className="ed-ins-pillar-name">{t(`perovoScore.pillar.${pillar.id}`)}</div>
+                <div className="ed-ins-pillar-row-status">{t(statusKey)}</div>
+                <div className="ed-ins-pillar-tip">
+                  {t(pillarTipKey(pillar.id, debtRatio, survivalMonths))}
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      <button
-        type="button"
-        className="ct-btn ct-btn-primary mx-4 w-[calc(100%-2rem)]"
-        onClick={() => navigate("/insights?card=score")}
-      >
-        {t("scoreDetail.seeFullInsights")}
-      </button>
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <button
+          type="button"
+          className="ed-ins-link"
+          style={{ padding: 0 }}
+          onClick={() => navigate("/insights")}
+        >
+          {t("insights.subpages.backFooter")}
+        </button>
+      </div>
     </div>
   );
 }
