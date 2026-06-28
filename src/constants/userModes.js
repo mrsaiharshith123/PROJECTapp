@@ -1,10 +1,10 @@
 /** Primary bottom nav — Home · Ledger · Add · Agreements · Insights */
 export const NAV_ITEMS = [
   { to: "/", labelKey: "nav.home", icon: "house" },
-  { to: "/ledger", labelKey: "nav.ledger", icon: "scales", navGroup: "ledger" },
+  { to: "/ledger", labelKey: "nav.ledger", icon: "book-open", navGroup: "ledger" },
   { to: "/add", labelKey: "nav.add", icon: "+", fab: true },
-  { to: "/agreements", labelKey: "nav.agreements", icon: "handshake", navGroup: "agreements" },
-  { to: "/insights", labelKey: "nav.insights", icon: "chart-bar", navGroup: "insights" },
+  { to: "/agreements", labelKey: "nav.agreementsShort", icon: "handshake", navGroup: "agreements" },
+  { to: "/insights", labelKey: "nav.insights", icon: "chart-line-up", navGroup: "insights" },
 ];
 
 /** Only user mode — household uses salaried + householdScope. */

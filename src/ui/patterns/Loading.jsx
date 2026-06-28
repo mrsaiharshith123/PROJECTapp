@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { PerovoLogo } from "../brand/PerovoLogo.jsx";
-import { PerovoWordmark } from "../brand/PerovoWordmark.jsx";
 import { useTranslationOptional } from "../../i18n/I18nProvider.js";
 
 const LOADING_HINT_KEYS = [
@@ -36,7 +35,7 @@ export function SkeletonCard() {
 /**
  * @param {{ size?: 'sm' | 'md' | 'lg', showLogo?: boolean }} props
  */
-export function LoadingSpinner({ size = "md", showLogo = true }) {
+export function LoadingSpinner({ size = "md", showLogo = false }) {
   return (
     <div className={`ct-spin ct-spin-${size}`} role="presentation" aria-hidden>
       <span className="ct-spin-ring" />
@@ -45,17 +44,6 @@ export function LoadingSpinner({ size = "md", showLogo = true }) {
           <PerovoLogo size={size === "lg" ? 36 : size === "sm" ? 16 : 24} />
         </span>
       ) : null}
-    </div>
-  );
-}
-
-function LoadingAmbient() {
-  return (
-    <div className="ct-load-ambient" aria-hidden>
-      <div className="ct-load-grid" />
-      <div className="ct-load-orb ct-load-orb-a" />
-      <div className="ct-load-orb ct-load-orb-b" />
-      <div className="ct-load-shine" />
     </div>
   );
 }
@@ -87,27 +75,22 @@ export function PageLoader({ message, hint = true }) {
 
   return (
     <div className="ct-load-scene ct-load-scene-full" role="status" aria-live="polite" aria-busy="true">
-      <LoadingAmbient />
       <div className="ct-load-center">
-        <LoadingSpinner size="lg" showLogo />
         <div className="ct-load-message-row">
           {message ? (
-            <p className="ct-load-message">{message}</p>
+            <p className="ct-load-message ct-load-message-editorial">{message}</p>
           ) : (
             <>
-              <span className="ct-load-message-prefix">{t("common.loadingAppPrefix")}</span>
-              <PerovoWordmark size="xs" alt={t("brand.appName")} />
-              <span className="ct-load-message-suffix" aria-hidden>
-                …
-              </span>
+              <span className="ct-load-brand-title">{t("brand.appName")}</span>
+              <span className="ct-load-brand-tagline">{t("home.ed.tagline")}</span>
             </>
           )}
         </div>
-        {sub && (
+        {sub ? (
           <p key={sub} className="ct-load-hint">
             {sub}
           </p>
-        )}
+        ) : null}
         <div className="ct-load-progress" aria-hidden>
           <span className="ct-load-progress-bar" />
         </div>

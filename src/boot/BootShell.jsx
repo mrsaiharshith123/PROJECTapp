@@ -1,6 +1,6 @@
 import { PageLoader } from "../ui/patterns/Loading.jsx";
 
-/** Boot / auth wait — same full-screen loader as route transitions (P logo + Starting Perovo). */
+/** Boot / auth wait — editorial full-screen loader (Fraunces wordmark + tagline). */
 export default function BootShell() {
   return <PageLoader />;
 }

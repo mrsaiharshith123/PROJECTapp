@@ -31,8 +31,10 @@ export default function BrandDocumentSync() {
     document.title = t("brand.appName");
 
     const tabIcon = assetUrl(`brand/${brandIconForTheme(theme)}`);
-    upsertLink("icon", { href: tabIcon, type: "image/png" });
-    upsertLink("apple-touch-icon", { href: assetUrl("pwa-192.png") });
+    upsertLink("icon", { href: tabIcon, type: "image/svg+xml" });
+    upsertLink("apple-touch-icon", {
+      href: assetUrl(theme === "light" ? "pwa-192-light.svg" : "pwa-192.svg"),
+    });
 
     const metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
     if (metaTitle) metaTitle.setAttribute("content", t("brand.appName"));

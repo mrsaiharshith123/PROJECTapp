@@ -168,7 +168,7 @@ const ICON_REGISTRY = {
 /** @type {Record<string, import('@phosphor-icons/react').IconWeight>} */
 const CONTEXT_WEIGHTS = {
   nav: "fill",
-  "nav-off": "regular",
+  "nav-off": "light",
   category: "bold",
   action: "fill",
   status: "duotone",

@@ -3,7 +3,6 @@ import { getEffectiveLendingStatus } from "../../../utils/lendingStatus.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateLendingStatus } from "../../../i18n/domainLabels.js";
-import { cn } from "../../utils/cn.js";
 
 function initials(name) {
   const parts = String(name || "?")
@@ -37,6 +36,10 @@ function trustFilledDots(score) {
   return Math.min(5, Math.max(0, Math.round((Number(score) || 0) / 20)));
 }
 
+function lendingTypeLabel(t, type) {
+  return type === "borrowed" ? t("agreements.borrowedOn") : t("agreements.lentOn");
+}
+
 /**
  * Agreement row card — trust dots, status stripe, legal + repayment actions.
  */
@@ -48,54 +51,76 @@ function AgreementCard({ item, todayStr, trustScore = 50, onMakeLegal, onRepayme
   const days = daysUntil(item.dueDate, todayStr);
   const dueSoon = eff === "pending" && days >= 0 && days <= 3;
 
-  const stripeTone = eff === "overdue" ? "rose" : dueSoon ? "amber" : "teal";
-  const lentLabel = item.type === "lent" ? t("agreements.lentOn") : t("agreements.borrowedOn");
+  const stripeColor =
+    eff === "overdue"
+      ? "var(--ed-red)"
+      : eff === "pending" && dueSoon
+        ? "var(--ed-gold)"
+        : eff === "complete"
+          ? "var(--ed-green)"
+          : "var(--ed-rule)";
+
+  const statusLabel =
+    eff === "overdue" && days < 0
+      ? t("agreements.overdueDays", { days: Math.abs(days) })
+      : translateLendingStatus(t, eff);
 
   return (
-    <article className={cn("pos-agreement-card", `stripe-${stripeTone}`)}>
-      <div className="pos-agreement-card-body">
-        <div className="pos-agreement-card-top">
-          <span className="pos-agreement-avatar" aria-hidden>
+    <div className="ed-agreement-card">
+      <div aria-hidden className="ed-agreement-stripe" style={{ background: stripeColor }} />
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "flex-start", minWidth: 0, flex: 1 }}>
+          <div className="ed-agreement-avatar" aria-hidden>
             {initials(item.personName)}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="pos-agreement-name">{item.personName}</p>
-            <p className="pos-agreement-meta">
-              {formatAmount(item.totalAmount)} · {lentLabel} {formatShortDate(item.startDate || item.dueDate)} ·{" "}
-              {t("agreements.due")} {formatShortDate(item.dueDate)}
-            </p>
-            <div className="pos-trust-dots" aria-label={t("agreements.trustScoreAria", { score: trustScore })}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className={cn("pos-trust-dot", i < filled && "filled")} />
+          </div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div className="ed-agreement-name">{item.personName}</div>
+            <div className="ed-agreement-meta">
+              {lendingTypeLabel(t, item.type)}
+              {item.dueDate ? ` · ${t("agreements.due")} ${formatShortDate(item.dueDate)}` : ""}
+            </div>
+            <div style={{ display: "flex", gap: 3, marginTop: 5 }} aria-label={t("agreements.trustScoreAria", { score: trustScore })}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className={`ed-trust-dot${i < filled ? " filled" : ""}`} />
               ))}
             </div>
-            <p
-              className={cn(
-                "pos-agreement-status",
-                eff === "overdue" && "rose",
-                eff === "pending" && !dueSoon && "teal",
-                dueSoon && "amber",
-                eff === "complete" && "teal",
-              )}
-            >
-              {eff === "overdue" && days < 0
-                ? t("agreements.overdueDays", { days: Math.abs(days) })
-                : translateLendingStatus(t, eff)}
-            </p>
           </div>
         </div>
-        {eff !== "complete" ? (
-          <div className="pos-agreement-actions">
-            <button type="button" className="pos-agreement-btn legal" onClick={() => onMakeLegal(item)}>
-              {item.agreementLocked ? t("agreements.viewLegal") : t("agreements.makeLegal")}
-            </button>
-            <button type="button" className="pos-agreement-btn ghost" onClick={() => onRepayment(item)}>
-              {t("agreements.repayment")}
-            </button>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 6,
+            flexShrink: 0,
+            marginLeft: 10,
+          }}
+        >
+          <div className={`ed-agreement-amount${eff === "overdue" ? " overdue" : ""}`}>
+            {formatAmount(Number(item.remainingAmount ?? item.totalAmount) || 0)}
           </div>
-        ) : null}
+          <div
+            className={`ed-agreement-status${eff === "overdue" ? " overdue" : ""}${eff === "complete" ? " complete" : ""}`}
+          >
+            {statusLabel}
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 2 }}>
+            {(eff === "pending" || eff === "overdue") && onRepayment ? (
+              <button type="button" className="ed-agreement-action gold" onClick={() => onRepayment(item)}>
+                {t("agreements.ed.recordPayment")}
+              </button>
+            ) : null}
+            {onMakeLegal ? (
+              <button type="button" className="ed-agreement-action muted" onClick={() => onMakeLegal(item)}>
+                {t("agreements.ed.legalDoc")}
+              </button>
+            ) : null}
+          </div>
+        </div>
       </div>
-    </article>
+    </div>
   );
 }
 

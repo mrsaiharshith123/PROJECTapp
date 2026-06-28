@@ -5,7 +5,6 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import WealthEntryCard from "../netWorth/WealthEntryCard.jsx";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
-import { ViewLink } from "../../patterns/ViewLink.jsx";
 import { CORE_ASSET_CATEGORIES } from "../../../constants/netWorth/wealthCategories.js";
 import {
   ASSET_GROUP_LIQUID,
@@ -42,22 +41,26 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
 
   return (
     <div className="ct-stack">
-      <div className="pos-hero asset">
-        <div className="pos-hero-glow asset" aria-hidden />
-        <div className="pos-hero-head">
-          <p className="ct-caption uppercase tracking-wide">{t("ledger.totalAssets")}</p>
-          <ViewLink
-            label={t("ledger.viewInsights")}
-            onClick={() => navigate("/insights/assets")}
-          />
+      <div className="ed-ins-story ed-ledger-hero">
+        <div className="ed-ins-kicker">{t("ledger.totalAssets")}</div>
+        <div className="ed-ledger-hero-row">
+          <div className="ed-ins-bignum">
+            <span className="sym">₹</span>
+            {formatAmount(total).replace("₹", "").trim()}
+          </div>
+          <button type="button" className="ed-ins-link" onClick={() => navigate("/insights/assets")}>
+            {t("ledger.viewInsightsLink")}
+          </button>
         </div>
-        <p className="pos-display-amount">{formatAmount(total)}</p>
-        <p className="ct-caption mt-1">
+        <div className="ed-ins-body">
           {t("ledger.assetsMeta", {
             count: assets.length,
-            growth: growth?.yearlyPct != null ? `${growth.yearlyPct >= 0 ? "+" : ""}${growth.yearlyPct.toFixed(1)}%` : "—",
+            growth:
+              growth?.yearlyPct != null
+                ? `${growth.yearlyPct >= 0 ? "+" : ""}${growth.yearlyPct.toFixed(1)}%`
+                : "—",
           })}
-        </p>
+        </div>
       </div>
 
       {GROUPS.map((group) => {

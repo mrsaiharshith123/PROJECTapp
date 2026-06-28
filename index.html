@@ -2,14 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="brand/icon-dark.png" />
+    <link rel="icon" type="image/svg+xml" href="brand/icon-dark.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#4A6CF7" />
+    <meta name="theme-color" content="#16140f" />
     <meta name="description" content="Perovo — finance simplified. Track bills, pressure, repayments, and lending on your device." />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Perovo" />
-    <link rel="apple-touch-icon" href="pwa-192.png" />
-    <!-- Editorial fonts — Direction H -->
+    <link rel="apple-touch-icon" href="pwa-192.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -39,10 +38,14 @@
         root.dataset.theme = theme;
         root.classList.toggle("dark", theme === "dark");
         root.style.colorScheme = theme;
-        var bg = theme === "dark" ? "#0d0e18" : "#eef0f8";
+        var bg = theme === "dark" ? "#16140f" : "#faf8f3";
         root.style.background = bg;
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", theme === "dark" ? "#0d0d17" : "#eef1f8");
+        if (meta) meta.setAttribute("content", theme === "dark" ? "#16140f" : "#faf8f3");
+        var appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+        if (appleIcon) appleIcon.setAttribute("href", theme === "light" ? "pwa-192-light.svg" : "pwa-192.svg");
+        var favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) favicon.setAttribute("href", theme === "light" ? "brand/icon-light.svg" : "brand/icon-dark.svg");
       })();
     </script>
     <style>
@@ -54,81 +57,65 @@
         background: inherit;
       }
       #boot-loader {
+        --boot-bg: #16140f;
+        --boot-ink: #faf8f3;
+        --boot-ink-faint: rgba(250, 248, 243, 0.45);
+        --boot-gold: #e3c489;
+        --boot-rule: rgba(250, 248, 243, 0.14);
         min-height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: system-ui, sans-serif;
-        color: #f0eff9;
+        background: var(--boot-bg);
       }
-      #boot-loader .boot-spin {
-        position: relative;
-        width: 3.25rem;
-        height: 3.25rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+      html[data-theme="light"] #boot-loader {
+        --boot-bg: #faf8f3;
+        --boot-ink: #1a1814;
+        --boot-ink-faint: rgba(26, 24, 20, 0.45);
+        --boot-gold: #b08642;
+        --boot-rule: rgba(26, 24, 20, 0.12);
       }
-      #boot-loader .boot-spin-ring {
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2px solid rgba(155, 109, 255, 0.18);
-        border-top-color: #b8a4ff;
-        border-right-color: rgba(52, 211, 153, 0.55);
-        animation: boot-spin 0.85s linear infinite;
-      }
-      #boot-loader .boot-spin-core {
-        width: 72%;
-        height: 72%;
-        animation: boot-spin-pulse 2s ease-in-out infinite;
-      }
-      #boot-loader .boot-spin-core img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
-      }
-      #boot-loader .boot-message-row {
+      #boot-loader .boot-ed-inner {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        margin-top: 0.85rem;
-        font-size: 1.125rem;
-        font-weight: 600;
-        line-height: 1.125rem;
+        gap: 14px;
+        padding: 2rem 1.5rem;
+        text-align: center;
       }
-      #boot-loader .boot-wordmark {
-        height: 13px;
-        width: auto;
-        display: block;
+      #boot-loader .boot-ed-title {
+        font-family: "Fraunces", Georgia, serif;
+        font-size: 28px;
+        font-weight: 700;
+        font-style: italic;
+        letter-spacing: -0.01em;
+        color: var(--boot-ink);
+        line-height: 1;
       }
-      #boot-loader .boot-progress {
-        width: min(12rem, 70vw);
-        height: 3px;
-        border-radius: 999px;
-        background: rgba(155, 109, 255, 0.15);
+      #boot-loader .boot-ed-tagline {
+        font-family: "Inter", system-ui, sans-serif;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--boot-ink-faint);
+        margin-top: -8px;
+      }
+      #boot-loader .boot-ed-progress {
+        width: 60px;
+        height: 2px;
+        background: var(--boot-rule);
         overflow: hidden;
-        margin-top: 0.85rem;
+        margin-top: 2px;
       }
-      #boot-loader .boot-progress-bar {
+      #boot-loader .boot-ed-progress span {
         display: block;
         height: 100%;
         width: 35%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, #b8a4ff, #34d399);
-        animation: boot-progress 1.4s ease-in-out infinite;
+        background: var(--boot-gold);
+        animation: boot-ed-prog 1.4s ease-in-out infinite;
       }
-      @keyframes boot-spin {
-        to { transform: rotate(360deg); }
-      }
-      @keyframes boot-spin-pulse {
-        0%, 100% { opacity: 0.75; transform: scale(0.96); }
-        50% { opacity: 1; transform: scale(1); }
-      }
-      @keyframes boot-progress {
+      @keyframes boot-ed-prog {
         0% { transform: translateX(-120%); }
         100% { transform: translateX(320%); }
       }
@@ -140,7 +127,7 @@
           if (!root || root.dataset.bootError) return;
           root.dataset.bootError = "1";
           root.innerHTML =
-            '<p style="padding:24px;text-align:center;font-family:system-ui,sans-serif;color:#f0eff9;white-space:pre-wrap">' +
+            '<p style="padding:24px;text-align:center;font-family:system-ui,sans-serif;color:#faf8f3;white-space:pre-wrap">' +
             msg +
             "</p>";
         }
@@ -157,33 +144,13 @@
   <body>
     <div id="root">
       <div id="boot-loader" role="status" aria-live="polite" aria-busy="true">
-        <div style="display:flex;flex-direction:column;align-items:center;padding:2rem 1.5rem">
-          <div class="boot-spin">
-            <span class="boot-spin-ring" aria-hidden="true"></span>
-            <span class="boot-spin-core">
-              <img id="boot-icon" src="brand/icon-dark.png" alt="" width="36" height="36" />
-            </span>
-          </div>
-          <div class="boot-message-row">
-            <span>Starting</span>
-            <img id="boot-wordmark" class="boot-wordmark" src="brand/wordmark-dark.png" alt="Perovo" />
-            <span aria-hidden="true">…</span>
-          </div>
-          <div class="boot-progress" aria-hidden="true"><span class="boot-progress-bar"></span></div>
+        <div class="boot-ed-inner">
+          <div class="boot-ed-title">Perovo</div>
+          <div class="boot-ed-tagline">Your Financial Record</div>
+          <div class="boot-ed-progress" aria-hidden="true"><span></span></div>
         </div>
       </div>
     </div>
-    <script>
-      (function () {
-        var theme = document.documentElement.dataset.theme || "dark";
-        if (theme === "light") {
-          var icon = document.getElementById("boot-icon");
-          var wordmark = document.getElementById("boot-wordmark");
-          if (icon) icon.src = "brand/icon-light.png";
-          if (wordmark) wordmark.src = "brand/wordmark-light.png";
-        }
-      })();
-    </script>
     <script type="module" src="/src/capgo-notify-only.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -13,7 +13,6 @@ import {
   sumEntryValues,
 } from "../../../utils/ledger/ledgerBuckets.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 const GROUP_INSURANCE = new Set(["insurance"]);
 const GROUP_RETIREMENT = new Set(["pf_epf"]);
@@ -91,17 +90,18 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
 
   return (
     <div className="ct-stack">
-      <div className="pos-hero instrument">
-        <div className="pos-hero-glow instrument" aria-hidden />
-        <div className="pos-hero-head">
-          <p className="ct-caption uppercase tracking-wide">{t("ledger.tab.instruments")}</p>
-          <ViewLink
-            label={t("ledger.viewInsights")}
-            onClick={() => navigate("/insights/instruments")}
-          />
+      <div className="ed-ins-story ed-ledger-hero">
+        <div className="ed-ins-kicker">{t("ledger.tab.instruments")}</div>
+        <div className="ed-ledger-hero-row">
+          <div className="ed-ins-bignum ed-ledger-hero-val-inst">
+            <span className="sym">₹</span>
+            {formatAmount(total).replace("₹", "").trim()}
+          </div>
+          <button type="button" className="ed-ins-link" onClick={() => navigate("/insights/instruments")}>
+            {t("ledger.viewInsightsLink")}
+          </button>
         </div>
-        <p className="pos-display-amount instrument">{formatAmount(total)}</p>
-        <p className="ct-caption mt-1">{t("ledger.instrumentsMeta", { count })}</p>
+        <div className="ed-ins-body">{t("ledger.instrumentsMeta", { count })}</div>
       </div>
 
       {Object.entries(groups).map(([key, group]) => {

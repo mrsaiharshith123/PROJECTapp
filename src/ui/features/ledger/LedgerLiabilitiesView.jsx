@@ -12,7 +12,6 @@ import {
 } from "../../../utils/ledger/ledgerBuckets.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { ViewLink } from "../../patterns/ViewLink.jsx";
 
 const SECURED = new Set(["Home Loan", "Car Loan", "EMI"]);
 const UNSECURED = new Set(["Personal Loan", "Credit Card", "BNPL", "Loan"]);
@@ -83,17 +82,18 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
 
   return (
     <div className="ct-stack">
-      <div className="pos-hero liability">
-        <div className="pos-hero-glow liability" aria-hidden />
-        <div className="pos-hero-head">
-          <p className="ct-caption uppercase tracking-wide">{t("ledger.totalLiabilities")}</p>
-          <ViewLink
-            label={t("ledger.viewInsights")}
-            onClick={() => navigate("/insights/liabilities")}
-          />
+      <div className="ed-ins-story ed-ledger-hero">
+        <div className="ed-ins-kicker">{t("ledger.totalLiabilities")}</div>
+        <div className="ed-ledger-hero-row">
+          <div className="ed-ins-bignum ed-ledger-hero-val-liab">
+            <span className="sym">₹</span>
+            {formatAmount(total).replace("₹", "").trim()}
+          </div>
+          <button type="button" className="ed-ins-link" onClick={() => navigate("/insights/liabilities")}>
+            {t("ledger.viewInsightsLink")}
+          </button>
         </div>
-        <p className="pos-display-amount liability">{formatAmount(total)}</p>
-        <p className="ct-caption mt-1">{t("ledger.debtRatio", { ratio: debtRatio })}</p>
+        <div className="ed-ins-body">{t("ledger.debtRatio", { ratio: debtRatio })}</div>
       </div>
 
       {Object.entries(groups).map(([key, group]) => {

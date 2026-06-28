@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
-import { PageShell } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
 import LedgerAssetsView from "../ledger/LedgerAssetsView.jsx";
 import LedgerLiabilitiesView from "../ledger/LedgerLiabilitiesView.jsx";
 import LedgerInstrumentsView from "../ledger/LedgerInstrumentsView.jsx";
@@ -11,6 +11,12 @@ const TABS = [
   { id: "liabilities", labelKey: "ledger.tab.liabilities", tone: "liability" },
   { id: "instruments", labelKey: "ledger.tab.instruments", tone: "instrument" },
 ];
+
+const POS_COLORS = {
+  asset: { color: "var(--ed-green)", border: "var(--ed-green)", bg: "rgba(94,199,149,0.1)" },
+  liab: { color: "var(--ed-red)", border: "var(--ed-red)", bg: "rgba(232,148,144,0.1)" },
+  instrument: { color: "var(--ed-violet)", border: "var(--ed-violet)", bg: "rgba(179,160,232,0.1)" },
+};
 
 function resolveTab(tabParam, stateTab) {
   if (tabParam && TABS.some((x) => x.id === tabParam)) return tabParam;
@@ -54,25 +60,35 @@ export default function LedgerPage() {
     setSearchParams({ tab: id }, { replace: true });
   };
 
-  const headerAux = (
-    <button
-      type="button"
-      className="ct-btn ct-btn-ghost ct-btn-sm ct-ledger-bills-chip"
-      onClick={() => navigate("/ledger/bills")}
-    >
-      {t("ledger.headerBills")}
-    </button>
-  );
-
-  const posToken = (tabId) => (tabId === "assets" ? "asset" : tabId === "liabilities" ? "liab" : "inst");
+  const posToken = (tabId) => (tabId === "assets" ? "asset" : tabId === "liabilities" ? "liab" : "instrument");
 
   return (
-    <PageShell title={t("nav.ledger")} headerAux={headerAux} className="ct-ledger-page">
+    <div className="ct-page ed-paper">
+      <header className="ed-masthead">
+        <div className="ed-masthead-top">
+          <div className="ed-masthead-brand">
+            <h1 className="ed-title">{t("nav.ledger")}</h1>
+            <div className="ed-tagline">{t("ledger.ed.tagline")}</div>
+          </div>
+          <div className="ed-masthead-right">
+            <button
+              type="button"
+              className="ed-ins-link"
+              style={{ padding: 0, marginBottom: 2, fontSize: 10 }}
+              onClick={() => navigate("/ledger/bills")}
+            >
+              {t("ledger.headerBillsLink")}
+            </button>
+            <AppHeaderActions hidePrivacyToggle={false} />
+          </div>
+        </div>
+      </header>
+
       <div
         style={{
           display: "flex",
           gap: 8,
-          padding: "12px 16px 8px",
+          padding: "4px 18px 8px",
           overflowX: "auto",
           scrollbarWidth: "none",
         }}
@@ -80,6 +96,7 @@ export default function LedgerPage() {
         {TABS.map((item) => {
           const token = posToken(item.id);
           const active = tab === item.id;
+          const tc = POS_COLORS[token];
           return (
             <button
               key={item.id}
@@ -87,18 +104,18 @@ export default function LedgerPage() {
               className="ct-pressable"
               onClick={() => switchTab(item.id)}
               style={{
-                padding: "7px 18px",
+                padding: "6px 18px",
                 borderRadius: 999,
-                fontSize: 13,
-                fontWeight: 500,
+                fontSize: 12,
+                fontWeight: 600,
                 whiteSpace: "nowrap",
                 cursor: "pointer",
-                border: active
-                  ? `1px solid var(--pos-${token}-border)`
-                  : "0.5px solid rgba(255,255,255,0.08)",
-                background: active ? `var(--pos-${token}-bg)` : "rgba(255,255,255,0.04)",
-                color: active ? `var(--pos-${token})` : "var(--ct-text-muted)",
+                fontFamily: "'Inter', system-ui, sans-serif",
+                border: active ? `1px solid ${tc.border}` : "0.5px solid var(--ed-rule)",
+                background: active ? tc.bg : "transparent",
+                color: active ? tc.color : "var(--ed-ink-faint)",
                 transition: "all 0.15s",
+                letterSpacing: ".02em",
               }}
             >
               {t(item.labelKey)}
@@ -110,6 +127,6 @@ export default function LedgerPage() {
       {tab === "assets" ? <LedgerAssetsView openAddOnMount={openAddOnMount} /> : null}
       {tab === "liabilities" ? <LedgerLiabilitiesView openAddOnMount={openAddOnMount} /> : null}
       {tab === "instruments" ? <LedgerInstrumentsView openAddOnMount={openAddOnMount} /> : null}
-    </PageShell>
+    </div>
   );
 }

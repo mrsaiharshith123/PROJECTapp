@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, EmptyState, fieldInputClass, inputClassName, PageShell } from "../../index.js";
+import { EmptyState, fieldInputClass } from "../../index.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
@@ -15,6 +15,8 @@ import AgreementDocumentsList from "../agreements/AgreementDocumentsList.jsx";
 import AgreementsHeroSummary from "../agreements/AgreementsHeroSummary.jsx";
 import AgreementsHeaderActions from "../agreements/AgreementsHeaderActions.jsx";
 import LendingAcceptCodeModal from "../lending/LendingAcceptCodeModal.jsx";
+import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const emptyLendingForm = () => ({
   personName: "",
@@ -151,7 +153,19 @@ export default function AgreementsPage() {
   );
 
   return (
-    <PageShell title={t("nav.agreements")} subtitle={t("money.agreements.sectionSub")} className="ct-agreements-page">
+    <div className="ct-page ed-paper">
+      <header className="ed-masthead">
+        <div className="ed-masthead-top">
+          <div className="ed-masthead-brand">
+            <h1 className="ed-title">{t("nav.agreements")}</h1>
+            <div className="ed-tagline">{t("agreements.ed.tagline")}</div>
+          </div>
+          <div className="ed-masthead-right">
+            <AppHeaderActions hidePrivacyToggle={false} />
+          </div>
+        </div>
+      </header>
+
       {!canAddLendingRecord(settings, lendings).ok && (
         <TierLimitBanner
           className="ct-tier-banner-warm"
@@ -167,15 +181,15 @@ export default function AgreementsPage() {
       />
 
       {isEmpty ? (
-        <div className="ct-lending-empty-warm">
-          <div className="ct-lending-empty-icon" aria-hidden>
-            🤝
+        <div className="ed-ins-story" style={{ textAlign: "center", padding: "24px 18px" }}>
+          <div className="ed-agreements-empty-icon">
+            <CtIcon name="handshake" size={24} />
           </div>
-          <p className="ct-lending-empty-title">{t("lending.emptyWarmTitle")}</p>
-          <p className="ct-lending-empty-body">{t("lending.emptyWarmBody")}</p>
-          <Button type="button" className="mt-3" onClick={openRequest}>
-            {t("lending.requestMoney")}
-          </Button>
+          <div className="ed-agreements-empty-title">{t("lending.emptyWarmTitle")}</div>
+          <div className="ed-agreements-empty-body">{t("lending.emptyWarmBody")}</div>
+          <button type="button" className="ed-ins-link" style={{ padding: "0 0 4px" }} onClick={openRequest}>
+            {t("lending.requestMoney")} →
+          </button>
         </div>
       ) : (
         <AgreementsHeroSummary
@@ -188,7 +202,7 @@ export default function AgreementsPage() {
 
       {!isEmpty && (
         <>
-          <div className="pos-ledger-pill-switcher mb-2">
+          <div className="ed-insight-pills" style={{ padding: "12px 18px 4px" }}>
             {[
               { id: "lent", label: t("agreements.tab.lent") },
               { id: "borrowed", label: t("agreements.tab.borrowed") },
@@ -197,7 +211,7 @@ export default function AgreementsPage() {
               <button
                 key={tab.id}
                 type="button"
-                className={`pos-ledger-pill ${listTab === tab.id ? "active agreement" : ""}`}
+                className={`ed-insight-pill ${listTab === tab.id ? "active" : "inactive"}`}
                 onClick={() => setListTab(/** @type {typeof listTab} */ (tab.id))}
               >
                 {tab.label}
@@ -210,7 +224,7 @@ export default function AgreementsPage() {
           ) : (
             <>
               <input
-                className={inputClassName()}
+                className="ed-agreements-search"
                 placeholder={t("bills.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -219,7 +233,7 @@ export default function AgreementsPage() {
               <LendingOverduePanel />
 
               {overflowItems.length > 0 && (
-                <section className="ct-stack-sm ct-list-animate">
+                <section className="ct-stack-sm ct-list-animate" style={{ padding: "0 18px" }}>
                   {overflowItems.map((item) => (
                     <AgreementCard
                       key={item.id}
@@ -269,6 +283,6 @@ export default function AgreementsPage() {
         />
       ) : null}
       {showAcceptCode ? <LendingAcceptCodeModal onClose={() => setShowAcceptCode(false)} /> : null}
-    </PageShell>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 /** Canonical Perovo brand files — only these four exist under public/brand/. */
 export const BRAND_ICON = {
-  light: "icon-light.png",
-  dark: "icon-dark.png",
+  light: "icon-light.svg",
+  dark: "icon-dark.svg",
 };
 
 export const BRAND_WORDMARK = {
