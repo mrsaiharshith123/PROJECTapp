@@ -17,6 +17,17 @@ function walk(dir, acc = []) {
   return acc;
 }
 
+describe("ARCHITECTURE: app update manifest", () => {
+  it("[P1] same semver + newer builtAt counts as an update", async () => {
+    const { isRemoteManifestNewer } = await import("../../src/utils/updateServer.js");
+    const remote = { version: "1.5.0", builtAt: "2026-06-30T00:00:00.000Z" };
+    expect(isRemoteManifestNewer(remote, "1.5.0", "2026-06-29T00:00:00.000Z")).toBe(true);
+    expect(isRemoteManifestNewer(remote, "1.5.0", "")).toBe(true);
+    expect(isRemoteManifestNewer(remote, "1.5.0", "2026-06-30T01:00:00.000Z")).toBe(false);
+    expect(isRemoteManifestNewer({ version: "1.6.0" }, "1.5.0", "")).toBe(true);
+  });
+});
+
 describe("ARCHITECTURE: sync governance", () => {
   it("[P1] sync engine and snapshot guards exist", async () => {
     const sync = await import("../../src/services/sync/syncEngine.js");

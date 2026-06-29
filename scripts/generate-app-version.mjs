@@ -16,6 +16,16 @@ const out = {
     "https://mrsaiharshith123.github.io/PROJECTapp/",
 };
 
+const normalizedBase = out.appUrl.endsWith("/") ? out.appUrl : `${out.appUrl}/`;
+for (const zipRel of ["dist/app-bundle.zip", "public/app-bundle.zip"]) {
+  const zipPath = path.join(root, zipRel);
+  if (fs.existsSync(zipPath)) {
+    out.bundleUrl = `${normalizedBase}app-bundle.zip`;
+    out.bundleSize = fs.statSync(zipPath).size;
+    break;
+  }
+}
+
 fs.mkdirSync(path.join(root, "public"), { recursive: true });
 fs.writeFileSync(path.join(root, "public/app-version.json"), `${JSON.stringify(out, null, 2)}\n`);
 console.log(`app-version.json → ${version}`);

@@ -7,6 +7,8 @@ alwaysApply: true
 
 When the user says **"roger all"** (any casing), run the full maintenance pass — do not skip steps.
 
+**Roger all is not a git commit.** It means run audits, fix blocking failures, and align docs/rules — commit only when the user explicitly asks.
+
 ## Command
 
 ```bash

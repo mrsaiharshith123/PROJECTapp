@@ -17,7 +17,7 @@ import { isInstrumentWealthEntry } from "../utils/ledger/ledgerBuckets.js";
  * @param {object} [opts]
  * @param {import('../utils/netWorth/wealthStorage.js').WealthEntry[]} [opts.allEntries]
  */
-export function buildWealthEntryIntel(entry, settings = {}, opts = {}) {
+export function buildWealthEntryIntel(entry, settings = {}, _opts = {}) {
   const cat =
     entry.kind === "asset"
       ? getAssetCategory(entry.categoryId)

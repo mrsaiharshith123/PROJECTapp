@@ -2,6 +2,8 @@
 
 Say **"roger all"** in Cursor (or run the npm script) whenever you want a complete project health check: sync translations, verify docs match code, lint, test, build, and governance.
 
+**Roger all is not a git commit.** It runs audits and fixes blocking failures until exit code 0. Commit only when you explicitly ask.
+
 ```bash
 npm run roger:all
 npm run roger:all -- --fix      # auto-fix ESLint, then full gate

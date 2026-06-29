@@ -42,8 +42,6 @@ export const USER_MODES = [
   },
 ];
 
-export const SELECTABLE_USER_MODES = USER_MODES;
-
 const LEGACY_MODES = {
   family: {
     id: "family",

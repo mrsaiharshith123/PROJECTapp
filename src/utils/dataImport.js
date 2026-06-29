@@ -54,9 +54,11 @@ function mergeWealthState(current, payload, mode) {
 
 /**
  * Validate export JSON and merge into current app state.
+ * @param {{ mode?: 'merge' | 'replace' }} [opts]
  * @returns {{ commitments, lendings, goals, settings, monthlySnapshots, dailySpends, wealth, summary }}
  */
-export function mergeImportedAppState(current, payload, { mode = "merge" } = {}) {
+export function mergeImportedAppState(current, payload, opts = {}) {
+  const mode = opts.mode === "replace" ? "replace" : "merge";
   if (!isAppSnapshot(payload)) {
     throw new Error("Invalid file — expected a Perovo export JSON object.");
   }

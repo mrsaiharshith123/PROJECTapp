@@ -1,19 +1,24 @@
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
 import {
-  compareSemver,
   getRemoteManifestUrl,
+  isRemoteManifestNewer,
+  remoteAppUrlWithVersion,
 } from "../utils/updateServer.js";
 import { applyNativeOtaUpdate, canUseNativeOta, getNativeBundleInfo } from "./nativeOtaUpdate.js";
 
-let _hasCheckedThisSession = false;
+/** @type {Promise<UpdateCheckResult> | null} */
+let _cachedCheck = null;
 
 const LOCAL_VERSION = import.meta.env.VITE_APP_VERSION || "0.0.0";
 const LOCAL_BUILT_AT = import.meta.env.VITE_APP_BUILT_AT || "";
+
+const SW_WAIT_MS = 12000;
 
 /**
  * @typedef {"checking"|"downloading"|"restarting"|"current"|"available"|"unknown"} UpdatePhase
  * @typedef {{ phase?: UpdatePhase | string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} UpdateProgress
  * @typedef {{ version?: string, builtAt?: string, appUrl?: string, bundleUrl?: string, bundleSize?: number, releaseNotes?: string }} UpdateManifest
+ * @typedef {{ status: "current" | "available" | "unknown", localVersion: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number }} UpdateCheckResult
  */
 
 /**
@@ -30,28 +35,35 @@ export async function fetchRemoteManifest() {
   }
 }
 
-function manifestIsNewer(remote, localVersion = LOCAL_VERSION, localBuiltAt = LOCAL_BUILT_AT) {
-  if (!remote?.version) return false;
-  const versionCmp = compareSemver(remote.version, localVersion);
-  if (versionCmp > 0) return true;
-  if (versionCmp < 0) return false;
-  if (remote.builtAt && localBuiltAt) {
-    return new Date(remote.builtAt).getTime() > new Date(localBuiltAt).getTime();
+/** Installed copy — Capgo bundle version when on native OTA, else build-time env. */
+async function resolveLocalUpdateState() {
+  let version = LOCAL_VERSION;
+  const builtAt = LOCAL_BUILT_AT;
+
+  if (canUseNativeOta()) {
+    const bundle = await getNativeBundleInfo();
+    const bundleVersion = bundle?.version ? String(bundle.version) : "";
+    if (bundleVersion && bundleVersion !== "builtin" && bundleVersion !== "0.0.0") {
+      version = bundleVersion;
+    }
   }
-  return false;
+
+  return { version, builtAt };
 }
 
 /**
- * @returns {Promise<{ status: "current" | "available" | "unknown", localVersion: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number }>}
+ * @returns {Promise<UpdateCheckResult>}
  */
 export async function checkForAppUpdate() {
   const remote = await fetchRemoteManifest();
+  const local = await resolveLocalUpdateState();
+
   if (!remote?.version) {
-    return { status: "unknown", localVersion: LOCAL_VERSION };
+    return { status: "unknown", localVersion: local.version };
   }
 
   const base = {
-    localVersion: LOCAL_VERSION,
+    localVersion: local.version,
     remoteVersion: remote.version,
     builtAt: remote.builtAt,
     releaseNotes: remote.releaseNotes,
@@ -59,45 +71,53 @@ export async function checkForAppUpdate() {
     bundleSize: remote.bundleSize,
   };
 
-  if (canUseNativeOta()) {
-    const bundle = await getNativeBundleInfo();
-    if (bundle?.status === "success" && !manifestIsNewer(remote, LOCAL_VERSION)) {
-      return { status: "current", ...base };
-    }
-  }
-
-  if (!manifestIsNewer(remote, LOCAL_VERSION)) {
+  if (!isRemoteManifestNewer(remote, local.version, local.builtAt)) {
     return { status: "current", ...base };
   }
 
   return { status: "available", ...base };
 }
 
-/** Debounced update check — once per cold JS session. */
+/** Debounced update check — once per cold JS session (always reuses real check result). */
 export async function checkForAppUpdateOnce() {
-  if (_hasCheckedThisSession) {
-    return { status: "current", localVersion: LOCAL_VERSION, remoteVersion: LOCAL_VERSION };
+  if (!_cachedCheck) {
+    _cachedCheck = checkForAppUpdate();
   }
-  _hasCheckedThisSession = true;
-  return checkForAppUpdate();
+  return _cachedCheck;
 }
 
-function waitForServiceWorkerActivation(reg) {
+/**
+ * @param {ServiceWorkerRegistration} reg
+ * @param {number} [timeoutMs]
+ */
+function waitForServiceWorkerActivation(reg, timeoutMs = SW_WAIT_MS) {
   return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      resolve(value);
+    };
+
+    const timer = window.setTimeout(() => finish(false), timeoutMs);
+
     if (reg.waiting) {
       reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      resolve(true);
+      finish(true);
       return;
     }
+
     const worker = reg.installing;
     if (!worker) {
-      resolve(false);
+      finish(false);
       return;
     }
+
     worker.addEventListener("statechange", () => {
       if (worker.state !== "installed") return;
       if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      resolve(true);
+      finish(true);
     });
   });
 }
@@ -117,6 +137,17 @@ async function applyPwaUpdate(onProgress) {
   }
   onProgress?.({ phase: "restarting", percent: 100 });
   window.location.reload();
+}
+
+/**
+ * Browser tab — bust caches and load the latest static deploy from the update server.
+ * @param {UpdateManifest} remote
+ * @param {(p: UpdateProgress) => void} [onProgress]
+ */
+async function applyWebStaticUpdate(remote, onProgress) {
+  onProgress?.({ phase: "downloading", percent: 40 });
+  onProgress?.({ phase: "restarting", percent: 100 });
+  window.location.replace(remoteAppUrlWithVersion(remote.version, remote.appUrl));
 }
 
 /**
@@ -153,7 +184,8 @@ export async function applyAppUpdate(opts = {}) {
   onProgress?.({ phase: "checking", percent: 0 });
 
   const remote = await fetchRemoteManifest();
-  const hasUpdate = remote && manifestIsNewer(remote, LOCAL_VERSION);
+  const local = await resolveLocalUpdateState();
+  const hasUpdate = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
 
   if (!force && remote?.version && !hasUpdate) {
     return { status: "current" };
@@ -167,7 +199,11 @@ export async function applyAppUpdate(opts = {}) {
     throw new Error("manifest_missing");
   }
 
-  await applyPwaUpdate(onProgress);
+  if (remote) {
+    await applyWebStaticUpdate(remote, onProgress);
+  } else {
+    await applyPwaUpdate(onProgress);
+  }
   return { status: "restarting" };
 }
 

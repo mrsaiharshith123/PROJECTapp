@@ -64,4 +64,5 @@ export type PerovoContextValue = {
   markAllNotificationsRead: (ids?: (string | number)[]) => void;
   logSavingsToGoal: (goalId: number | string, amount: number) => void;
   importAppData: (payload: AuthProfile, options?: AuthProfile) => unknown;
+  refreshGoldRate: (options?: { force?: boolean }) => Promise<boolean>;
 };

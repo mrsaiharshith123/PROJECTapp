@@ -87,9 +87,10 @@ function defaultState() {
   };
 }
 
-/** @param {unknown} raw */
+/** @param {unknown} raw @returns {import('./wealthStorage.js').WealthEntry} */
 export function normalizeWealthEntry(raw) {
   const r = /** @type {Record<string, unknown>} */ (raw || {});
+  /** @type {'asset' | 'liability'} */
   const kind = r.kind === "liability" ? "liability" : "asset";
   const rawCategoryId = String(r.categoryId || (kind === "asset" ? "other" : "other"));
   const normalizedCategoryId = rawCategoryId === "property" ? "property_residential" : rawCategoryId;

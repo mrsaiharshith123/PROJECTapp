@@ -71,7 +71,9 @@ if (sentryEnabled) {
         <div className="p-6 ct-stack" style={{ textAlign: "center", maxWidth: 480, margin: "2rem auto" }}>
           <p>Something went wrong. Please refresh.</p>
           {import.meta.env.DEV && error ? (
-            <pre className="ct-hero-inset text-xs text-left overflow-auto">{String(error?.message || error)}</pre>
+            <pre className="ct-hero-inset ct-caption">
+              {String(error instanceof Error ? error.message : error)}
+            </pre>
           ) : null}
         </div>
       )}

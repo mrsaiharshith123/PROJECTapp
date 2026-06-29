@@ -1,5 +1,7 @@
 /** @typedef {import('../types/context.js').AuthProfile} AppSettings */
 
+import { normalizeWealthState } from "../utils/netWorth/wealthStorage.js";
+
 export const APP_SNAPSHOT_VERSION = 3;
 
 /**
@@ -15,7 +17,7 @@ export const APP_SNAPSHOT_VERSION = 3;
  * }} state
  */
 export function buildAppSnapshot(state) {
-  const wealth = state.wealth ?? { entries: [] };
+  const wealth = normalizeWealthState(state.wealth ?? { entries: [] });
   return {
     schemaVersion: APP_SNAPSHOT_VERSION,
     exportedAt: new Date().toISOString(),
@@ -25,15 +27,7 @@ export function buildAppSnapshot(state) {
     goals: state.goals ?? [],
     monthlySnapshots: state.monthlySnapshots ?? [],
     dailySpends: state.dailySpends ?? [],
-    wealth: {
-      entries: Array.isArray(wealth.entries) ? wealth.entries : [],
-      snapshots: Array.isArray(wealth.snapshots) ? wealth.snapshots : [],
-      dailySnapshots: Array.isArray(wealth.dailySnapshots) ? wealth.dailySnapshots : [],
-      milestones: Array.isArray(wealth.milestones) ? wealth.milestones : [],
-      privacyMode: Boolean(wealth.privacyMode),
-      savingsStreakMonths: Number(wealth.savingsStreakMonths) || 0,
-      lastPositiveSavingsMonth: Number(wealth.lastPositiveSavingsMonth) || 0,
-    },
+    wealth,
   };
 }
 

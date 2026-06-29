@@ -123,8 +123,8 @@ export default function CloudRestoreGate({ children }) {
                 wealth: remoteMeta.counts.wealth ?? 0,
               })}
             </Caption>
-            {error ? <Caption className="block text-[var(--ct-danger)]">{error}</Caption> : null}
-            <div className="ct-grid-2 gap-2">
+            {error ? <Caption className="block ct-text-danger">{error}</Caption> : null}
+            <div className="ct-grid-2">
               <Button type="button" variant="primary" size="sm" disabled={busy} onClick={restore}>
                 {busy ? t("sync.working") : t("sync.restoreOfferRestore")}
               </Button>

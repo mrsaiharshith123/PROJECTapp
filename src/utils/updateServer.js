@@ -54,3 +54,22 @@ export function compareSemver(a, b) {
   }
   return 0;
 }
+
+/**
+ * True when the remote manifest is a newer build than the installed copy.
+ * Same semver + newer builtAt on server counts as an update (OTA hotfix deploys).
+ * @param {{ version?: string, builtAt?: string }} remote
+ * @param {string} localVersion
+ * @param {string} [localBuiltAt]
+ */
+export function isRemoteManifestNewer(remote, localVersion, localBuiltAt = "") {
+  if (!remote?.version) return false;
+  const versionCmp = compareSemver(remote.version, localVersion);
+  if (versionCmp > 0) return true;
+  if (versionCmp < 0) return false;
+  if (remote.builtAt) {
+    if (!localBuiltAt) return true;
+    return new Date(remote.builtAt).getTime() > new Date(localBuiltAt).getTime();
+  }
+  return false;
+}

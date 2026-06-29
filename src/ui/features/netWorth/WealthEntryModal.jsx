@@ -142,7 +142,7 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
 
   const propertyPurchaseTotal = useMemo(() => {
     if (!isProperty) return null;
-    return computePurchasePriceFromRate(form.purchaseRatePerUnit, form.areaMeasure);
+    return computePurchasePriceFromRate(Number(form.purchaseRatePerUnit), Number(form.areaMeasure));
   }, [isProperty, form.purchaseRatePerUnit, form.areaMeasure]);
 
   const propertyGrowthPct = useMemo(() => {
@@ -176,7 +176,11 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
 
   const goldEstimatedValue = useMemo(() => {
     if (!isGold || !goldRatePerGram) return null;
-    return computeGoldAutoValue(form.weightGrams, form.purityKarat, goldRatePerGram);
+    return computeGoldAutoValue(
+      Number(form.weightGrams),
+      Number(form.purityKarat),
+      goldRatePerGram,
+    );
   }, [isGold, form.weightGrams, form.purityKarat, goldRatePerGram]);
 
   const goldCanDeferValue =

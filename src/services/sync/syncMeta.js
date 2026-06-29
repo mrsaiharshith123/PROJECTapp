@@ -27,7 +27,7 @@ function readDeviceId() {
 
 /** @typedef {{ type: 'push' | 'restore', at: string, deviceId: string, deviceLabel: string, remoteDeviceId?: string, counts?: { bills: number, lending: number, goals: number, spends: number } }} BackupLogEntry */
 
-/** @typedef {{ userId?: string, lastPushedAt?: string, lastPulledAt?: string, remoteUpdatedAt?: string, pendingPush?: boolean, deviceId?: string, deviceLabel?: string, lastDailyPushDate?: string, lastAutoRestoreAt?: string, backupLog?: BackupLogEntry[] }} SyncMeta */
+/** @typedef {{ userId?: string, lastPushedAt?: string, lastPulledAt?: string, remoteUpdatedAt?: string, pendingPush?: boolean, deviceId?: string, deviceLabel?: string, lastDailyPushDate?: string, lastAutoRestoreAt?: string, cloudBackupEnabled?: boolean, backupLog?: BackupLogEntry[] }} SyncMeta */
 
 /** @returns {SyncMeta} */
 export function loadSyncMeta() {

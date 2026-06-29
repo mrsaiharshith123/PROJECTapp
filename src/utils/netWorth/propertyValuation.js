@@ -80,7 +80,7 @@ export function estimatePropertyCurrentValue(
 }
 
 /**
- * @param {import('./wealthStorage.js').WealthEntry} entry
+ * @param {Pick<import('./wealthStorage.js').WealthEntry, 'location' | 'categoryId'>} entry
  * @param {{ userCity?: string }} [settings]
  */
 export function resolvePropertyGrowthTier(entry, settings = {}) {
