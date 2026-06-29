@@ -28,7 +28,7 @@ const CATEGORY_IDS = new Set(CATEGORIES.map((c) => c.id));
 export const SCHEMA_VERSION_KEY = "perovo_schema_version";
 export const CURRENT_SCHEMA_VERSION = 12;
 
-/** Copy legacy perovo_* localStorage keys to perovo_* (one-time). */
+/** Copy legacy localStorage keys to canonical STORAGE_KEYS (one-time per key rename). */
 export function migrateLegacyStorageKeys() {
   const pairs = [
     ["perovo_settings", STORAGE_KEYS.settings],
@@ -38,43 +38,19 @@ export function migrateLegacyStorageKeys() {
     ["perovo_schema_version", STORAGE_KEYS.schemaVersion],
     ["perovo_sync_meta", STORAGE_KEYS.syncMeta],
     ["perovo_wealth", STORAGE_KEYS.wealth],
-    ["perovo_pwa_install_dismissed", "perovo_pwa_install_dismissed"],
-    ["perovo_notif_permission_asked", "perovo_notif_permission_asked"],
-    ["perovo_last_notif_digest", "perovo_last_notif_digest"],
-    ["perovo_device_id", "perovo_device_id"],
-    ["perovo_tools_nudge_dismissed", "perovo_tools_nudge_dismissed"],
-    ["perovo_tools_nudge_session", "perovo_tools_nudge_session"],
-    ["perovo_analytics_session", "perovo_analytics_session"],
-    ["perovo_signup_pending", "perovo_signup_pending"],
+    ["ct_settings", STORAGE_KEYS.settings],
+    ["ct_commitments", STORAGE_KEYS.commitments],
+    ["ct_lendings", STORAGE_KEYS.lendings],
+    ["ct_goals", STORAGE_KEYS.goals],
+    ["ct_wealth", STORAGE_KEYS.wealth],
   ];
   try {
     for (const [oldKey, newKey] of pairs) {
+      if (oldKey === newKey) continue;
       const val = localStorage.getItem(oldKey);
       if (val === null) continue;
       if (localStorage.getItem(newKey) === null) localStorage.setItem(newKey, val);
       localStorage.removeItem(oldKey);
-    }
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (!key) continue;
-      if (key.startsWith("perovo_auth_seeded_")) {
-        const val = localStorage.getItem(key);
-        const next = key.replace("perovo_auth_seeded_", "perovo_auth_seeded_");
-        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
-        localStorage.removeItem(key);
-      }
-      if (key.startsWith("perovo_profile_seeded_")) {
-        const val = localStorage.getItem(key);
-        const next = key.replace("perovo_profile_seeded_", "perovo_profile_seeded_");
-        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
-        localStorage.removeItem(key);
-      }
-      if (key.startsWith("perovo_offer_")) {
-        const val = localStorage.getItem(key);
-        const next = key.replace("perovo_offer_", "perovo_offer_");
-        if (val !== null && localStorage.getItem(next) === null) localStorage.setItem(next, val);
-        localStorage.removeItem(key);
-      }
     }
   } catch {
     /* ignore */
@@ -554,6 +530,7 @@ export function loadInitialAppState() {
     goals: migrated.goals,
     monthlySnapshots: loadMonthlySnapshotsFromStorage(),
     dailySpends: loadDailySpendsFromStorage(),
+    wealth: loadWealthState(),
   };
   return cachedInitialAppState;
 }
@@ -623,7 +600,7 @@ const DEFAULT_SETTINGS = {
   remindersEnabled: true,
   dashboardToolOrderByMode: {},
   homeQuickActionOrder: [],
-  /** Legacy flag — backup is on whenever signed in + Supabase configured. */
+  /** Device preference — also stored in sync meta so server settings pull cannot turn it off. */
   cloudSyncEnabled: false,
   /** Day of month (1–31) salary credits — paycheck timeline + safe-to-spend. */
   salaryCreditDay: null,
@@ -659,13 +636,27 @@ const DEFAULT_SETTINGS = {
   updatedAt: "",
 };
 
+function applyDeviceBackupPreference(settings) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.syncMeta);
+    if (!raw) return settings;
+    const meta = JSON.parse(raw);
+    if (meta?.cloudBackupEnabled != null) {
+      return { ...settings, cloudSyncEnabled: Boolean(meta.cloudBackupEnabled) };
+    }
+  } catch {
+    /* ignore */
+  }
+  return settings;
+}
+
 export function loadSettingsFromStorage() {
   try {
     const raw = localStorage.getItem("perovo_settings");
     if (raw) {
       const o = JSON.parse(raw);
       if (!o || typeof o !== "object" || Array.isArray(o)) {
-        return { ...DEFAULT_SETTINGS };
+        return applyDeviceBackupPreference({ ...DEFAULT_SETTINGS });
       }
       let mode = USER_MODE_IDS.includes(o.userMode) ? o.userMode : "salaried";
       let householdScope = o.householdScope === "family" ? "family" : "single";
@@ -686,7 +677,7 @@ export function loadSettingsFromStorage() {
       if (!USER_MODE_IDS.includes(mode)) {
         mode = "salaried";
       }
-      return {
+      return applyDeviceBackupPreference({
         monthlyIncome: Math.max(0, Number(o.monthlyIncome) || 0),
         secondaryMonthlyIncome: Math.max(0, Number(o.secondaryMonthlyIncome) || 0),
         incomeEntryBasis: o.incomeEntryBasis === "gross" ? "gross" : "take_home",
@@ -777,12 +768,12 @@ export function loadSettingsFromStorage() {
         spouseName: String(o.spouseName || ""),
         familyName: String(o.familyName || ""),
         updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : "",
-      };
+      });
     }
   } catch {
     /* ignore */
   }
-  return { ...DEFAULT_SETTINGS };
+  return applyDeviceBackupPreference({ ...DEFAULT_SETTINGS });
 }
 
 /** Wipes all device-local Perovo data (DPDP erasure). Does not sign out. */
@@ -794,6 +785,7 @@ export function clearAllLocalData() {
     localStorage.removeItem(STORAGE_KEYS.monthlySnapshots);
     localStorage.removeItem(STORAGE_KEYS.goals);
     localStorage.removeItem(STORAGE_KEYS.dailySpends);
+    localStorage.removeItem(STORAGE_KEYS.wealth);
     localStorage.removeItem(STORAGE_KEYS.syncMeta);
     localStorage.removeItem(CONSENT_KEY);
     localStorage.setItem(STORAGE_KEYS.schemaVersion, String(CURRENT_SCHEMA_VERSION));

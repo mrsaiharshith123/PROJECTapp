@@ -50,7 +50,12 @@ export const INSTRUMENT_CATEGORY_IDS = new Set([
   "mutual_fund",
 ]);
 
-export const CORE_ASSET_CATEGORIES = ASSET_CATEGORIES.filter((c) => !INSTRUMENT_CATEGORY_IDS.has(c.id));
+/** Asset categories hidden from salaried add-asset picker (legacy entries still resolve). */
+export const SALARIED_EXCLUDED_ASSET_IDS = new Set(["business", "crypto"]);
+
+export const CORE_ASSET_CATEGORIES = ASSET_CATEGORIES.filter(
+  (c) => !INSTRUMENT_CATEGORY_IDS.has(c.id) && !SALARIED_EXCLUDED_ASSET_IDS.has(c.id),
+);
 
 export const INSTRUMENT_CATEGORIES = ASSET_CATEGORIES.filter((c) => INSTRUMENT_CATEGORY_IDS.has(c.id));
 

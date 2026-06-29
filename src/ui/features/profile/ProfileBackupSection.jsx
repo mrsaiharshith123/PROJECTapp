@@ -15,6 +15,7 @@ import { generateAnnualReportHtml } from "../../../utils/annualReportHtml.js";
 import { openHtmlInNewTab } from "../../../utils/lendingShareCard.js";
 import { previewImportCounts } from "../../../utils/dataImport.js";
 import { clearAllLocalData } from "../../../utils/migrateStorage.js";
+import { loadWealthState } from "../../../utils/netWorth/wealthStorage.js";
 import { deleteAccountData } from "../../../services/supabase/auth.js";
 import ProfileCloudSyncSection from "./ProfileCloudSyncSection.jsx";
 import { SettingsGroup, SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
@@ -125,6 +126,7 @@ export default function ProfileBackupSection({
       monthlySnapshots,
       goals: allGoals,
       dailySpends: ctx.allDailySpends,
+      wealth: loadWealthState(),
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);

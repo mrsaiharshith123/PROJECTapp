@@ -6,13 +6,11 @@ import {
   canUseCloudSync,
   cancelScheduledCloudPush,
   scheduleCloudPush,
-  pushDailyCloudBackupIfDue,
-  tryAutoRestoreFromCloud,
+  pushLocalSnapshotToCloud,
 } from "../services/sync/syncEngine.js";
+import { SYNC_AUTO_BACKUP_INTERVAL_MS } from "../services/sync/constants.js";
 import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Background local-first → Supabase account backup when signed in (never blocks UI). */
 export default function CloudSyncBridge() {
@@ -37,31 +35,23 @@ export default function CloudSyncBridge() {
       applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
     };
 
-    tryAutoRestoreFromCloud(ctx).catch(() => {
-      /* non-blocking */
-    });
-
     if (!canUseCloudSync(track.settings, true)) return;
-
-    pushDailyCloudBackupIfDue(ctx).catch(() => {
-      /* non-blocking */
-    });
 
     const onChange = () => {
       scheduleCloudPush(ctx);
     };
 
-    const dailyId = window.setInterval(() => {
-      pushDailyCloudBackupIfDue(ctx).catch(() => {
+    const periodicId = window.setInterval(() => {
+      pushLocalSnapshotToCloud(ctx).catch(() => {
         /* non-blocking */
       });
-    }, DAY_MS);
+    }, SYNC_AUTO_BACKUP_INTERVAL_MS);
 
     window.addEventListener(DATA_CHANGED_EVENT, onChange);
     return () => {
       window.removeEventListener(DATA_CHANGED_EVENT, onChange);
       cancelScheduledCloudPush();
-      window.clearInterval(dailyId);
+      window.clearInterval(periodicId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- push on enable + data-changed event
   }, [

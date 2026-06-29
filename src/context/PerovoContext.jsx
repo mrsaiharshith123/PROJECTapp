@@ -22,6 +22,9 @@ import { filterByProfile } from "../utils/profileScope.js";
 import { getEffectiveStatus } from "../utils/commitmentStatus.js";
 import { buildMonthlySnapshot } from "../engines/snapshots.js";
 import { mergeImportedAppState } from "../utils/dataImport.js";
+import { loadWealthState, saveWealthState } from "../utils/netWorth/wealthStorage.js";
+import { mergeAccountSettingsFromServer } from "../utils/accountSettingsSync.js";
+import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { refreshAllChitCommitments } from "../utils/chitSync.js";
 import {
   registerDevSubscriptionTools,
@@ -31,7 +34,12 @@ import { filterDailySpendsByProfile } from "../utils/dailySpends.js";
 import { sortCommitments } from "./perovoSort.js";
 import { usePerovoCrud } from "./usePerovoCrud.js";
 import { fetchFundNav } from "../services/market/amfiNav.js";
-import { fetchGoldPricePerGram } from "../services/market/goldPrice.js";
+import {
+  fetchGoldPricePerGram,
+  isGoldApiConfigured,
+  shouldRefreshGoldRate,
+} from "../services/market/goldPrice.js";
+import { applyGoldRateToWealth } from "../utils/netWorth/goldRateSync.js";
 
 /** @type {import('react').Context<import('../types/context.js').PerovoContextValue | null>} */
 const PerovoContext = createContext(/** @type {import('../types/context.js').PerovoContextValue | null} */ (null));
@@ -72,6 +80,40 @@ export function PerovoProvider({ children }) {
 
   useEffect(() => {
     if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      const s = loadSettingsFromStorage();
+      await syncSettingsToServer(s).catch(() => {});
+      if (cancelled) return;
+      try {
+        const serverSettings = await loadSettingsFromServer();
+        if (cancelled || !serverSettings || typeof serverSettings !== "object") return;
+        setSettings((prev) => {
+          try {
+            const next = mergeAccountSettingsFromServer(prev, serverSettings);
+            if (next === prev) return prev;
+            try {
+              localStorage.setItem("perovo_settings", JSON.stringify(next));
+              invalidateInitialAppStateCache();
+            } catch {
+              /* ignore */
+            }
+            return next;
+          } catch {
+            return prev;
+          }
+        });
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
     loadSubscriptionTier(user.id)
       .then((tier) => {
         setSettings((prev) => {
@@ -87,34 +129,6 @@ export function PerovoProvider({ children }) {
         });
       })
       .catch(() => {});
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    loadSettingsFromServer()
-      .then((serverSettings) => {
-        if (cancelled || !serverSettings || typeof serverSettings !== "object") return;
-        setSettings((prev) => {
-          const localTs = prev.updatedAt ? Date.parse(prev.updatedAt) : 0;
-          const serverTs = serverSettings.updatedAt ? Date.parse(String(serverSettings.updatedAt)) : 0;
-          if (serverTs > localTs) {
-            const next = { ...prev, ...serverSettings };
-            try {
-              localStorage.setItem("perovo_settings", JSON.stringify(next));
-              invalidateInitialAppStateCache();
-            } catch {
-              /* ignore */
-            }
-            return next;
-          }
-          return prev;
-        });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
   }, [user?.id]);
 
   useEffect(() => {
@@ -164,6 +178,9 @@ export function PerovoProvider({ children }) {
         localStorage.setItem("perovo_settings", JSON.stringify(next));
         invalidateInitialAppStateCache();
         emitLocalDataChanged();
+        if ("cloudSyncEnabled" in merged && merged.cloudSyncEnabled !== prev.cloudSyncEnabled) {
+          saveSyncMeta({ cloudBackupEnabled: Boolean(merged.cloudSyncEnabled) });
+        }
         clearTimeout(syncTimerRef.current);
         if (userIdRef.current) {
           syncTimerRef.current = setTimeout(() => {
@@ -255,38 +272,42 @@ export function PerovoProvider({ children }) {
     return () => unregisterDevSubscriptionTools();
   }, [updateSettings, user?.id]);
 
-  const goldFetchRef = useRef(false);
-  useEffect(() => {
-    if (goldFetchRef.current) return;
+  const refreshGoldRate = useCallback(async (options = {}) => {
+    const force = Boolean(options.force);
+    if (!isGoldApiConfigured()) return false;
     const s = settingsRef.current;
-    const last = s.goldRateLastFetched ? new Date(s.goldRateLastFetched).getTime() : 0;
-    const stale = !last || Date.now() - last > 24 * 60 * 60 * 1000;
-    if (!stale) {
-      goldFetchRef.current = true;
-      return;
+    if (
+      !force &&
+      !shouldRefreshGoldRate(s.goldRateLastFetched, s.goldRatePerGram)
+    ) {
+      return Number(s.goldRatePerGram) > 0;
     }
-    goldFetchRef.current = true;
-    let cancelled = false;
-    fetchGoldPricePerGram().then((result) => {
-      if (cancelled || !result) return;
-      persistSettings((prev) => {
-        if (
-          prev.goldRatePerGram === result.perGram &&
-          prev.goldRateLastFetched === result.date
-        ) {
-          return prev;
-        }
-        return {
-          ...prev,
-          goldRatePerGram: result.perGram,
-          goldRateLastFetched: result.date,
-        };
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
+    const result = await fetchGoldPricePerGram();
+    if (!result) return false;
+    persistSettings((prev) => ({
+      ...prev,
+      goldRatePerGram: result.perGram,
+      goldRateLastFetched: result.date,
+    }));
+    applyGoldRateToWealth(result.perGram);
+    return true;
   }, [persistSettings]);
+
+  useEffect(() => {
+    if (!isGoldApiConfigured()) return;
+    refreshGoldRate();
+  }, [refreshGoldRate]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const s = settingsRef.current;
+      if (!shouldRefreshGoldRate(s.goldRateLastFetched, s.goldRatePerGram)) return;
+      refreshGoldRate();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [refreshGoldRate]);
 
   const commitmentsRef = useRef(commitments);
   useEffect(() => {
@@ -380,6 +401,7 @@ export function PerovoProvider({ children }) {
           dailySpends,
           settings: settingsRef.current,
           monthlySnapshots,
+          wealth: loadWealthState(),
         },
         payload,
         options
@@ -389,6 +411,7 @@ export function PerovoProvider({ children }) {
       persistGoals(() => merged.goals);
       persistDailySpends(() => merged.dailySpends);
       persistSettings(() => merged.settings);
+      saveWealthState(merged.wealth);
       if (merged.monthlySnapshots?.length) {
         persistSnapshots(() => merged.monthlySnapshots);
       }
@@ -428,6 +451,7 @@ export function PerovoProvider({ children }) {
       ...crud,
       supplementalNotifications,
       importAppData,
+      refreshGoldRate,
     }),
     [
       profileCommitments,
@@ -448,6 +472,7 @@ export function PerovoProvider({ children }) {
       crud,
       supplementalNotifications,
       importAppData,
+      refreshGoldRate,
     ]
   );
 

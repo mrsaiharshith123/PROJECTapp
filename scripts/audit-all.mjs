@@ -225,6 +225,37 @@ console.log(paint(C.bold, "Running checks…\n"));
   record("env", "Environment & secrets", env.errors, env.warnings, env.ok, env.notes);
 }
 
+// 1b — API / integration env vs code
+{
+  const r = runQuiet("API integrations (.env vs code)", "node", ["scripts/audit-apis.mjs", "--json"]);
+  const data = parseJson(r.out) || { errors: 1, warnings: 0, integrations: [] };
+  const notes = [];
+  let errors = data.errors || 0;
+  let warnings = data.warnings || 0;
+  if (!r.ok && !data.integrations?.length) {
+    errors = 1;
+    notes.push("audit:apis failed to run");
+  } else {
+    const missing = (data.integrations || []).filter((i) => i.overall === "MISSING_ENV");
+    const off = (data.integrations || []).filter((i) => i.overall === "OFF" && i.tier === "core");
+    const liveFail = (data.integrations || []).filter((i) => i.overall === "LIVE_FAIL");
+    if (off.length) notes.push(`${off.length} core integration(s) off — ${off.map((i) => i.label).join(", ")}`);
+    if (missing.length) {
+      warnings += missing.length;
+      notes.push(
+        `${missing.length} feature(s) coded but env missing — ${missing.map((i) => i.label).join(", ")}`,
+      );
+    }
+    if (liveFail.length) notes.push(`${liveFail.length} live probe failure(s)`);
+    if ((data.undocumentedInExample || []).length) {
+      warnings += 1;
+      notes.push(`${data.undocumentedInExample.length} env key(s) in code not in .env.example`);
+    }
+    if (!errors && !missing.length && !off.length) notes.push("Integrations registry OK — npm run audit:apis for detail");
+  }
+  record("apis", "API & integration env", errors, warnings, errors === 0, notes, errors > 0);
+}
+
 // 2 — Dependencies
 {
   process.stdout.write(`  ${paint(C.dim, "…")} Dependencies (install + npm audit)      `);

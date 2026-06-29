@@ -25,7 +25,7 @@ const GROUPS = [
 export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { entries, privacyMode, growth, addEntry, updateEntry } = useNetWorth();
+  const { entries, privacyMode, growth, addEntry, updateEntry, deleteEntry } = useNetWorth();
   const { formatAmount } = usePrivacyAmount();
   const [modalOpen, setModalOpen] = useState(openAddOnMount);
   const [editEntry, setEditEntry] = useState(null);
@@ -79,10 +79,12 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
                   key={entry.id}
                   entry={entry}
                   privacyMode={privacyMode}
+                  onAnalyze={() => navigate(`/insights/entry/${entry.id}`)}
                   onEdit={() => {
                     setEditEntry(entry);
                     setModalOpen(true);
                   }}
+                  onDelete={deleteEntry}
                 />
               ))}
             </div>
@@ -104,8 +106,11 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
           setEditEntry(null);
         }}
         onSave={(payload) => {
-          if (editEntry) updateEntry(editEntry.id, payload);
-          else addEntry(payload);
+          if (editEntry) {
+            updateEntry(editEntry.id, payload);
+          } else {
+            addEntry(payload);
+          }
           setModalOpen(false);
           setEditEntry(null);
         }}

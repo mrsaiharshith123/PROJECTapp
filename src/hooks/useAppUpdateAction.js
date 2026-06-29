@@ -48,6 +48,10 @@ export function useAppUpdateAction() {
       const code = err instanceof Error ? err.message : "";
       if (code === "bundle_missing") {
         setStatus(t("support.updateAppBundleMissing"));
+      } else if (code === "ota_download_failed") {
+        setStatus(t("support.updateAppDownloadFailed"));
+      } else if (code === "ota_apply_failed" || code === "ota_apply_timeout" || code === "ota_bundle_id_missing") {
+        setStatus(t("support.updateAppApplyFailed"));
       } else {
         setStatus(t("support.updateAppError"));
       }

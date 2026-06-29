@@ -7,6 +7,24 @@ html[data-ui="ct"][data-theme="light"] .ct-card-glow,
 html[data-ui="ct"][data-theme="light"] .ct-card-hero-deep,
 html[data-ui="ct"][data-theme="light"] .ct-modal-panel {
   box-shadow: var(--ct-shadow-card);
+  background: var(--ct-surface);
+}
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel .overflow-y-auto {
+  background: var(--ct-surface);
+}
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel .ct-input,
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel .ct-select,
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel .ct-textarea,
+html[data-ui="ct"][data-theme="light"] .ct-modal-panel .ct-input-tint {
+  background: var(--ct-surface-inset) !important;
+  border-color: var(--ct-border) !important;
+  color: var(--ct-text) !important;
+  color-scheme: light;
+}
+html[data-ui="ct"][data-theme="light"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-ui="ct"][data-theme="light"] select,
+html[data-ui="ct"][data-theme="light"] textarea {
+  color-scheme: light;
 }
 
 html[data-ui="ct"][data-theme="light"] .ct-card-glow {

@@ -3,6 +3,7 @@ import { normalizePan } from "../../utils/pan.js";
 import { log } from "../../utils/logger.js";
 import { formatAuthError } from "../../utils/authErrors.js";
 import { ProfilesTableMissingError } from "../../utils/authSessionCleanup.js";
+import { pickAccountSettingsForServer } from "../../utils/accountSettingsSync.js";
 
 /**
  * Build a full profiles row for upsert — never null-out fields omitted from patch.
@@ -363,9 +364,12 @@ export async function syncSettingsToServer(settings) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
+    const accountBlob = pickAccountSettingsForServer(
+      settings && typeof settings === "object" ? settings : {},
+    );
     const { error } = await supabase
       .from(PROFILE_TABLE)
-      .update({ app_settings: settings, updated_at: new Date().toISOString() })
+      .update({ app_settings: accountBlob, updated_at: new Date().toISOString() })
       .eq("id", user.id);
     if (error) log.auth.warn("Settings sync failed", { message: error.message });
   } catch (e) {

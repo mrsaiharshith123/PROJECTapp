@@ -50,6 +50,18 @@ function billStatusLabel(t, status) {
   return translated !== key ? translated : status;
 }
 
+/** @param {{ navigate: import('react-router-dom').NavigateFunction, billId: string }} args */
+function openBillDetail({ navigate, billId }) {
+  navigate("/ledger/bills", { state: { openBillId: billId } });
+}
+
+/** @param {{ navigate: import('react-router-dom').NavigateFunction, entryId: string }} args */
+function openWealthDetail({ navigate, entryId }) {
+  navigate(`/insights/entry/${entryId}`);
+}
+
+const ROW_CLICK = { cursor: "pointer" };
+
 /** @route /insights/spending */
 export function InsightsSpendingBreakdownPage() {
   const { t } = useTranslation();
@@ -136,7 +148,14 @@ export function InsightsSpendingBreakdownPage() {
           {allBills.map((c) => {
             const status = getEffectiveStatus(c);
             return (
-              <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div
+                key={c.id}
+                className="ed-ins-row"
+                style={ROW_CLICK}
+                onClick={() => openBillDetail({ navigate, billId: c.id })}
+                role="button"
+                tabIndex={0}
+              >
                 <div className="ed-ins-row-left">
                   <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
                   {c.category ? <div className="ed-ins-row-sub">{c.category}</div> : null}
@@ -418,7 +437,14 @@ export function InsightsAssetsBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.allHoldings")}</div>
           {withCagr.map((e) => (
-            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={e.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openWealthDetail({ navigate, entryId: e.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-cat">
                   {e.categoryId || t("ledger.tab.assets")}
@@ -527,7 +553,14 @@ export function InsightsLiabilitiesBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.overdueActNow")}</div>
           {overdueBills.map((c) => (
-            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={c.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openBillDetail({ navigate, billId: c.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
                 <div className="ed-ins-row-sub">{c.category}</div>
@@ -547,7 +580,14 @@ export function InsightsLiabilitiesBreakdownPage() {
                 ? c.totalInstallments - c.paidInstallments
                 : null;
             return (
-              <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+              <div
+                key={c.id}
+                className="ed-ins-row"
+                style={ROW_CLICK}
+                onClick={() => openBillDetail({ navigate, billId: c.id })}
+                role="button"
+                tabIndex={0}
+              >
                 <div className="ed-ins-row-left">
                   <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
                   <div className="ed-ins-row-sub">
@@ -569,7 +609,14 @@ export function InsightsLiabilitiesBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.recordedLiabilities")}</div>
           {liabEntries.map((e) => (
-            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={e.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openWealthDetail({ navigate, entryId: e.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-name">{e.name}</div>
               </div>
@@ -636,14 +683,14 @@ export function InsightsInstrumentsBreakdownPage() {
         <div className="ed-ins-cols">
           <div className="ed-ins-col">
             <span className="ed-ins-col-label">{t("insights.subpages.totalValue")}</span>
-            <span className="ed-ins-col-val" style={{ color: "var(--ed-violet)" }}>
+            <span className="ed-ins-col-val" style={{ color: "var(--ed-gold)" }}>
               {formatAmount(totalValue)}
             </span>
           </div>
           {monthlySip > 0 ? (
             <div className="ed-ins-col">
               <span className="ed-ins-col-label">{t("analytics.insightInstruments.monthlySip")}</span>
-              <span className="ed-ins-col-val" style={{ color: "var(--ed-violet)" }}>
+              <span className="ed-ins-col-val" style={{ color: "var(--ed-gold)" }}>
                 {formatAmount(monthlySip)}
               </span>
             </div>
@@ -655,12 +702,19 @@ export function InsightsInstrumentsBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.upcomingMaturities")}</div>
           {upcoming.slice(0, 5).map((c) => (
-            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={c.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openBillDetail({ navigate, billId: c.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-cat">{c.dueDate}</div>
                 <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
               </div>
-              <div className="ed-ins-row-val" style={{ color: "var(--ed-violet)" }}>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-gold)" }}>
                 {formatAmount(Number(c.amount || 0))}
               </div>
             </div>
@@ -672,12 +726,19 @@ export function InsightsInstrumentsBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.allHoldings")}</div>
           {instrumentEntries.map((e) => (
-            <div key={e.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={e.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openWealthDetail({ navigate, entryId: e.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-name">{e.name}</div>
                 <div className="ed-ins-row-sub">{wealthCategoryLabel(t, e.categoryId)}</div>
               </div>
-              <div className="ed-ins-row-val" style={{ color: "var(--ed-violet)" }}>
+              <div className="ed-ins-row-val" style={{ color: "var(--ed-gold)" }}>
                 {formatAmount(e.value || 0)}
               </div>
             </div>
@@ -689,7 +750,14 @@ export function InsightsInstrumentsBreakdownPage() {
         <div className="ed-ins-story">
           <div className="ed-ins-kicker">{t("insights.subpages.monthlySipPlans")}</div>
           {sipItems.map((c) => (
-            <div key={c.id} className="ed-ins-row" style={{ cursor: "default" }}>
+            <div
+              key={c.id}
+              className="ed-ins-row"
+              style={ROW_CLICK}
+              onClick={() => openBillDetail({ navigate, billId: c.id })}
+              role="button"
+              tabIndex={0}
+            >
               <div className="ed-ins-row-left">
                 <div className="ed-ins-row-name">{getBillDisplayName(c)}</div>
               </div>

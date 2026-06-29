@@ -66,6 +66,7 @@
     "audit:docs-sync": "node scripts/audit-docs-sync.mjs",
     "audit:profile-scope": "node scripts/audit-profile-scope.mjs",
     "audit:edge-functions": "node scripts/audit-edge-functions.mjs",
+    "audit:apis": "node scripts/audit-apis.mjs",
     "audit:pro-features-built": "node scripts/audit-pro-features-built.mjs",
     "audit:insight-registry": "node scripts/audit-insight-registry.mjs",
     "audit:code": "node scripts/audit-code.mjs",
@@ -113,7 +114,8 @@
     "audit:theme": "node scripts/audit-runner.mjs theme",
     "audit:empty-states": "node scripts/audit-runner.mjs empty-states",
     "audit:pwa": "node scripts/audit-runner.mjs pwa",
-    "audit:cleanup": "node scripts/audit-runner.mjs cleanup"
+    "audit:cleanup": "node scripts/audit-runner.mjs cleanup",
+    "zip": "node scripts/zip.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",

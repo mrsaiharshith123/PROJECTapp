@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { SubPageHeader } from "../../../patterns/SubPageHeader.jsx";
 
 /**
  * @param {{ titleKey?: string, title?: string, children: import('react').ReactNode, action?: import('react').ReactNode, backTo?: string }} props
@@ -18,12 +17,23 @@ export default function YouSubPageShell({ titleKey, title, children, action, bac
     };
   }, [pageTitle, t]);
 
-  const handleBack = backTo ? () => navigate(backTo) : undefined;
+  const handleBack = backTo ? () => navigate(backTo) : () => navigate("/you");
 
   return (
-    <div className="ct-page ct-you-subpage pb-8">
-      <SubPageHeader title={pageTitle} onBack={handleBack} action={action} />
-      <div className="ct-subpage-content ct-stack">{children}</div>
+    <div className="ct-page ed-you-subpage">
+      <div className="ed-you-subpage-header">
+        <button
+          type="button"
+          className="ed-you-back"
+          onClick={handleBack}
+          aria-label={t("common.back")}
+        >
+          {t("common.backArrow")}
+        </button>
+        <h1 className="ed-you-subpage-title">{pageTitle}</h1>
+        {action ? <div style={{ flexShrink: 0 }}>{action}</div> : null}
+      </div>
+      <div style={{ paddingBottom: 8 }}>{children}</div>
     </div>
   );
 }

@@ -22,8 +22,13 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {string} [profileId]
  * @property {string} [commitmentId] bill-derived rows link back to commitments
  * @property {number} [purchaseYear]
+ * @property {number} [purchaseMonth]
  * @property {number} [purchasePrice]
+ * @property {number} [purchaseRatePerUnit]
+ * @property {boolean} [valueAutoEstimated]
  * @property {string} [location]
+ * @property {number} [latitude]
+ * @property {number} [longitude]
  * @property {string} [areaUnit]
  * @property {number} [areaMeasure]
  * @property {number} [weightGrams]
@@ -111,8 +116,16 @@ export function normalizeWealthEntry(raw) {
     profileId: r.profileId ? String(r.profileId) : "default",
     commitmentId: r.commitmentId ? String(r.commitmentId) : undefined,
     purchaseYear: optNum(r.purchaseYear),
+    purchaseMonth:
+      r.purchaseMonth != null
+        ? Math.min(12, Math.max(1, Math.floor(Number(r.purchaseMonth) || 0)))
+        : undefined,
     purchasePrice: optNum(r.purchasePrice),
+    purchaseRatePerUnit: optNum(r.purchaseRatePerUnit),
+    valueAutoEstimated: Boolean(r.valueAutoEstimated),
     location: optStr(r.location),
+    latitude: r.latitude != null ? Number(r.latitude) : undefined,
+    longitude: r.longitude != null ? Number(r.longitude) : undefined,
     areaUnit: optStr(r.areaUnit),
     areaMeasure: optNum(r.areaMeasure),
     weightGrams: optNum(r.weightGrams),
@@ -126,13 +139,23 @@ export function normalizeWealthEntry(raw) {
   };
 }
 
+/** @param {import('./wealthStorage.js').WealthEntry[]} entries */
+export function dedupeWealthEntries(entries) {
+  const map = new Map();
+  for (const entry of entries) {
+    map.set(String(entry.id), entry);
+  }
+  return [...map.values()];
+}
+
 /** @param {unknown} raw */
 export function normalizeWealthState(raw) {
   if (!raw || typeof raw !== "object") return defaultState();
   const r = /** @type {Record<string, unknown>} */ (raw);
+  const entries = Array.isArray(r.entries) ? dedupeWealthEntries(r.entries.map(normalizeWealthEntry)) : [];
   return {
     schemaVersion: WEALTH_SCHEMA_VERSION,
-    entries: Array.isArray(r.entries) ? r.entries.map(normalizeWealthEntry) : [],
+    entries,
     snapshots: Array.isArray(r.snapshots) ? r.snapshots.map((s) => {
       const row = /** @type {Record<string, unknown>} */ (s || {});
       const month = String(row.month || row.day || "");

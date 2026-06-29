@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { formatInr } from "../../../constants/symbols.js";
 import { getAssetCategory, getLiabilityCategory } from "../../../constants/netWorth/wealthCategories.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { isFeatureUnlocked } from "../../../constants/subscriptionTiers.js";
-import { getTier } from "../../../utils/tierAccess.js";
-import { fetchAssetInsight } from "../../../services/ai/assetInsight.js";
 import {
   buildAssetDetailLine,
   computeAssetCagr,
@@ -18,7 +14,16 @@ import {
 } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { Card, Caption, Body } from "../../index.js";
+import { Caption, Body } from "../../index.js";
+
+const ED_CARD_WRAP = /** @type {import("react").CSSProperties} */ ({
+  background: "transparent",
+  border: "0.5px solid var(--ed-rule)",
+  borderRadius: 12,
+  padding: "12px 14px",
+  marginBottom: 8,
+  position: "relative",
+});
 
 export default function WealthEntryCard({
   entry,
@@ -29,11 +34,11 @@ export default function WealthEntryCard({
   readOnly = false,
   sourceLabel = "",
   onOpen = undefined,
+  onAnalyze = undefined,
 }) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
   const { updateEntry } = useNetWorth();
-  const [insightLoading, setInsightLoading] = useState(false);
 
   const cat =
     entry.kind === "asset"
@@ -58,26 +63,10 @@ export default function WealthEntryCard({
     vehicleEstimate != null && !privacyMode && Math.abs(vehicleEstimate - (Number(entry.value) || 0)) > 1;
   const cagr =
     physical && !privacyMode
-      ? computeAssetCagr(entry.purchasePrice, entry.purchaseYear, entry.value)
+      ? computeAssetCagr(entry.purchasePrice, entry.purchaseYear, entry.value, entry.purchaseMonth)
       : null;
   const detailLine = physical && !privacyMode ? buildAssetDetailLine(entry, t) : "";
   const holding = physical && !privacyMode ? formatHoldingPeriod(entry.purchaseYear, t) : "";
-  const hasAiInsight = Boolean(entry.aiInsight);
-  const aiUnlocked = isFeatureUnlocked("ai_advisor", getTier(settings));
-
-  const handleFetchInsight = async () => {
-    if (!physical || insightLoading || !aiUnlocked) return;
-    setInsightLoading(true);
-    try {
-      const { insight } = await fetchAssetInsight(entry, t);
-      updateEntry(entry.id, {
-        aiInsight: insight,
-        aiInsightDate: new Date().toISOString(),
-      });
-    } finally {
-      setInsightLoading(false);
-    }
-  };
 
   const body = (
     <>
@@ -89,11 +78,6 @@ export default function WealthEntryCard({
           <div className="min-w-0">
             <div className="ct-row gap-2 items-center min-w-0">
               <Body className="font-semibold truncate">{entry.name}</Body>
-              {hasAiInsight && (
-                <span className="ct-nw-ai-badge" title={t("netWorth.physical.aiInsightBadge")}>
-                  <CtIcon name="lightning" size={12} />
-                </span>
-              )}
             </div>
             <Caption>
               {t(cat.labelKey)}
@@ -152,15 +136,17 @@ export default function WealthEntryCard({
         </div>
       )}
 
-      {hasAiInsight && !privacyMode && (
-        <p className="ct-nw-insight mt-2">{entry.aiInsight}</p>
-      )}
-
       {(Number(entry.emi) || 0) > 0 && (
         <Caption className="mt-2 block">
           {t("netWorth.entry.emi", { amount: privacyMode ? "••••" : formatInr(entry.emi) })}
         </Caption>
       )}
+
+      {onAnalyze ? (
+        <button type="button" className="ed-ins-link" style={{ marginTop: 10, padding: 0 }} onClick={onAnalyze}>
+          {t("wealthDetail.viewAnalysis")}
+        </button>
+      ) : null}
     </>
   );
 
@@ -169,34 +155,30 @@ export default function WealthEntryCard({
   if (readOnly && onOpen) {
     return (
       <button type="button" className="ct-nw-entry-btn w-full text-left" onClick={onOpen}>
-        <Card className={cardClass}>{body}</Card>
+        <div className={cardClass} style={ED_CARD_WRAP}>
+          {body}
+        </div>
       </button>
     );
   }
 
   return (
-    <Card className={cardClass}>
+    <div className={cardClass} style={ED_CARD_WRAP}>
       {body}
       {!readOnly && (
         <div className="ct-row gap-2 mt-3 pt-2 border-t border-[var(--ct-border-subtle)]">
-          {physical && aiUnlocked && (
-            <button
-              type="button"
-              className="ct-btn ct-btn-ghost ct-btn-sm flex-1"
-              onClick={handleFetchInsight}
-              disabled={insightLoading}
-            >
-              {insightLoading ? t("netWorth.physical.aiInsightLoading") : t("netWorth.physical.aiInsightCta")}
+          {typeof onEdit === "function" ? (
+            <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm flex-1" onClick={() => onEdit(entry)}>
+              {t("common.edit")}
             </button>
-          )}
-          <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm flex-1" onClick={() => onEdit(entry)}>
-            {t("common.edit")}
-          </button>
-          <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => onDelete(entry.id)}>
-            {t("common.delete")}
-          </button>
+          ) : null}
+          {typeof onDelete === "function" ? (
+            <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => onDelete(entry.id)}>
+              {t("common.delete")}
+            </button>
+          ) : null}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

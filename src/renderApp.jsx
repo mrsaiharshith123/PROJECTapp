@@ -66,7 +66,16 @@ if (!rootEl) throw new Error("root_missing");
 const root = createRoot(rootEl);
 if (sentryEnabled) {
   root.render(
-    <Sentry.ErrorBoundary fallback={<div className="p-6" style={{ textAlign: "center" }}>Something went wrong. Please refresh.</div>}>
+    <Sentry.ErrorBoundary
+      fallback={({ error }) => (
+        <div className="p-6 ct-stack" style={{ textAlign: "center", maxWidth: 480, margin: "2rem auto" }}>
+          <p>Something went wrong. Please refresh.</p>
+          {import.meta.env.DEV && error ? (
+            <pre className="ct-hero-inset text-xs text-left overflow-auto">{String(error?.message || error)}</pre>
+          ) : null}
+        </div>
+      )}
+    >
       {app}
     </Sentry.ErrorBoundary>,
   );

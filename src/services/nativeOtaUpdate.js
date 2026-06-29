@@ -18,7 +18,7 @@ export async function notifyNativeAppReady() {
   }
 }
 
-/** @returns {Promise<{ status?: string, version?: string } | null>} */
+/** @returns {Promise<{ status?: string, version?: string, id?: string } | null>} */
 export async function getNativeBundleInfo() {
   if (!canUseNativeOta()) return null;
   try {
@@ -37,6 +37,8 @@ export async function resetNativeOtaBundle() {
   await CapacitorUpdater.reset();
 }
 
+const APPLY_RELOAD_TIMEOUT_MS = 45000;
+
 /**
  * @typedef {{ phase: string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} OtaProgress
  * @typedef {{ version: string, bundleUrl?: string, bundleSize?: number }} OtaManifest
@@ -50,27 +52,63 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
 
   const { CapacitorUpdater } = await import("@capgo/capacitor-updater");
   const total = manifest.bundleSize || 0;
+  /** @type {{ remove: () => Promise<void> }[]} */
+  const listeners = [];
 
-  const listener = await CapacitorUpdater.addListener("download", (event) => {
-    const percent = Math.round(Number(event.percent) || 0);
-    onProgress?.({
-      phase: "downloading",
-      percent,
-      bytesLoaded: total ? Math.round((total * percent) / 100) : undefined,
-      bytesTotal: total || undefined,
-    });
-  });
+  const track = async (eventName, handler) => {
+    const handle = await CapacitorUpdater.addListener(eventName, handler);
+    listeners.push(handle);
+  };
+
+  let failReason = "";
+  const fail = (code) => {
+    failReason = code;
+  };
 
   try {
+    await track("download", (event) => {
+      const percent = Math.round(Number(event.percent) || 0);
+      onProgress?.({
+        phase: "downloading",
+        percent,
+        bytesLoaded: total ? Math.round((total * percent) / 100) : undefined,
+        bytesTotal: total || undefined,
+      });
+    });
+    await track("downloadFailed", () => fail("ota_download_failed"));
+    await track("updateFailed", () => fail("ota_apply_failed"));
+
     onProgress?.({ phase: "downloading", percent: 0, bytesLoaded: 0, bytesTotal: total || undefined });
     const bundle = await CapacitorUpdater.download({
       url: manifest.bundleUrl,
       version: manifest.version,
     });
-    onProgress?.({ phase: "restarting", percent: 100, bytesLoaded: total || undefined, bytesTotal: total || undefined });
-    await CapacitorUpdater.set(bundle);
-    await notifyNativeAppReady();
+
+    if (failReason) throw new Error(failReason);
+
+    const bundleId = bundle?.id;
+    if (!bundleId) throw new Error("ota_bundle_id_missing");
+
+    onProgress?.({
+      phase: "restarting",
+      percent: 100,
+      bytesLoaded: total || undefined,
+      bytesTotal: total || undefined,
+    });
+
+    // Avoid CapacitorUpdater.set() on Android — it can deadlock at 100% when
+    // directUpdate is false (waits for notifyAppReady on a blocked thread).
+    // next + reload is the supported manual-apply path; notifyAppReady runs on
+    // boot via src/capgo-notify-only.js after the new bundle loads.
+    await CapacitorUpdater.next({ id: bundleId });
+
+    await Promise.race([
+      CapacitorUpdater.reload(),
+      new Promise((_, reject) => {
+        window.setTimeout(() => reject(new Error("ota_apply_timeout")), APPLY_RELOAD_TIMEOUT_MS);
+      }),
+    ]);
   } finally {
-    await listener.remove();
+    await Promise.all(listeners.map((handle) => handle.remove().catch(() => {})));
   }
 }

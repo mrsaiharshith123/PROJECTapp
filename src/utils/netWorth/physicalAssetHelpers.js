@@ -1,4 +1,5 @@
 import { PHYSICAL_ASSET_TYPES } from "../../services/ai/assetInsight.js";
+import { yearsSincePurchase } from "./propertyValuation.js";
 
 /** @param {string} categoryId */
 export function isPhysicalAssetCategory(categoryId) {
@@ -9,18 +10,56 @@ export function isPhysicalAssetCategory(categoryId) {
  * @param {number} purchasePrice
  * @param {number} purchaseYear
  * @param {number} currentValue
- * @param {number} [nowYear]
+ * @param {number} [purchaseMonth] 1–12
+ * @param {Date} [now]
  * @returns {number | null} CAGR as percentage
  */
-export function computeAssetCagr(purchasePrice, purchaseYear, currentValue, nowYear = new Date().getFullYear()) {
+export function computeAssetCagr(
+  purchasePrice,
+  purchaseYear,
+  currentValue,
+  purchaseMonth = 1,
+  now = new Date(),
+) {
   const price = Number(purchasePrice);
   const value = Number(currentValue);
   const year = Number(purchaseYear);
   if (!price || !value || !year || price <= 0 || value <= 0) return null;
-  const years = nowYear - year;
-  if (years <= 0) return null;
+  const years = yearsSincePurchase(year, purchaseMonth, now);
+  if (years == null || years <= 0) return null;
   const cagr = (Math.pow(value / price, 1 / years) - 1) * 100;
-  return Number.isFinite(cagr) ? cagr : null;
+  return Number.isFinite(cagr) ? Math.round(cagr * 10) / 10 : null;
+}
+
+/**
+ * Real CAGR after compounding inflation over the hold period (not simple subtraction).
+ * @param {number} purchasePrice
+ * @param {number} purchaseYear
+ * @param {number} currentValue
+ * @param {number} inflationPct annual inflation rate (%)
+ * @param {number} [purchaseMonth] 1–12
+ * @param {Date} [now]
+ * @returns {number | null}
+ */
+export function computeRealCagr(
+  purchasePrice,
+  purchaseYear,
+  currentValue,
+  inflationPct,
+  purchaseMonth = 1,
+  now = new Date(),
+) {
+  const price = Number(purchasePrice);
+  const value = Number(currentValue);
+  const year = Number(purchaseYear);
+  const inflation = Number(inflationPct);
+  if (!price || !value || !year || price <= 0 || value <= 0 || !Number.isFinite(inflation)) return null;
+  const years = yearsSincePurchase(year, purchaseMonth, now);
+  if (years == null || years <= 0) return null;
+  const inflationAdjustedCost = price * Math.pow(1 + inflation / 100, years);
+  if (inflationAdjustedCost <= 0) return null;
+  const realCagr = (Math.pow(value / inflationAdjustedCost, 1 / years) - 1) * 100;
+  return Number.isFinite(realCagr) ? Math.round(realCagr * 10) / 10 : null;
 }
 
 /**
@@ -62,7 +101,8 @@ export function buildAssetDetailLine(entry, t) {
     entry.categoryId === "property_commercial"
   ) {
     if (entry.areaMeasure && entry.areaUnit) {
-      parts.push(t(`netWorth.physical.areaUnit.${entry.areaUnit}`, { measure: entry.areaMeasure }));
+      const unitKey = entry.areaUnit === "sqyd" ? "sqyd" : entry.areaUnit;
+      parts.push(t(`netWorth.physical.areaUnit.${unitKey}`, { measure: entry.areaMeasure }));
     }
   }
 

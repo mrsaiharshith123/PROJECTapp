@@ -159,6 +159,26 @@ export async function pullRemoteSnapshotToLocal(ctx) {
   const localPushed = meta.lastPushedAt ? new Date(meta.lastPushedAt).getTime() : 0;
   const remoteTime = new Date(remote.updatedAt).getTime();
 
+  if (ctx.force && localHasData && remoteHasData) {
+    const localCounts = snapshotDataCounts(buildAppSnapshot(localState));
+    const remoteCounts = snapshotDataCounts(remote.payload);
+    const localTotal =
+      localCounts.bills +
+      localCounts.lending +
+      localCounts.goals +
+      localCounts.spends +
+      localCounts.wealth;
+    const remoteTotal =
+      remoteCounts.bills +
+      remoteCounts.lending +
+      remoteCounts.goals +
+      remoteCounts.spends +
+      remoteCounts.wealth;
+    if (localTotal > remoteTotal) {
+      return { ok: false, reason: "local-richer" };
+    }
+  }
+
   if (ctx.preferLocal && localPushed >= remoteTime && !ctx.force) {
     return { ok: false, reason: "local-newer" };
   }

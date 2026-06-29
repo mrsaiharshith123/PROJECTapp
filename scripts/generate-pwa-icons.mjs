@@ -4,10 +4,12 @@ import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = path.join(root, "public");
-const source = path.join(publicDir, "brand", "icon-dark.png");
+const lightSource = path.join(publicDir, "brand", "icon-light.png");
+const darkSource = path.join(publicDir, "brand", "icon-dark.png");
+const source = fs.existsSync(lightSource) ? lightSource : darkSource;
 
 if (!fs.existsSync(source)) {
-  console.warn("Skip PWA icons: public/brand/icon-dark.png missing");
+  console.warn("Skip PWA icons: public/brand/icon-light.png and icon-dark.png missing");
   process.exit(0);
 }
 
@@ -30,3 +32,16 @@ for (const { name, px } of sizes) {
   await sharp(source).resize(px, px).png().toFile(out);
   console.log("Wrote", out);
 }
+
+if (fs.existsSync(darkSource) && source !== darkSource) {
+  for (const { name, px } of [
+    { name: "pwa-192-dark.png", px: 192 },
+    { name: "pwa-512-dark.png", px: 512 },
+  ]) {
+    const out = path.join(publicDir, name);
+    await sharp(darkSource).resize(px, px).png().toFile(out);
+    console.log("Wrote", out);
+  }
+}
+
+console.log(`PWA icons generated from ${path.basename(source)} (light editorial default)`);

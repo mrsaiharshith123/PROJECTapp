@@ -35,6 +35,13 @@ export default function ProfileSettingsGroups({
           hint={t("settings.row.personalDetailsHint")}
           onClick={() => navigate("/you/personal")}
         />
+        <SettingsGroupRow
+          iconColor="teal"
+          icon="currency-inr"
+          label={t("profile.moneySetup.title")}
+          hint={t("profile.moneySetup.subtitle")}
+          onClick={() => navigate("/you/money")}
+        />
         <SettingsGroupRow iconColor="gold" icon="crown" label={t("settings.row.subscription")} onClick={() => navigate("/you/plans")} />
         <SettingsGroupRow iconColor="indigo" icon="palette" label={t("settings.row.appearance")} onClick={() => navigate("/you/appearance")} />
       </SettingsGroup>

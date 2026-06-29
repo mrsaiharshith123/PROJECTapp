@@ -13,8 +13,13 @@ export default function YouToolsPage() {
 
   return (
     <YouSubPageShell titleKey="you.tools.title">
-      <p className="ct-page-shell-subtitle mb-2">{t("you.tools.subtitle")}</p>
-      <div className="ct-stack-lg">
+      <div
+        className="ed-ins-body"
+        style={{ padding: "8px 18px 14px", borderBottom: "1px solid var(--ed-rule)" }}
+      >
+        {t("you.tools.subtitle")}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         <PlanGoalsSection />
         <PlanCalculatorsSection initialTool={initialTool} />
         <PlanGrowthSection initialTool={initialTool === "retirement" ? "retirement" : null} />

@@ -108,7 +108,12 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
             </div>
             <div className="pos-group-card ct-stack-sm">
               {group.wealth.map((entry) => (
-                <div key={entry.id} className="ct-row-between gap-2 min-w-0">
+                <button
+                  key={entry.id}
+                  type="button"
+                  className="ct-row-between gap-2 min-w-0 w-full text-left"
+                  onClick={() => navigate(`/insights/entry/${entry.id}`)}
+                >
                   <div className="ct-row gap-2 min-w-0">
                     <span className="ct-icon-tile pos-icon liability shrink-0">
                       <CtIcon name="bank" size={18} />
@@ -123,7 +128,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
                     {formatAmount(entry.value)}
                   </span>
-                </div>
+                </button>
               ))}
               {group.bills.map((bill) => {
                 const progress = computeBillPaymentProgress(bill, todayStr, commitments);
@@ -133,7 +138,13 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                   <div
                     key={bill.id}
                     className="ct-stack-sm"
-                    style={{ borderLeft: `3px solid ${stripe}`, paddingLeft: 10 }}
+                    style={{ borderLeft: `3px solid ${stripe}`, paddingLeft: 10, cursor: "pointer" }}
+                    onClick={() => navigate("/ledger/bills", { state: { openBillId: bill.id } })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") navigate("/ledger/bills", { state: { openBillId: bill.id } });
+                    }}
+                    role="button"
+                    tabIndex={0}
                   >
                     <div className="ct-row-between gap-2 min-w-0">
                       <div className="ct-row gap-2 min-w-0">
@@ -166,7 +177,10 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                       <button
                         type="button"
                         className="ct-btn ct-btn-sm ct-btn-primary w-fit"
-                        onClick={() => navigate("/ledger/bills")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate("/ledger/bills", { state: { openBillId: bill.id } });
+                        }}
                       >
                         {t("common.pay")}
                       </button>

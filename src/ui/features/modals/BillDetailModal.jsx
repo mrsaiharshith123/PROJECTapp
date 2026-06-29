@@ -4,6 +4,7 @@ import { PriorityBadge } from "../../patterns/PriorityBadge.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { BillDetailCharts } from "../commitments/BillDetailCharts.jsx";
+import InsuranceWorthPanel from "../commitments/InsuranceWorthPanel.jsx";
 import { computeBillSpendSummary } from "../../../utils/commitmentSpendSummary.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import {
@@ -180,6 +181,8 @@ export default function BillDetailModal({
           allCommitments={allCommitments}
           perCycleAmount={amount}
         />
+
+        {isInsurance ? <InsuranceWorthPanel bill={bill} /> : null}
 
         {progress.paymentEntries > 0 && summary.priorSpend > 0 && (
           <Caption>

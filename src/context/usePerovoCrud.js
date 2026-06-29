@@ -258,7 +258,6 @@ export function usePerovoCrud({
         if (patch.subscriptionTier != null) {
           const t = patch.subscriptionTier;
           next.subscriptionTier = ["free", "pro", "power"].includes(t) ? t : prev.subscriptionTier || "free";
-          if (next.subscriptionTier === "free") next.cloudSyncEnabled = false;
         }
         if (patch.appLanguage != null) {
           next.appLanguage = normalizeAppLanguage(patch.appLanguage);

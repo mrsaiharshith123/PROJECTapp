@@ -32,7 +32,7 @@ export async function createLeegalityDocument({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${LEEGALITY_TOKEN}`,
+        "X-Auth-Token": LEEGALITY_TOKEN,
       },
       body: JSON.stringify(payload),
     });
@@ -58,7 +58,7 @@ export async function checkLeegalityStatus(documentId) {
   if (!documentId || !LEEGALITY_TOKEN) return null;
   try {
     const res = await fetch(`${LEEGALITY_BASE}/api/v3.0/document/${documentId}`, {
-      headers: { Authorization: `Bearer ${LEEGALITY_TOKEN}` },
+      headers: { "X-Auth-Token": LEEGALITY_TOKEN },
     });
     const data = /** @type {{ status?: string, signedFileUrl?: string, completedAt?: string }} */ (await res.json());
     return {

@@ -11,6 +11,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ota
+dist-ota-test/
+dist-ota-verify/
+dist-ota-*/
 dist-ssr
 reports/
 dev-dist
@@ -21,9 +24,19 @@ releases/
 .env.*
 !.env.example
 
+# Supabase CLI cache — recreates on supabase CLI commands
+supabase/.temp/
+
+# Cursor IDE cache
+.cursor/
+
+# Generated reports
+eslint-report.json
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo

@@ -18,6 +18,7 @@ import NotificationSync from "./app/NotificationSync.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
+import CloudRestoreGate from "./app/CloudRestoreGate.jsx";
 import HouseholdRoomBridge from "./app/HouseholdRoomBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
@@ -82,6 +83,7 @@ const InsightsInstrumentsBreakdown = lazy(() =>
     default: m.InsightsInstrumentsBreakdownPage,
   })),
 );
+const WealthEntryDetail = lazy(() => import("./ui/features/ledger/WealthEntryDetailPage.jsx"));
 const YouToolsPage = lazy(() => import("./ui/features/profile/pages/YouToolsPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
@@ -147,6 +149,7 @@ function AppRoutes() {
         <Route path="/insights/assets" element={<Suspense fallback={<RouteFallback />}><InsightsAssetsBreakdown /></Suspense>} />
         <Route path="/insights/liabilities" element={<Suspense fallback={<RouteFallback />}><InsightsLiabilitiesBreakdown /></Suspense>} />
         <Route path="/insights/instruments" element={<Suspense fallback={<RouteFallback />}><InsightsInstrumentsBreakdown /></Suspense>} />
+        <Route path="/insights/entry/:id" element={<Suspense fallback={<RouteFallback />}><WealthEntryDetail /></Suspense>} />
         <Route path="/insights/cashflow" element={<Suspense fallback={<RouteFallback />}><InsightsCashflowBreakdown /></Suspense>} />
         <Route path="/insights/pulse" element={<Suspense fallback={<RouteFallback />}><InsightsPulseBreakdown /></Suspense>} />
         <Route path="/money/insights" element={<LegacyInsightsRedirect />} />
@@ -294,8 +297,11 @@ function AppShell() {
   if (!isReady || (isLoggedIn && !profileResolved)) return <BootShell />;
   if (!isLoggedIn) return <AuthGateShell />;
   if (!profile && !isSignupPending()) return <AuthGateShell />;
-  if (!setupComplete) return <OnboardingShell />;
-  return <MainShell />;
+  return (
+    <CloudRestoreGate>
+      {!setupComplete ? <OnboardingShell /> : <MainShell />}
+    </CloudRestoreGate>
+  );
 }
 
 function App() {

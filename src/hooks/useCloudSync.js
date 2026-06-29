@@ -33,9 +33,9 @@ export function useCloudSync() {
 
   const backupDisabledReason = useCallback(() => {
     if (!isLoggedIn) return "Sign in to use account backup.";
-    if (!configured) return "Supabase is not configured for this build.";
+    if (!configured) return "Cloud backup is not configured for this build.";
     if (!hasPaidBackupTier(track.settings)) return "Account backup needs Pro or Power — see Plans.";
-    if (!track.settings.cloudSyncEnabled) return "Turn on Supabase backup in Backup & data.";
+    if (!track.settings.cloudSyncEnabled) return "Turn on Perovo cloud data backup in Backup & data.";
     return null;
   }, [isLoggedIn, configured, track.settings]);
 

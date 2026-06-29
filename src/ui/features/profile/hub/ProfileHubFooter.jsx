@@ -18,6 +18,7 @@ import ProfileBrandFooter from "../ProfileBrandFooter.jsx";
  *   onDeleteConfirmChange?: (v: string) => void,
  *   onConfirmDelete?: () => void,
  *   userHasCloud?: boolean,
+ *   showAuthActions?: boolean,
  * }} props
  */
 export default function ProfileHubFooter({
@@ -33,13 +34,14 @@ export default function ProfileHubFooter({
   onDeleteConfirmChange,
   onConfirmDelete,
   userHasCloud = false,
+  showAuthActions = true,
 }) {
   const { t } = useTranslation();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   return (
     <footer className="ct-profile-hub-footer ct-reveal ct-reveal-delay-4">
-      {isLoggedIn ? (
+      {showAuthActions && isLoggedIn ? (
         <>
           <Button
             type="button"
@@ -79,11 +81,13 @@ export default function ProfileHubFooter({
         </>
       ) : null}
 
-      <button type="button" className="ct-danger-text-link" onClick={onDeleteData}>
-        {t("profileHub.deleteDataLink")}
-      </button>
+      {showAuthActions ? (
+        <button type="button" className="ct-danger-text-link" onClick={onDeleteData}>
+          {t("profileHub.deleteDataLink")}
+        </button>
+      ) : null}
 
-      {confirmDeleteOpen ? (
+      {showAuthActions && confirmDeleteOpen ? (
         <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && onCloseDelete?.()}>
           <div className="ct-stack-sm">
             <Body className="!text-sm">

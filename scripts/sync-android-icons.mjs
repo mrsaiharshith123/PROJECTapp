@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Replace Capacitor default launcher icons with Perovo brand assets.
+ * Replace Capacitor default launcher icons with Perovo brand assets (light editorial default).
  * Run after `npx cap sync android` (called from build-dev-apk.mjs).
  */
 import fs from "fs";
@@ -9,7 +9,9 @@ import { fileURLToPath } from "url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const androidRes = path.join(ROOT, "android", "app", "src", "main", "res");
-const source = path.join(ROOT, "public", "brand", "icon-dark.png");
+const lightSource = path.join(ROOT, "public", "brand", "icon-light.png");
+const darkSource = path.join(ROOT, "public", "brand", "icon-dark.png");
+const source = fs.existsSync(lightSource) ? lightSource : darkSource;
 
 const DENSITIES = {
   "mipmap-mdpi": 48,
@@ -25,7 +27,7 @@ if (!fs.existsSync(androidRes)) {
 }
 
 if (!fs.existsSync(source)) {
-  console.warn("Skip Android icons: public/brand/icon-dark.png missing");
+  console.warn("Skip Android icons: public/brand/icon-light.png missing");
   process.exit(0);
 }
 
@@ -46,4 +48,4 @@ for (const [folder, px] of Object.entries(DENSITIES)) {
   }
 }
 
-console.log("Synced Android launcher icons from brand/icon-dark.png");
+console.log(`Synced Android launcher icons from brand/${path.basename(source)}`);

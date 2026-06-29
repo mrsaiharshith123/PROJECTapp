@@ -116,7 +116,12 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
             </div>
             <div className="pos-group-card ct-stack-sm">
               {group.wealth.map((entry) => (
-                <div key={entry.id} className="ct-row-between gap-2 min-w-0">
+                <button
+                  key={entry.id}
+                  type="button"
+                  className="ct-row-between gap-2 min-w-0 w-full text-left"
+                  onClick={() => navigate(`/insights/entry/${entry.id}`)}
+                >
                   <div className="ct-row gap-2 min-w-0">
                     <span className="ct-icon-tile pos-icon instrument shrink-0">
                       <CtIcon name="shield" size={18} />
@@ -129,7 +134,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-inst)" }}>
                     {formatAmount(entry.value)}
                   </span>
-                </div>
+                </button>
               ))}
               {group.bills.map((bill) => {
                 const displayAmount =
@@ -137,7 +142,12 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
                     ? Number(bill.insuranceSumAssured)
                     : Number(bill.amount) || 0;
                 return (
-                <div key={bill.id} className="ct-row-between gap-2 min-w-0">
+                <button
+                  key={bill.id}
+                  type="button"
+                  className="ct-row-between gap-2 min-w-0 w-full text-left"
+                  onClick={() => navigate("/ledger/bills", { state: { openBillId: bill.id } })}
+                >
                   <div className="ct-row gap-2 min-w-0">
                     <span className="ct-icon-tile pos-icon instrument shrink-0">
                       <CtIcon name="shield" size={18} />
@@ -150,7 +160,7 @@ export default function LedgerInstrumentsView({ onAdd, openAddOnMount = false })
                   <span className="ct-numeral shrink-0" style={{ color: "var(--pos-inst)" }}>
                     {formatAmount(displayAmount)}
                   </span>
-                </div>
+                </button>
               );
               })}
             </div>

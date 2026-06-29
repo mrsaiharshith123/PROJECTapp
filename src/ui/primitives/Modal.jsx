@@ -36,7 +36,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
       >
         {sheet ? <div className="ct-sheet-handle" aria-hidden /> : null}
         {title && (
-          <div className="ct-row-between px-5 py-4 border-b border-white/10 shrink-0">
+          <div className="ct-row-between px-5 py-4 ct-modal-header shrink-0">
             <Heading level={2}>{title}</Heading>
             <button type="button" onClick={onClose} className="ct-btn ct-btn-ghost ct-btn-sm">
               ×
@@ -46,7 +46,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
         <div className={cn("overflow-y-auto flex-1", fullScreen ? "ct-modal-body--fullscreen" : "px-5 py-4")}>
           {children}
         </div>
-        {footer && <div className="px-5 py-4 border-t border-white/10 shrink-0">{footer}</div>}
+        {footer && <div className="px-5 py-4 ct-modal-footer shrink-0">{footer}</div>}
       </div>
     </div>
   );

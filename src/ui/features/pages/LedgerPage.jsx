@@ -88,22 +88,17 @@ export default function LedgerPage() {
             <button
               key={item.id}
               type="button"
-              className="ct-pressable"
+              className={`ed-insight-pill ${active ? "active" : "inactive"}`}
               onClick={() => switchTab(item.id)}
-              style={{
-                padding: "6px 18px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-                fontFamily: "'Inter', system-ui, sans-serif",
-                border: active ? `1px solid ${tc.border}` : "0.5px solid var(--ed-rule)",
-                background: active ? tc.bg : "transparent",
-                color: active ? tc.color : "var(--ed-ink-faint)",
-                transition: "all 0.15s",
-                letterSpacing: ".02em",
-              }}
+              style={
+                active
+                  ? {
+                      background: tc.bg,
+                      borderColor: tc.border,
+                      color: tc.color,
+                    }
+                  : undefined
+              }
             >
               {t(item.labelKey)}
             </button>

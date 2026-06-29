@@ -2,12 +2,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { format } from "date-fns";
 import { usePerovo } from "./PerovoContext.jsx";
 import { isSalariedFamily } from "../constants/modeExperience.js";
+import { DATA_CHANGED_EVENT } from "../storage/events.js";
 import {
   loadWealthState,
   saveWealthState,
   filterWealthByProfile,
   normalizeWealthEntry,
+  invalidateWealthCache,
+  dedupeWealthEntries,
 } from "../utils/netWorth/wealthStorage.js";
+import { withLivePropertyValue } from "../utils/netWorth/propertyValuation.js";
 import { appendDailyWealthSnapshot } from "../utils/netWorth/dailySnapshot.js";
 import { computeNetWorthCore, computeGrowthRates } from "../engines/netWorth/core.js";
 import { detectNewMilestones } from "../engines/netWorth/milestones.js";
@@ -65,23 +69,36 @@ function withSnapshots(prev, profileEntries) {
   return next;
 }
 
+function newWealthEntryId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `wealth-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 export function NetWorthProvider({ children }) {
   const { settings, activeProfileId } = usePerovo();
   const [state, setState] = useState(() => loadWealthState());
+  const skipExternalReloadRef = useRef(false);
   const profileId = isSalariedFamily(settings)
     ? null
     : activeProfileId || settings.activeProfileId || "default";
 
   const persist = useCallback((updater) => {
+    skipExternalReloadRef.current = true;
     setState((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
       return saveWealthState(next);
     });
+    queueMicrotask(() => {
+      skipExternalReloadRef.current = false;
+    });
   }, []);
 
   const profileEntries = useMemo(
-    () => filterWealthByProfile(state.entries, profileId),
-    [state.entries, profileId],
+    () =>
+      filterWealthByProfile(state.entries, profileId).map((e) => withLivePropertyValue(e, settings)),
+    [state.entries, profileId, settings],
   );
 
   const recordDailySnapshot = useCallback(() => {
@@ -89,6 +106,16 @@ export function NetWorthProvider({ children }) {
   }, [persist, profileEntries]);
 
   const snapshotBootRef = useRef(false);
+
+  useEffect(() => {
+    const onDataChanged = () => {
+      if (skipExternalReloadRef.current) return;
+      invalidateWealthCache();
+      setState(loadWealthState());
+    };
+    window.addEventListener(DATA_CHANGED_EVENT, onDataChanged);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, onDataChanged);
+  }, []);
 
   // Record today's snapshot once on boot — never re-run on dailySnapshots churn (avoids update loops).
   useEffect(() => {
@@ -102,12 +129,15 @@ export function NetWorthProvider({ children }) {
 
   const addEntry = useCallback(
     (raw) => {
+      const entryId = raw.id != null ? String(raw.id) : newWealthEntryId();
       const entry = normalizeWealthEntry({
         ...raw,
+        id: entryId,
         profileId: raw.profileId ?? profileId,
       });
       persist((prev) => {
-        const entries = [...prev.entries, entry];
+        if (prev.entries.some((e) => String(e.id) === String(entry.id))) return prev;
+        const entries = dedupeWealthEntries([...prev.entries, entry]);
         const scoped = filterWealthByProfile(entries, profileId);
         return withSnapshots({ ...prev, entries }, scoped);
       });
