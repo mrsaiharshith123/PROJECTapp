@@ -50,7 +50,7 @@ function NavIcon({ item, active = false }) {
   if (item.icon === "+") {
     return <span className="ct-nav-fab-plus">+</span>;
   }
-  return <CtIcon name={item.icon} size={22} context={active ? "nav" : "nav-off"} />;
+  return <CtIcon name={item.icon} size={24} context={active ? "nav" : "nav-off"} />;
 }
 
 function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {

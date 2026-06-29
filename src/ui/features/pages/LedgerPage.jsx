@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
+import { getTier } from "../../../utils/tierAccess.js";
+import { usePerovo } from "../../../context/PerovoContext.jsx";
+import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
 import LedgerAssetsView from "../ledger/LedgerAssetsView.jsx";
 import LedgerLiabilitiesView from "../ledger/LedgerLiabilitiesView.jsx";
 import LedgerInstrumentsView from "../ledger/LedgerInstrumentsView.jsx";
@@ -27,7 +29,7 @@ function resolveTab(tabParam, stateTab) {
 /** @route /ledger — Assets, Liabilities, Instruments */
 export default function LedgerPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const { settings } = usePerovo();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -61,6 +63,7 @@ export default function LedgerPage() {
   };
 
   const posToken = (tabId) => (tabId === "assets" ? "asset" : tabId === "liabilities" ? "liab" : "instrument");
+  const tier = getTier(settings);
 
   return (
     <div className="ct-page ed-paper">
@@ -71,28 +74,12 @@ export default function LedgerPage() {
             <div className="ed-tagline">{t("ledger.ed.tagline")}</div>
           </div>
           <div className="ed-masthead-right">
-            <button
-              type="button"
-              className="ed-ins-link"
-              style={{ padding: 0, marginBottom: 2, fontSize: 10 }}
-              onClick={() => navigate("/ledger/bills")}
-            >
-              {t("ledger.headerBillsLink")}
-            </button>
-            <AppHeaderActions hidePrivacyToggle={false} />
+            <HomeEditorialAvatar tier={tier} />
           </div>
         </div>
       </header>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          padding: "4px 18px 8px",
-          overflowX: "auto",
-          scrollbarWidth: "none",
-        }}
-      >
+      <div className="ed-mast-tabs">
         {TABS.map((item) => {
           const token = posToken(item.id);
           const active = tab === item.id;
@@ -123,7 +110,6 @@ export default function LedgerPage() {
           );
         })}
       </div>
-
       {tab === "assets" ? <LedgerAssetsView openAddOnMount={openAddOnMount} /> : null}
       {tab === "liabilities" ? <LedgerLiabilitiesView openAddOnMount={openAddOnMount} /> : null}
       {tab === "instruments" ? <LedgerInstrumentsView openAddOnMount={openAddOnMount} /> : null}

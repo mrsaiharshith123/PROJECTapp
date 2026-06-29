@@ -10,7 +10,7 @@ function resolveFromPreference(preference, systemPrefersDark) {
 /** @returns {"light" | "dark"} */
 export function useResolvedTheme() {
   const { settings } = usePerovo();
-  const preference = settings.colorScheme || "dark";
+  const preference = settings.colorScheme || "light";
 
   const [systemPrefersDark, setSystemPrefersDark] = useState(
     () =>

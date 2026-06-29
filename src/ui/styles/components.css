@@ -7686,6 +7686,22 @@ html[data-ui="ct"] .ed-masthead::after {
   height: 3.5px;
   background: var(--ed-ink);
 }
+html[data-ui="ct"] .ed-mast-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html[data-ui="ct"] .ed-mast-tabs::-webkit-scrollbar {
+  display: none;
+}
+html[data-ui="ct"] .ed-masthead + .ed-agreements-actions,
+html[data-ui="ct"] .ed-masthead + .ed-ins-story,
+html[data-ui="ct"] .ed-masthead + .ed-mast-tabs + .ct-stack,
+html[data-ui="ct"] .ed-mast-tabs + .ct-stack {
+  margin-top: 0;
+}
 html[data-ui="ct"] .ed-masthead-brand {
   min-width: 0;
   flex: 1;
@@ -9756,7 +9772,7 @@ html[data-ui="ct"] .ed-trust-dot.filled {
 
 /* ── Ledger editorial hero ── */
 html[data-ui="ct"] .ed-ledger-hero {
-  padding: 14px 18px 13px;
+  padding: 16px 18px 14px;
   border-bottom: 1px solid var(--ed-rule);
   margin: 0;
 }
@@ -9778,7 +9794,7 @@ html[data-ui="ct"] .ed-ledger-hero-val-inst .sym {
 html[data-ui="ct"] .ed-agreements-actions {
   display: flex;
   gap: 8px;
-  padding: 4px 18px 10px;
+  padding: 16px 18px 12px;
   border-bottom: 1px solid var(--ed-rule);
   margin-bottom: 2px;
 }

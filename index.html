@@ -2,13 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="brand/icon-dark.svg" />
+    <link rel="icon" type="image/svg+xml" href="brand/icon-light.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#16140f" />
+    <meta name="theme-color" content="#faf8f3" />
     <meta name="description" content="Perovo — finance simplified. Track bills, pressure, repayments, and lending on your device." />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Perovo" />
-    <link rel="apple-touch-icon" href="pwa-192.svg" />
+    <link rel="apple-touch-icon" href="pwa-192-light.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,17 +18,15 @@
     <title>Perovo</title>
     <script>
       (function () {
-        var theme = "dark";
+        var theme = "light";
         try {
           var raw = localStorage.getItem("perovo_settings");
           if (raw) {
             var o = JSON.parse(raw);
             if (o && o.colorScheme === "light") theme = "light";
             else if (o && o.colorScheme === "dark") theme = "dark";
-            else if (o && o.colorScheme === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-              theme = "dark";
-            } else if (o && o.colorScheme === "system") {
-              theme = "light";
+            else if (!o.colorScheme || o.colorScheme === "system") {
+              theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
             }
           }
         } catch (e) {

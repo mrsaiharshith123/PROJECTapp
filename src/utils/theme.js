@@ -1,7 +1,7 @@
 export const COLOR_SCHEME_IDS = ["light", "dark", "system"];
 
 export function resolveColorScheme(preference) {
-  const pref = COLOR_SCHEME_IDS.includes(preference) ? preference : "dark";
+  const pref = COLOR_SCHEME_IDS.includes(preference) ? preference : "light";
   if (pref === "light") return "light";
   if (pref === "dark") return "dark";
   if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -19,7 +19,7 @@ export function applyColorScheme(preference) {
   root.style.colorScheme = resolved;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute("content", resolved === "dark" ? "#0d0d17" : "#eef1f8");
+    meta.setAttribute("content", resolved === "dark" ? "#16140f" : "#faf8f3");
   }
   return resolved;
 }
@@ -31,11 +31,11 @@ export function bootstrapThemeFromStorage() {
     if (raw) {
       const o = JSON.parse(raw);
       if (o && typeof o === "object" && !Array.isArray(o)) {
-        return applyColorScheme(o.colorScheme || "dark");
+        return applyColorScheme(o.colorScheme || "light");
       }
     }
   } catch {
     /* ignore */
   }
-  return applyColorScheme("dark");
+  return applyColorScheme("light");
 }

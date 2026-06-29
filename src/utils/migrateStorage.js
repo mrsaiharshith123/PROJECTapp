@@ -610,7 +610,7 @@ const DEFAULT_SETTINGS = {
   savedTowardGoals: 0,
   readNotificationIds: [],
   activeProfileId: "default",
-  colorScheme: "dark",
+  colorScheme: "light",
   avatarSource: "auto",
   profileImageDataUrl: "",
   liquidSavings: 0,

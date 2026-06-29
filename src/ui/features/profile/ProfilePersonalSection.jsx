@@ -110,7 +110,7 @@ export default function ProfilePersonalSection({
                   updateSettings({ colorScheme: opt.id });
                   applyColorScheme(opt.id);
                 }}
-                className={`ct-option-card !py-2.5 ${(settings.colorScheme || "dark") === opt.id ? "ct-option-card-active" : ""}`}
+                className={`ct-option-card !py-2.5 ${(settings.colorScheme || "light") === opt.id ? "ct-option-card-active" : ""}`}
               >
                 <span className="text-xs font-semibold">{t(opt.labelKey)}</span>
               </button>

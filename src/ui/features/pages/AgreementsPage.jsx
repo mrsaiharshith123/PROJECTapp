@@ -15,7 +15,8 @@ import AgreementDocumentsList from "../agreements/AgreementDocumentsList.jsx";
 import AgreementsHeroSummary from "../agreements/AgreementsHeroSummary.jsx";
 import AgreementsHeaderActions from "../agreements/AgreementsHeaderActions.jsx";
 import LendingAcceptCodeModal from "../lending/LendingAcceptCodeModal.jsx";
-import { AppHeaderActions } from "../../patterns/AppHeaderActions.jsx";
+import { getTier } from "../../../utils/tierAccess.js";
+import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const emptyLendingForm = () => ({
@@ -152,6 +153,8 @@ export default function AgreementsPage() {
     [listTab, lentList, borrowedList],
   );
 
+  const tier = getTier(settings);
+
   return (
     <div className="ct-page ed-paper">
       <header className="ed-masthead">
@@ -161,7 +164,7 @@ export default function AgreementsPage() {
             <div className="ed-tagline">{t("agreements.ed.tagline")}</div>
           </div>
           <div className="ed-masthead-right">
-            <AppHeaderActions hidePrivacyToggle={false} />
+            <HomeEditorialAvatar tier={tier} />
           </div>
         </div>
       </header>

@@ -10,6 +10,8 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { yearlyBurdenFromCommitments } from "../../../engines/analyticsSeries.js";
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
+import { getTier } from "../../../utils/tierAccess.js";
+import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
 
 /** Build sparkline SVG path from forecast rows */
 function buildForecastPath(rows, w, h) {
@@ -41,7 +43,7 @@ export default function InsightsEditorialPage({ data }) {
   const { t } = useTranslation();
   const { core } = useNetWorth();
   const { formatAmount, formatScore } = usePrivacyAmount();
-  const { getEffectiveStatus, sortedCommitments } = usePerovo();
+  const { getEffectiveStatus, sortedCommitments, settings } = usePerovo();
   const stable = useStabilityIntel();
   const perovo = usePerovoScore();
   const { stability, freeMoneyAfterBurden } = useCommitIntel();
@@ -122,6 +124,8 @@ export default function InsightsEditorialPage({ data }) {
       ].filter((r) => r.val != null)
     : [];
 
+  const tier = getTier(settings);
+
   return (
     <div className="ct-page ed-paper ed-ins-page">
       <div className="ed-ins-mast">
@@ -129,14 +133,7 @@ export default function InsightsEditorialPage({ data }) {
           <h1 className="ed-ins-mast-title">{t("nav.insights")}</h1>
           <p className="ed-ins-mast-sub">{t("analytics.hub.subtitle")}</p>
         </div>
-        <button
-          type="button"
-          className="ed-ins-link"
-          style={{ padding: 0, marginBottom: 2 }}
-          onClick={() => navigate("/ledger/spends")}
-        >
-          {t("analytics.spendsHistory")}
-        </button>
+        <HomeEditorialAvatar tier={tier} />
       </div>
 
       <div className="ed-ins-story">
