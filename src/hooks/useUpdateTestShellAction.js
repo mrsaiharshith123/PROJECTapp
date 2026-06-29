@@ -42,6 +42,11 @@ export function useUpdateTestShellAction() {
           if (p.phase === "restarting") setStatus(t("support.updateAppRestarting"));
         },
       });
+      window.setTimeout(() => {
+        setProgressOpen(false);
+        setBusy(false);
+        setStatus(t("support.updateAppApplyFailed"));
+      }, 4000);
     } catch (err) {
       const code = err instanceof Error ? err.message : "";
       setStatus(code === "bundle_missing" ? t("support.updateAppBundleMissing") : t("support.updateAppError"));

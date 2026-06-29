@@ -96,22 +96,22 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
       bytesTotal: total || undefined,
     });
 
-    // Avoid CapacitorUpdater.set() on Android — it can deadlock at 100% when
-    // directUpdate is false (waits for notifyAppReady on a blocked thread).
-    // next + reload is the supported manual-apply path; notifyAppReady runs on
-    // boot via src/capgo-notify-only.js after the new bundle loads.
-    await CapacitorUpdater.next({ id: bundleId });
-
+    // Manual Capgo flow: set() applies the bundle and reloads immediately.
+    // next()+reload() often hangs at 100% on Android WebViews.
+    // notifyAppReady runs on boot via src/capgo-notify-only.js after the new bundle loads.
     try {
       await Promise.race([
-        CapacitorUpdater.reload(),
+        CapacitorUpdater.set({ id: bundleId }),
         new Promise((_, reject) => {
           window.setTimeout(() => reject(new Error("ota_apply_timeout")), APPLY_RELOAD_TIMEOUT_MS);
         }),
       ]);
     } catch {
-      // Plugin reload can hang on some devices — hard navigation still applies the staged bundle.
-      window.location.reload();
+      await CapacitorUpdater.next({ id: bundleId }).catch(() => {});
+      void CapacitorUpdater.reload().catch(() => {});
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 800);
     }
   } finally {
     await Promise.all(listeners.map((handle) => handle.remove().catch(() => {})));
