@@ -13,7 +13,7 @@ import { FAB_CHANGE_EVENT } from "../../constants/fabEvents.js";
 const BillScannerTool = lazy(() => import("../features/tools/BillScannerTool.jsx"));
 
 const NAV_SCROLL_DELTA_PX = 4;
-const NAV_SCROLL_IDLE_MS = 520;
+const NAV_SCROLL_IDLE_MS = 160;
 
 /** @param {EventTarget | null} target */
 function readScrollTop(target) {

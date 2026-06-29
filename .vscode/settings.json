@@ -1,0 +1,27 @@
+{
+  "explorer.excludeGitIgnore": false,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/dist-ota": true,
+    "**/dist-ota-*": true,
+    "**/dist-ssr": true,
+    "**/dev-dist": true,
+    "**/reports": true,
+    "**/.gradle": true,
+    "**/android": true,
+    "**/ios": true,
+    "**/.capacitor": true,
+    "**/.cursor": true,
+    "**/*.zip": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, .npmrc",
+    "vite.config.js": "vitest.config.js, postcss.config.js, tailwind.config.js",
+    "capacitor.config.ts": "twa",
+    ".env.example": ".env, .env.local, .env.razorpay",
+    "index.html": "update-test.html, tsconfig.json, knip.json",
+    "eslint.config.js": "eslint-report.json"
+  }
+}
