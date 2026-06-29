@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "खाता बैकअप",
   "sync.notConfigured": "Supabase कॉन्फ़िगर नहीं है. VITE_SUPABASE_URL और VITE_SUPABASE_ANON_KEY जोड़ें, फिर सुपाबेस/माइग्रेशन/ में माइग्रेशन चलाएँ।",
   "sync.freePlanBody": "Free योजना केवल इस डिवाइस पर डेटा रखती है। अपने खाते के अंतर्गत एक निजी Supabase बैकअप सहेजने के लिए Pro या Power पर अपग्रेड करें (किसी भी समय सक्षम या अक्षम करें)।",

@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "खातें बॅकअप",
   "sync.notConfigured": "Supabase संरचीत करूंक ना. VITE_SUPABASE_URL आनी VITE_SUPABASE_ANON_KEY जोडात, मागीर supabase/migrations/ मदीं स्थलांतर चालीक लावचे.",
   "sync.freePlanBody": "Free येवजण फकत ह्या डिव्हायसाचेर डेटा दवरता. तुमच्या खात्या खाला खाजगी Supabase बॅकअप जतनाय घेवपाक Pro वा Power कडेन सुदारात (खंयच्याय वेळार सक्षम वा अक्षम करात).",

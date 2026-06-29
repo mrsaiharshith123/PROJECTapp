@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "ఖాతా బ్యాకప్",
   "sync.notConfigured": "Supabase కాన్ఫిగర్ చేయబడలేదు. VITE_SUPABASE_URL మరియు VITE_SUPABASE_ANON_KEYని జోడించి, ఆపై మైగ్రేషన్‌లను supabase/migrations/లో అమలు చేయండి.",
   "sync.freePlanBody": "Free ప్లాన్ డేటాను ఈ పరికరంలో మాత్రమే ఉంచుతుంది. మీ ఖాతాలో ప్రైవేట్ Supabase బ్యాకప్‌ను సేవ్ చేయడానికి Pro లేదా Powerకి అప్‌గ్రేడ్ చేయండి (ఎప్పుడైనా ప్రారంభించండి లేదా నిలిపివేయండి).",

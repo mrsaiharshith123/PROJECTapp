@@ -1,6 +1,7 @@
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
 import {
   getRemoteManifestUrl,
+  getUpdateServerBase,
   isRemoteManifestNewer,
   remoteAppUrlWithVersion,
 } from "../utils/updateServer.js";
@@ -127,6 +128,7 @@ function waitForServiceWorkerActivation(reg, timeoutMs = SW_WAIT_MS) {
  */
 async function applyPwaUpdate(onProgress) {
   onProgress?.({ phase: "downloading", percent: 0 });
+  await unregisterServiceWorkers();
   if ("serviceWorker" in navigator) {
     const reg = await navigator.serviceWorker.getRegistration();
     if (reg) {
@@ -140,14 +142,81 @@ async function applyPwaUpdate(onProgress) {
 }
 
 /**
- * Browser tab — bust caches and load the latest static deploy from the update server.
+ * @param {(p: UpdateProgress) => void} [onProgress]
+ */
+async function unregisterServiceWorkers() {
+  if (!("serviceWorker" in navigator)) return;
+  const regs = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(regs.map((reg) => reg.unregister().catch(() => false)));
+}
+
+/**
+ * Stream a URL to completion and report byte progress.
+ * @param {string} url
+ * @param {number} [expectedSize]
+ * @param {(p: UpdateProgress) => void} [onProgress]
+ */
+async function streamDownloadWithProgress(url, expectedSize, onProgress) {
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error("ota_download_failed");
+
+  const total = expectedSize || Number(res.headers.get("content-length")) || 0;
+  const reader = res.body?.getReader();
+  if (!reader) {
+    await res.arrayBuffer();
+    onProgress?.({ phase: "downloading", percent: 90, bytesTotal: total || undefined });
+    return;
+  }
+
+  let loaded = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    loaded += value.byteLength;
+    const percent = total
+      ? Math.min(99, Math.round((loaded / total) * 100))
+      : Math.min(95, Math.round(loaded / 200000));
+    onProgress?.({
+      phase: "downloading",
+      percent,
+      bytesLoaded: loaded,
+      bytesTotal: total || undefined,
+    });
+  }
+}
+
+/**
+ * Browser tab — download latest build bytes, clear stale SW caches, then hard-navigate.
  * @param {UpdateManifest} remote
  * @param {(p: UpdateProgress) => void} [onProgress]
  */
 async function applyWebStaticUpdate(remote, onProgress) {
-  onProgress?.({ phase: "downloading", percent: 40 });
-  onProgress?.({ phase: "restarting", percent: 100 });
-  window.location.replace(remoteAppUrlWithVersion(remote.version, remote.appUrl));
+  const base = remote.appUrl || getUpdateServerBase();
+  const targetUrl = remoteAppUrlWithVersion(remote.version, base);
+  const downloadUrl = remote.bundleUrl || targetUrl;
+  const expectedSize = remote.bundleSize || 0;
+
+  onProgress?.({
+    phase: "downloading",
+    percent: 0,
+    bytesLoaded: 0,
+    bytesTotal: expectedSize || undefined,
+  });
+
+  await streamDownloadWithProgress(downloadUrl, expectedSize, onProgress);
+  await unregisterServiceWorkers();
+
+  onProgress?.({
+    phase: "restarting",
+    percent: 100,
+    bytesLoaded: expectedSize || undefined,
+    bytesTotal: expectedSize || undefined,
+  });
+
+  window.location.assign(targetUrl);
+  window.setTimeout(() => {
+    window.location.href = targetUrl;
+  }, 1500);
 }
 
 /**

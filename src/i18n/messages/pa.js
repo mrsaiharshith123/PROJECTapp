@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "ਖਾਤਾ ਬੈਕਅੱਪ",
   "sync.notConfigured": "Supabase ਕੌਂਫਿਗਰ ਨਹੀਂ ਕੀਤਾ ਗਿਆ ਹੈ। VITE_SUPABASE_URL ਅਤੇ VITE_SUPABASE_ANON_KEY ਸ਼ਾਮਲ ਕਰੋ, ਫਿਰ supabase/migrations/ ਵਿੱਚ ਮਾਈਗ੍ਰੇਸ਼ਨ ਚਲਾਓ।",
   "sync.freePlanBody": "Free ਪਲਾਨ ਸਿਰਫ਼ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਡਾਟਾ ਰੱਖਦਾ ਹੈ। ਆਪਣੇ ਖਾਤੇ ਦੇ ਅਧੀਨ ਇੱਕ ਨਿੱਜੀ Supabase ਬੈਕਅੱਪ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰਨ ਲਈ Pro ਜਾਂ Power ਵਿੱਚ ਅੱਪਗ੍ਰੇਡ ਕਰੋ (ਕਿਸੇ ਵੀ ਸਮੇਂ ਸਮਰੱਥ ਜਾਂ ਅਯੋਗ ਕਰੋ)।",

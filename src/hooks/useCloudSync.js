@@ -63,9 +63,12 @@ export function useCloudSync() {
 
   const pullNow = useCallback(
     async ({ preferLocal = false, force = false } = {}) => {
-      const block = backupDisabledReason();
-      if (block) {
-        setError(block);
+      if (!isLoggedIn) {
+        setError("Sign in to restore your backup.");
+        return;
+      }
+      if (!configured) {
+        setError("Cloud backup is not configured for this build.");
         return;
       }
       setBusy(true);
@@ -73,8 +76,12 @@ export function useCloudSync() {
       setMessage("");
       try {
         const r = await pullRemoteSnapshotToLocal({ ...getSyncCtx(), preferLocal, force });
-        if (r.ok) setMessage("Restored from your account backup.");
-        else if (r.reason === "local-newer") setMessage("This device already has newer data — back up first or force restore.");
+        if (r.ok) {
+          setMessage("Restored from your account backup.");
+          window.location.reload();
+          return;
+        }
+        if (r.reason === "local-newer") setMessage("This device already has newer data — back up first or force restore.");
         else if (r.reason === "remote-empty") setMessage("Cloud backup is empty — your local data was kept.");
         else if (r.reason === "empty") setMessage("No account backup found yet.");
         else setMessage("Restore skipped.");
@@ -84,7 +91,7 @@ export function useCloudSync() {
         setBusy(false);
       }
     },
-    [getSyncCtx, backupDisabledReason],
+    [getSyncCtx, configured, isLoggedIn],
   );
 
   const forcePull = useCallback(() => pullNow({ preferLocal: false, force: true }), [pullNow]);

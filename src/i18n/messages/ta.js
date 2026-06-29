@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "கணக்கு காப்புப்பிரதி",
   "sync.notConfigured": "Supabase கட்டமைக்கப்படவில்லை. VITE_SUPABASE_URL மற்றும் VITE_SUPABASE_ANON_KEY ஐச் சேர்த்து, பின்னர் supabase/migrations/ இல் இடம்பெயர்வுகளை இயக்கவும்.",
   "sync.freePlanBody": "Free திட்டம் இந்த சாதனத்தில் மட்டுமே தரவை வைத்திருக்கும். உங்கள் கணக்கின் கீழ் தனிப்பட்ட Supabase காப்புப்பிரதியைச் சேமிக்க Pro அல்லது Power க்கு மேம்படுத்தவும் (எப்போது வேண்டுமானாலும் இயக்கவும் அல்லது முடக்கவும்).",

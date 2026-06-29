@@ -44,6 +44,11 @@ export function useAppUpdateAction() {
           }
         },
       });
+      window.setTimeout(() => {
+        setProgressOpen(false);
+        setBusy(false);
+        setStatus(t("support.updateAppApplyFailed"));
+      }, 4000);
     } catch (err) {
       const code = err instanceof Error ? err.message : "";
       if (code === "bundle_missing") {

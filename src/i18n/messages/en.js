@@ -1494,6 +1494,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "Perovo cloud backup",
   "sync.notConfigured":
     "Cloud backup is not configured for this build. Contact support if sign-in or backup should be available.",

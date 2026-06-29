@@ -1381,6 +1381,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "اکاؤنٹ کا بیک اپ",
   "sync.notConfigured": "Supabase کنفیگر نہیں ہے۔ VITE_SUPABASE_URL اور VITE_SUPABASE_ANON_KEY شامل کریں، پھر supabase/migrations/ میں منتقلی چلائیں۔",
   "sync.freePlanBody": "Free منصوبہ صرف اس آلہ پر ڈیٹا رکھتا ہے۔ اپنے اکاؤنٹ کے تحت نجی Supabase بیک اپ کو بچانے کے لیے Pro یا Power میں اپ گریڈ کریں (کسی بھی وقت فعال یا غیر فعال کریں)۔",

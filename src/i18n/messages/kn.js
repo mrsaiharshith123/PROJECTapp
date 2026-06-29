@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "ಖಾತೆ ಬ್ಯಾಕಪ್",
   "sync.notConfigured": "Supabase ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗಿಲ್ಲ. VITE_SUPABASE_URL ಮತ್ತು VITE_SUPABASE_ANON_KEY ಸೇರಿಸಿ, ನಂತರ supabase/migrations/ ನಲ್ಲಿ ವಲಸೆಗಳನ್ನು ರನ್ ಮಾಡಿ.",
   "sync.freePlanBody": "Free ಯೋಜನೆಯು ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಡೇಟಾವನ್ನು ಇರಿಸುತ್ತದೆ. ನಿಮ್ಮ ಖಾತೆಯ ಅಡಿಯಲ್ಲಿ ಖಾಸಗಿ Supabase ಬ್ಯಾಕಪ್ ಅನ್ನು ಉಳಿಸಲು Pro ಅಥವಾ Power ಗೆ ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ (ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಸಕ್ರಿಯಗೊಳಿಸಿ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ).",

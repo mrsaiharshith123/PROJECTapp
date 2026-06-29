@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "खाता बैकअप",
   "sync.notConfigured": "Supabase विन्यस्तं नास्ति । VITE_SUPABASE_URL तथा VITE_SUPABASE_ANON_KEY योजयन्तु, ततः supabase/migrations/ इत्यत्र प्रवासनानि चालयन्तु ।",
   "sync.freePlanBody": "Free योजना केवलम् अस्मिन् यन्त्रे एव दत्तांशं रक्षति । स्वस्य खातेः अधः निजं Supabase बैकअपं रक्षितुं Pro अथवा Power इत्यत्र उन्नयनं कुर्वन्तु (कदापि सक्षमं वा अक्षमं वा) ।",

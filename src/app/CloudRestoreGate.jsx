@@ -19,8 +19,8 @@ function formatWhen(iso) {
 }
 
 /**
- * After sign-in on an empty device, offer the latest cloud backup before the main app.
- * Skipping starts fresh for this session; restoring reloads with imported data.
+ * After sign-in on an empty device, auto-restore the latest cloud backup.
+ * Falls back to a manual offer if auto-restore fails or the user skipped before.
  */
 export default function CloudRestoreGate({ children }) {
   const { t } = useTranslation();
@@ -28,6 +28,7 @@ export default function CloudRestoreGate({ children }) {
   const track = usePerovo();
   const importAppDataRef = useRef(track.importAppData);
   const [offerOpen, setOfferOpen] = useState(false);
+  const [autoRestoring, setAutoRestoring] = useState(false);
   const [remoteMeta, setRemoteMeta] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -39,39 +40,73 @@ export default function CloudRestoreGate({ children }) {
   useEffect(() => {
     if (!isLoggedIn || !user?.id || !isCloudSyncConfigured()) {
       setOfferOpen(false);
-      return;
-    }
-
-    if (sessionStorage.getItem(DISMISS_KEY) === user.id) {
-      setOfferOpen(false);
+      setAutoRestoring(false);
       return;
     }
 
     let cancelled = false;
-    try {
-      const local = loadFullAppStateForSync();
-      if (localStateHasUserData(local)) {
+
+    const run = async () => {
+      try {
+        const local = loadFullAppStateForSync();
+        if (localStateHasUserData(local)) {
+          setOfferOpen(false);
+          setAutoRestoring(false);
+          return;
+        }
+      } catch {
         setOfferOpen(false);
+        setAutoRestoring(false);
         return;
       }
-    } catch {
-      setOfferOpen(false);
-      return;
-    }
 
-    fetchRemoteBackupMeta(user.id)
-      .then((meta) => {
+      if (sessionStorage.getItem(DISMISS_KEY) === user.id) {
+        setAutoRestoring(false);
+        return;
+      }
+
+      let meta;
+      try {
+        meta = await fetchRemoteBackupMeta(user.id);
+      } catch {
+        if (!cancelled) setAutoRestoring(false);
+        return;
+      }
+
+      if (cancelled) return;
+      if (!meta?.hasData) {
+        setAutoRestoring(false);
+        return;
+      }
+
+      setRemoteMeta(meta);
+      setAutoRestoring(true);
+      setError("");
+
+      try {
+        const result = await pullRemoteSnapshotToLocal({
+          userId: user.id,
+          getState: loadFullAppStateForSync,
+          applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
+          force: true,
+        });
         if (cancelled) return;
-        if (meta?.hasData) {
-          setRemoteMeta(meta);
-          setOfferOpen(true);
-        } else {
-          setOfferOpen(false);
+        if (result.ok) {
+          sessionStorage.removeItem(DISMISS_KEY);
+          window.location.reload();
+          return;
         }
-      })
-      .catch(() => {
-        if (!cancelled) setOfferOpen(false);
-      });
+        setAutoRestoring(false);
+        setOfferOpen(true);
+      } catch {
+        if (!cancelled) {
+          setAutoRestoring(false);
+          setOfferOpen(true);
+        }
+      }
+    };
+
+    run();
 
     return () => {
       cancelled = true;
@@ -110,6 +145,14 @@ export default function CloudRestoreGate({ children }) {
   return (
     <>
       {children}
+      {autoRestoring ? (
+        <div className="ct-update-progress-overlay" role="status" aria-live="polite" aria-busy="true">
+          <div className="ct-update-progress-panel">
+            <Body className="mb-2 text-base">{t("sync.restoreAutoInProgress")}</Body>
+            <Caption className="block">{t("sync.working")}</Caption>
+          </div>
+        </div>
+      ) : null}
       {offerOpen && remoteMeta ? (
         <Modal onClose={dismiss} title={t("sync.restoreOfferTitle")}>
           <div className="ct-stack-sm">

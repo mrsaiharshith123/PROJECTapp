@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "একাউণ্ট বেকআপ",
   "sync.notConfigured": "Supabase বিন্যাস কৰা হোৱা নাই। VITE_SUPABASE_URL আৰু VITE_SUPABASE_ANON_KEY যোগ কৰক, তাৰ পিছত supabase/migrations/ ত প্ৰব্ৰজনসমূহ চলাওক।",
   "sync.freePlanBody": "Free পৰিকল্পনাই কেৱল এই ডিভাইচত তথ্য ৰাখে। আপোনাৰ একাউণ্টৰ অন্তৰ্গত এটা ব্যক্তিগত Supabase বেকআপ সংৰক্ষণ কৰিবলে Pro বা Power লৈ উন্নয়ন কৰক (যিকোনো সময়তে সামৰ্থবান বা নিষ্ক্ৰিয় কৰক) ।",

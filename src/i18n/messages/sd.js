@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "اڪائونٽ بيڪ اپ",
   "sync.notConfigured": "Supabase ترتيب ڏنل ناهي. VITE_SUPABASE_URL ۽ VITE_SUPABASE_ANON_KEY شامل ڪريو، پوءِ supabase/migrations/ ۾ لڏپلاڻ ڪريو.",
   "sync.freePlanBody": "Free منصوبو صرف هن ڊوائيس تي ڊيٽا رکي ٿو. اپ گريڊ ڪريو Pro يا Power کي بچائڻ لاءِ هڪ خانگي Supabase بيڪ اپ توهان جي اڪائونٽ هيٺ (ڪنهن به وقت فعال يا غير فعال).",

@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "ᱮᱠᱟᱣᱩᱱᱴ ᱵᱮᱠᱚᱯ",
   "sync.notConfigured": "Supabase ᱫᱚ ᱵᱟᱝ ᱠᱚᱱᱯᱷᱤᱜᱟᱨ ᱟᱠᱟᱱᱟ ᱾ VITE_SUPABASE_URL ᱟᱨ VITE_SUPABASE_ANON_KEY ᱥᱮᱞᱮᱫ ᱢᱮ, ᱚᱱᱟ ᱛᱟᱭᱚᱢ ᱥᱩᱯᱟᱵᱮᱥ/ᱢᱟᱭᱜᱽᱨᱮᱥᱚᱱ/ ᱨᱮ ᱢᱟᱭᱜᱽᱨᱮᱥᱚᱱ ᱪᱟᱹᱞᱩᱭ ᱢᱮ᱾",
   "sync.freePlanBody": "Free ᱯᱞᱟᱱ ᱫᱚ ᱥᱩᱢᱩᱝ ᱱᱚᱣᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱰᱟᱴᱟ ᱫᱚᱦᱚᱭᱟᱭ ᱾ ᱟᱢᱟᱜ ᱮᱠᱟᱣᱩᱱᱴ ᱞᱟᱛᱟᱨ ᱨᱮ ᱯᱨᱟᱭᱣᱮᱴ Supabase ᱵᱮᱠᱟᱯ ᱥᱟᱧᱪᱟᱣ ᱞᱟᱹᱜᱤᱫ Pro ᱵᱟᱝᱠᱷᱟᱱ Power ᱨᱮ ᱟᱯᱜᱽᱨᱮᱰ ᱢᱮ (ᱡᱟᱦᱟᱸ ᱚᱠᱛᱚ ᱨᱮ ᱪᱟᱹᱞᱩ ᱥᱮ ᱚᱠᱟᱹᱡᱽᱣᱟᱹ)᱾",

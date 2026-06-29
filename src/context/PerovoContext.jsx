@@ -82,30 +82,30 @@ export function PerovoProvider({ children }) {
     if (!user?.id) return;
     let cancelled = false;
     (async () => {
-      const s = loadSettingsFromStorage();
-      await syncSettingsToServer(s).catch(() => {});
-      if (cancelled) return;
+      const local = loadSettingsFromStorage();
+      let serverSettings = null;
       try {
-        const serverSettings = await loadSettingsFromServer();
-        if (cancelled || !serverSettings || typeof serverSettings !== "object") return;
-        setSettings((prev) => {
-          try {
-            const next = mergeAccountSettingsFromServer(prev, serverSettings);
-            if (next === prev) return prev;
-            try {
-              localStorage.setItem("perovo_settings", JSON.stringify(next));
-              invalidateInitialAppStateCache();
-            } catch {
-              /* ignore */
-            }
-            return next;
-          } catch {
-            return prev;
-          }
-        });
+        serverSettings = await loadSettingsFromServer();
       } catch {
         /* ignore */
       }
+      if (cancelled) return;
+
+      const merged = serverSettings
+        ? mergeAccountSettingsFromServer(local, serverSettings)
+        : local;
+
+      if (serverSettings && merged !== local) {
+        try {
+          localStorage.setItem("perovo_settings", JSON.stringify(merged));
+          invalidateInitialAppStateCache();
+        } catch {
+          /* ignore */
+        }
+        setSettings(merged);
+      }
+
+      await syncSettingsToServer(merged).catch(() => {});
     })();
     return () => {
       cancelled = true;
@@ -415,6 +415,7 @@ export function PerovoProvider({ children }) {
       if (merged.monthlySnapshots?.length) {
         persistSnapshots(() => merged.monthlySnapshots);
       }
+      emitLocalDataChanged();
       return merged.summary;
     },
     [

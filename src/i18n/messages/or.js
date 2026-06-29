@@ -1379,6 +1379,7 @@ export default {
   "sync.restoreOfferRestore": "Restore backup",
   "sync.restoreOfferSkip": "Start fresh",
   "sync.restoreOfferFailed": "Could not restore backup. Try again or start fresh.",
+  "sync.restoreAutoInProgress": "Loading your cloud backup…",
   "sync.title": "ଖାତା ବ୍ୟାକଅପ୍ |",
   "sync.notConfigured": "Supabase ବିନ୍ୟାସିତ ନୁହେଁ | VITE_SUPABASE_URL ଏବଂ VITE_SUPABASE_ANON_KEY ଯୋଡନ୍ତୁ, ତାପରେ ସୁପବେସ୍ / ସ୍ଥାନାନ୍ତରଣ / ରେ ସ୍ଥାନାନ୍ତରଣ ଚଲାନ୍ତୁ |",
   "sync.freePlanBody": "Free ଯୋଜନା କେବଳ ଏହି ଉପକରଣରେ ତଥ୍ୟ ରଖେ | ଆପଣଙ୍କ ଖାତା ଅଧୀନରେ ଏକ ବ୍ୟକ୍ତିଗତ Supabase ବ୍ୟାକଅପ୍ ସଞ୍ଚୟ କରିବାକୁ Pro କିମ୍ବା Power କୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ (ଯେକ time ଣସି ସମୟରେ ସକ୍ଷମ କିମ୍ବା ଅକ୍ଷମ କରନ୍ତୁ) |",
