@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging";
+import { isNativeCapacitorShell } from "../../utils/nativePermissions.js";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,21 +13,36 @@ const firebaseConfig = {
 
 const VAPID = import.meta.env.VITE_FIREBASE_VAPID_KEY || "";
 
-/** @type {import("firebase/messaging").Messaging | null} */
-let messaging = null;
+/** Web push only — not Capacitor WebView (no service worker / FCM browser APIs). */
+function canUseWebFcm() {
+  if (typeof window === "undefined") return false;
+  if (isNativeCapacitorShell()) return false;
+  if (!import.meta.env.VITE_FIREBASE_API_KEY) return false;
+  return true;
+}
+
+/** @type {Promise<import("firebase/messaging").Messaging | null> | null} */
+let messagingInit = null;
 
 function initFcm() {
-  if (!import.meta.env.VITE_FIREBASE_API_KEY) return null;
-  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-  try {
-    return getMessaging(app);
-  } catch {
-    return null;
-  }
+  if (!canUseWebFcm()) return Promise.resolve(null);
+  if (messagingInit) return messagingInit;
+
+  messagingInit = (async () => {
+    try {
+      if (!(await isSupported())) return null;
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      return getMessaging(app);
+    } catch {
+      return null;
+    }
+  })();
+
+  return messagingInit;
 }
 
 export async function requestFcmToken() {
-  if (!messaging) messaging = initFcm();
+  const messaging = await initFcm();
   if (!messaging || !VAPID) return null;
   try {
     const perm = await Notification.requestPermission();
@@ -40,10 +56,27 @@ export async function requestFcmToken() {
 
 /** @param {(payload: Record<string, unknown>) => void} [onReceived] */
 export function listenForForegroundMessages(onReceived) {
-  if (!messaging) messaging = initFcm();
-  if (!messaging) return () => {};
-  return onMessage(messaging, (payload) => {
-    const data = payload?.notification || payload?.data;
-    onReceived?.(data && typeof data === "object" ? { ...data } : {});
-  });
+  if (!canUseWebFcm()) return () => {};
+
+  let unsub = () => {};
+  let active = true;
+
+  initFcm()
+    .then((messaging) => {
+      if (!active || !messaging) return;
+      try {
+        unsub = onMessage(messaging, (payload) => {
+          const data = payload?.notification || payload?.data;
+          onReceived?.(data && typeof data === "object" ? { ...data } : {});
+        });
+      } catch {
+        /* unsupported browser context */
+      }
+    })
+    .catch(() => {});
+
+  return () => {
+    active = false;
+    unsub();
+  };
 }

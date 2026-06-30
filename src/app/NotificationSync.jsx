@@ -3,6 +3,7 @@ import { useCommitIntel } from "../hooks/useCommitIntel.js";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import { translateNotification } from "../i18n/notificationLabels.js";
+import { isNativeCapacitorShell } from "../utils/nativePermissions.js";
 import {
   getNotificationPermission,
   syncFeedToBrowserNotifications,
@@ -17,7 +18,6 @@ import {
   registerPeriodicReminderSync,
   requestServiceWorkerReminderFlush,
 } from "../services/notifications/backgroundNotificationSync.js";
-import { listenForForegroundMessages } from "../services/notifications/fcmService.js";
 
 const URGENT_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -31,12 +31,19 @@ export default function NotificationSync() {
   const lastSnapshotKey = useRef("");
 
   useEffect(() => {
-    const unsub = listenForForegroundMessages(() => {});
-    return unsub;
+    if (isNativeCapacitorShell()) return undefined;
+    let cleanup = () => {};
+    import("../services/notifications/fcmService.js")
+      .then(({ listenForForegroundMessages }) => {
+        cleanup = listenForForegroundMessages(() => {});
+      })
+      .catch(() => {});
+    return () => cleanup();
   }, []);
 
   useEffect(() => {
     if (settings.remindersEnabled === false) return;
+    if (isNativeCapacitorShell()) return;
     if (getNotificationPermission() !== "granted") return;
 
     if (!periodicRegistered.current) {
