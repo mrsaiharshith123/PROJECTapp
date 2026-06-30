@@ -11,6 +11,7 @@ import {
   getLocalNativeAppVersion,
   needsNativeApkUpdate,
 } from "./nativeApkUpdate.js";
+import { getAppliedOtaRecord } from "./appliedOtaMeta.js";
 
 /** @type {Promise<UpdateCheckResult> | null} */
 let _cachedCheck = null;
@@ -44,7 +45,7 @@ export async function fetchRemoteManifest() {
 /** Installed copy — Capgo bundle version when on native OTA, else build-time env. */
 async function resolveLocalUpdateState() {
   let version = LOCAL_VERSION;
-  const builtAt = LOCAL_BUILT_AT;
+  let builtAt = LOCAL_BUILT_AT;
 
   if (canUseNativeOta()) {
     const bundle = await getNativeBundleInfo();
@@ -52,6 +53,11 @@ async function resolveLocalUpdateState() {
     if (bundleVersion && bundleVersion !== "builtin" && bundleVersion !== "0.0.0") {
       version = bundleVersion;
     }
+  }
+
+  const applied = getAppliedOtaRecord();
+  if (applied?.version === version && applied.builtAt) {
+    builtAt = applied.builtAt;
   }
 
   return { version, builtAt };
@@ -201,6 +207,7 @@ async function applyEmbeddedUpdate(remote, onProgress) {
     await applyNativeOtaUpdate(
       {
         version: remote.version || LOCAL_VERSION,
+        builtAt: remote.builtAt,
         bundleUrl: remote.bundleUrl,
         bundleSize: remote.bundleSize,
       },

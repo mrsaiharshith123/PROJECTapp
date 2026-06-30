@@ -296,9 +296,12 @@ export async function syncCloudBackupAtStartup(ctx) {
 
   const meta = loadSyncMeta();
   const localPushed = meta.lastPushedAt ? new Date(meta.lastPushedAt).getTime() : 0;
+  const localPulled = meta.lastPulledAt ? new Date(meta.lastPulledAt).getTime() : 0;
+  const remoteSynced = meta.remoteUpdatedAt ? new Date(meta.remoteUpdatedAt).getTime() : 0;
+  const localSyncedAt = Math.max(localPushed, localPulled, remoteSynced);
   const remoteTime = new Date(remote.updatedAt).getTime();
 
-  if (remoteTime > localPushed) {
+  if (remoteTime > localSyncedAt) {
     const result = await pullRemoteSnapshotToLocal({ ...ctx, preferLocal: false });
     return { ...result, action: result.ok ? "pull" : "none" };
   }

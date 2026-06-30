@@ -7,7 +7,7 @@ import {
   syncCloudBackupAtStartup,
   wasAccountBackupEnabledLocally,
 } from "../services/sync/syncEngine.js";
-import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
+import { loadFullAppStateForSync, invalidateInitialAppStateCache } from "../utils/migrateStorage.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import { useTranslation } from "../i18n/I18nProvider.js";
@@ -17,6 +17,7 @@ import UpdateProgressModal from "../ui/features/UpdateProgressModal.jsx";
 const CHECK_TIMEOUT_MS = 10000;
 const AUTH_WAIT_MS = 12000;
 const CLOUD_SYNC_TIMEOUT_MS = 15000;
+const STARTUP_UPDATE_ATTEMPT_KEY = "perovo_startup_update_attempt";
 
 function shouldRunStartupUpdate() {
   return isEmbeddedApp() && !isUpdateTestShell();
@@ -30,6 +31,11 @@ function sleep(ms) {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms);
   });
+}
+
+function startupUpdateAttemptKey(manifest) {
+  if (!manifest?.version) return "";
+  return `${manifest.version}@${manifest.builtAt || ""}`;
 }
 
 /**
@@ -115,7 +121,7 @@ export default function StartupUpdateGate({ children }) {
         if (cancelled) return;
 
         if (result?.ok && result.action === "pull") {
-          window.location.reload();
+          invalidateInitialAppStateCache();
         }
       } catch {
         /* non-blocking — login / manual restore still available */
@@ -125,7 +131,7 @@ export default function StartupUpdateGate({ children }) {
     }
 
     async function runAppUpdate() {
-      if (!shouldRunStartupUpdate()) return;
+      if (!shouldRunStartupUpdate()) return { restarting: false };
 
       setProgress({ phase: "checking", percent: 0 });
 
@@ -141,9 +147,17 @@ export default function StartupUpdateGate({ children }) {
         check = { status: "unknown" };
       }
 
-      if (cancelled) return;
+      if (cancelled) return { restarting: false };
 
-      if (check?.status !== "available") return;
+      if (check?.status !== "available") return { restarting: false };
+
+      const attemptKey = startupUpdateAttemptKey(check);
+      if (attemptKey && sessionStorage.getItem(STARTUP_UPDATE_ATTEMPT_KEY) === attemptKey) {
+        return { restarting: false };
+      }
+      if (attemptKey) {
+        sessionStorage.setItem(STARTUP_UPDATE_ATTEMPT_KEY, attemptKey);
+      }
 
       setUpdating(true);
       setProgress({ phase: "downloading", percent: 0 });
@@ -155,26 +169,27 @@ export default function StartupUpdateGate({ children }) {
           },
         });
 
-        if (cancelled) return;
+        if (cancelled) return { restarting: false };
 
         if (result?.status === "apk_install") {
-          setUpdating(false);
-          return;
+          return { restarting: false };
         }
 
         if (result?.status === "restarting") {
-          return;
+          return { restarting: true };
         }
       } catch {
-        if (!cancelled) setUpdating(false);
+        /* allow app to open */
       } finally {
         if (!cancelled) setUpdating(false);
       }
+
+      return { restarting: false };
     }
 
     async function run() {
-      await runAppUpdate();
-      if (cancelled) return;
+      const updateResult = await runAppUpdate();
+      if (cancelled || updateResult?.restarting) return;
 
       if (shouldRunStartupCloudSync()) {
         await runCloudSync();

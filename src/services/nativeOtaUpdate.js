@@ -1,4 +1,5 @@
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
+import { saveAppliedOtaRecord } from "./appliedOtaMeta.js";
 
 /** Native Capacitor shell with the OTA plugin available. */
 export function canUseNativeOta() {
@@ -41,7 +42,7 @@ const APPLY_RELOAD_TIMEOUT_MS = 45000;
 
 /**
  * @typedef {{ phase: string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} OtaProgress
- * @typedef {{ version: string, bundleUrl?: string, bundleSize?: number }} OtaManifest
+ * @typedef {{ version: string, builtAt?: string, bundleUrl?: string, bundleSize?: number }} OtaManifest
  * @param {OtaManifest} manifest
  * @param {(p: OtaProgress) => void} [onProgress]
  */
@@ -88,6 +89,8 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
 
     const bundleId = bundle?.id;
     if (!bundleId) throw new Error("ota_bundle_id_missing");
+
+    saveAppliedOtaRecord({ version: manifest.version, builtAt: manifest.builtAt });
 
     onProgress?.({
       phase: "restarting",
