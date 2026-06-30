@@ -1,10 +1,5 @@
 #!/usr/bin/env node
-/**
- * After the Vite app build (base /PROJECTapp/app/), move the SPA into dist/app/
- * and copy the static marketing landing to dist/ root for GitHub Pages.
- *
- * Skipped for embedded APK builds (VITE_EMBEDDED_APP=1) and update-test shell.
- */
+/** @deprecated Public deploy no longer bundles the React app. See scripts/vite-build-pages.mjs */
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";

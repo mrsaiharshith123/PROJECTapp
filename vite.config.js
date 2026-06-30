@@ -62,15 +62,21 @@ function capgoNotifyFirstPlugin() {
 }
 
 function resolveBuildInput() {
-  const mainHtml = updateTestShell
-    ? path.resolve(process.cwd(), "update-test.html")
-    : path.resolve(process.cwd(), "index.html");
+  if (updateTestShell) {
+    return path.resolve(process.cwd(), "update-test.html");
+  }
+  const mainHtml = path.resolve(process.cwd(), "index.html");
   if (!capgoNotifyEnabled) return mainHtml;
   return {
     main: mainHtml,
     "capgo-notify": capgoNotifyEntry,
   };
 }
+
+// PRODUCT RULE: the app must never be publicly web-hosted.
+// Production build (npm run build, used by GitHub Pages) outputs ONLY the
+// landing page via scripts/vite-build-pages.mjs. The app is local-dev-only
+// (npm run dev) and Android-APK-only for real users.
 
 // https://vite.dev/config/
 export default defineConfig({

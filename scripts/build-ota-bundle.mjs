@@ -102,7 +102,7 @@ const manifestPath = path.join(distDir, "app-version.json");
 const appLiveUrl =
   process.env.VITE_UPDATE_SERVER_URL ||
   process.env.VITE_APP_LIVE_URL ||
-  "https://mrsaiharshith123.github.io/PROJECTapp/app/";
+  "https://mrsaiharshith123.github.io/PROJECTapp/";
 const bundleBase =
   process.env.VITE_BUNDLE_SERVER_URL ||
   "https://mrsaiharshith123.github.io/PROJECTapp/";

@@ -9,7 +9,14 @@ function cycleScreens() {
   activeIdx = (activeIdx + 1) % screens.length;
 }
 
-cycleScreens();
+const firstImg = document.querySelector(".l-phone-screen img");
+if (firstImg && firstImg.complete) {
+  cycleScreens();
+} else if (firstImg) {
+  firstImg.addEventListener("load", cycleScreens, { once: true });
+} else {
+  cycleScreens();
+}
 setInterval(cycleScreens, 2800);
 
 const revealEls = document.querySelectorAll(".l-reveal");
