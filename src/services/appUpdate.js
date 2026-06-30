@@ -12,7 +12,12 @@ import {
   needsNativeApkUpdate,
 } from "./nativeApkUpdate.js";
 import { getAppliedOtaRecord } from "./appliedOtaMeta.js";
-import { isApkInstallPendingForRemote } from "./pendingApkInstall.js";
+import {
+  isApkDownloadedForVersion,
+  isApkWaitingForInstall,
+  syncApkUpdateTrackingWithInstalled,
+} from "./pendingApkInstall.js";
+import { downloadNativeApk } from "./nativeApkUpdate.js";
 
 /** @type {Promise<UpdateCheckResult> | null} */
 let _cachedCheck = null;
@@ -76,9 +81,23 @@ export async function checkForAppUpdate() {
     return { status: "unknown", localVersion: local.version, localNativeVersion: localNative };
   }
 
+  await syncApkUpdateTrackingWithInstalled(remote);
+
   const apkNeeded = needsNativeApkUpdate(remote, localNative);
-  const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
-  const apkPending = apkNeeded ? await isApkInstallPendingForRemote(remote) : false;
+  let otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
+  const applied = getAppliedOtaRecord();
+  if (
+    otaNeeded &&
+    applied?.version === remote.version &&
+    applied?.builtAt &&
+    remote.builtAt &&
+    applied.builtAt === remote.builtAt
+  ) {
+    otaNeeded = false;
+  }
+
+  const apkDownloaded = apkNeeded && isApkDownloadedForVersion(remote.version);
+  const apkWaiting = apkNeeded && (apkDownloaded || (await isApkWaitingForInstall(remote)));
 
   const base = {
     localVersion: local.version,
@@ -89,14 +108,15 @@ export async function checkForAppUpdate() {
     bundleUrl: remote.bundleUrl,
     bundleSize: remote.bundleSize,
     apkUrl: remote.apkUrl,
-    updateKind: otaNeeded ? "ota" : apkNeeded && !apkPending ? "apk" : undefined,
-    apkInstallPending: apkPending,
-    needsApk: apkNeeded && !apkPending,
+    updateKind: otaNeeded ? "ota" : apkNeeded && !apkWaiting ? "apk" : undefined,
+    apkInstallPending: apkWaiting,
+    apkDownloaded,
+    needsApk: apkNeeded && !apkWaiting,
     needsOta: otaNeeded,
   };
 
-  if (apkPending) {
-    return { status: "apk_pending", ...base };
+  if (apkWaiting) {
+    return { status: "apk_ready", ...base };
   }
 
   if (!apkNeeded && !otaNeeded) {
@@ -112,6 +132,10 @@ export async function checkForAppUpdateOnce() {
     _cachedCheck = checkForAppUpdate();
   }
   return _cachedCheck;
+}
+
+export function invalidateUpdateCheckCache() {
+  _cachedCheck = null;
 }
 
 /**
@@ -224,7 +248,12 @@ async function applyEmbeddedUpdate(remote, onProgress, opts = {}) {
   }
 
   if (apkNeeded && allowApk) {
-    await applyNativeApkUpdate(remote, onProgress);
+    if (isApkDownloadedForVersion(remote.version || "")) {
+      await applyNativeApkUpdate(remote, onProgress);
+    } else {
+      await downloadNativeApk(remote, onProgress);
+      return { kind: "apk_downloaded" };
+    }
     return { kind: "apk" };
   }
 
@@ -248,15 +277,26 @@ export async function applyAppUpdate(opts = {}) {
   const local = await resolveLocalUpdateState();
   const localNative = await getLocalNativeAppVersion();
   const apkNeeded = remote && needsNativeApkUpdate(remote, localNative);
-  const otaNeeded = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
-  const apkPending = remote && apkNeeded ? await isApkInstallPendingForRemote(remote) : false;
+  let otaNeeded = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
+  const applied = getAppliedOtaRecord();
+  if (
+    otaNeeded &&
+    remote &&
+    applied?.version === remote.version &&
+    applied?.builtAt &&
+    remote.builtAt &&
+    applied.builtAt === remote.builtAt
+  ) {
+    otaNeeded = false;
+  }
+  const apkWaiting = remote && apkNeeded ? await isApkWaitingForInstall(remote) : false;
 
   if (!force && remote?.version && !apkNeeded && !otaNeeded) {
     return { status: "current" };
   }
 
-  if (!force && apkPending) {
-    return { status: "apk_pending" };
+  if (!force && apkWaiting) {
+    return { status: "apk_ready" };
   }
 
   if (isEmbeddedApp()) {
@@ -264,6 +304,9 @@ export async function applyAppUpdate(opts = {}) {
       const result = await applyEmbeddedUpdate(remote, onProgress, { allowApk });
       if (result.kind === "apk_deferred") {
         return { status: "apk_deferred" };
+      }
+      if (result.kind === "apk_downloaded") {
+        return { status: "apk_ready" };
       }
       return { status: result.kind === "apk" ? "apk_install" : "restarting" };
     }

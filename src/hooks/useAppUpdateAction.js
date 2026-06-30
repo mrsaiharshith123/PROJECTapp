@@ -19,9 +19,26 @@ export function useAppUpdateAction() {
     try {
       const result = await checkForAppUpdate();
 
-      if (result.status === "apk_pending") {
+      if (result.status === "apk_ready" || result.status === "apk_pending") {
+        setProgressOpen(true);
         setStatus(t("support.updateAppApkInstall"));
-        setBusy(false);
+        const applyResult = await applyAppUpdate({
+          allowApk: true,
+          onProgress: (p) => {
+            setProgress(p);
+            if (p.phase === "installing") {
+              setStatus(t("support.updateAppApkInstalling"));
+            }
+          },
+        });
+        if (applyResult?.status === "apk_install") {
+          setProgressOpen(false);
+          setBusy(false);
+          setStatus(t("support.updateAppApkInstall"));
+        } else {
+          setProgressOpen(false);
+          setBusy(false);
+        }
         return;
       }
 

@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
 import { isUpdateTestShell } from "../utils/updateTestShell.js";
-import { checkForAppUpdate, applyAppUpdate } from "../services/appUpdate.js";
-import { openCachedApkInstall } from "../services/nativeApkUpdate.js";
-import { clearPendingApkInstall } from "../services/pendingApkInstall.js";
+import { checkForAppUpdate, applyAppUpdate, fetchRemoteManifest } from "../services/appUpdate.js";
+import { downloadNativeApk, openCachedApkInstall } from "../services/nativeApkUpdate.js";
+import {
+  dismissApkInstallPrompt,
+  isApkDownloadedForVersion,
+  isApkInstallPromptDismissed,
+} from "../services/pendingApkInstall.js";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import BootShell from "../boot/BootShell.jsx";
 import UpdateProgressModal from "../ui/features/UpdateProgressModal.jsx";
@@ -11,26 +15,21 @@ import { Body, Button, Caption, Modal } from "../ui/index.js";
 
 const CHECK_TIMEOUT_MS = 10000;
 const BOOTSTRAP_MAX_MS = 20000;
-const OTA_ATTEMPT_KEY = "perovo_startup_ota_attempt";
 
 function shouldRunStartupUpdate() {
   return isEmbeddedApp() && !isUpdateTestShell();
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
-function otaAttemptKey(manifest) {
-  if (!manifest?.version) return "";
-  return `${manifest.version}@${manifest.builtAt || ""}`;
+function maybeShowApkPrompt(check, setApkPrompt) {
+  if (!check?.remoteVersion) return;
+  if (check.status !== "apk_ready") return;
+  if (isApkInstallPromptDismissed(check.remoteVersion)) return;
+  setApkPrompt({ version: check.remoteVersion });
 }
 
 /**
- * Checks for updates on open: OTA bundle first, then APK download + install prompt.
- * Never blocks the app longer than BOOTSTRAP_MAX_MS.
+ * Checks for updates on open: OTA first, then one APK download per version.
+ * Never re-downloads an APK that is already cached.
  */
 export default function StartupUpdateGate({ children }) {
   const { t } = useTranslation();
@@ -71,76 +70,75 @@ export default function StartupUpdateGate({ children }) {
         check = { status: "unknown" };
       }
 
-      if (cancelled) return { restarting: false };
+      if (cancelled) return;
 
-      if (check?.status === "apk_pending" && check.remoteVersion) {
-        setApkPrompt({ version: check.remoteVersion });
-        return { restarting: false };
+      if (check?.status === "apk_ready") {
+        maybeShowApkPrompt(check, setApkPrompt);
+        return;
       }
 
-      if (check?.status !== "available") return { restarting: false };
+      if (check?.status !== "available") return;
 
       if (check.needsOta) {
-        const attemptKey = otaAttemptKey(check);
-        if (!attemptKey || localStorage.getItem(OTA_ATTEMPT_KEY) !== attemptKey) {
-          if (attemptKey) localStorage.setItem(OTA_ATTEMPT_KEY, attemptKey);
-          setUpdating(true);
-          setProgress({ phase: "downloading", percent: 0 });
-          try {
-            const result = await applyAppUpdate({
-              allowApk: false,
-              onProgress: (p) => {
-                if (!cancelled) setProgress(p);
-              },
-            });
-            if (cancelled) return { restarting: false };
-            if (result?.status === "restarting") return { restarting: true };
-          } catch {
-            /* continue to APK or app */
-          } finally {
-            if (!cancelled) setUpdating(false);
-          }
-
-          if (cancelled) return { restarting: false };
-          try {
-            check = await checkForAppUpdate();
-          } catch {
-            return { restarting: false };
-          }
-        }
-      }
-
-      if (check?.status === "available" && check.needsApk) {
         setUpdating(true);
         setProgress({ phase: "downloading", percent: 0 });
         try {
           const result = await applyAppUpdate({
-            allowApk: true,
+            allowApk: false,
             onProgress: (p) => {
               if (!cancelled) setProgress(p);
             },
           });
-          if (cancelled) return { restarting: false };
-          if (result?.status === "apk_install") {
-            return { restarting: false };
-          }
-          if (result?.status === "restarting") return { restarting: true };
+          if (cancelled) return;
+          if (result?.status === "restarting") return;
         } catch {
-          if (check.remoteVersion) {
-            setApkPrompt({ version: check.remoteVersion });
-          }
+          /* non-blocking */
         } finally {
           if (!cancelled) setUpdating(false);
         }
+
+        if (cancelled) return;
+        try {
+          check = await checkForAppUpdate();
+        } catch {
+          return;
+        }
       }
 
-      return { restarting: false };
+      if (check?.status === "apk_ready") {
+        maybeShowApkPrompt(check, setApkPrompt);
+        return;
+      }
+
+      if (!check?.needsApk || !check.remoteVersion) return;
+
+      if (isApkDownloadedForVersion(check.remoteVersion)) {
+        maybeShowApkPrompt({ ...check, status: "apk_ready" }, setApkPrompt);
+        return;
+      }
+
+      setUpdating(true);
+      setProgress({ phase: "downloading", percent: 0 });
+      try {
+        const remote = await fetchRemoteManifest();
+        if (remote) {
+          await downloadNativeApk(remote, (p) => {
+            if (!cancelled) setProgress(p);
+          });
+        }
+        if (!cancelled && check.remoteVersion) {
+          maybeShowApkPrompt({ ...check, status: "apk_ready" }, setApkPrompt);
+        }
+      } catch {
+        /* allow app to open */
+      } finally {
+        if (!cancelled) setUpdating(false);
+      }
     }
 
     async function run() {
       try {
-        const updateResult = await runAppUpdate();
-        if (cancelled || updateResult?.restarting) return;
+        await runAppUpdate();
       } finally {
         window.clearTimeout(bootstrapTimer);
         finish();
@@ -160,20 +158,14 @@ export default function StartupUpdateGate({ children }) {
     try {
       await openCachedApkInstall(apkPrompt.version);
     } catch {
-      setUpdating(true);
-      try {
-        await applyAppUpdate({
-          allowApk: true,
-          onProgress: setProgress,
-        });
-      } finally {
-        setUpdating(false);
-      }
+      /* user can retry from Profile */
     }
   };
 
   const onSkipApk = () => {
-    clearPendingApkInstall();
+    if (apkPrompt?.version) {
+      dismissApkInstallPrompt(apkPrompt.version);
+    }
     setApkPrompt(null);
   };
 
