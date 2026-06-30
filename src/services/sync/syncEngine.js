@@ -87,6 +87,12 @@ export function canUseCloudSync(settings, isLoggedIn) {
   return canUseAccountBackup(settings, isLoggedIn);
 }
 
+/** Pro/Power + backup toggle from local device settings (no session required). */
+export function wasAccountBackupEnabledLocally(settings) {
+  if (!hasPaidBackupTier(settings)) return false;
+  return Boolean(settings?.cloudSyncEnabled);
+}
+
 /**
  * @param {{
  *   userId: string,
@@ -252,6 +258,59 @@ export async function pushDailyCloudBackupIfDue(ctx) {
  * Restore from cloud when local storage is empty but remote has user data.
  * @param {{ userId: string, getState: () => { commitments: object[], lendings: object[], settings: object, goals: object[], monthlySnapshots: object[] }, applySnapshot: (payload: object, options: { mode: string }) => unknown }} ctx
  */
+/**
+ * On app open: pull latest cloud backup when remote is newer, push when local is ahead,
+ * or force-restore when this device has no user data yet.
+ * @param {{
+ *   userId: string,
+ *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots },
+ *   applySnapshot: (payload: object, options: { mode: string }) => unknown,
+ * }} ctx
+ */
+export async function syncCloudBackupAtStartup(ctx) {
+  if (!isCloudSyncConfigured()) return { ok: false, reason: "not_configured", action: "none" };
+  if (!ctx.userId) return { ok: false, reason: "no_session", action: "none" };
+
+  const state = ctx.getState();
+  if (!wasAccountBackupEnabledLocally(state.settings)) {
+    return { ok: false, reason: "disabled", action: "none" };
+  }
+
+  saveSyncMeta({ userId: ctx.userId });
+
+  const localHasData = localStateHasUserData(state);
+  const remote = await fetchRemoteSnapshot(ctx.userId);
+
+  if (!localHasData) {
+    if (!remote?.payload || !snapshotHasUserData(remote.payload)) {
+      return { ok: false, reason: "empty", action: "none" };
+    }
+    const result = await pullRemoteSnapshotToLocal({ ...ctx, force: true });
+    return { ...result, action: result.ok ? "pull" : "none" };
+  }
+
+  if (!remote?.payload || !snapshotHasUserData(remote.payload)) {
+    const pushResult = await pushLocalSnapshotToCloud(ctx);
+    return { ...pushResult, action: pushResult.ok ? "push" : "none" };
+  }
+
+  const meta = loadSyncMeta();
+  const localPushed = meta.lastPushedAt ? new Date(meta.lastPushedAt).getTime() : 0;
+  const remoteTime = new Date(remote.updatedAt).getTime();
+
+  if (remoteTime > localPushed) {
+    const result = await pullRemoteSnapshotToLocal({ ...ctx, preferLocal: false });
+    return { ...result, action: result.ok ? "pull" : "none" };
+  }
+
+  if (meta.pendingPush) {
+    const pushResult = await pushLocalSnapshotToCloud(ctx);
+    return { ...pushResult, action: pushResult.ok ? "push" : "none" };
+  }
+
+  return { ok: true, reason: "up_to_date", action: "none" };
+}
+
 export async function tryAutoRestoreFromCloud(ctx) {
   if (!isCloudSyncConfigured()) return { ok: false, reason: "not_configured" };
 

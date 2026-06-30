@@ -2034,7 +2034,8 @@ export default {
   "download.androidVersionsBody": "Pick which build to install. Use the older one to test in-app updates.",
   "download.backToPlatforms": "← Back to platforms",
 
-  "support.updateApp": "Update app",
+  "startup.updateGateChecking": "Checking for updates…",
+  "startup.cloudSyncInProgress": "Syncing your cloud backup…",
   "support.updateAppHint": "Checks our server for updates. Web changes install inside the app; shell updates open the Android installer (no uninstall needed).",
   "support.updateAppChecking": "Checking for updates…",
   "support.updateAppDownloading": "Downloading the latest build…",

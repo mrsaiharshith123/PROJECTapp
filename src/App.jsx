@@ -19,6 +19,7 @@ import ThemeSync from "./app/ThemeSync.jsx";
 import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 import CloudRestoreGate from "./app/CloudRestoreGate.jsx";
+import StartupUpdateGate from "./app/StartupUpdateGate.jsx";
 import HouseholdRoomBridge from "./app/HouseholdRoomBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
@@ -338,7 +339,14 @@ function App() {
                       </RequireAuth>
                     }
                   />
-                  <Route path="*" element={<AppShell />} />
+                  <Route
+                    path="*"
+                    element={
+                      <StartupUpdateGate>
+                        <AppShell />
+                      </StartupUpdateGate>
+                    }
+                  />
                 </Routes>
               </Suspense>
             </ErrorBoundary>

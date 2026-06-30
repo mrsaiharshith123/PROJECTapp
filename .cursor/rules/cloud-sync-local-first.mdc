@@ -9,7 +9,7 @@ Perovo is **local-first**. Supabase account backup is optional debounced sync �
 
 ## Rules
 
-1. **Never auto-pull remote on startup** when cloud sync is enabled. Restore is **manual** via the restore modal in `ProfileCloudSyncSection` only.
+1. **Startup bootstrap** (`StartupUpdateGate`): on app open, if local settings show Pro/Power + `cloudSyncEnabled`, wait for auth session then run `syncCloudBackupAtStartup` (pull when remote is newer or device is empty; push when local is ahead). Manual restore in Profile remains for other cases.
 2. **Empty remote must not overwrite local data.** Use `snapshotHasUserData` / `localStateHasUserData` in `syncEngine.js` before applying a pull.
 3. **Enabling backup pushes local → cloud** (`ProfileCloudSyncSection` / explicit push). Do not replace local state when toggling sync on.
 4. **UI calls sync through services** — `src/services/sync/syncEngine.js`, `hooks/useCloudSync.js`. No direct Supabase queries in feature pages except allowed profile/auth files (see `scripts/governance/sync.mjs`).
@@ -20,4 +20,5 @@ Perovo is **local-first**. Supabase account backup is optional debounced sync �
 
 - Cloud toggle + restore: `ProfileCloudSyncSection.jsx` (inline restore modal)
 - Account security (sign-in time, device): `ProfileSecuritySection.jsx` under Settings → Account → Security
-- Bridge (debounced push on data change): `src/app/CloudSyncBridge.jsx` — no startup pull
+- Bridge (debounced push on data change): `src/app/CloudSyncBridge.jsx`
+- Cold-start update + backup sync: `src/app/StartupUpdateGate.jsx`
