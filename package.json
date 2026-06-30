@@ -10,7 +10,7 @@
     "dev": "vite",
     "dev:simulate-pay": "node scripts/dev-simulate-pay.mjs",
     "preview:simulate-pay": "node scripts/dev-simulate-pay.mjs preview",
-    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-app-version.mjs && vite build && node scripts/build-ota-bundle.mjs && node scripts/copy-404.mjs",
+    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-app-version.mjs && node scripts/vite-build-pages.mjs && node scripts/assemble-landing.mjs && node scripts/build-ota-bundle.mjs && node scripts/copy-404.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "node scripts/clean.mjs",

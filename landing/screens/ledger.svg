@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 412 915" width="412" height="915">
+  <rect width="412" height="915" fill="#16140f"/>
+  <text x="32" y="72" fill="#e3c489" font-family="Georgia,serif" font-size="13" font-weight="700" letter-spacing="2">LEDGER</text>
+  <text x="32" y="130" fill="#f0ebe0" font-family="Georgia,serif" font-size="26" font-style="italic">Net worth</text>
+  <text x="32" y="188" fill="#e3c489" font-size="36" font-weight="700">¹18.6L</text>
+  <rect x="32" y="220" width="110" height="36" rx="18" fill="rgba(227,196,137,0.15)"/>
+  <text x="52" y="243" fill="#e3c489" font-size="13" font-weight="600">Assets</text>
+  <rect x="152" y="220" width="110" height="36" rx="18" fill="rgba(240,235,224,0.06)"/>
+  <text x="172" y="243" fill="#c4bdac" font-size="13">Liabilities</text>
+  <rect x="32" y="290" width="348" height="72" rx="12" fill="rgba(94,199,149,0.08)" stroke="rgba(240,235,224,0.1)"/>
+  <text x="52" y="322" fill="#c4bdac" font-size="14">Savings &amp; FD</text>
+  <text x="52" y="348" fill="#5ec795" font-size="18" font-weight="600">¹6.2L</text>
+  <rect x="32" y="380" width="348" height="72" rx="12" fill="rgba(179,160,232,0.08)" stroke="rgba(240,235,224,0.1)"/>
+  <text x="52" y="412" fill="#c4bdac" font-size="14">Property</text>
+  <text x="52" y="438" fill="#b3a0e8" font-size="18" font-weight="600">¹42L</text>
+  <rect x="32" y="470" width="348" height="72" rx="12" fill="rgba(232,148,144,0.08)" stroke="rgba(240,235,224,0.1)"/>
+  <text x="52" y="502" fill="#c4bdac" font-size="14">Home loan</text>
+  <text x="52" y="528" fill="#e89490" font-size="18" font-weight="600">¹29.6L</text>
+</svg>

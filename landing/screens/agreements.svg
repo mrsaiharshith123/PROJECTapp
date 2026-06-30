@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 412 915" width="412" height="915">
+  <rect width="412" height="915" fill="#16140f"/>
+  <text x="32" y="72" fill="#e3c489" font-family="Georgia,serif" font-size="13" font-weight="700" letter-spacing="2">AGREEMENTS</text>
+  <text x="32" y="130" fill="#f0ebe0" font-family="Georgia,serif" font-size="26" font-style="italic">Lending</text>
+  <rect x="32" y="160" width="348" height="110" rx="14" fill="rgba(240,235,224,0.05)" stroke="rgba(240,235,224,0.13)"/>
+  <text x="52" y="200" fill="#f0ebe0" font-size="16" font-weight="600">Ravi  personal loan</text>
+  <text x="52" y="228" fill="#5ec795" font-size="20" font-weight="700">¹25,000</text>
+  <text x="52" y="252" fill="#7d7665" font-size="12">Due 12 Jul · On track</text>
+  <rect x="32" y="290" width="348" height="110" rx="14" fill="rgba(240,235,224,0.05)" stroke="rgba(240,235,224,0.13)"/>
+  <text x="52" y="330" fill="#f0ebe0" font-size="16" font-weight="600">Family chit  Group A</text>
+  <text x="52" y="358" fill="#e3c489" font-size="20" font-weight="700">¹8,500 / mo</text>
+  <text x="52" y="382" fill="#7d7665" font-size="12">Next payout in 2 months</text>
+  <rect x="32" y="420" width="348" height="88" rx="14" fill="rgba(227,196,137,0.08)" stroke="rgba(227,196,137,0.2)"/>
+  <text x="52" y="460" fill="#c4bdac" font-size="14">Promissory note ready</text>
+  <text x="52" y="486" fill="#e3c489" font-size="13">Export PDF</text>
+</svg>

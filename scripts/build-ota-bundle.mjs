@@ -25,14 +25,20 @@ if (process.env.VITE_UPDATE_TEST_SHELL === "1") {
   process.exit(0);
 }
 
-if (!fs.existsSync(path.join(distDir, "index.html"))) {
-  console.log("OTA bundle skipped (no dist/index.html).");
+function resolveAppIndexHtml(dir) {
+  const nested = path.join(dir, "app", "index.html");
+  if (fs.existsSync(nested)) return nested;
+  return path.join(dir, "index.html");
+}
+
+if (!fs.existsSync(resolveAppIndexHtml(distDir))) {
+  console.log("OTA bundle skipped (no app index.html).");
   process.exit(0);
 }
 
 /** @param {string} dir */
 function distUsesCapacitorBase(dir) {
-  const htmlPath = path.join(dir, "index.html");
+  const htmlPath = resolveAppIndexHtml(dir);
   if (!fs.existsSync(htmlPath)) return false;
   const html = fs.readFileSync(htmlPath, "utf8");
   if (html.includes("/PROJECTapp/")) return false;
@@ -93,18 +99,23 @@ await zipDist(zipSource);
 
 const size = fs.statSync(zipPath).size;
 const manifestPath = path.join(distDir, "app-version.json");
-const baseUrl =
+const appLiveUrl =
   process.env.VITE_UPDATE_SERVER_URL ||
   process.env.VITE_APP_LIVE_URL ||
+  "https://mrsaiharshith123.github.io/PROJECTapp/app/";
+const bundleBase =
+  process.env.VITE_BUNDLE_SERVER_URL ||
   "https://mrsaiharshith123.github.io/PROJECTapp/";
-const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
+const normalizedAppUrl = appLiveUrl.endsWith("/") ? appLiveUrl : `${appLiveUrl}/`;
+const normalizedBundleBase = bundleBase.endsWith("/") ? bundleBase : `${bundleBase}/`;
 
 /** @type {Record<string, unknown>} */
 let manifest = {};
 if (fs.existsSync(manifestPath)) {
   manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 }
-manifest.bundleUrl = `${normalizedBase}app-bundle.zip`;
+manifest.appUrl = normalizedAppUrl;
+manifest.bundleUrl = `${normalizedBundleBase}app-bundle.zip`;
 manifest.bundleSize = size;
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 

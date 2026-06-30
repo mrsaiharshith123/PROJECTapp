@@ -13,7 +13,7 @@ const out = {
   appUrl:
     process.env.VITE_UPDATE_SERVER_URL ||
     process.env.VITE_APP_LIVE_URL ||
-    "https://mrsaiharshith123.github.io/PROJECTapp/",
+    "https://mrsaiharshith123.github.io/PROJECTapp/app/",
 };
 
 const normalizedBase = out.appUrl.endsWith("/") ? out.appUrl : `${out.appUrl}/`;
