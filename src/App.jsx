@@ -26,6 +26,10 @@ import BootShell from "./boot/BootShell.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
+import {
+  getMarketingLandingUrl,
+  shouldBrowserUseMarketingLanding,
+} from "./utils/marketingLanding.js";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import { AdminFloatingButton } from "./ui/admin/AdminFloatingButton.jsx";
 
@@ -295,6 +299,12 @@ function AppShell() {
   }, [isLoggedIn, user?.id, profile, saveProfile, setupComplete]);
 
   if (!isReady || (isLoggedIn && !profileResolved)) return <BootShell />;
+
+  if (shouldBrowserUseMarketingLanding() && !isLoggedIn) {
+    window.location.replace(getMarketingLandingUrl());
+    return <BootShell />;
+  }
+
   if (!isLoggedIn) return <AuthGateShell />;
   if (!profile && !isSignupPending()) return <AuthGateShell />;
   return (
