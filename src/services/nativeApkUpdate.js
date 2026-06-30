@@ -45,6 +45,33 @@ function blobToBase64(blob) {
   });
 }
 
+/** @param {string} version */
+export function apkCacheFileName(version) {
+  return `perovo-update-${version || "latest"}.apk`;
+}
+
+/** Re-open a downloaded APK in the system installer (no re-download). */
+export async function openCachedApkInstall(version) {
+  const fileName = apkCacheFileName(version);
+  const { markApkInstallPending, tryExitAppAfterApkInstall } = await import("./pendingApkInstall.js");
+  markApkInstallPending(version || "latest");
+
+  const { Filesystem, Directory } = await import("@capacitor/filesystem");
+  const { uri } = await Filesystem.getUri({
+    path: fileName,
+    directory: Directory.Cache,
+  });
+
+  const { FileOpener } = await import("@capacitor-community/file-opener");
+  await FileOpener.open({
+    filePath: uri,
+    contentType: "application/vnd.android.package-archive",
+    openWithDefault: true,
+  });
+
+  await tryExitAppAfterApkInstall();
+}
+
 /**
  * Download APK and open the system installer (replaces app in place — no uninstall).
  * @param {{ version?: string, apkUrl?: string, apkSize?: number }} manifest
@@ -92,7 +119,7 @@ export async function applyNativeApkUpdate(manifest, onProgress) {
     const base64 = await blobToBase64(blob);
 
     const { Filesystem, Directory } = await import("@capacitor/filesystem");
-    const fileName = `perovo-update-${manifest.version || "latest"}.apk`;
+    const fileName = apkCacheFileName(manifest.version || "latest");
 
     await Filesystem.writeFile({
       path: fileName,

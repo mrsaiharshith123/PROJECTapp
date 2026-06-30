@@ -2,6 +2,7 @@ import { compareSemver } from "../utils/updateServer.js";
 import { getLocalNativeAppVersion, needsNativeApkUpdate } from "./nativeApkUpdate.js";
 
 const STORAGE_KEY = "perovo_apk_install_pending";
+const STALE_PENDING_MS = 6 * 60 * 60 * 1000;
 
 /**
  * @returns {{ version: string, at: string } | null}
@@ -39,6 +40,12 @@ export function clearPendingApkInstall() {
   }
 }
 
+function isPendingStale(pending) {
+  if (!pending?.at) return false;
+  const elapsed = Date.now() - new Date(pending.at).getTime();
+  return elapsed > STALE_PENDING_MS;
+}
+
 /**
  * True when we already handed an APK to the system installer and the shell is still old.
  * @param {{ version?: string }} remote
@@ -46,6 +53,11 @@ export function clearPendingApkInstall() {
 export async function isApkInstallPendingForRemote(remote) {
   const pending = getPendingApkInstall();
   if (!pending?.version || !remote?.version) return false;
+
+  if (isPendingStale(pending)) {
+    clearPendingApkInstall();
+    return false;
+  }
 
   const localNative = await getLocalNativeAppVersion();
   if (!needsNativeApkUpdate(remote, localNative)) {

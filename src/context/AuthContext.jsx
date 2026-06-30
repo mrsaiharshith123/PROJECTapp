@@ -27,6 +27,9 @@ import { setAnalyticsUser, clearAnalyticsUser } from "../services/analytics/anal
 import { isCurrentDeviceRevoked, upsertDeviceSession } from "../services/deviceSessions.js";
 import { loadSettingsFromStorage } from "../utils/migrateStorage.js";
 import { isCloudSyncConfigured } from "../services/sync/syncEngine.js";
+import { withTimeout } from "../utils/withTimeout.js";
+
+const PROFILE_LOAD_TIMEOUT_MS = 12000;
 
 /** @type {import('react').Context<import('../types/context.js').AuthContextValue | null>} */
 const AuthContext = createContext(/** @type {import('../types/context.js').AuthContextValue | null} */ (null));
@@ -76,15 +79,16 @@ export function AuthProvider({ children }) {
   );
 
   const refreshProfile = useCallback(
-    async (userId) => {
+    async (userId, options = {}) => {
+      const { background = false } = options;
       if (!userId) {
         setProfile(null);
         setProfileResolved(true);
         return null;
       }
-      setProfileResolved(false);
+      if (!background) setProfileResolved(false);
       try {
-        const p = await loadUserProfile(userId);
+        const p = await withTimeout(loadUserProfile(userId), PROFILE_LOAD_TIMEOUT_MS, "profile");
         setProfile(p);
         setProfileResolved(true);
         await enforceServerProfile(userId, p);
@@ -92,6 +96,11 @@ export function AuthProvider({ children }) {
         return p;
       } catch (e) {
         setProfileResolved(true);
+        const message = e instanceof Error ? e.message : String(e);
+        if (message.includes("profile_timeout")) {
+          log.auth.warn("Profile load timed out — continuing with cached session");
+          return null;
+        }
         if (isProfilesTableMissingError(e)) {
           await hardSignOut(
             userId,
@@ -141,7 +150,7 @@ export function AuthProvider({ children }) {
         }
       }
       try {
-        await refreshProfile(u.id);
+        await refreshProfile(u.id, { background: event === "TOKEN_REFRESHED" });
         if (isCloudSyncConfigured()) {
           try {
             const revoked = await isCurrentDeviceRevoked(u.id);

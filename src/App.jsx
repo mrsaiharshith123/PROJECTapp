@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
 import { isUpdateTestShell } from "./utils/updateTestShell.js";
@@ -244,6 +244,7 @@ function MainShell() {
 function AppShell() {
   const { settings, updateSettings } = usePerovo();
   const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
+  const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
   const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
   const authSeededRef = useRef(false);
   const settingsRef = useRef(settings);
@@ -300,7 +301,13 @@ function AppShell() {
     }).then(() => localStorage.setItem(key, "1")).catch(() => {});
   }, [isLoggedIn, user?.id, profile, saveProfile, setupComplete]);
 
-  if (!isReady || (isLoggedIn && !profileResolved)) return <BootShell />;
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAuthBootTimedOut(true), 12000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const authStillBooting = !isReady || (isLoggedIn && !profileResolved);
+  if (authStillBooting && !authBootTimedOut) return <BootShell />;
 
   if (shouldBrowserUseMarketingLanding() && !isLoggedIn) {
     window.location.replace(getMarketingLandingUrl());

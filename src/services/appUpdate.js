@@ -210,11 +210,6 @@ async function applyEmbeddedUpdate(remote, onProgress, opts = {}) {
   const apkNeeded = needsNativeApkUpdate(remote, localNative);
   const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
 
-  if (apkNeeded && allowApk) {
-    await applyNativeApkUpdate(remote, onProgress);
-    return { kind: "apk" };
-  }
-
   if (canUseNativeOta() && remote.bundleUrl && otaNeeded) {
     await applyNativeOtaUpdate(
       {
@@ -226,6 +221,11 @@ async function applyEmbeddedUpdate(remote, onProgress, opts = {}) {
       onProgress,
     );
     return { kind: "ota" };
+  }
+
+  if (apkNeeded && allowApk) {
+    await applyNativeApkUpdate(remote, onProgress);
+    return { kind: "apk" };
   }
 
   if (apkNeeded && !allowApk) {

@@ -7,7 +7,9 @@ import {
   cancelScheduledCloudPush,
   scheduleCloudPush,
   pushLocalSnapshotToCloud,
+  syncCloudBackupAtStartup,
 } from "../services/sync/syncEngine.js";
+import { invalidateInitialAppStateCache } from "../utils/migrateStorage.js";
 import { SYNC_AUTO_BACKUP_INTERVAL_MS } from "../services/sync/constants.js";
 import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
@@ -36,6 +38,16 @@ export default function CloudSyncBridge() {
     };
 
     if (!canUseCloudSync(track.settings, true)) return;
+
+    syncCloudBackupAtStartup(ctx)
+      .then((result) => {
+        if (result?.ok && result.action === "pull") {
+          invalidateInitialAppStateCache();
+        }
+      })
+      .catch(() => {
+        /* non-blocking */
+      });
 
     const onChange = () => {
       scheduleCloudPush(ctx);
