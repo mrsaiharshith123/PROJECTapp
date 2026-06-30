@@ -1886,6 +1886,7 @@ export default {
   "download.backToPlatforms": "← प्लेटफार्मन पर वापस आ जाईं",
   "startup.updateGateChecking": "Checking for updates…",
   "startup.cloudSyncInProgress": "Syncing your cloud backup…",
+  "startup.apkInstallWait": "Finish installing Perovo from the Android dialog, then reopen the app.",
   "support.updateAppHint": "हमनी के सर्वर के कवनो नया बिल्ड खातिर जांच करीं, ऐप के भीतर डाउनलोड करीं, ओकरा बाद स्वचालित रूप से रिस्टार्ट करीं।",
   "support.updateAppChecking": "अपडेट के जांच हो रहल बा...",
   "support.updateAppDownloading": "नवीनतम बिल्ड डाउनलोड कइल जा रहल बा...",

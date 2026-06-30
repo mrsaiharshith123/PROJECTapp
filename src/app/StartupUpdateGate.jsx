@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
 import { isUpdateTestShell } from "../utils/updateTestShell.js";
-import { checkForAppUpdate, applyAppUpdate } from "../services/appUpdate.js";
+import { checkForAppUpdate, applyAppUpdate, fetchRemoteManifest } from "../services/appUpdate.js";
 import {
   isCloudSyncConfigured,
   syncCloudBackupAtStartup,
   wasAccountBackupEnabledLocally,
 } from "../services/sync/syncEngine.js";
 import { loadFullAppStateForSync, invalidateInitialAppStateCache } from "../utils/migrateStorage.js";
+import { getLocalNativeAppVersion, needsNativeApkUpdate } from "../services/nativeApkUpdate.js";
+import { clearPendingApkInstall, getPendingApkInstall } from "../services/pendingApkInstall.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import { useTranslation } from "../i18n/I18nProvider.js";
@@ -17,7 +19,9 @@ import UpdateProgressModal from "../ui/features/UpdateProgressModal.jsx";
 const CHECK_TIMEOUT_MS = 10000;
 const AUTH_WAIT_MS = 12000;
 const CLOUD_SYNC_TIMEOUT_MS = 15000;
-const STARTUP_UPDATE_ATTEMPT_KEY = "perovo_startup_update_attempt";
+const OTA_ATTEMPT_KEY = "perovo_startup_ota_attempt";
+const APK_WAIT_POLL_MS = 3000;
+const APK_WAIT_MAX_MS = 120000;
 
 function shouldRunStartupUpdate() {
   return isEmbeddedApp() && !isUpdateTestShell();
@@ -33,14 +37,14 @@ function sleep(ms) {
   });
 }
 
-function startupUpdateAttemptKey(manifest) {
+function otaAttemptKey(manifest) {
   if (!manifest?.version) return "";
   return `${manifest.version}@${manifest.builtAt || ""}`;
 }
 
 /**
  * Blocks the app until cold-start update + optional cloud backup sync finish.
- * Runs before login UI so broken builds and stale backups heal on open.
+ * Startup never auto-downloads APK — only silent OTA. APK install is Profile → Update app.
  */
 export default function StartupUpdateGate({ children }) {
   const { t } = useTranslation();
@@ -53,6 +57,7 @@ export default function StartupUpdateGate({ children }) {
   const [ready, setReady] = useState(!needsBootstrap);
   const [updating, setUpdating] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [apkInstallWait, setApkInstallWait] = useState(false);
   const [awaitingCloud, setAwaitingCloud] = useState(() => {
     if (!shouldRunStartupCloudSync()) return false;
     try {
@@ -84,6 +89,22 @@ export default function StartupUpdateGate({ children }) {
         await sleep(100);
       }
       return authRef.current;
+    }
+
+    async function waitForApkInstallToFinish() {
+      setApkInstallWait(true);
+      const start = Date.now();
+      while (!cancelled && Date.now() - start < APK_WAIT_MAX_MS) {
+        const remote = await fetchRemoteManifest();
+        const localNative = await getLocalNativeAppVersion();
+        if (!remote?.version || !needsNativeApkUpdate(remote, localNative)) {
+          clearPendingApkInstall();
+          setApkInstallWait(false);
+          return;
+        }
+        await sleep(APK_WAIT_POLL_MS);
+      }
+      setApkInstallWait(false);
     }
 
     async function runCloudSync() {
@@ -124,7 +145,7 @@ export default function StartupUpdateGate({ children }) {
           invalidateInitialAppStateCache();
         }
       } catch {
-        /* non-blocking — login / manual restore still available */
+        /* non-blocking */
       } finally {
         if (!cancelled) setSyncing(false);
       }
@@ -132,6 +153,12 @@ export default function StartupUpdateGate({ children }) {
 
     async function runAppUpdate() {
       if (!shouldRunStartupUpdate()) return { restarting: false };
+
+      const pending = getPendingApkInstall();
+      if (pending?.version) {
+        await waitForApkInstallToFinish();
+        if (cancelled) return { restarting: false };
+      }
 
       setProgress({ phase: "checking", percent: 0 });
 
@@ -149,14 +176,23 @@ export default function StartupUpdateGate({ children }) {
 
       if (cancelled) return { restarting: false };
 
+      if (check?.status === "apk_pending") {
+        await waitForApkInstallToFinish();
+        return { restarting: false };
+      }
+
       if (check?.status !== "available") return { restarting: false };
 
-      const attemptKey = startupUpdateAttemptKey(check);
-      if (attemptKey && sessionStorage.getItem(STARTUP_UPDATE_ATTEMPT_KEY) === attemptKey) {
+      if (!check.needsOta) {
+        return { restarting: false };
+      }
+
+      const attemptKey = otaAttemptKey(check);
+      if (attemptKey && localStorage.getItem(OTA_ATTEMPT_KEY) === attemptKey) {
         return { restarting: false };
       }
       if (attemptKey) {
-        sessionStorage.setItem(STARTUP_UPDATE_ATTEMPT_KEY, attemptKey);
+        localStorage.setItem(OTA_ATTEMPT_KEY, attemptKey);
       }
 
       setUpdating(true);
@@ -164,6 +200,7 @@ export default function StartupUpdateGate({ children }) {
 
       try {
         const result = await applyAppUpdate({
+          allowApk: false,
           onProgress: (p) => {
             if (!cancelled) setProgress(p);
           },
@@ -171,7 +208,8 @@ export default function StartupUpdateGate({ children }) {
 
         if (cancelled) return { restarting: false };
 
-        if (result?.status === "apk_install") {
+        if (result?.status === "apk_install" || result?.status === "apk_pending") {
+          await waitForApkInstallToFinish();
           return { restarting: false };
         }
 
@@ -209,6 +247,10 @@ export default function StartupUpdateGate({ children }) {
 
   if (updating) {
     return <UpdateProgressModal open progress={progress} />;
+  }
+
+  if (apkInstallWait) {
+    return <BootShell message={t("startup.apkInstallWait")} />;
   }
 
   if (syncing || awaitingCloud) {

@@ -54,59 +54,70 @@ export async function applyNativeApkUpdate(manifest, onProgress) {
   const url = manifest.apkUrl || getApkDownloadUrl();
   if (!url) throw new Error("apk_missing");
 
+  const { markApkInstallPending, clearPendingApkInstall } = await import("./pendingApkInstall.js");
+  markApkInstallPending(manifest.version || "latest");
+
   onProgress?.({ phase: "downloading", percent: 0 });
 
-  const sep = url.includes("?") ? "&" : "?";
-  const response = await fetch(`${url}${sep}_t=${Date.now()}`, { cache: "no-store" });
-  if (!response.ok) throw new Error("apk_download_failed");
+  try {
+    const sep = url.includes("?") ? "&" : "?";
+    const response = await fetch(`${url}${sep}_t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error("apk_download_failed");
 
-  const contentLength = response.headers.get("Content-Length");
-  const total = manifest.apkSize || (contentLength ? Number.parseInt(contentLength, 10) : 0);
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error("apk_download_failed");
+    const contentLength = response.headers.get("Content-Length");
+    const total = manifest.apkSize || (contentLength ? Number.parseInt(contentLength, 10) : 0);
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("apk_download_failed");
 
-  const chunks = [];
-  let received = 0;
+    const chunks = [];
+    let received = 0;
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    received += value.length;
-    const percent = total
-      ? Math.min(100, Math.round((received / total) * 100))
-      : Math.min(99, Math.round(received / 50000));
-    onProgress?.({
-      phase: "downloading",
-      percent,
-      bytesLoaded: received,
-      bytesTotal: total || undefined,
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      const percent = total
+        ? Math.min(100, Math.round((received / total) * 100))
+        : Math.min(99, Math.round(received / 50000));
+      onProgress?.({
+        phase: "downloading",
+        percent,
+        bytesLoaded: received,
+        bytesTotal: total || undefined,
+      });
+    }
+
+    const blob = new Blob(chunks, { type: "application/vnd.android.package-archive" });
+    const base64 = await blobToBase64(blob);
+
+    const { Filesystem, Directory } = await import("@capacitor/filesystem");
+    const fileName = `perovo-update-${manifest.version || "latest"}.apk`;
+
+    await Filesystem.writeFile({
+      path: fileName,
+      data: base64,
+      directory: Directory.Cache,
     });
+
+    const { uri } = await Filesystem.getUri({
+      path: fileName,
+      directory: Directory.Cache,
+    });
+
+    onProgress?.({ phase: "installing", percent: 100 });
+
+    const { FileOpener } = await import("@capacitor-community/file-opener");
+    await FileOpener.open({
+      filePath: uri,
+      contentType: "application/vnd.android.package-archive",
+      openWithDefault: true,
+    });
+
+    const { tryExitAppAfterApkInstall } = await import("./pendingApkInstall.js");
+    await tryExitAppAfterApkInstall();
+  } catch (err) {
+    clearPendingApkInstall();
+    throw err;
   }
-
-  const blob = new Blob(chunks, { type: "application/vnd.android.package-archive" });
-  const base64 = await blobToBase64(blob);
-
-  const { Filesystem, Directory } = await import("@capacitor/filesystem");
-  const fileName = `perovo-update-${manifest.version || "latest"}.apk`;
-
-  await Filesystem.writeFile({
-    path: fileName,
-    data: base64,
-    directory: Directory.Cache,
-  });
-
-  const { uri } = await Filesystem.getUri({
-    path: fileName,
-    directory: Directory.Cache,
-  });
-
-  onProgress?.({ phase: "installing", percent: 100 });
-
-  const { FileOpener } = await import("@capacitor-community/file-opener");
-  await FileOpener.open({
-    filePath: uri,
-    contentType: "application/vnd.android.package-archive",
-    openWithDefault: true,
-  });
 }

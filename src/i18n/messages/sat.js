@@ -1886,6 +1886,7 @@ export default {
   "download.backToPlatforms": "ᱯᱞᱟᱴᱯᱷᱚᱨᱢ ᱨᱮ ᱨᱩᱣᱟᱹᱲ ᱢᱮ",
   "startup.updateGateChecking": "Checking for updates…",
   "startup.cloudSyncInProgress": "Syncing your cloud backup…",
+  "startup.apkInstallWait": "Finish installing Perovo from the Android dialog, then reopen the app.",
   "support.updateAppHint": "ᱱᱟᱶᱟ ᱵᱤᱞᱰ ᱞᱟᱹᱜᱤᱫ ᱟᱞᱮᱭᱟᱜ ᱥᱮᱨᱵᱷᱟᱨ ᱧᱮᱞ ᱢᱮ, ᱮᱯ ᱵᱷᱤᱛᱨᱭ ᱨᱮ ᱰᱟᱩᱱᱞᱳᱰ ᱢᱮ, ᱚᱱᱟ ᱛᱟᱭᱚᱢ ᱟᱡ ᱛᱮ ᱪᱟᱹᱞᱩᱭ ᱢᱮ ᱾",
   "support.updateAppChecking": "ᱟᱯᱰᱮᱴ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱧᱮᱞ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ...",
   "support.updateAppDownloading": "ᱱᱟᱶᱟ ᱵᱤᱞᱰ ᱰᱟᱩᱱᱞᱳᱰ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ...",

@@ -12,6 +12,7 @@ import {
   needsNativeApkUpdate,
 } from "./nativeApkUpdate.js";
 import { getAppliedOtaRecord } from "./appliedOtaMeta.js";
+import { isApkInstallPendingForRemote } from "./pendingApkInstall.js";
 
 /** @type {Promise<UpdateCheckResult> | null} */
 let _cachedCheck = null;
@@ -77,6 +78,7 @@ export async function checkForAppUpdate() {
 
   const apkNeeded = needsNativeApkUpdate(remote, localNative);
   const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
+  const apkPending = apkNeeded ? await isApkInstallPendingForRemote(remote) : false;
 
   const base = {
     localVersion: local.version,
@@ -87,8 +89,15 @@ export async function checkForAppUpdate() {
     bundleUrl: remote.bundleUrl,
     bundleSize: remote.bundleSize,
     apkUrl: remote.apkUrl,
-    updateKind: apkNeeded ? "apk" : otaNeeded ? "ota" : undefined,
+    updateKind: otaNeeded ? "ota" : apkNeeded && !apkPending ? "apk" : undefined,
+    apkInstallPending: apkPending,
+    needsApk: apkNeeded && !apkPending,
+    needsOta: otaNeeded,
   };
+
+  if (apkPending) {
+    return { status: "apk_pending", ...base };
+  }
 
   if (!apkNeeded && !otaNeeded) {
     return { status: "current", ...base };
@@ -190,20 +199,23 @@ async function applyWebStaticUpdate(remote, onProgress) {
 /**
  * @param {UpdateManifest} remote
  * @param {(p: UpdateProgress) => void} [onProgress]
+ * @param {{ allowApk?: boolean }} [opts]
  */
-async function applyEmbeddedUpdate(remote, onProgress) {
+async function applyEmbeddedUpdate(remote, onProgress, opts = {}) {
+  const { allowApk = false } = opts;
   onProgress?.({ phase: "checking", percent: 0 });
 
+  const local = await resolveLocalUpdateState();
   const localNative = await getLocalNativeAppVersion();
-  if (needsNativeApkUpdate(remote, localNative)) {
+  const apkNeeded = needsNativeApkUpdate(remote, localNative);
+  const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
+
+  if (apkNeeded && allowApk) {
     await applyNativeApkUpdate(remote, onProgress);
     return { kind: "apk" };
   }
 
-  if (canUseNativeOta()) {
-    if (!remote.bundleUrl) {
-      throw new Error("bundle_missing");
-    }
+  if (canUseNativeOta() && remote.bundleUrl && otaNeeded) {
     await applyNativeOtaUpdate(
       {
         version: remote.version || LOCAL_VERSION,
@@ -216,16 +228,20 @@ async function applyEmbeddedUpdate(remote, onProgress) {
     return { kind: "ota" };
   }
 
+  if (apkNeeded && !allowApk) {
+    return { kind: "apk_deferred" };
+  }
+
   await applyPwaUpdate(onProgress);
   return { kind: "ota" };
 }
 
 /**
  * Check server, download update in-app, restart.
- * @param {{ onProgress?: (p: UpdateProgress) => void, force?: boolean }} [opts]
+ * @param {{ onProgress?: (p: UpdateProgress) => void, force?: boolean, allowApk?: boolean }} [opts]
  */
 export async function applyAppUpdate(opts = {}) {
-  const { onProgress, force = false } = opts;
+  const { onProgress, force = false, allowApk = false } = opts;
   onProgress?.({ phase: "checking", percent: 0 });
 
   const remote = await fetchRemoteManifest();
@@ -233,14 +249,22 @@ export async function applyAppUpdate(opts = {}) {
   const localNative = await getLocalNativeAppVersion();
   const apkNeeded = remote && needsNativeApkUpdate(remote, localNative);
   const otaNeeded = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
+  const apkPending = remote && apkNeeded ? await isApkInstallPendingForRemote(remote) : false;
 
   if (!force && remote?.version && !apkNeeded && !otaNeeded) {
     return { status: "current" };
   }
 
+  if (!force && apkPending) {
+    return { status: "apk_pending" };
+  }
+
   if (isEmbeddedApp()) {
     if (remote) {
-      const result = await applyEmbeddedUpdate(remote, onProgress);
+      const result = await applyEmbeddedUpdate(remote, onProgress, { allowApk });
+      if (result.kind === "apk_deferred") {
+        return { status: "apk_deferred" };
+      }
       return { status: result.kind === "apk" ? "apk_install" : "restarting" };
     }
     throw new Error("manifest_missing");

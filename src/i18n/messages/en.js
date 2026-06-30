@@ -2036,6 +2036,7 @@ export default {
 
   "startup.updateGateChecking": "Checking for updates…",
   "startup.cloudSyncInProgress": "Syncing your cloud backup…",
+  "startup.apkInstallWait": "Finish installing Perovo from the Android dialog, then reopen the app.",
   "support.updateAppHint": "Checks our server for updates. Web changes install inside the app; shell updates open the Android installer (no uninstall needed).",
   "support.updateAppChecking": "Checking for updates…",
   "support.updateAppDownloading": "Downloading the latest build…",

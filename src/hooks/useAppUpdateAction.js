@@ -19,6 +19,12 @@ export function useAppUpdateAction() {
     try {
       const result = await checkForAppUpdate();
 
+      if (result.status === "apk_pending") {
+        setStatus(t("support.updateAppApkInstall"));
+        setBusy(false);
+        return;
+      }
+
       if (result.status === "current") {
         setStatus(t("support.updateAppCurrent", { version: result.localVersion }));
         setBusy(false);
@@ -41,6 +47,7 @@ export function useAppUpdateAction() {
 
       setProgressOpen(true);
       const applyResult = await applyAppUpdate({
+        allowApk: true,
         force: result.status === "unknown",
         onProgress: (p) => {
           setProgress(p);
