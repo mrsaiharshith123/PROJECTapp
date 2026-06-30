@@ -117,6 +117,11 @@ if (fs.existsSync(manifestPath)) {
 manifest.appUrl = normalizedAppUrl;
 manifest.bundleUrl = `${normalizedBundleBase}app-bundle.zip`;
 manifest.bundleSize = size;
+manifest.apkUrl = `${normalizedBundleBase}apk/Perovo-dev-latest.apk`;
+const apkPath = path.join(ROOT, "releases", "Perovo-dev-latest.apk");
+if (fs.existsSync(apkPath)) {
+  manifest.apkSize = fs.statSync(apkPath).size;
+}
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
 console.log(`app-bundle.zip → ${(size / 1024 / 1024).toFixed(2)} MB (Capacitor-safe paths)`);

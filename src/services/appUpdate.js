@@ -6,6 +6,11 @@ import {
   remoteAppUrlWithVersion,
 } from "../utils/updateServer.js";
 import { applyNativeOtaUpdate, canUseNativeOta, getNativeBundleInfo } from "./nativeOtaUpdate.js";
+import {
+  applyNativeApkUpdate,
+  getLocalNativeAppVersion,
+  needsNativeApkUpdate,
+} from "./nativeApkUpdate.js";
 
 /** @type {Promise<UpdateCheckResult> | null} */
 let _cachedCheck = null;
@@ -18,8 +23,8 @@ const SW_WAIT_MS = 12000;
 /**
  * @typedef {"checking"|"downloading"|"restarting"|"current"|"available"|"unknown"} UpdatePhase
  * @typedef {{ phase?: UpdatePhase | string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} UpdateProgress
- * @typedef {{ version?: string, builtAt?: string, appUrl?: string, bundleUrl?: string, bundleSize?: number, releaseNotes?: string }} UpdateManifest
- * @typedef {{ status: "current" | "available" | "unknown", localVersion: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number }} UpdateCheckResult
+ * @typedef {{ version?: string, builtAt?: string, appUrl?: string, bundleUrl?: string, bundleSize?: number, apkUrl?: string, apkSize?: number, releaseNotes?: string }} UpdateManifest
+ * @typedef {{ status: "current" | "available" | "unknown", updateKind?: "apk" | "ota", localVersion: string, localNativeVersion?: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number, apkUrl?: string }} UpdateCheckResult
  */
 
 /**
@@ -58,21 +63,28 @@ async function resolveLocalUpdateState() {
 export async function checkForAppUpdate() {
   const remote = await fetchRemoteManifest();
   const local = await resolveLocalUpdateState();
+  const localNative = await getLocalNativeAppVersion();
 
   if (!remote?.version) {
-    return { status: "unknown", localVersion: local.version };
+    return { status: "unknown", localVersion: local.version, localNativeVersion: localNative };
   }
+
+  const apkNeeded = needsNativeApkUpdate(remote, localNative);
+  const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
 
   const base = {
     localVersion: local.version,
+    localNativeVersion: localNative,
     remoteVersion: remote.version,
     builtAt: remote.builtAt,
     releaseNotes: remote.releaseNotes,
     bundleUrl: remote.bundleUrl,
     bundleSize: remote.bundleSize,
+    apkUrl: remote.apkUrl,
+    updateKind: apkNeeded ? "apk" : otaNeeded ? "ota" : undefined,
   };
 
-  if (!isRemoteManifestNewer(remote, local.version, local.builtAt)) {
+  if (!apkNeeded && !otaNeeded) {
     return { status: "current", ...base };
   }
 
@@ -176,6 +188,12 @@ async function applyWebStaticUpdate(remote, onProgress) {
 async function applyEmbeddedUpdate(remote, onProgress) {
   onProgress?.({ phase: "checking", percent: 0 });
 
+  const localNative = await getLocalNativeAppVersion();
+  if (needsNativeApkUpdate(remote, localNative)) {
+    await applyNativeApkUpdate(remote, onProgress);
+    return { kind: "apk" };
+  }
+
   if (canUseNativeOta()) {
     if (!remote.bundleUrl) {
       throw new Error("bundle_missing");
@@ -188,10 +206,11 @@ async function applyEmbeddedUpdate(remote, onProgress) {
       },
       onProgress,
     );
-    return;
+    return { kind: "ota" };
   }
 
   await applyPwaUpdate(onProgress);
+  return { kind: "ota" };
 }
 
 /**
@@ -204,16 +223,18 @@ export async function applyAppUpdate(opts = {}) {
 
   const remote = await fetchRemoteManifest();
   const local = await resolveLocalUpdateState();
-  const hasUpdate = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
+  const localNative = await getLocalNativeAppVersion();
+  const apkNeeded = remote && needsNativeApkUpdate(remote, localNative);
+  const otaNeeded = remote && isRemoteManifestNewer(remote, local.version, local.builtAt);
 
-  if (!force && remote?.version && !hasUpdate) {
+  if (!force && remote?.version && !apkNeeded && !otaNeeded) {
     return { status: "current" };
   }
 
   if (isEmbeddedApp()) {
     if (remote) {
-      await applyEmbeddedUpdate(remote, onProgress);
-      return { status: "restarting" };
+      const result = await applyEmbeddedUpdate(remote, onProgress);
+      return { status: result.kind === "apk" ? "apk_install" : "restarting" };
     }
     throw new Error("manifest_missing");
   }

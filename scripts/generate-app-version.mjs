@@ -17,6 +17,12 @@ const out = {
 };
 
 const normalizedBase = out.appUrl.endsWith("/") ? out.appUrl : `${out.appUrl}/`;
+out.apkUrl = `${normalizedBase}apk/Perovo-dev-latest.apk`;
+
+const apkPath = path.join(root, "releases", "Perovo-dev-latest.apk");
+if (fs.existsSync(apkPath)) {
+  out.apkSize = fs.statSync(apkPath).size;
+}
 for (const zipRel of ["dist/app-bundle.zip", "public/app-bundle.zip"]) {
   const zipPath = path.join(root, zipRel);
   if (fs.existsSync(zipPath)) {

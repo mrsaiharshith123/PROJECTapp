@@ -27,9 +27,11 @@ export default function UpdateProgressModal({ open, progress }) {
   const phaseKey =
     progress?.phase === "restarting"
       ? "support.updateAppRestarting"
-      : progress?.phase === "checking"
-        ? "support.updateAppChecking"
-        : "support.updateAppDownloading";
+      : progress?.phase === "installing"
+        ? "support.updateAppApkInstalling"
+        : progress?.phase === "checking"
+          ? "support.updateAppChecking"
+          : "support.updateAppDownloading";
 
   return (
     <div className="ct-update-progress-overlay" role="dialog" aria-modal="true" aria-busy="true">

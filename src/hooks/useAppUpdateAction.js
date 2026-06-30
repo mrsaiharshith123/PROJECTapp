@@ -26,24 +26,39 @@ export function useAppUpdateAction() {
       }
 
       if (result.status === "available" && result.remoteVersion) {
-        setStatus(
-          t("support.updateAppAvailable", {
-            local: result.localVersion,
-            remote: result.remoteVersion,
-          }),
-        );
+        const kind =
+          result.updateKind === "apk"
+            ? t("support.updateAppAvailableApk", {
+                local: result.localNativeVersion || result.localVersion,
+                remote: result.remoteVersion,
+              })
+            : t("support.updateAppAvailable", {
+                local: result.localVersion,
+                remote: result.remoteVersion,
+              });
+        setStatus(kind);
       }
 
       setProgressOpen(true);
-      await applyAppUpdate({
+      const applyResult = await applyAppUpdate({
         force: result.status === "unknown",
         onProgress: (p) => {
           setProgress(p);
-          if (p.phase === "restarting") {
+          if (p.phase === "installing") {
+            setStatus(t("support.updateAppApkInstalling"));
+          } else if (p.phase === "restarting") {
             setStatus(t("support.updateAppRestarting"));
           }
         },
       });
+
+      if (applyResult?.status === "apk_install") {
+        setProgressOpen(false);
+        setBusy(false);
+        setStatus(t("support.updateAppApkInstall"));
+        return;
+      }
+
       window.setTimeout(() => {
         setProgressOpen(false);
         setBusy(false);
@@ -53,7 +68,7 @@ export function useAppUpdateAction() {
       const code = err instanceof Error ? err.message : "";
       if (code === "bundle_missing") {
         setStatus(t("support.updateAppBundleMissing"));
-      } else if (code === "ota_download_failed") {
+      } else if (code === "ota_download_failed" || code === "apk_download_failed" || code === "apk_encode_failed" || code === "apk_missing") {
         setStatus(t("support.updateAppDownloadFailed"));
       } else if (code === "ota_apply_failed" || code === "ota_apply_timeout" || code === "ota_bundle_id_missing") {
         setStatus(t("support.updateAppApplyFailed"));

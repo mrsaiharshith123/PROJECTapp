@@ -22,7 +22,7 @@ export function getApkDownloadUrl() {
   if (configured) return configured;
 
   if (isEmbeddedApp()) {
-    return GH_RELEASE_APK;
+    return getPagesApkUrl();
   }
 
   if (import.meta.env.PROD && typeof window !== "undefined") {

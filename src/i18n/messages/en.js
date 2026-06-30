@@ -2035,7 +2035,7 @@ export default {
   "download.backToPlatforms": "← Back to platforms",
 
   "support.updateApp": "Update app",
-  "support.updateAppHint": "Check our server for a new build, download it inside the app, then restart automatically.",
+  "support.updateAppHint": "Checks our server for updates. Web changes install inside the app; shell updates open the Android installer (no uninstall needed).",
   "support.updateAppChecking": "Checking for updates…",
   "support.updateAppDownloading": "Downloading the latest build…",
   "support.updateAppRestarting": "Restarting to apply the update…",
@@ -2044,6 +2044,10 @@ export default {
   "support.updateAppBundleMissing": "Update bundle not on the server yet. Deploy with npm run ship first.",
   "support.updateAppCurrent": "You are on the latest version ({version}).",
   "support.updateAppAvailable": "Version {remote} is available — you have {local}.",
+  "support.updateAppAvailableApk": "App {remote} is available — you have {local}. Downloading installer…",
+  "support.updateAppApkInstalling": "Opening Android installer…",
+  "support.updateAppApkInstall":
+    "Tap Install on the next screen to update. You do not need to uninstall first.",
   "support.updateAppApplying": "Updating…",
   "support.updateAppDone": "Update started — the app will refresh.",
   "support.updateAppError": "Could not check for updates. Try again on Wi‑Fi.",
