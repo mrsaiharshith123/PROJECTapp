@@ -4,12 +4,16 @@ import { fileURLToPath } from "url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = path.join(root, "public");
-const lightSource = path.join(publicDir, "brand", "icon-light.png");
-const darkSource = path.join(publicDir, "brand", "icon-dark.png");
-const source = fs.existsSync(lightSource) ? lightSource : darkSource;
+const lightSvg = path.join(publicDir, "brand", "icon-light.svg");
+const darkSvg = path.join(publicDir, "brand", "icon-dark.svg");
+const lightPng = path.join(publicDir, "brand", "icon-light.png");
+const darkPng = path.join(publicDir, "brand", "icon-dark.png");
 
-if (!fs.existsSync(source)) {
-  console.warn("Skip PWA icons: public/brand/icon-light.png and icon-dark.png missing");
+const svgSource = fs.existsSync(lightSvg) ? lightSvg : darkSvg;
+const pngFallback = fs.existsSync(lightPng) ? lightPng : darkPng;
+
+if (!fs.existsSync(svgSource) && !fs.existsSync(pngFallback)) {
+  console.warn("Skip PWA icons: brand SVG/PNG missing");
   process.exit(0);
 }
 
@@ -21,6 +25,15 @@ try {
   process.exit(0);
 }
 
+async function rasterize(source, out, px) {
+  if (source.endsWith(".svg")) {
+    await sharp(fs.readFileSync(source), { density: 384 }).resize(px, px).png().toFile(out);
+  } else {
+    await sharp(source).resize(px, px).png().toFile(out);
+  }
+  console.log("Wrote", out);
+}
+
 const sizes = [
   { name: "pwa-192.png", px: 192 },
   { name: "pwa-512.png", px: 512 },
@@ -28,20 +41,32 @@ const sizes = [
 ];
 
 for (const { name, px } of sizes) {
-  const out = path.join(publicDir, name);
-  await sharp(source).resize(px, px).png().toFile(out);
-  console.log("Wrote", out);
+  await rasterize(svgSource, path.join(publicDir, name), px);
 }
 
-if (fs.existsSync(darkSource) && source !== darkSource) {
+if (fs.existsSync(darkSvg) && svgSource !== darkSvg) {
   for (const { name, px } of [
     { name: "pwa-192-dark.png", px: 192 },
     { name: "pwa-512-dark.png", px: 512 },
   ]) {
-    const out = path.join(publicDir, name);
-    await sharp(darkSource).resize(px, px).png().toFile(out);
-    console.log("Wrote", out);
+    await rasterize(darkSvg, path.join(publicDir, name), px);
+  }
+} else if (fs.existsSync(darkSvg)) {
+  for (const { name, px } of [
+    { name: "pwa-192-dark.png", px: 192 },
+    { name: "pwa-512-dark.png", px: 512 },
+  ]) {
+    await rasterize(darkSvg, path.join(publicDir, name), px);
   }
 }
 
-console.log(`PWA icons generated from ${path.basename(source)} (light editorial default)`);
+for (const [svg, png] of [
+  [lightSvg, lightPng],
+  [darkSvg, darkPng],
+]) {
+  if (fs.existsSync(svg)) {
+    await rasterize(svg, png, 512);
+  }
+}
+
+console.log(`PWA icons generated from ${path.basename(svgSource)} (wide viewBox SVG)`);

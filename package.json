@@ -12,6 +12,7 @@
     "preview:simulate-pay": "node scripts/dev-simulate-pay.mjs preview",
     "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-app-version.mjs && node scripts/vite-build-pages.mjs && node scripts/build-ota-bundle.mjs && node scripts/copy-404.mjs",
     "capture:landing-screens": "node scripts/capture-landing-screens.mjs",
+    "generate:android-icons": "node scripts/generate-android-icons.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "node scripts/clean.mjs",
@@ -145,6 +146,7 @@
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.4.2",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
