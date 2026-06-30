@@ -20,6 +20,7 @@ import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 import CloudRestoreGate from "./app/CloudRestoreGate.jsx";
 import StartupUpdateGate from "./app/StartupUpdateGate.jsx";
+import NativePermissionGate from "./app/NativePermissionGate.jsx";
 import HouseholdRoomBridge from "./app/HouseholdRoomBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
@@ -343,7 +344,9 @@ function App() {
                     path="*"
                     element={
                       <StartupUpdateGate>
-                        <AppShell />
+                        <NativePermissionGate>
+                          <AppShell />
+                        </NativePermissionGate>
                       </StartupUpdateGate>
                     }
                   />

@@ -3003,6 +3003,74 @@ html[data-ui="ct"] .ct-auth-footer {
 
 /* Onboarding */
 html[data-ui="ct"] .ct-onboard-page { display: flex; flex-direction: column; gap: 1.5rem; max-width: 32rem; margin: 0 auto; padding-bottom: 2rem; }
+
+/* Native permission gate */
+html[data-ui="ct"] .ct-perm-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 1.5rem;
+}
+html[data-ui="ct"] .ct-perm-gate-panel {
+  width: 100%;
+  max-width: 24rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+html[data-ui="ct"] .ct-perm-gate-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+html[data-ui="ct"] .ct-perm-gate-body {
+  text-align: center;
+  line-height: 1.5;
+}
+html[data-ui="ct"] .ct-perm-gate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+html[data-ui="ct"] .ct-perm-gate-list li {
+  padding: 0.875rem 1rem;
+  border-radius: var(--ct-radius-lg);
+  border: 1px solid var(--ct-border);
+  background: var(--ct-surface-inset);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+html[data-ui="ct"] .ct-perm-gate-list li strong {
+  font-size: 0.9375rem;
+}
+html[data-ui="ct"] .ct-perm-gate-list li span {
+  font-size: 0.8125rem;
+  color: var(--ct-text-muted);
+  line-height: 1.45;
+}
+html[data-ui="ct"] .ct-perm-gate-state {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ct-text-muted);
+}
+html[data-ui="ct"] .ct-perm-gate-denied {
+  text-align: center;
+  color: var(--ct-text-caution);
+  line-height: 1.45;
+}
+html[data-ui="ct"] .ct-perm-gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
 html[data-ui="ct"] .ct-option-card {
   display: block;
   width: 100%;
