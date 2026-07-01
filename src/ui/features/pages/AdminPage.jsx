@@ -79,7 +79,6 @@ export default function AdminPage() {
   const integrations = [
     { label: "Razorpay", ok: isRazorpayConfigured(), note: isRazorpayConfigured() ? t("admin.system.connected") : t("admin.system.notConfigured") },
     { label: "Sentry", ok: Boolean(import.meta.env.VITE_SENTRY_DSN), note: import.meta.env.VITE_SENTRY_DSN ? t("admin.system.connected") : t("admin.system.notConfigured") },
-    { label: "Firebase FCM", ok: Boolean(import.meta.env.VITE_FIREBASE_API_KEY), note: import.meta.env.VITE_FIREBASE_API_KEY ? t("admin.system.connected") : t("admin.system.notConfigured") },
   ];
 
   if (loading && !data) {

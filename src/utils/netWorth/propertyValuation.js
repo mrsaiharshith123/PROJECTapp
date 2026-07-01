@@ -50,75 +50,10 @@ export function computePurchasePriceFromRate(ratePerSqYard, areaSqYards) {
   return Math.round(rate * area);
 }
 
-/** @param {"metro" | "tier2" | "tier3" | string} [tier] */
-export function propertyAnnualGrowthPct(tier) {
-  if (tier === "metro") return 8.5;
-  if (tier === "tier2") return 7;
-  return 7.5;
-}
-
 /**
- * Compound growth from purchase to today (month-aware).
- * @param {number} purchasePrice
- * @param {number} purchaseYear
- * @param {number} [purchaseMonth]
- * @param {number} [annualGrowthPct]
- * @param {Date} [now]
- */
-export function estimatePropertyCurrentValue(
-  purchasePrice,
-  purchaseYear,
-  purchaseMonth = 1,
-  annualGrowthPct = 7.5,
-  now = new Date(),
-) {
-  const price = Number(purchasePrice);
-  const years = yearsSincePurchase(purchaseYear, purchaseMonth, now);
-  if (!price || price <= 0 || years == null || years <= 0) return null;
-  const rate = Number(annualGrowthPct) || 7.5;
-  return Math.round(price * Math.pow(1 + rate / 100, years));
-}
-
-/**
- * @param {Pick<import('./wealthStorage.js').WealthEntry, 'location' | 'categoryId'>} entry
- * @param {{ userCity?: string }} [settings]
- */
-export function resolvePropertyGrowthTier(entry, settings = {}) {
-  const label = entry.location || "";
-  const cityId = settings.userCity || "";
-  if (/hyderabad|bengaluru|mumbai|delhi|chennai|kolkata|pune/i.test(label)) return "metro";
-  if (/jaipur|lucknow|nagpur|indore|coimbatore/i.test(label)) return "tier2";
-  if (cityId && /metro|tier1/i.test(cityId)) return "metro";
-  return "tier3";
-}
-
-/**
- * Live estimated value for auto-valued property entries.
+ * Property values are set via Google Search at save/refresh — not compounded locally.
  * @param {import('./wealthStorage.js').WealthEntry} entry
- * @param {{ userCity?: string }} [settings]
  */
-export function resolveLivePropertyValue(entry, settings = {}) {
-  if (!usesAutoPropertyValuation(entry)) return Number(entry.value) || 0;
-  const purchasePrice = Number(entry.purchasePrice) || 0;
-  if (!purchasePrice) return Number(entry.value) || 0;
-  const tier = resolvePropertyGrowthTier(entry, settings);
-  const growth = propertyAnnualGrowthPct(tier);
-  const estimated = estimatePropertyCurrentValue(
-    purchasePrice,
-    entry.purchaseYear,
-    entry.purchaseMonth,
-    growth,
-  );
-  return estimated ?? (Number(entry.value) || 0);
-}
-
-/**
- * @param {import('./wealthStorage.js').WealthEntry} entry
- * @param {{ userCity?: string }} [settings]
- */
-export function withLivePropertyValue(entry, settings = {}) {
-  if (!usesAutoPropertyValuation(entry)) return entry;
-  const value = resolveLivePropertyValue(entry, settings);
-  if (value === entry.value) return entry;
-  return { ...entry, value };
+export function withLivePropertyValue(entry) {
+  return entry;
 }

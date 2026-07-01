@@ -57,20 +57,8 @@ export async function requestNotificationPermission() {
   if (Notification.permission === "granted") return "granted";
   if (Notification.permission === "denied") return "denied";
   const result = await Notification.requestPermission();
-  if (result === "granted") {
-    import("./fcmService.js")
-      .then(({ requestFcmToken }) => requestFcmToken())
-      .then((token) => {
-        if (token) {
-          try {
-            localStorage.setItem("perovo_fcm_token", token);
-          } catch {
-            /* ignore */
-          }
-        }
-      })
-      .catch(() => {});
-  }
+  // FCM token not used — notifications run via @capacitor/local-notifications
+  // on Android and navigator.serviceWorker on browser.
   return result;
 }
 

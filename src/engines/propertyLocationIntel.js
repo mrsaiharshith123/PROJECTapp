@@ -12,6 +12,96 @@ const PROPERTY_IDS = new Set([
 
 const DEFAULT_INFLATION_PCT = 6;
 const BENCHMARK_REAL_ESTATE_CAGR = 7.5;
+const LTCG_PROPERTY_YEARS = 2;
+const LTCG_PROPERTY_RATE = 0.125;
+
+/**
+ * @param {number} purchaseAmount
+ * @param {number} currentValue
+ * @param {number | null} yearsHeld
+ */
+function computePropertyCapitalGains(purchaseAmount, currentValue, yearsHeld) {
+  if (!purchaseAmount || !currentValue || purchaseAmount <= 0) return null;
+  const gain = currentValue - purchaseAmount;
+  if (gain <= 0) return null;
+  const isLongTerm = yearsHeld != null && yearsHeld >= LTCG_PROPERTY_YEARS;
+  const taxAmount = isLongTerm
+    ? Math.round(gain * LTCG_PROPERTY_RATE)
+    : Math.round(gain * 0.3);
+  return {
+    gain,
+    isLongTerm,
+    taxAmount,
+    netProceeds: currentValue - taxAmount,
+    taxRatePct: isLongTerm ? 12.5 : 30,
+  };
+}
+
+/**
+ * @param {number} currentValue
+ * @param {number} cagr
+ */
+function buildPropertyProjections(currentValue, cagr) {
+  if (!currentValue || cagr == null || cagr <= 0) return [];
+  return [3, 5, 10].map((yrs) => ({
+    years: yrs,
+    value: Math.round(currentValue * (1 + cagr / 100) ** yrs),
+    atBenchmark: Math.round(currentValue * (1 + 8 / 100) ** yrs),
+  }));
+}
+
+/**
+ * @param {import('../utils/netWorth/wealthStorage.js').WealthEntry} entry
+ * @param {number} purchaseAmount
+ * @param {number} currentValue
+ */
+function computeRatePerUnit(entry, purchaseAmount, currentValue) {
+  const area = Number(entry.areaMeasure) || 0;
+  if (!area || area <= 0) return null;
+  const purchaseRate = purchaseAmount > 0 ? Math.round(purchaseAmount / area) : null;
+  const storedRate = entry.marketRatePerSqyd != null ? Math.round(Number(entry.marketRatePerSqyd)) : null;
+  const currentRate =
+    storedRate && storedRate > 0
+      ? storedRate
+      : currentValue > 0
+        ? Math.round(currentValue / area)
+        : null;
+  return { area, unit: entry.areaUnit || "sqft", purchaseRate, currentRate };
+}
+
+/**
+ * @param {object} ctx
+ */
+function resolveSellTimingAdvice(ctx) {
+  const {
+    hasPurchaseData,
+    capitalGains,
+    yearsHeld,
+    realReturn,
+    cagr,
+    benchmarkCagr,
+  } = ctx;
+  if (!hasPurchaseData) return null;
+
+  if (capitalGains && !capitalGains.isLongTerm) {
+    const yearsLeft = Math.max(0, LTCG_PROPERTY_YEARS - (yearsHeld || 0));
+    const taxSaving = Math.round(capitalGains.gain * (0.3 - LTCG_PROPERTY_RATE));
+    return {
+      key: "wealthDetail.property.sellWaitLtcg",
+      params: { years: yearsLeft.toFixed(1), taxSaving },
+    };
+  }
+  if (realReturn != null && realReturn < 0 && yearsHeld != null && yearsHeld > 5) {
+    return { key: "wealthDetail.property.sellNegativeReturn" };
+  }
+  if (cagr != null && cagr > benchmarkCagr + 2 && yearsHeld != null && yearsHeld >= 5) {
+    return {
+      key: "wealthDetail.property.sellOutperform",
+      params: { delta: (cagr - benchmarkCagr).toFixed(1) },
+    };
+  }
+  return { key: "wealthDetail.property.sellHoldMonitor" };
+}
 
 /**
  * Tier from property location text first; profile city only as fallback.
@@ -103,7 +193,13 @@ export function analyzePropertyLocation(entry, settings = {}) {
   const hasPin = entry.latitude != null && entry.longitude != null;
 
   const benchmarkCagr =
-    tier === "metro" ? 8.5 : tier === "tier2" ? 7 : BENCHMARK_REAL_ESTATE_CAGR;
+    entry.marketAnnualGrowthPct != null && entry.marketAnnualGrowthPct > 0
+      ? Number(entry.marketAnnualGrowthPct)
+      : tier === "metro"
+        ? 8.5
+        : tier === "tier2"
+          ? 7
+          : BENCHMARK_REAL_ESTATE_CAGR;
   const vsBenchmark = cagr != null ? Math.round((cagr - benchmarkCagr) * 10) / 10 : null;
 
   let holdVerdict = "neutral";
@@ -178,6 +274,26 @@ export function analyzePropertyLocation(entry, settings = {}) {
   const developmentOutlookKey = resolveDevelopmentOutlookKey(tier);
   const outlookArea = resolveOutlookArea(entry.location);
 
+  const capitalGains = hasPurchaseData
+    ? computePropertyCapitalGains(purchaseAmount, currentValue, yearsHeld)
+    : null;
+
+  const projections =
+    hasPurchaseData && cagr != null && cagr > 0
+      ? buildPropertyProjections(currentValue, cagr)
+      : [];
+
+  const ratePerUnit = computeRatePerUnit(entry, purchaseAmount, currentValue);
+
+  const sellTimingAdvice = resolveSellTimingAdvice({
+    hasPurchaseData,
+    capitalGains,
+    yearsHeld,
+    realReturn,
+    cagr,
+    benchmarkCagr,
+  });
+
   const narrativeKeys = buildPropertyNarrativeKeys({
     hasPurchaseData,
     holdVerdict,
@@ -227,6 +343,10 @@ export function analyzePropertyLocation(entry, settings = {}) {
     categoryId: entry.categoryId,
     purchasePrice: purchaseAmount,
     purchaseSource: purchasePrice.source,
+    capitalGains,
+    projections,
+    ratePerUnit,
+    sellTimingAdvice,
   };
 }
 

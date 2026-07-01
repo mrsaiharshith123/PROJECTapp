@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+// ═══════════════════════════════════════════════════
+// KEEP ON ANTHROPIC CLAUDE — DO NOT MIGRATE TO GEMINI
+// This script translates financial terminology into 22
+// Indian languages including minority languages (Maithili,
+// Santali, Manipuri, Konkani, Kashmiri). Claude Haiku
+// produces significantly better quality for these low-resource
+// languages. Cost: ~₹50-150 total per full run (dev only).
+// ═══════════════════════════════════════════════════
 /**
  * Fill locale files with machine translations where values still match English.
  * Uses Anthropic Claude API with financial glossary context.

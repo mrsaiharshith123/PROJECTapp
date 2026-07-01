@@ -31,17 +31,6 @@ export default function NotificationSync() {
   const lastSnapshotKey = useRef("");
 
   useEffect(() => {
-    if (isNativeCapacitorShell()) return undefined;
-    let cleanup = () => {};
-    import("../services/notifications/fcmService.js")
-      .then(({ listenForForegroundMessages }) => {
-        cleanup = listenForForegroundMessages(() => {});
-      })
-      .catch(() => {});
-    return () => cleanup();
-  }, []);
-
-  useEffect(() => {
     if (settings.remindersEnabled === false) return;
     if (isNativeCapacitorShell()) return;
     if (getNotificationPermission() !== "granted") return;

@@ -11,7 +11,6 @@ import {
   invalidateWealthCache,
   dedupeWealthEntries,
 } from "../utils/netWorth/wealthStorage.js";
-import { withLivePropertyValue } from "../utils/netWorth/propertyValuation.js";
 import { appendDailyWealthSnapshot } from "../utils/netWorth/dailySnapshot.js";
 import { computeNetWorthCore, computeGrowthRates } from "../engines/netWorth/core.js";
 import { detectNewMilestones } from "../engines/netWorth/milestones.js";
@@ -96,8 +95,7 @@ export function NetWorthProvider({ children }) {
   }, []);
 
   const profileEntries = useMemo(
-    () =>
-      filterWealthByProfile(state.entries, profileId).map((e) => withLivePropertyValue(e, settings)),
+    () => filterWealthByProfile(state.entries, profileId),
     [state.entries, profileId, settings],
   );
 

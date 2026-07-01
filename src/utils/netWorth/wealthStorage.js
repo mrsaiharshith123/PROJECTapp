@@ -26,6 +26,11 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [purchasePrice]
  * @property {number} [purchaseRatePerUnit]
  * @property {boolean} [valueAutoEstimated]
+ * @property {number} [marketRatePerSqyd]
+ * @property {number} [marketAnnualGrowthPct]
+ * @property {number} [valueAiFetchedAt]
+ * @property {{ year: number, value: number, ratePerSqyd?: number }[]} [valueHistorySeries]
+ * @property {number} [valueHistoryFetchedAt]
  * @property {string} [location]
  * @property {number} [latitude]
  * @property {number} [longitude]
@@ -124,6 +129,26 @@ export function normalizeWealthEntry(raw) {
     purchasePrice: optNum(r.purchasePrice),
     purchaseRatePerUnit: optNum(r.purchaseRatePerUnit),
     valueAutoEstimated: Boolean(r.valueAutoEstimated),
+    marketRatePerSqyd: optNum(r.marketRatePerSqyd),
+    marketAnnualGrowthPct: optNum(r.marketAnnualGrowthPct),
+    valueAiFetchedAt: r.valueAiFetchedAt != null ? Number(r.valueAiFetchedAt) || undefined : undefined,
+    valueHistorySeries: Array.isArray(r.valueHistorySeries)
+      ? r.valueHistorySeries
+          .map((p) => {
+            const row = /** @type {Record<string, unknown>} */ (p || {});
+            const year = Number(row.year);
+            const value = Number(row.value);
+            if (!year || !value) return null;
+            return {
+              year,
+              value,
+              ratePerSqyd: row.ratePerSqyd != null ? Number(row.ratePerSqyd) : undefined,
+            };
+          })
+          .filter(Boolean)
+      : undefined,
+    valueHistoryFetchedAt:
+      r.valueHistoryFetchedAt != null ? Number(r.valueHistoryFetchedAt) || undefined : undefined,
     location: optStr(r.location),
     latitude: r.latitude != null ? Number(r.latitude) : undefined,
     longitude: r.longitude != null ? Number(r.longitude) : undefined,

@@ -1,6 +1,7 @@
 import { getSupabaseClient } from "../supabase/auth.js";
 import { getAssetCategory } from "../../constants/netWorth/wealthCategories.js";
 import { analyzePropertyLocation } from "../../engines/propertyLocationIntel.js";
+import { expandMilestonesToSeries } from "../../utils/netWorth/propertyValueHistory.js";
 
 const ASSET_INSIGHT_FUNCTION = "asset-insight";
 
@@ -21,6 +22,47 @@ const PROPERTY_IDS = new Set([
   "property_land",
   "property_commercial",
 ]);
+
+function wantsLiveMarketData(entry) {
+  return PROPERTY_IDS.has(entry.categoryId);
+}
+
+function isLiveMarketSuccess(data) {
+  if (!data?.structured || !data?.marketData) return false;
+  if (PROPERTY_IDS.has(data.categoryId)) {
+    const md = data.marketData;
+    const rate = md.marketRate;
+    return Boolean(
+      md.impliedMarketValue ||
+        rate?.perSqyd != null ||
+        rate?.perSqft != null,
+    );
+  }
+  return true;
+}
+
+/**
+ * @param {(key: string, params?: object) => string} t
+ * @param {{ errorCode?: string, errorMessage?: string }} result
+ */
+export function resolveAssetInsightError(t, result) {
+  const code = result.errorCode || "";
+  if (code === "ai_not_configured") return t("wealthDetail.market.failedNotConfigured");
+  if (code === "unauthorized") return t("wealthDetail.market.failedAuth");
+  if (code === "gemini_401" || code === "gemini_403") return t("wealthDetail.market.failedAuthKey");
+  if (code === "no_market_rate" || code === "unstructured_response") {
+    return t("wealthDetail.market.failedPartial");
+  }
+  if (code.startsWith("gemini_404") || code.includes("404")) {
+    return t("wealthDetail.market.failedModel", { code: "404" });
+  }
+  if (code.startsWith("gemini_")) {
+    const status = code.replace("gemini_", "").split(":")[0] || "error";
+    return t("wealthDetail.market.failedModel", { code: status });
+  }
+  if (result.errorMessage) return result.errorMessage;
+  return t("wealthDetail.market.failed");
+}
 
 /**
  * @param {import('../../utils/netWorth/wealthStorage.js').WealthEntry} entry
@@ -81,29 +123,110 @@ ${lines.join("\n")}`;
  * @param {import('../../utils/netWorth/wealthStorage.js').WealthEntry} entry
  * @param {(key: string, params?: object) => string} t
  * @param {object} [settings]
- * @returns {Promise<{ insight: string, source: "ai" | "local" }>}
+ * @param {object} [opts]
+ * @param {boolean} [opts.includeValueHistory] — bundle chart milestones in same Gemini call (property only)
+ * @returns {Promise<{
+ *   insight: string | null,
+ *   marketData: object | null,
+ *   structured: boolean,
+ *   source: "ai" | "local" | "error",
+ *   errorCode?: string,
+ *   errorMessage?: string
+ * }>}
  */
-export async function fetchAssetInsight(entry, t, settings = {}) {
-  const propertyIntel = PROPERTY_IDS.has(entry.categoryId)
-    ? analyzePropertyLocation(entry, settings)
-    : null;
-  const prompt = buildAssetInsightPrompt(entry, t, { propertyIntel });
+export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
+  const liveMarket = wantsLiveMarketData(entry);
   const supabase = getSupabaseClient();
+  const wantHistory =
+    Boolean(opts.includeValueHistory) && PROPERTY_IDS.has(entry.categoryId);
 
   if (supabase) {
     try {
       const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
-        body: { entry, prompt },
+        body: propertyInsightBody(entry, {
+          includeValueHistory: wantHistory || undefined,
+        }),
       });
-      if (!error && data?.insight) {
-        return { insight: String(data.insight), source: "ai" };
+
+      const payload = data && typeof data === "object" ? data : {};
+
+      if (payload.error) {
+        console.warn("[assetInsight] edge error:", payload.error, payload.message || "");
+        return {
+          insight: null,
+          marketData: null,
+          structured: false,
+          source: "error",
+          errorCode: String(payload.error),
+          errorMessage: payload.message ? String(payload.message) : undefined,
+        };
       }
-    } catch {
-      // fall through to local insight
+
+      if (!error && payload.insight != null) {
+        const result = {
+          insight: String(payload.insight),
+          marketData: payload.marketData ?? null,
+          milestones: Array.isArray(payload.milestones) ? payload.milestones : null,
+          structured: Boolean(payload.structured),
+          source: /** @type {const} */ ("ai"),
+          categoryId: entry.categoryId,
+        };
+        if (!liveMarket || isLiveMarketSuccess(result)) {
+          return result;
+        }
+        return {
+          insight: null,
+          marketData: null,
+          structured: false,
+          source: "error",
+          errorCode: "no_market_rate",
+        };
+      }
+
+      if (error) {
+        console.warn("[assetInsight] invoke transport error:", error);
+        return {
+          insight: null,
+          marketData: null,
+          structured: false,
+          source: "error",
+          errorCode: "invoke_failed",
+          errorMessage: error.message || undefined,
+        };
+      }
+    } catch (e) {
+      console.warn("[assetInsight] invoke failed:", e);
+      return {
+        insight: null,
+        marketData: null,
+        structured: false,
+        source: "error",
+        errorCode: "invoke_failed",
+        errorMessage: e instanceof Error ? e.message : String(e),
+      };
     }
+  } else if (liveMarket) {
+    return {
+      insight: null,
+      marketData: null,
+      structured: false,
+      source: "error",
+      errorCode: "unauthorized",
+    };
   }
 
-  return buildLocalAssetInsight(entry, t, settings);
+  if (liveMarket) {
+    return {
+      insight: null,
+      marketData: null,
+      structured: false,
+      source: "error",
+      errorCode: "invoke_failed",
+    };
+  }
+
+  const local = buildLocalAssetInsight(entry, t, settings);
+  return { ...local, marketData: null, structured: false };
 }
 
 /**
@@ -124,7 +247,9 @@ function buildLocalAssetInsight(entry, t, settings = {}) {
       const parts = [
         t(prop.holdLabelKey),
         t(prop.holdDetailKey),
-        t(prop.developmentOutlookKey),
+        t(prop.developmentOutlookKey, {
+          area: prop.outlookArea || t("wealthDetail.property.outlookAreaFallback"),
+        }),
       ];
       for (const item of prop.narrativeKeys || []) {
         parts.push(t(item.id, item.params));
@@ -146,4 +271,227 @@ function buildLocalAssetInsight(entry, t, settings = {}) {
   }
 
   return { insight, source: "local" };
+}
+
+function parsePropertyMarketPayload(payload, fields) {
+  const md = payload.marketData;
+  if (!md || typeof md !== "object") {
+    return { ok: false, errorCode: "no_market_rate" };
+  }
+
+  const rateObj = md.marketRate || {};
+  let perSqyd = rateObj.perSqyd != null ? Number(rateObj.perSqyd) : null;
+  const perSqft = rateObj.perSqft != null ? Number(rateObj.perSqft) : null;
+  if ((!perSqyd || Number.isNaN(perSqyd)) && perSqft && !Number.isNaN(perSqft)) {
+    perSqyd = perSqft * 9;
+  }
+
+  const area = Number(fields.areaMeasure) || 0;
+  const value =
+    md.impliedMarketValue != null
+      ? Number(md.impliedMarketValue)
+      : perSqyd && area > 0
+        ? Math.round(perSqyd * area)
+        : null;
+
+  if (!value || value <= 0 || !perSqyd || Number.isNaN(perSqyd)) {
+    return { ok: false, errorCode: "no_market_rate" };
+  }
+
+  return {
+    ok: true,
+    value,
+    marketRatePerSqyd: Math.round(perSqyd),
+    annualGrowthPct: md.trend?.annualGrowthPct ?? null,
+    dataSource: rateObj.dataSource ? String(rateObj.dataSource) : null,
+    marketData: md,
+    milestones: Array.isArray(payload.milestones) ? payload.milestones : null,
+  };
+}
+
+function propertyInsightBody(fields, extra = {}) {
+  return {
+    categoryId: fields.categoryId,
+    name: fields.name || "",
+    location: fields.location || "",
+    latitude: fields.latitude ?? null,
+    longitude: fields.longitude ?? null,
+    purchaseYear: fields.purchaseYear ?? null,
+    purchaseMonth: fields.purchaseMonth ?? null,
+    purchasePrice: fields.purchasePrice ?? null,
+    purchaseRatePerUnit: fields.purchaseRatePerUnit ?? null,
+    currentValue: fields.currentValue ?? fields.value ?? 0,
+    marketRatePerSqyd: fields.marketRatePerSqyd ?? null,
+    areaMeasure: fields.areaMeasure ?? null,
+    areaUnit: fields.areaUnit || "sqyd",
+    ...extra,
+  };
+}
+/**
+ * Fetch live property value (asset-insight edge function).
+ * @param {object} fields
+ * @returns {Promise<{
+ *   ok: boolean,
+ *   value?: number,
+ *   marketRatePerSqyd?: number,
+ *   annualGrowthPct?: number | null,
+ *   dataSource?: string | null,
+ *   marketData?: object,
+ *   errorCode?: string,
+ *   errorMessage?: string
+ * }>}
+ */
+export async function fetchPropertyLiveValue(fields) {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { ok: false, errorCode: "unauthorized" };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
+      body: propertyInsightBody(fields),
+    });
+
+    const payload = data && typeof data === "object" ? data : {};
+    if (payload.error || error) {
+      return {
+        ok: false,
+        errorCode: String(payload.error || "invoke_failed"),
+        errorMessage: payload.message ? String(payload.message) : error?.message,
+      };
+    }
+
+    return parsePropertyMarketPayload(payload, fields);
+  } catch (e) {
+    return {
+      ok: false,
+      errorCode: "invoke_failed",
+      errorMessage: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
+
+/**
+ * One Gemini call: live market rate + value history milestones (save flow).
+ * @param {object} fields
+ * @returns {Promise<{
+ *   ok: boolean,
+ *   value?: number,
+ *   marketRatePerSqyd?: number,
+ *   annualGrowthPct?: number | null,
+ *   dataSource?: string | null,
+ *   series?: { year: number, value: number, ratePerSqyd: number }[],
+ *   errorCode?: string,
+ *   errorMessage?: string
+ * }>}
+ */
+export async function fetchPropertyAiBundle(fields) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, errorCode: "unauthorized" };
+
+  try {
+    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
+      body: propertyInsightBody(fields, { analysisMode: "property_bundle" }),
+    });
+
+    const payload = data && typeof data === "object" ? data : {};
+    if (payload.error || error) {
+      return {
+        ok: false,
+        errorCode: String(payload.error || "invoke_failed"),
+        errorMessage: payload.message ? String(payload.message) : error?.message,
+      };
+    }
+
+    const parsed = parsePropertyMarketPayload(payload, fields);
+    if (!parsed.ok) return parsed;
+
+    const purchaseYear = Number(fields.purchaseYear);
+    const area = Number(fields.areaMeasure) || 0;
+    const currentYear = new Date().getFullYear();
+    const milestones = parsed.milestones;
+
+    if (
+      purchaseYear > 0 &&
+      purchaseYear < currentYear &&
+      area > 0 &&
+      Array.isArray(milestones) &&
+      milestones.length >= 2
+    ) {
+      const series = expandMilestonesToSeries(
+        milestones,
+        area,
+        purchaseYear,
+        currentYear,
+        Number(fields.purchasePrice) || 0,
+      );
+      if (series.length >= 2) {
+        return { ...parsed, series };
+      }
+    }
+
+    return parsed;
+  } catch (e) {
+    return {
+      ok: false,
+      errorCode: "invoke_failed",
+      errorMessage: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
+
+/**
+ * Fetch year-by-year property value milestones from Gemini and expand to a chart series.
+ * @param {object} fields
+ * @returns {Promise<{
+ *   ok: boolean,
+ *   series?: { year: number, value: number, ratePerSqyd: number }[],
+ *   summary?: string,
+ *   errorCode?: string
+ * }>}
+ */
+export async function fetchPropertyValueHistory(fields) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { ok: false, errorCode: "unauthorized" };
+
+  const purchaseYear = Number(fields.purchaseYear);
+  const area = Number(fields.areaMeasure) || 0;
+  const currentYear = new Date().getFullYear();
+  if (!purchaseYear || purchaseYear >= currentYear || !area) {
+    return { ok: false, errorCode: "invalid_input" };
+  }
+
+  try {
+    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
+      body: propertyInsightBody(fields, { analysisMode: "value_history" }),
+    });
+
+    const payload = data && typeof data === "object" ? data : {};
+    if (payload.error || error) {
+      return { ok: false, errorCode: String(payload.error || "invoke_failed") };
+    }
+
+    const milestones = payload.milestones;
+    if (!Array.isArray(milestones) || milestones.length < 2) {
+      return { ok: false, errorCode: "no_market_rate" };
+    }
+
+    const series = expandMilestonesToSeries(
+      milestones,
+      area,
+      purchaseYear,
+      currentYear,
+      Number(fields.purchasePrice) || 0,
+    );
+
+    if (series.length < 2) return { ok: false, errorCode: "no_market_rate" };
+
+    return {
+      ok: true,
+      series,
+      summary: payload.insight ? String(payload.insight) : undefined,
+    };
+  } catch (e) {
+    return { ok: false, errorCode: "invoke_failed" };
+  }
 }

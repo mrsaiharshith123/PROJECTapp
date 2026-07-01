@@ -219,32 +219,26 @@ const INTEGRATIONS = [
     },
   },
   {
-    id: "firebase-fcm",
-    label: "Firebase FCM",
-    tier: "feature",
-    feature: "Push notifications (Android / PWA)",
-    envKeys: [
-      { key: "VITE_FIREBASE_API_KEY", required: true },
-      { key: "VITE_FIREBASE_AUTH_DOMAIN", required: true },
-      { key: "VITE_FIREBASE_PROJECT_ID", required: true },
-      { key: "VITE_FIREBASE_MESSAGING_SENDER_ID", required: true },
-      { key: "VITE_FIREBASE_APP_ID", required: true },
-      { key: "VITE_FIREBASE_VAPID_KEY", required: true, hint: "Web push certificate" },
+    id: "gemini",
+    label: "Google Gemini (asset-insight + financial-advisor)",
+    tier: "deploy",
+    feature: "Live asset analysis + AI advisor — Supabase edge secrets",
+    envKeys: [{ key: "GOOGLE_GEMINI_API_KEY", required: false, hint: "Set in Supabase secrets, not .env" }],
+    codeFiles: [
+      "src/services/ai/assetInsight.js",
+      "src/services/financialAdvisor.js",
+      "supabase/functions/asset-insight/index.ts",
+      "supabase/functions/financial-advisor/index.ts",
     ],
-    codeFiles: ["src/services/notifications/fcmService.js", "public/firebase-messaging-sw.js"],
-    validate: (env) => {
-      const required = [
-        "VITE_FIREBASE_API_KEY",
-        "VITE_FIREBASE_AUTH_DOMAIN",
-        "VITE_FIREBASE_PROJECT_ID",
-        "VITE_FIREBASE_MESSAGING_SENDER_ID",
-        "VITE_FIREBASE_APP_ID",
-        "VITE_FIREBASE_VAPID_KEY",
-      ];
-      const missing = required.filter((k) => !env[k] || isPlaceholder(env[k]));
-      if (missing.length) return { ok: false, note: `missing: ${missing.join(", ")}` };
-      return { ok: true, note: "all Firebase web keys present" };
-    },
+    edgeFunction: "asset-insight",
+  },
+  {
+    id: "anthropic",
+    label: "Anthropic Claude (i18n translation scripts only — dev use)",
+    tier: "script",
+    feature: "npm run i18n:translate / i18n:fix — not bundled in app",
+    envKeys: [{ key: "ANTHROPIC_API_KEY", required: false }],
+    codeFiles: ["scripts/i18n-auto-translate.mjs", "scripts/i18n-fix-financial-terms.mjs"],
   },
   {
     id: "sentry",
@@ -286,23 +280,6 @@ const INTEGRATIONS = [
     ],
     codeFiles: ["src/services/appUpdate.js", "src/utils/updateServer.js"],
     fallback: "Defaults to GitHub Pages / same origin",
-  },
-  {
-    id: "anthropic",
-    label: "Anthropic (scripts)",
-    tier: "script",
-    feature: "npm run i18n:translate / i18n:fix — not bundled in app",
-    envKeys: [{ key: "ANTHROPIC_API_KEY", required: true }],
-    codeFiles: ["scripts/i18n-fix-free.mjs", "scripts/translate-fallback-locales.mjs"],
-  },
-  {
-    id: "asset-insight",
-    label: "Asset insight (edge)",
-    tier: "deploy",
-    feature: "AI property insight — needs Supabase + deployed function",
-    envKeys: [],
-    codeFiles: ["src/services/ai/assetInsight.js"],
-    edgeFunction: "asset-insight",
   },
   {
     id: "financial-advisor",

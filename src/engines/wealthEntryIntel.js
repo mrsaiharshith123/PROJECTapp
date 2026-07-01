@@ -9,6 +9,9 @@ import {
   isPropertyCategory,
   resolvePurchasePrice,
 } from "./propertyLocationIntel.js";
+import { analyzeGold } from "./goldIntel.js";
+import { analyzeFd, isFdCategory } from "./fdIntel.js";
+import { buildPropertyValueSeries } from "../utils/netWorth/propertyValueHistory.js";
 import { isInstrumentWealthEntry } from "../utils/ledger/ledgerBuckets.js";
 
 /**
@@ -26,6 +29,8 @@ export function buildWealthEntryIntel(entry, settings = {}, _opts = {}) {
   const isProperty = isPropertyCategory(entry.categoryId);
   const isVehicle = entry.categoryId === "vehicle";
   const isInstrument = isInstrumentWealthEntry(entry);
+  const isGold = entry.categoryId === "gold";
+  const isFd = isFdCategory(entry.categoryId);
   const monthlyIncome = Math.max(0, Number(settings.monthlyIncome) || 0);
 
   const purchasePrice = resolvePurchasePrice(entry);
@@ -50,6 +55,11 @@ export function buildWealthEntryIntel(entry, settings = {}, _opts = {}) {
       : null;
 
   const propertyIntel = isProperty ? analyzePropertyLocation(entry, settings) : null;
+  const goldIntel = isGold ? analyzeGold(entry, settings) : null;
+  const fdIntel =
+    isFd && (entry.interestRate || entry.maturityDate || entry.purchasePrice)
+      ? analyzeFd(entry, settings)
+      : null;
 
   const emi = Number(entry.emi) || 0;
   const interestRate = Number(entry.interestRate) || 0;
@@ -64,8 +74,14 @@ export function buildWealthEntryIntel(entry, settings = {}, _opts = {}) {
     if (term) instrumentMaturityYears = Math.max(0, term - (yearsHeld || 0));
   }
 
-  const valueSeries = [];
-  if (purchaseAmount > 0 && purchaseYear && currentValue > 0 && yearsHeld != null && yearsHeld > 0) {
+  let valueSeries = [];
+  let valueSeriesSource = "linear";
+
+  if (isProperty && purchaseAmount > 0 && purchaseYear && currentValue > 0) {
+    const propSeries = buildPropertyValueSeries(entry);
+    valueSeries = propSeries.map((p) => ({ year: p.year, value: p.value }));
+    valueSeriesSource = propSeries.some((p) => p.source === "ai") ? "ai" : "linear";
+  } else if (purchaseAmount > 0 && purchaseYear && currentValue > 0 && yearsHeld != null && yearsHeld > 0) {
     for (let y = 0; y <= yearsHeld; y++) {
       const year = purchaseYear + y;
       const fraction = y / yearsHeld;
@@ -92,11 +108,16 @@ export function buildWealthEntryIntel(entry, settings = {}, _opts = {}) {
     purchaseYear,
     vehicleEstimate,
     propertyIntel,
+    goldIntel,
+    fdIntel,
+    isGold,
+    isFd,
     emi,
     interestRate,
     emiBurdenPct,
     instrumentMaturityYears,
     valueSeries,
+    valueSeriesSource,
     monthlyIncome,
   };
 }

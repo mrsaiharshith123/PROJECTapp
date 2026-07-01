@@ -11,17 +11,14 @@ import {
   resolveStoredCategoryId,
   toFormCategoryFields,
 } from "../../../constants/netWorth/assetFormCategories.js";
-import { PHYSICAL_ASSET_TYPES } from "../../../services/ai/assetInsight.js";
+import { PHYSICAL_ASSET_TYPES, fetchPropertyAiBundle } from "../../../services/ai/assetInsight.js";
 import { isGoldApiConfigured, shouldRefreshGoldRate } from "../../../services/market/goldPrice.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { computeAssetCagr, computeGoldAutoValue } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import {
   computePurchasePriceFromRate,
-  estimatePropertyCurrentValue,
   isResidentialProperty,
-  propertyAnnualGrowthPct,
-  resolvePropertyGrowthTier,
 } from "../../../utils/netWorth/propertyValuation.js";
 import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { formatInr } from "../../../constants/symbols.js";
@@ -118,6 +115,7 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
   const [form, setForm] = useState(() => entryToForm(entry, kind, defaultCategoryId));
   const [saving, setSaving] = useState(false);
   const [goldRateLoading, setGoldRateLoading] = useState(false);
+  const [propertySaveError, setPropertySaveError] = useState("");
   const savingRef = useRef(false);
 
   const categories =
@@ -145,32 +143,8 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
     return computePurchasePriceFromRate(Number(form.purchaseRatePerUnit), Number(form.areaMeasure));
   }, [isProperty, form.purchaseRatePerUnit, form.areaMeasure]);
 
-  const propertyGrowthPct = useMemo(() => {
-    if (!isProperty) return 7.5;
-    const tier = resolvePropertyGrowthTier(
-      { location: form.location, categoryId: storedCategoryId },
-      settings,
-    );
-    return propertyAnnualGrowthPct(tier);
-  }, [isProperty, form.location, storedCategoryId, settings]);
-
-  const propertyEstimatedValue = useMemo(() => {
-    if (!isProperty || !propertyPurchaseTotal) return null;
-    const year = Number(form.purchaseYear);
-    if (!year) return null;
-    return estimatePropertyCurrentValue(
-      propertyPurchaseTotal,
-      year,
-      Number(form.purchaseMonth) || 1,
-      propertyGrowthPct,
-    );
-  }, [
-    isProperty,
-    propertyPurchaseTotal,
-    form.purchaseYear,
-    form.purchaseMonth,
-    propertyGrowthPct,
-  ]);
+  const propertyHasLocation =
+    Boolean(form.location?.trim()) || (form.latitude != null && form.longitude != null);
 
   const goldRatePerGram = settings.goldRatePerGram;
 
@@ -210,14 +184,14 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
   ]);
 
   const effectiveValue = useMemo(() => {
-    if (isProperty && !form.valueManual && propertyEstimatedValue) return propertyEstimatedValue;
+    if (isProperty && !form.valueManual && entry?.value) return entry.value;
     if (isGold && !form.valueManual && goldEstimatedValue) return goldEstimatedValue;
     return Number(form.value) || 0;
   }, [
     isProperty,
     isGold,
     form.valueManual,
-    propertyEstimatedValue,
+    entry?.value,
     goldEstimatedValue,
     form.value,
   ]);
@@ -257,17 +231,72 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
     });
   }, [isVehicle, form.purchasePrice, form.purchaseYear, form.vehicleYear]);
 
-  const submit = () => {
+  const submit = async () => {
     if (savingRef.current) return;
-    const resolvedValue =
-      isProperty && !form.valueManual && propertyEstimatedValue
-        ? propertyEstimatedValue
-        : isGold && !form.valueManual && goldEstimatedValue
-          ? goldEstimatedValue
-          : Number(form.value);
-    if (!resolvedValue && !goldCanDeferValue) return;
+
+    let resolvedValue = Number(form.value);
+    let propertyAiPayload = {};
+
+    if (isProperty && !form.valueManual) {
+      if (!propertyHasLocation) return;
+      const area = Number(form.areaMeasure);
+      if (!area || area <= 0) return;
+
+      savingRef.current = true;
+      setSaving(true);
+      setPropertySaveError("");
+
+      const result = await fetchPropertyAiBundle({
+        categoryId: storedCategoryId,
+        name: form.name,
+        location: form.location.trim(),
+        latitude: form.latitude,
+        longitude: form.longitude,
+        purchaseYear: form.purchaseYear !== "" ? Number(form.purchaseYear) : null,
+        purchaseMonth: form.purchaseMonth !== "" ? Number(form.purchaseMonth) : null,
+        purchasePrice: propertyPurchaseTotal,
+        purchaseRatePerUnit:
+          form.purchaseRatePerUnit !== "" ? Number(form.purchaseRatePerUnit) : undefined,
+        areaMeasure: area,
+        areaUnit: form.areaUnit,
+      });
+
+      if (!result.ok) {
+        setPropertySaveError(
+          result.errorCode === "unauthorized"
+            ? t("netWorth.form.propertyAiNeedAuth")
+            : t("netWorth.form.propertyAiFailed"),
+        );
+        savingRef.current = false;
+        setSaving(false);
+        return;
+      }
+
+      resolvedValue = result.value;
+      propertyAiPayload = {
+        marketRatePerSqyd: result.marketRatePerSqyd,
+        marketAnnualGrowthPct: result.annualGrowthPct ?? undefined,
+        valueAiFetchedAt: Date.now(),
+      };
+      if (result.series?.length) {
+        propertyAiPayload.valueHistorySeries = result.series;
+        propertyAiPayload.valueHistoryFetchedAt = Date.now();
+      }
+    } else if (isGold && !form.valueManual && goldEstimatedValue) {
+      resolvedValue = goldEstimatedValue;
+    } else if (isGold && goldCanDeferValue) {
+      resolvedValue = 0;
+    } else if (!resolvedValue && !goldCanDeferValue) {
+      return;
+    }
+
+    if (!isProperty || form.valueManual) {
+      if (!resolvedValue && !goldCanDeferValue) return;
+    }
+
     savingRef.current = true;
     setSaving(true);
+
     const payload = {
       kind: form.kind,
       categoryId: storedCategoryId,
@@ -276,6 +305,7 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
       notes: form.notes.trim(),
       interestRate: form.interestRate !== "" ? Number(form.interestRate) : undefined,
       emi: form.emi !== "" ? Number(form.emi) : undefined,
+      ...propertyAiPayload,
     };
 
     if (physical || isGold) {
@@ -442,14 +472,19 @@ function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories,
         </div>
       )}
 
-      {isProperty && propertyEstimatedValue != null && !form.valueManual && (
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-label">{t("netWorth.form.estimatedValueToday")}</p>
-          <p className="ct-stat-tile-value">{formatInr(propertyEstimatedValue)}</p>
-          <p className="ct-stat-tile-label text-xs mt-1">
-            {t("netWorth.form.estimatedValueHint", { rate: propertyGrowthPct.toFixed(1) })}
-          </p>
-        </div>
+      {isProperty && !form.valueManual && (
+        <>
+          {!propertyHasLocation ? (
+            <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.propertyAiNeedLocation")}</p>
+          ) : (
+            <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.propertyAiOnSave")}</p>
+          )}
+          {propertySaveError ? (
+            <p className="text-xs" style={{ color: "var(--ct-danger)" }}>
+              {propertySaveError}
+            </p>
+          ) : null}
+        </>
       )}
 
       {isProperty && (
