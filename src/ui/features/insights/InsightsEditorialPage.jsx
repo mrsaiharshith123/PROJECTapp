@@ -43,7 +43,7 @@ export default function InsightsEditorialPage({ data }) {
   const { t } = useTranslation();
   const { core } = useNetWorth();
   const { formatAmount, formatScore } = usePrivacyAmount();
-  const { getEffectiveStatus, sortedCommitments, settings } = usePerovo();
+  const { getEffectiveStatus, sortedCommitments, settings, effectiveSubscriptionTier } = usePerovo();
   const stable = useStabilityIntel();
   const perovo = usePerovoScore();
   const { stability, freeMoneyAfterBurden } = useCommitIntel();
@@ -124,7 +124,7 @@ export default function InsightsEditorialPage({ data }) {
       ].filter((r) => r.val != null)
     : [];
 
-  const tier = getTier(settings);
+  const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
     <div className="ct-page ed-paper ed-ins-page">

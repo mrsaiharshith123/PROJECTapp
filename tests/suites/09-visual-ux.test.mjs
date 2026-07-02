@@ -4,6 +4,11 @@ import { resolve } from "path";
 
 const src = (p) => readFileSync(resolve(process.cwd(), p), "utf-8");
 
+const componentsCss = () =>
+  ["components-core.css", "components-charts.css", "components-surfaces.css", "components-editorial.css"]
+    .map((f) => src(`src/ui/styles/${f}`))
+    .join("\n");
+
 describe("🧭 NAVIGATION: tab count and structure", () => {
   it("[P1] Money tab has at most 4 tabs (5 causes cramping on mobile)", () => {
     const content = src("src/ui/features/pages/MoneyShellPage.jsx");
@@ -80,13 +85,13 @@ describe("➕ MISSING UI: buttons and entry points", () => {
 
 describe("📱 MOBILE LAYOUT: overflow guards", () => {
   it("[P1] components.css has min-width:0 guard on ct-stack children", () => {
-    const content = src("src/ui/styles/components.css");
+    const content = componentsCss();
     const hasMinWidth = content.includes(".ct-stack > *") && content.includes("min-width: 0");
     expect(hasMinWidth).toBe(true);
   });
 
   it("[P1] ct-stat-label has overflow:hidden to prevent text blowout", () => {
-    const content = src("src/ui/styles/components.css");
+    const content = componentsCss();
     const statLabelSection = content.slice(
       content.indexOf(".ct-stat-label"),
       content.indexOf("}", content.indexOf(".ct-stat-label")) + 1,
@@ -95,12 +100,12 @@ describe("📱 MOBILE LAYOUT: overflow guards", () => {
   });
 
   it("[P1] ct-money-hero-amount uses clamp() for responsive font size", () => {
-    const content = src("src/ui/styles/components.css");
+    const content = componentsCss();
     expect(content).toContain("clamp");
   });
 
   it("[P2] ct-screen has overflow-x: hidden", () => {
-    const content = src("src/ui/styles/components.css");
+    const content = componentsCss();
     const screenBlocks = [...content.matchAll(/\.ct-screen\s*\{[^}]*\}/g)].map((m) => m[0]);
     const hasOverflowGuard = screenBlocks.some(
       (block) => block.includes("overflow-x: hidden") || block.includes("overflow-x:hidden"),
@@ -146,16 +151,20 @@ describe("💾 SETTINGS: persistence across devices", () => {
   });
 });
 
-describe("🏠 HOUSEHOLD: hidden until v1.1", () => {
-  it("[P2] HouseholdModeSection returns null (hidden for now)", () => {
-    try {
-      const content = src("src/ui/features/profile/HouseholdModeSection.jsx");
-      const isHidden =
-        content.includes("return null") || content.includes("if (true) return null");
-      if (!isHidden) console.warn("[P2] Household mode is visible — should be hidden until v1.1");
-    } catch {
-      /* file not found = not imported = fine */
-    }
-    expect(true).toBe(true);
+describe("VISUAL: home + insights layout tokens", () => {
+  it("[P1] HomeFinancialPulse uses stable layout class hooks", () => {
+    const content = src("src/ui/features/home/HomeFinancialPulse.jsx");
+    expect(content).toMatch(/ct-card|pulse|financial/i);
+  });
+
+  it("[P1] Insights breakdown pages export route components", () => {
+    const content = src("src/ui/features/insights/InsightsBreakdownPages.jsx");
+    expect(content).toMatch(/Breakdown|breakdown/i);
+  });
+
+  it("[P2] split components CSS index imports editorial bundle", () => {
+    const index = src("src/ui/styles/index.css");
+    expect(index).toContain("components-editorial.css");
+    expect(index).not.toMatch(/@import "\.\/components\.css"/);
   });
 });

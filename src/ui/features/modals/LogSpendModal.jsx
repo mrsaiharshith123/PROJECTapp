@@ -20,7 +20,7 @@ const LIFE_CATEGORY_ICON = {
 
 /** Quick-add daily spend — primary entry on Bills → Daily spend. */
 export default function LogSpendModal({ onClose }) {
-  const { addDailySpend, allDailySpends, todayStr, settings } = usePerovo();
+  const { addDailySpend, allDailySpends, todayStr, settings, effectiveSubscriptionTier } = usePerovo();
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
@@ -53,7 +53,7 @@ export default function LogSpendModal({ onClose }) {
     if (draft.date) setDate(draft.date);
   };
 
-  const spendGate = canAddDailySpend(settings, allDailySpends, todayStr || date);
+  const spendGate = canAddDailySpend(settings, allDailySpends, todayStr || date, effectiveSubscriptionTier);
 
   const save = () => {
     const amt = Math.max(0, Number(amount) || 0);

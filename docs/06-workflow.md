@@ -40,14 +40,6 @@ See [10-i18n.md](./10-i18n.md).
 4. Test in `utils/__tests__/` or `engines/__tests__/`
 5. `npm run audit`
 
-### Family household mode
-
-1. Set `householdScope: "family"` in settings (Profile → Household)
-2. Use `isSalariedFamily`, `resolveDataProfileScope`, `tFamily` / `familyTextKey` — see `.cursor/rules/family-mode-copy.mdc`
-3. Household rooms: `HouseholdCommandPanel`, `HouseholdRoomBridge`, `householdRoomService.js` (local-first fallback)
-4. `npm run audit:household` after UI changes
-5. `npm run audit` before merge
-
 ### New dashboard calculator
 
 1. Add tool id in `constants/modeExperience.js` (`MODE_TOOL_DEFS`, mode lists)

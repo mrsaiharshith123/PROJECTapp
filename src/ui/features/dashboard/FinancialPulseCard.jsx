@@ -3,7 +3,7 @@ import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
-import { showSalariedStabilityCards, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { showSalariedStabilityCards } from "../../../constants/modeExperience.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { shareOrCopyPlainText } from "../../../utils/shareText.js";
 import { openLifeScoreShareCard } from "../../../utils/lifeShareCards.js";
@@ -25,7 +25,7 @@ import { translateInsight } from "../../../i18n/insightLabels.js";
 import { tierHasFeature, aheadForecastMonthsForTier } from "../../../utils/tierAccess.js";
 import { pressureTone } from "../../utils/statusColor.js";
 
-function mergeTips(intel, stable, settings) {
+function mergeTips(intel, stable, settings, serverTier = null) {
   const seenIds = new Set();
   const seenText = new Set();
   const out = [];
@@ -52,9 +52,9 @@ function mergeTips(intel, stable, settings) {
   for (const f of intel.forecast || []) {
     add({ id: f.id, tone: f.tone || "info", params: f.params });
   }
-  if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.messageKey) {
+  if (tierHasFeature("lifestyle_inflation", settings, serverTier) && stable.lifestyle?.messageKey) {
     add({ id: "lifestyle-inflation", tone: "info", key: stable.lifestyle.messageKey, params: stable.lifestyle.params });
-  } else if (tierHasFeature("lifestyle_inflation", settings) && stable.lifestyle?.message) {
+  } else if (tierHasFeature("lifestyle_inflation", settings, serverTier) && stable.lifestyle?.message) {
     add({ id: "lifestyle-inflation", tone: "info", text: stable.lifestyle.message });
   }
   if (stable.goalBalance?.messageKey) {
@@ -65,7 +65,7 @@ function mergeTips(intel, stable, settings) {
       params: stable.goalBalance.messageParams,
     });
   }
-  if (tierHasFeature("advanced_pressure", settings) && stable.pressureIntel?.forecastMessageKey) {
+  if (tierHasFeature("advanced_pressure", settings, serverTier) && stable.pressureIntel?.forecastMessageKey) {
     add({
       id: "pressure-forecast",
       tone: "info",
@@ -77,27 +77,27 @@ function mergeTips(intel, stable, settings) {
 }
 
 /** One card with Summary / Pressure / Tips — Analytics financial pulse. */
-export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "auto", embedded = false }) {
+export default function FinancialPulseCard({ microTipSeed = 0, embedded = false }) {
   const { t } = useTranslation();
   const { formatAmount } = usePrivacyAmount();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
-  const { settings } = usePerovo();
+  const { settings, effectiveSubscriptionTier } = usePerovo();
   const microTipKey = pickMicroTip(microTipSeed);
   const showPressure = showSalariedStabilityCards(settings);
-  const isFamily = isSalariedFamily(settings);
-  const showHouseholdPulse = pulseScope === "household" || (pulseScope === "auto" && isFamily);
   const ahead = stable.ahead;
 
-  const tips = useMemo(() => mergeTips(intel, stable, settings), [intel, stable, settings]);
+  const tips = useMemo(
+    () => mergeTips(intel, stable, settings, effectiveSubscriptionTier),
+    [intel, stable, settings, effectiveSubscriptionTier],
+  );
   const stress = stable.stress;
   const emergency = stable.emergency;
   const payoffRec = intel.payoffRec;
   const narrative = stable.healthNarrative;
   const pressureIntel = stable.pressureIntel;
-  const family = stable.family;
-  const advancedPressure = tierHasFeature("advanced_pressure", settings);
-  const aheadForecastLimit = aheadForecastMonthsForTier(settings);
+  const advancedPressure = tierHasFeature("advanced_pressure", settings, effectiveSubscriptionTier);
+  const aheadForecastLimit = aheadForecastMonthsForTier(settings, effectiveSubscriptionTier);
 
   const tabDefs = useMemo(() => {
     const base = [
@@ -109,17 +109,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
     return [base[0], { id: "ahead", label: t("pulse.tabAhead") }, ...base.slice(1)];
   }, [ahead, t]);
 
-  const defaultTab = showPressure && (stress?.top?.length || (showHouseholdPulse && family?.grouped)) ? "pressure" : "snapshot";
+  const defaultTab = showPressure && stress?.top?.length ? "pressure" : "snapshot";
   const [tab, setTab] = useState(defaultTab);
   const [shareHint, setShareHint] = useState("");
 
   const visibleTabs = tabDefs.filter((t) => t.id !== "pressure" || showPressure);
-
-  const groupedEntries = family?.grouped
-    ? Object.entries(family.grouped)
-        .filter(([, v]) => v > 0)
-        .sort((a, b) => b[1] - a[1])
-    : [];
 
   return (
     <section className={embedded ? "ct-stack" : "ct-stack pos-hero liability ct-pulse-modern"}>
@@ -315,36 +309,6 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             </div>
           )}
 
-          {showHouseholdPulse && ahead.familyCalendar?.heavyMonths?.length > 0 && (
-            <div>
-              <Caption className="block font-semibold mb-1">{t("pulse.householdHeavy")}</Caption>
-              <ul className="ct-stack-sm">
-                {ahead.familyCalendar.heavyMonths.map((m) => (
-                  <li
-                    key={m.monthKey}
-                    className="text-xs ct-insight-warning rounded-lg px-2 py-1.5"
-                  >
-                    {t("pulse.heavyDue", { label: m.label, amount: formatAmount(m.amount) })}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {showHouseholdPulse && family?.heavyRenewals?.length > 0 && (
-            <div>
-              <Caption className="block font-semibold mb-1">{t("pulse.largeRenewals")}</Caption>
-              <ul className="text-xs ct-stack-sm">
-                {family.heavyRenewals.slice(0, 5).map((r) => (
-                  <li key={`${r.name}-${r.dueDate}`}>
-                    {r.name} — {formatAmount(r.amount)}
-                    {r.dueDate ? ` · ${r.dueDate}` : ""}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           {ahead.heavyMonths?.length > 0 && (
             <p className="ct-insight-violet">
               {t("pulse.highestObligations", {
@@ -409,22 +373,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
         {showPressure ? (
         <div className="ct-stack">
           <Caption className="block">
-            {showHouseholdPulse ? t("pulse.householdPressure") : t("pulse.mainPressure")}
+            {t("pulse.mainPressure")}
             <InfoTip text={CALC_HELP.pressureWeight} />
           </Caption>
 
-          {showHouseholdPulse && groupedEntries.length > 0 ? (
-            <ol className="ct-stack-sm">
-              {groupedEntries.map(([cat, amt], i) => (
-                <li key={cat} className="flex justify-between gap-2 text-sm">
-                  <span>
-                    {i + 1}. {cat}
-                  </span>
-                  <span className="font-semibold shrink-0">{formatAmount(Math.round(amt))}</span>
-                </li>
-              ))}
-            </ol>
-          ) : stress?.top?.length ? (
+          {stress?.top?.length ? (
             <>
               <Caption className="block font-medium">{t("pulse.mainPressureList")}</Caption>
               <ol className="ct-stack-sm">
@@ -453,7 +406,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, pulseScope = "aut
             <p className="ct-insight-violet">{translateInsight(t, intel.transactionRhythmNote)}</p>
           )}
 
-          {!showHouseholdPulse && payoffRec && (
+          {payoffRec && (
             <p className="ct-insight-accent">
               <span className="font-semibold">{t("pulse.focusFirst")}</span> {payoffRec.name}
             </p>

@@ -5,6 +5,7 @@
 import fs from "fs";
 import path from "path";
 import { rel, walk, UI, SRC } from "../lib/audit-core.mjs";
+import { readComponentsCss } from "./componentsCss.mjs";
 
 export function runMobileAudit() {
   const errors = [];
@@ -97,20 +98,20 @@ export function runMobileAudit() {
     }
   }
 
-  const componentsCss = path.join(UI, "styles/components.css");
-  if (fs.existsSync(componentsCss)) {
-    const css = fs.readFileSync(componentsCss, "utf8");
+  const componentsCssText = readComponentsCss(path.join(UI, "styles"));
+  if (componentsCssText) {
+    const css = componentsCssText;
     if (!css.includes("@media") && !css.includes("min(")) {
       warnings.push({
         kind: "responsive-css",
-        file: rel(componentsCss),
+        file: "src/ui/styles/components-*.css",
         message: "components.css has no @media queries — verify mobile resize rules exist",
       });
     }
     if (!css.includes("--ct-page-inset")) {
       warnings.push({
         kind: "page-inset",
-        file: rel(componentsCss),
+        file: "src/ui/styles/components-*.css",
         message: "Missing --ct-page-inset tokens for device edge padding",
       });
     }

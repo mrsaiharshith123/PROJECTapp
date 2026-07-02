@@ -144,79 +144,55 @@ const INTEGRATIONS = [
   {
     id: "leegality",
     label: "Leegality eSign",
-    tier: "feature",
-    feature: "Aadhaar eSign on lending agreements",
-    envKeys: [
-      { key: "VITE_LEEGALITY_BASE_URL", required: true, hint: "production: https://app1.leegality.com" },
-      { key: "VITE_LEEGALITY_API_TOKEN", required: true, hint: "Auth Token from dashboard" },
-    ],
+    tier: "deploy",
+    feature: "Aadhaar eSign on lending agreements (edge secrets only)",
+    envKeys: [],
     codeFiles: ["src/services/lending/leegalityESign.js"],
-    fallback: "OTP declaration only when token missing",
-    validate: (env) => {
-      const base = env.VITE_LEEGALITY_BASE_URL || "";
-      const token = env.VITE_LEEGALITY_API_TOKEN || "";
-      if (token && base.includes("sandbox") && token.length > 8) {
-        return { ok: true, note: "sandbox base + token set" };
-      }
-      if (token && base.includes("app1.leegality.com")) {
-        return { ok: true, note: "production base + token set" };
-      }
-      if (token && base) return { ok: true, note: "token + base set (verify env match)" };
-      return { ok: false, note: "set base URL + auth token" };
-    },
+    edgeFunction: "api-proxy",
+    validate: () => ({
+      ok: fileExists("supabase/functions/api-proxy/index.ts"),
+      note: "Set LEEGALITY_BASE_URL + LEEGALITY_API_TOKEN in Supabase edge secrets",
+    }),
   },
   {
     id: "surepass",
     label: "Surepass KYC",
-    tier: "feature",
-    feature: "PAN / bank verification in lending",
-    envKeys: [{ key: "VITE_SUREPASS_TOKEN", required: true }],
+    tier: "deploy",
+    feature: "PAN / bank verification in lending (edge secrets only)",
+    envKeys: [],
     codeFiles: ["src/services/lending/kycVerification.js"],
-    fallback: "KYC skipped when token missing",
+    edgeFunction: "api-proxy",
+    validate: () => ({
+      ok: fileExists("supabase/functions/api-proxy/index.ts"),
+      note: "Set SUREPASS_TOKEN in Supabase edge secrets",
+    }),
   },
   {
     id: "google-vision",
     label: "Google Cloud Vision",
-    tier: "feature",
-    feature: "Bill scanner OCR (high accuracy)",
-    envKeys: [{ key: "VITE_GOOGLE_VISION_KEY", required: true, hint: "API key from GCP Credentials" }],
+    tier: "deploy",
+    feature: "Bill scanner OCR (high accuracy via edge secrets)",
+    envKeys: [],
     codeFiles: ["src/services/ocr/googleVision.js", "src/utils/billOcr.js"],
-    fallback: "Tesseract offline OCR",
-    validate: (env) => {
-      const k = env.VITE_GOOGLE_VISION_KEY || "";
-      if (!k.startsWith("AIza")) return { ok: false, note: "Vision keys usually start with AIza" };
-      return { ok: true, note: "API key format OK" };
-    },
+    edgeFunction: "api-proxy",
+    validate: () => ({
+      ok: fileExists("supabase/functions/api-proxy/index.ts"),
+      note: "Set GOOGLE_VISION_API_KEY in Supabase edge secrets",
+    }),
   },
   {
     id: "gold-api",
     label: "GoldAPI.io",
-    tier: "feature",
-    feature: "Auto gold rate for net worth",
-    envKeys: [{ key: "VITE_GOLD_API_KEY", required: true }],
+    tier: "deploy",
+    feature: "Auto gold rate for net worth (edge secrets only)",
+    envKeys: [],
     codeFiles: ["src/services/market/goldPrice.js"],
+    edgeFunction: "api-proxy",
     fallback: "Manual gold rate in settings",
-    probe: async (env) => {
-      const key = env.VITE_GOLD_API_KEY;
-      if (!key) return { ok: false, note: "no key" };
-      try {
-        const res = await fetch("https://www.goldapi.io/api/XAU/INR", {
-          headers: { "x-access-token": key, Accept: "application/json" },
-          signal: AbortSignal.timeout(12_000),
-        });
-        if (res.ok) return { ok: true, note: `gold price OK (${res.status})` };
-        let note = `HTTP ${res.status}`;
-        try {
-          const body = await res.json();
-          if (body?.error) note += `: ${body.error}`;
-        } catch {
-          /* ignore */
-        }
-        return { ok: false, note };
-      } catch (e) {
-        return { ok: false, note: e instanceof Error ? e.message : "network error" };
-      }
-    },
+    validate: () => ({
+      ok: fileExists("supabase/functions/api-proxy/index.ts"),
+      note: "Set GOLD_API_KEY in Supabase edge secrets",
+    }),
   },
   {
     id: "gemini",

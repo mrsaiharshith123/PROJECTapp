@@ -57,9 +57,9 @@ export function orderDashboardWidgets(defaultWidgets, savedOrder) {
   return out;
 }
 
-const VALID_TOOL_ORDER_MODES = new Set(["salaried", "family", "power"]);
-const REMOVED_TOOL_ORDER_MODES = new Set(["freelancer", "student", "business"]);
-const TOOL_ORDER_MODE_PRIORITY = ["salaried", "family", "power"];
+const VALID_TOOL_ORDER_MODES = new Set(["salaried", "power"]);
+const REMOVED_TOOL_ORDER_MODES = new Set(["freelancer", "student", "business", "family"]);
+const TOOL_ORDER_MODE_PRIORITY = ["salaried", "power"];
 
 function toolOrderModeSortKey(mode) {
   if (REMOVED_TOOL_ORDER_MODES.has(mode)) return 100;

@@ -1,15 +1,14 @@
 import { usePerovo } from "../../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { resolveUserMode, isSalariedFamily, getIncomeLabelKey } from "../../../../constants/modeExperience.js";
+import { resolveUserMode, getIncomeLabelKey } from "../../../../constants/modeExperience.js";
 import { CALC_HELP } from "../../../../constants/calculationHelp.js";
 import YouSubPageShell from "./YouSubPageShell.jsx";
 
-/** Income, paycheck rhythm, and second income for family mode. */
+/** Income and paycheck rhythm. */
 export default function YouMoneyPage() {
   const { t } = useTranslation();
   const { settings, updateSettings } = usePerovo();
   const userMode = resolveUserMode(settings);
-  const salariedFamily = isSalariedFamily(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
 
   return (
@@ -35,25 +34,6 @@ export default function YouMoneyPage() {
           />
           <div className="ed-you-field-hint">{t("profile.incomeUsedHint")}</div>
         </div>
-
-        {salariedFamily ? (
-          <div className="ed-you-field">
-            <div className="ed-you-field-label">{t("profile.secondIncome")}</div>
-            <input
-              className="ed-you-input"
-              type="number"
-              min="0"
-              inputMode="numeric"
-              value={!settings.secondaryMonthlyIncome ? "" : String(settings.secondaryMonthlyIncome)}
-              onChange={(e) => {
-                const raw = e.target.value;
-                updateSettings({ secondaryMonthlyIncome: raw === "" ? 0 : Math.max(0, Number(raw) || 0) });
-              }}
-              placeholder="0"
-            />
-            <div className="ed-you-field-hint">{t("profile.secondIncomeHint")}</div>
-          </div>
-        ) : null}
       </div>
 
       {userMode === "salaried" ? (

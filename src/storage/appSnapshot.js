@@ -18,17 +18,41 @@ export const APP_SNAPSHOT_VERSION = 3;
  */
 export function buildAppSnapshot(state) {
   const wealth = normalizeWealthState(state.wealth ?? { entries: [] });
+  const settings = sanitizeSettingsForCloud(state.settings ?? {});
   return {
     schemaVersion: APP_SNAPSHOT_VERSION,
     exportedAt: new Date().toISOString(),
     commitments: state.commitments ?? [],
     lendings: state.lendings ?? [],
-    settings: state.settings ?? {},
+    settings,
     goals: state.goals ?? [],
     monthlySnapshots: state.monthlySnapshots ?? [],
     dailySpends: state.dailySpends ?? [],
     wealth,
   };
+}
+
+const CLOUD_STRIP_SETTINGS_KEYS = new Set([
+  "profileImageDataUrl",
+  "pan",
+  "panNumber",
+  "aadhaar",
+  "aadhaarLast4",
+  "legalName",
+  "dateOfBirth",
+  "phone",
+  "phoneNumber",
+  "email",
+  "displayName",
+]);
+
+/** @param {Record<string, unknown>} raw */
+function sanitizeSettingsForCloud(raw) {
+  const out = { ...raw };
+  for (const key of CLOUD_STRIP_SETTINGS_KEYS) {
+    delete out[key];
+  }
+  return out;
 }
 
 /** @param {unknown} payload */

@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { usePerovo } from "./PerovoContext.jsx";
-import { isSalariedFamily } from "../constants/modeExperience.js";
 import { DATA_CHANGED_EVENT } from "../storage/events.js";
 import {
   loadWealthState,
@@ -79,9 +78,7 @@ export function NetWorthProvider({ children }) {
   const { settings, activeProfileId } = usePerovo();
   const [state, setState] = useState(() => loadWealthState());
   const skipExternalReloadRef = useRef(false);
-  const profileId = isSalariedFamily(settings)
-    ? null
-    : activeProfileId || settings.activeProfileId || "default";
+  const profileId = activeProfileId || settings.activeProfileId || "default";
 
   const persist = useCallback((updater) => {
     skipExternalReloadRef.current = true;

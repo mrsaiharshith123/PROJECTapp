@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { routerBasename } from "./utils/basePath.js";
 import { isUpdateTestShell } from "./utils/updateTestShell.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
+import { IntelProvider } from "./app/IntelProvider.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { Navbar, Screen, MainContent, RouteFallback } from "./ui";
 import { PerovoLocaleSync } from "./i18n/index.js";
-import ErrorBoundary from "./ui/layout/ErrorBoundary.jsx";
+import ErrorBoundary, { RouteErrorBoundary } from "./ui/layout/ErrorBoundary.jsx";
 import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
 import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
 import UpdateTestShellApp from "./app/UpdateTestShellApp.jsx";
@@ -21,7 +22,6 @@ import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
 import CloudRestoreGate from "./app/CloudRestoreGate.jsx";
 import StartupUpdateGate from "./app/StartupUpdateGate.jsx";
 import NativePermissionGate from "./app/NativePermissionGate.jsx";
-import HouseholdRoomBridge from "./app/HouseholdRoomBridge.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
 import BootShell from "./boot/BootShell.jsx";
@@ -34,6 +34,7 @@ import {
 } from "./utils/marketingLanding.js";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import { AdminFloatingButton } from "./ui/admin/AdminFloatingButton.jsx";
+import { ADMIN_UI_ENABLED } from "./constants/featureFlags.js";
 
 /** Eager — bottom nav pages load instantly with no Suspense stall on tap */
 import Home from "./ui/features/pages/HomePage.jsx";
@@ -96,9 +97,6 @@ const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const YouPersonalPage = lazy(() => import("./ui/features/profile/pages/YouPersonalPage.jsx"));
 const YouAccountPage = lazy(() => import("./ui/features/profile/pages/YouAccountPage.jsx"));
 const YouMoneyPage = lazy(() => import("./ui/features/profile/pages/YouMoneyPage.jsx"));
-// Household UI reserved for v1.1 — routes redirect; lazy imports keep modules reachable for audit.
-// eslint-disable-next-line no-unused-vars -- v1.1 household routes
-const YouHouseholdPage = lazy(() => import("./ui/features/profile/pages/YouHouseholdPage.jsx"));
 const YouAppearancePage = lazy(() => import("./ui/features/profile/pages/YouAppearancePage.jsx"));
 const YouSecurityPage = lazy(() => import("./ui/features/profile/pages/YouSecurityPage.jsx"));
 const YouBackupPage = lazy(() => import("./ui/features/profile/pages/YouBackupPage.jsx"));
@@ -107,11 +105,14 @@ const YouHistoryPage = lazy(() => import("./ui/features/profile/pages/YouHistory
 const YouSupportPage = lazy(() => import("./ui/features/profile/pages/YouSupportPage.jsx"));
 const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage.jsx"));
 const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
-// eslint-disable-next-line no-unused-vars -- v1.1 household routes
-const HouseholdRoom = lazy(() => import("./ui/features/household/HouseholdRoomPage.jsx"));
+
+function LazyRoute({ name, children }) {
+  return <RouteErrorBoundary routeName={name}>{children}</RouteErrorBoundary>;
+}
+
 function RequireAdmin({ children }) {
   const { isAdmin } = useAuth();
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!ADMIN_UI_ENABLED || !isAdmin) return <Navigate to="/" replace />;
   return children;
 }
 
@@ -133,31 +134,31 @@ function AppRoutes() {
     <Suspense fallback={<RouteFallback />} key={location.key}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
-        <Route path="/ledger" element={<LedgerRootLayout />}>
+        <Route path="/ledger" element={<LazyRoute name="Ledger"><LedgerRootLayout /></LazyRoute>}>
           <Route index element={<Ledger />} />
           <Route element={<LedgerOpsShell />}>
             <Route path="bills" element={<Commitments />} />
             <Route path="spends" element={<Spends />} />
           </Route>
         </Route>
-        <Route path="/agreements" element={<Agreements />} />
+        <Route path="/agreements" element={<LazyRoute name="Agreements"><Agreements /></LazyRoute>} />
         <Route path="/add" element={<Add />} />
         <Route path="/you" element={<Profile />} />
         <Route path="/money" element={<Navigate to="/ledger/bills" replace />} />
         <Route path="/money/bills" element={<Navigate to="/ledger/bills" replace />} />
         <Route path="/money/spends" element={<Navigate to="/ledger/spends" replace />} />
         <Route path="/money/lending" element={<Navigate to="/agreements" replace />} />
-        <Route path="/insights" element={<Suspense fallback={<RouteFallback />}><Analytics /></Suspense>} />
-        <Route path="/insights/score" element={<Suspense fallback={<RouteFallback />}><ScoreDetail /></Suspense>} />
-        <Route path="/insights/spending" element={<Suspense fallback={<RouteFallback />}><InsightsSpendingBreakdown /></Suspense>} />
-        <Route path="/insights/spending/yearly" element={<Suspense fallback={<RouteFallback />}><InsightsYearlyBreakdown /></Suspense>} />
-        <Route path="/insights/networth" element={<Suspense fallback={<RouteFallback />}><InsightsNetWorthBreakdown /></Suspense>} />
-        <Route path="/insights/assets" element={<Suspense fallback={<RouteFallback />}><InsightsAssetsBreakdown /></Suspense>} />
-        <Route path="/insights/liabilities" element={<Suspense fallback={<RouteFallback />}><InsightsLiabilitiesBreakdown /></Suspense>} />
-        <Route path="/insights/instruments" element={<Suspense fallback={<RouteFallback />}><InsightsInstrumentsBreakdown /></Suspense>} />
-        <Route path="/insights/entry/:id" element={<Suspense fallback={<RouteFallback />}><WealthEntryDetail /></Suspense>} />
-        <Route path="/insights/cashflow" element={<Suspense fallback={<RouteFallback />}><InsightsCashflowBreakdown /></Suspense>} />
-        <Route path="/insights/pulse" element={<Suspense fallback={<RouteFallback />}><InsightsPulseBreakdown /></Suspense>} />
+        <Route path="/insights" element={<LazyRoute name="Insights"><Analytics /></LazyRoute>} />
+        <Route path="/insights/score" element={<LazyRoute name="Score"><ScoreDetail /></LazyRoute>} />
+        <Route path="/insights/spending" element={<LazyRoute name="Spending"><InsightsSpendingBreakdown /></LazyRoute>} />
+        <Route path="/insights/spending/yearly" element={<LazyRoute name="Yearly spending"><InsightsYearlyBreakdown /></LazyRoute>} />
+        <Route path="/insights/networth" element={<LazyRoute name="Net worth"><InsightsNetWorthBreakdown /></LazyRoute>} />
+        <Route path="/insights/assets" element={<LazyRoute name="Assets"><InsightsAssetsBreakdown /></LazyRoute>} />
+        <Route path="/insights/liabilities" element={<LazyRoute name="Liabilities"><InsightsLiabilitiesBreakdown /></LazyRoute>} />
+        <Route path="/insights/instruments" element={<LazyRoute name="Instruments"><InsightsInstrumentsBreakdown /></LazyRoute>} />
+        <Route path="/insights/entry/:id" element={<LazyRoute name="Asset detail"><WealthEntryDetail /></LazyRoute>} />
+        <Route path="/insights/cashflow" element={<LazyRoute name="Cashflow"><InsightsCashflowBreakdown /></LazyRoute>} />
+        <Route path="/insights/pulse" element={<LazyRoute name="Pulse"><InsightsPulseBreakdown /></LazyRoute>} />
         <Route path="/money/insights" element={<LegacyInsightsRedirect />} />
         <Route path="/money/wealth" element={<Navigate to="/insights/networth" replace />} />
         <Route path="/commitments" element={<Navigate to="/ledger/bills" replace />} />
@@ -166,27 +167,25 @@ function AppRoutes() {
         <Route path="/plan" element={<Navigate to="/you/tools" replace />} />
         <Route path="/tools" element={<Navigate to="/you/tools" replace />} />
         <Route path="/paycheck" element={<Navigate to="/insights?card=paycheck" replace />} />
-        <Route path="/family-room" element={<Navigate to="/you" replace />} />
         <Route path="/profile/analytics" element={<Navigate to="/insights/networth" replace />} />
         <Route path="/net-worth" element={<Navigate to="/ledger" replace />} />
         <Route path="/profile" element={<Navigate to="/you" replace />} />
         <Route path="/profile/scores" element={<Navigate to="/insights/score" replace />} />
         <Route path="/score-detail" element={<Navigate to="/insights/score" replace />} />
-        <Route path="/you/personal" element={<Suspense fallback={<RouteFallback />}><YouPersonalPage /></Suspense>} />
-        <Route path="/you/account" element={<Suspense fallback={<RouteFallback />}><YouAccountPage /></Suspense>} />
-        <Route path="/you/money" element={<Suspense fallback={<RouteFallback />}><YouMoneyPage /></Suspense>} />
-        <Route path="/you/household" element={<Navigate to="/you" replace />} />
-        <Route path="/you/appearance" element={<Suspense fallback={<RouteFallback />}><YouAppearancePage /></Suspense>} />
-        <Route path="/you/security" element={<Suspense fallback={<RouteFallback />}><YouSecurityPage /></Suspense>} />
-        <Route path="/you/backup" element={<Suspense fallback={<RouteFallback />}><YouBackupPage /></Suspense>} />
-        <Route path="/you/notifications" element={<Suspense fallback={<RouteFallback />}><YouNotificationsPage /></Suspense>} />
-        <Route path="/you/history" element={<Suspense fallback={<RouteFallback />}><YouHistoryPage /></Suspense>} />
-        <Route path="/you/support" element={<Suspense fallback={<RouteFallback />}><YouSupportPage /></Suspense>} />
-        <Route path="/you/about" element={<Suspense fallback={<RouteFallback />}><YouAboutPage /></Suspense>} />
-        <Route path="/you/tools" element={<Suspense fallback={<RouteFallback />}><YouToolsPage /></Suspense>} />
-        <Route path="/you/plans" element={<Suspense fallback={<RouteFallback />}><YouPlansPage /></Suspense>} />
-        <Route path="/admin" element={<RequireAdmin><Suspense fallback={<RouteFallback />}><Admin /></Suspense></RequireAdmin>} />
-        <Route path="/privacy" element={<Suspense fallback={<RouteFallback />}><Privacy /></Suspense>} />
+        <Route path="/you/personal" element={<LazyRoute name="Personal"><YouPersonalPage /></LazyRoute>} />
+        <Route path="/you/account" element={<LazyRoute name="Account"><YouAccountPage /></LazyRoute>} />
+        <Route path="/you/money" element={<LazyRoute name="Money"><YouMoneyPage /></LazyRoute>} />
+        <Route path="/you/appearance" element={<LazyRoute name="Appearance"><YouAppearancePage /></LazyRoute>} />
+        <Route path="/you/security" element={<LazyRoute name="Security"><YouSecurityPage /></LazyRoute>} />
+        <Route path="/you/backup" element={<LazyRoute name="Backup"><YouBackupPage /></LazyRoute>} />
+        <Route path="/you/notifications" element={<LazyRoute name="Notifications"><YouNotificationsPage /></LazyRoute>} />
+        <Route path="/you/history" element={<LazyRoute name="History"><YouHistoryPage /></LazyRoute>} />
+        <Route path="/you/support" element={<LazyRoute name="Support"><YouSupportPage /></LazyRoute>} />
+        <Route path="/you/about" element={<LazyRoute name="About"><YouAboutPage /></LazyRoute>} />
+        <Route path="/you/tools" element={<LazyRoute name="Tools"><YouToolsPage /></LazyRoute>} />
+        <Route path="/you/plans" element={<LazyRoute name="Plans"><YouPlansPage /></LazyRoute>} />
+        <Route path="/admin" element={<RequireAdmin><LazyRoute name="Admin"><Admin /></LazyRoute></RequireAdmin>} />
+        <Route path="/privacy" element={<LazyRoute name="Privacy"><Privacy /></LazyRoute>} />
         <Route path="/auth" element={<Navigate to="/you" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -228,7 +227,6 @@ function MainShell() {
       <ThemeSync />
       <ScrollToTop />
       <CloudSyncBridge />
-      <HouseholdRoomBridge />
       <SalaryDayBridge />
       <AnalyticsBridge />
       <Navbar />
@@ -269,9 +267,6 @@ function AppShell() {
       patch.monthlyIncome = Number(meta.monthly_income);
     }
     if (meta.user_mode) patch.userMode = String(meta.user_mode);
-    if (meta.household_scope && s.householdScope !== "family" && s.householdScope !== "single") {
-      patch.householdScope = meta.household_scope === "family" ? "family" : "single";
-    }
     if (profile?.onboarding_complete === true && !s.onboardingComplete) {
       patch.onboardingComplete = true;
     }
@@ -293,7 +288,6 @@ function AppShell() {
       display_name: settingsRef.current.displayName || "",
       phone: settingsRef.current.phoneNumber || profile?.phone || "",
       user_mode: settingsRef.current.userMode || "salaried",
-      household_scope: settingsRef.current.householdScope || "single",
       monthly_income: Number(settingsRef.current.monthlyIncome) || 0,
       onboarding_complete: true,
       pan: profile?.pan || "",
@@ -330,6 +324,7 @@ function App() {
     <BrowserRouter basename={routerBasename()} useTransitions={false}>
       <AuthProvider>
         <PerovoProvider>
+          <IntelProvider>
           <PerovoLocaleSync />
           <NetWorthProvider>
             <BrandDocumentSync />
@@ -341,9 +336,9 @@ function App() {
                     path="/lend/offer"
                     element={
                       <RequireAuth>
-                        <Suspense fallback={<RouteFallback />}>
+                        <LazyRoute name="Lending offer">
                           <LendingOfferReview />
-                        </Suspense>
+                        </LazyRoute>
                       </RequireAuth>
                     }
                   />
@@ -361,6 +356,7 @@ function App() {
               </Suspense>
             </ErrorBoundary>
           </NetWorthProvider>
+          </IntelProvider>
         </PerovoProvider>
       </AuthProvider>
     </BrowserRouter>

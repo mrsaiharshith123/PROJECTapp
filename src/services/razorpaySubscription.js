@@ -1,5 +1,6 @@
 import { getTierPaise, isRazorpayConfigured, isRazorpayTestMode } from "./razorpayConfig.js";
-import { getSupabaseClient, saveSubscriptionTier } from "./supabase/auth.js";
+import { getSupabaseClient, loadSubscriptionTier } from "./supabase/auth.js";
+import { invokeEdgeFunction } from "./supabase/invokeEdgeFunction.js";
 
 const SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 const LOAD_TIMEOUT_MS = 8000;
@@ -118,9 +119,10 @@ async function openRazorpayCheckout({
  * @param {Record<string, unknown>} body
  */
 async function invokeCheckoutFunction(supabase, body) {
-  const { data, error } = await supabase.functions.invoke(FUNCTION_NAME, { body });
+  void supabase;
+  const { data, error } = await invokeEdgeFunction(FUNCTION_NAME, { body, retries: 1 });
   if (error) {
-    throw new Error(error.message || "Payment service unavailable");
+    throw new Error(error || "Payment service unavailable");
   }
   if (data?.error) {
     throw new Error(String(data.error));
@@ -184,6 +186,7 @@ async function verifyServerPayment(tier, userId, payment) {
  *   settings: { displayName?: string, phoneNumber?: string },
  *   user?: import("../types/context.js").AuthUser | null,
  *   updateSettings: (patch: object) => void,
+ *   refreshSubscriptionTier?: () => Promise<string>,
  *   onSuccess: (result: { tier: string, paymentId: string, verified: boolean }) => void,
  *   onDismiss: () => void,
  *   onError: (err: Error) => void,
@@ -196,6 +199,7 @@ export async function startSubscriptionCheckout({
   settings,
   user,
   updateSettings,
+  refreshSubscriptionTier,
   onSuccess,
   onDismiss,
   onError,
@@ -237,6 +241,11 @@ export async function startSubscriptionCheckout({
   const planLabel = tier === "pro" ? "Pro" : "Power";
   const cycleLabel = cycle === "monthly" ? "Monthly" : "Annual";
 
+  if (!serverOrder?.orderId && !import.meta.env.DEV) {
+    onError(new Error("order_create_failed"));
+    return;
+  }
+
   await openRazorpayCheckout({
     amountPaise: serverOrder?.amount ?? amountPaise,
     orderId: serverOrder?.orderId ?? "",
@@ -253,12 +262,17 @@ export async function startSubscriptionCheckout({
         }
 
         if (!verified) {
-          await saveSubscriptionTier(userId, tier, payment.razorpay_payment_id);
+          onError(new Error("Payment verification failed. Your plan was not upgraded."));
+          return;
         }
 
-        updateSettings({ subscriptionTier: tier });
+        const serverTier = userId
+          ? refreshSubscriptionTier
+            ? await refreshSubscriptionTier()
+            : await loadSubscriptionTier(userId)
+          : tier;
         onSuccess({
-          tier,
+          tier: serverTier === "pro" || serverTier === "power" ? serverTier : tier,
           paymentId: payment.razorpay_payment_id,
           verified,
         });

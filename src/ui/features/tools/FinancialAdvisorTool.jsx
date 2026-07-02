@@ -32,7 +32,7 @@ const SUGGESTED_CHIP_KEYS = [
 
 export default function FinancialAdvisorTool() {
   const { t } = useTranslation();
-  const { commitments, settings, updateSettings } = usePerovo();
+  const { commitments, settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const intel = useCommitIntel();
   const stable = useStabilityIntel();
   const income = combinedMonthlyIncome(settings);
@@ -54,7 +54,7 @@ export default function FinancialAdvisorTool() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, awaitingCity]);
 
-  if (!isFeatureUnlocked("ai_advisor", getTier(settings))) {
+  if (!isFeatureUnlocked("ai_advisor", getTier(settings, effectiveSubscriptionTier))) {
     return <ProGate featureId="ai_advisor">{null}</ProGate>;
   }
 

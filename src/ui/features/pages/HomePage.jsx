@@ -15,7 +15,7 @@ import HomeToolsSection from "../home/HomeToolsSection.jsx";
 
 /** @route / — Home dashboard (Direction H · Editorial Ledger) */
 const Home = () => {
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const [tourActive, setTourActive] = useState(false);
   const [tourDismissed, setTourDismissed] = useState(false);
   const tourOpen = tourActive && !tourDismissed;
@@ -29,7 +29,7 @@ const Home = () => {
     setTourActive(false);
   };
 
-  const tier = getTier(settings);
+  const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
     <div className="ct-page ed-paper">

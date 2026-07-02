@@ -2,7 +2,7 @@
 
 **Android (TWA)** and **iOS (Capacitor)** wrap this same build — see [`docs/MOBILE.md`](./docs/MOBILE.md).
 
-**Perovo by Tadsaya** — local-first PWA for **commitments, pressure, and household/salary cashflow** (not a full expense tracker). Data stays in the browser (`localStorage`); optional Supabase for auth/profile. Supports **English + 22 Indian languages**.
+**Perovo by Tadsaya** — local-first PWA for **commitments, pressure, and salary cashflow** (not a full expense tracker). Data stays in the browser (`localStorage`); optional Supabase for auth/profile. Supports **English + 22 Indian languages**.
 
 ## Quick start
 

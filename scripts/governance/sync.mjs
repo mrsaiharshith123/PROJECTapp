@@ -27,7 +27,7 @@ export function runSyncAudit() {
 
   for (const file of walk(SRC, [], /\.(jsx|js)$/)) {
     const r = rel(file);
-    if (r.includes("__tests__") || r.startsWith("src/governance/")) continue;
+    if (r.includes("__tests__") || r.startsWith("scripts/registries/")) continue;
     const code = fs.readFileSync(file, "utf8");
 
     for (const needle of FORBIDDEN_GOOGLE_BACKUP) {

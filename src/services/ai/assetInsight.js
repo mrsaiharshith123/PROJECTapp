@@ -23,6 +23,108 @@ const PROPERTY_IDS = new Set([
   "property_commercial",
 ]);
 
+const AI_CACHE_KEY = "perovo_property_ai_cache_v1";
+const AI_CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 48 hours
+const AI_COOLDOWN_MS = 2 * 60 * 1000;
+/** @type {Map<string, Promise<unknown>>} */
+const inflight = new Map();
+
+function propertyCacheKey(fields, extra = {}) {
+  return JSON.stringify({
+    loc: (fields.location || "").toLowerCase().trim(),
+    area: fields.areaMeasure,
+    unit: fields.areaUnit,
+    purchasePrice: fields.purchasePrice,
+    categoryId: fields.categoryId,
+    currentValue: fields.currentValue ?? fields.value ?? null,
+    ...extra,
+  });
+}
+
+function readAiCache(key) {
+  try {
+    const raw = localStorage.getItem(AI_CACHE_KEY);
+    const store = raw ? JSON.parse(raw) : {};
+    const hit = store[key];
+    if (!hit || Date.now() - hit.at > AI_CACHE_TTL_MS) return null;
+    return hit.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeAiCache(key, data) {
+  try {
+    const raw = localStorage.getItem(AI_CACHE_KEY);
+    const store = raw ? JSON.parse(raw) : {};
+    store[key] = { at: Date.now(), data };
+    const keys = Object.keys(store);
+    if (keys.length > 40) {
+      keys
+        .sort((a, b) => (store[a].at || 0) - (store[b].at || 0))
+        .slice(0, keys.length - 40)
+        .forEach((k) => delete store[k]);
+    }
+    localStorage.setItem(AI_CACHE_KEY, JSON.stringify(store));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function isOnCooldown(key) {
+  try {
+    const until = Number(sessionStorage.getItem(`perovo_ai_cd:${key}`) || 0);
+    return until > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function setCooldown(key, ms = AI_COOLDOWN_MS) {
+  try {
+    sessionStorage.setItem(`perovo_ai_cd:${key}`, String(Date.now() + ms));
+  } catch {
+    /* ignore */
+  }
+}
+
+async function invokeAssetInsight(body, cacheKey) {
+  if (cacheKey) {
+    const cached = readAiCache(cacheKey);
+    if (cached) return cached;
+    if (isOnCooldown(cacheKey)) {
+      return { error: "rate_limited", message: "Please wait a moment before fetching again." };
+    }
+    if (inflight.has(cacheKey)) return inflight.get(cacheKey);
+  }
+
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return { error: "unauthorized" };
+  }
+
+  const run = supabase.functions
+    .invoke(ASSET_INSIGHT_FUNCTION, { body })
+    .then(({ data, error }) => {
+      const payload = data && typeof data === "object" ? data : {};
+      if (payload.error) return payload;
+      if (error) return { error: "invoke_failed", message: error.message };
+      if (cacheKey && payload.insight != null && !payload.error) {
+        writeAiCache(cacheKey, payload);
+      }
+      if (String(payload.error || "").includes("429") || String(payload.message || "").includes("429")) {
+        if (cacheKey) setCooldown(cacheKey, 5 * 60 * 1000);
+      }
+      return payload;
+    })
+    .finally(() => {
+      if (cacheKey) inflight.delete(cacheKey);
+    });
+
+  if (cacheKey) inflight.set(cacheKey, run);
+  return run;
+}
+
 function wantsLiveMarketData(entry) {
   return PROPERTY_IDS.has(entry.categoryId);
 }
@@ -49,6 +151,9 @@ export function resolveAssetInsightError(t, result) {
   const code = result.errorCode || "";
   if (code === "ai_not_configured") return t("wealthDetail.market.failedNotConfigured");
   if (code === "unauthorized") return t("wealthDetail.market.failedAuth");
+  if (code === "rate_limited" || code === "gemini_429" || code.includes("429")) {
+    return t("wealthDetail.market.failedRateLimit");
+  }
   if (code === "gemini_401" || code === "gemini_403") return t("wealthDetail.market.failedAuthKey");
   if (code === "no_market_rate" || code === "unstructured_response") {
     return t("wealthDetail.market.failedPartial");
@@ -114,7 +219,7 @@ export function buildAssetInsightPrompt(entry, t, opts = {}) {
     ? `Write 4–6 sentences for an Indian property owner. Cover: (1) is it worth holding longer vs selling, (2) liquidity and emergency-access risks, (3) local infra / development outlook for this area (mention realistic project types — highways, industrial parks, RERA residential — not invented names), (4) inflation-adjusted return context, (5) one concrete next step (title check, rent comparison, or diversification). Be specific to the location and numbers given.`
     : `Be concise (2–3 sentences). Cover appreciation outlook, liquidity, and one practical action.`;
 
-  return `Analyse this personal asset for an Indian household. ${depth} End with: Educational only — not financial advice.
+  return `Analyse this personal asset for an Indian individual. ${depth} End with: Educational only — not financial advice.
 
 ${lines.join("\n")}`;
 }
@@ -124,7 +229,7 @@ ${lines.join("\n")}`;
  * @param {(key: string, params?: object) => string} t
  * @param {object} [settings]
  * @param {object} [opts]
- * @param {boolean} [opts.includeValueHistory] — bundle chart milestones in same Gemini call (property only)
+ * @param {boolean} [opts.includeValueHistory] - bundle chart milestones in same Gemini call (property only)
  * @returns {Promise<{
  *   insight: string | null,
  *   marketData: object | null,
@@ -142,13 +247,13 @@ export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
 
   if (supabase) {
     try {
-      const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
-        body: propertyInsightBody(entry, {
-          includeValueHistory: wantHistory || undefined,
-        }),
-      });
-
-      const payload = data && typeof data === "object" ? data : {};
+      const cacheKey = PROPERTY_IDS.has(entry.categoryId)
+        ? propertyCacheKey(entry, { mode: wantHistory ? "bundle" : "market" })
+        : null;
+      const payload = await invokeAssetInsight(
+        propertyInsightBody(entry, { includeValueHistory: wantHistory || undefined }),
+        cacheKey,
+      );
 
       if (payload.error) {
         console.warn("[assetInsight] edge error:", payload.error, payload.message || "");
@@ -162,7 +267,7 @@ export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
         };
       }
 
-      if (!error && payload.insight != null) {
+      if (!payload.error && payload.insight != null) {
         const result = {
           insight: String(payload.insight),
           marketData: payload.marketData ?? null,
@@ -183,17 +288,13 @@ export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
         };
       }
 
-      if (error) {
-        console.warn("[assetInsight] invoke transport error:", error);
-        return {
-          insight: null,
-          marketData: null,
-          structured: false,
-          source: "error",
-          errorCode: "invoke_failed",
-          errorMessage: error.message || undefined,
-        };
-      }
+      return {
+        insight: null,
+        marketData: null,
+        structured: false,
+        source: "error",
+        errorCode: "invoke_failed",
+      };
     } catch (e) {
       console.warn("[assetInsight] invoke failed:", e);
       return {
@@ -342,25 +443,20 @@ function propertyInsightBody(fields, extra = {}) {
  * }>}
  */
 export async function fetchPropertyLiveValue(fields) {
-  const supabase = getSupabaseClient();
-  if (!supabase) {
+  if (!getSupabaseClient()) {
     return { ok: false, errorCode: "unauthorized" };
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
-      body: propertyInsightBody(fields),
-    });
-
-    const payload = data && typeof data === "object" ? data : {};
-    if (payload.error || error) {
+    const cacheKey = propertyCacheKey(fields, { mode: "market" });
+    const payload = await invokeAssetInsight(propertyInsightBody(fields), cacheKey);
+    if (payload.error) {
       return {
         ok: false,
-        errorCode: String(payload.error || "invoke_failed"),
-        errorMessage: payload.message ? String(payload.message) : error?.message,
+        errorCode: String(payload.error),
+        errorMessage: payload.message ? String(payload.message) : undefined,
       };
     }
-
     return parsePropertyMarketPayload(payload, fields);
   } catch (e) {
     return {
@@ -386,20 +482,19 @@ export async function fetchPropertyLiveValue(fields) {
  * }>}
  */
 export async function fetchPropertyAiBundle(fields) {
-  const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, errorCode: "unauthorized" };
+  if (!getSupabaseClient()) return { ok: false, errorCode: "unauthorized" };
 
   try {
-    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
-      body: propertyInsightBody(fields, { analysisMode: "property_bundle" }),
-    });
-
-    const payload = data && typeof data === "object" ? data : {};
-    if (payload.error || error) {
+    const cacheKey = propertyCacheKey(fields, { mode: "property_bundle" });
+    const payload = await invokeAssetInsight(
+      propertyInsightBody(fields, { analysisMode: "property_bundle" }),
+      cacheKey,
+    );
+    if (payload.error) {
       return {
         ok: false,
-        errorCode: String(payload.error || "invoke_failed"),
-        errorMessage: payload.message ? String(payload.message) : error?.message,
+        errorCode: String(payload.error),
+        errorMessage: payload.message ? String(payload.message) : undefined,
       };
     }
 
@@ -451,8 +546,7 @@ export async function fetchPropertyAiBundle(fields) {
  * }>}
  */
 export async function fetchPropertyValueHistory(fields) {
-  const supabase = getSupabaseClient();
-  if (!supabase) return { ok: false, errorCode: "unauthorized" };
+  if (!getSupabaseClient()) return { ok: false, errorCode: "unauthorized" };
 
   const purchaseYear = Number(fields.purchaseYear);
   const area = Number(fields.areaMeasure) || 0;
@@ -462,13 +556,13 @@ export async function fetchPropertyValueHistory(fields) {
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke(ASSET_INSIGHT_FUNCTION, {
-      body: propertyInsightBody(fields, { analysisMode: "value_history" }),
-    });
-
-    const payload = data && typeof data === "object" ? data : {};
-    if (payload.error || error) {
-      return { ok: false, errorCode: String(payload.error || "invoke_failed") };
+    const cacheKey = propertyCacheKey(fields, { mode: "value_history" });
+    const payload = await invokeAssetInsight(
+      propertyInsightBody(fields, { analysisMode: "value_history" }),
+      cacheKey,
+    );
+    if (payload.error) {
+      return { ok: false, errorCode: String(payload.error) };
     }
 
     const milestones = payload.milestones;

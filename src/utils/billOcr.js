@@ -1,4 +1,3 @@
-import Tesseract from "tesseract.js";
 import { recognizeWithVision, isVisionConfigured } from "../services/ocr/googleVision.js";
 
 /** @param {File} file */
@@ -20,6 +19,7 @@ async function fileToBase64(file) {
  * @param {(pct: number) => void} [onProgress]
  */
 async function recognizeWithTesseract(imageFile, onProgress) {
+  const { default: Tesseract } = await import("tesseract.js");
   const {
     data: { text },
   } = await Tesseract.recognize(imageFile, "eng+hin", {

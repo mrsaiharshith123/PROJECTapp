@@ -23,7 +23,6 @@ function resolveYouRoute(fromNav) {
     "personal-money": "/you/personal",
     money: "/you/personal",
     account: "/you/personal",
-    "household-mode": "/you",
     "personal-appearance": "/you/appearance",
     appearance: "/you/appearance",
     "security-sessions": "/you/security",
@@ -46,7 +45,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { isLoggedIn, signOut, user } = useAuth();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const { t } = useTranslation();
   const [signingOut, setSigningOut] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -54,7 +53,7 @@ const Profile = () => {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  const tier = getTier(settings);
+  const tier = getTier(settings, effectiveSubscriptionTier);
   const displayName = settings.displayName || user?.email?.split("@")[0] || t("nav.you");
   const email = user?.email || "";
   const initials = displayName

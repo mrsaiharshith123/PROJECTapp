@@ -4,7 +4,7 @@
 import fs from "fs";
 import path from "path";
 import { ROOT, SRC, rel, walk } from "../lib/audit-core.mjs";
-import { INSIGHT_PRODUCERS, INSIGHT_TONES } from "../../src/governance/registries/insights.js";
+import { INSIGHT_PRODUCERS, INSIGHT_TONES } from "../registries/insights.mjs";
 
 const INSIGHT_FN_RE = /export\s+function\s+(build\w*Insight\w*|generate\w*Insight\w*|\w*Insights)\s*\(/g;
 

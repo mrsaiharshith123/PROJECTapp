@@ -13,7 +13,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../../../constants/chitFund.js";
-import { getCategoriesForUserMode, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { getCategoriesForUserMode } from "../../../constants/modeExperience.js";
 import InsuranceFields from "../forms/InsuranceFields.jsx";
 import { buildInsuranceBillName, insuranceBillHasIdentity } from "../../../constants/insurance.js";
 import { inferPriorityFromCategory, OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
@@ -47,7 +47,6 @@ function formFromCommitment(c, todayStr) {
     notes: c.notes || "",
     annualInterestRate: c.annualInterestRate != null ? String(c.annualInterestRate) : "",
     trialEnd: c.trialEnd || "",
-    householdPayer: c.householdPayer || "",
     insurancePolicyId: c.insurancePolicyId || "",
     insuredPersonName: c.insuredPersonName || "",
     insuranceCompany: c.insuranceCompany || "",
@@ -61,7 +60,6 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const { t } = useTranslation();
   const copy = useCopy();
   const { todayStr, settings } = usePerovo();
-  const salariedFamily = isSalariedFamily(settings);
   const billCategories = getCategoriesForUserMode(settings);
   const [form, setForm] = useState(() => formFromCommitment(commitment, todayStr));
   const [errors, setErrors] = useState(/** @type {Record<string, string>} */ ({}));
@@ -184,7 +182,6 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             insuranceMaturityBenefit: null,
           }),
       ...(showChit ? chitPayload : {}),
-      householdPayer: salariedFamily ? form.householdPayer || "" : "",
     });
     onClose();
   };
@@ -408,24 +405,6 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               value={form.trialEnd}
               onChange={(e) => patchForm({ trialEnd: e.target.value })}
             />
-          </div>
-        )}
-        {salariedFamily && (
-          <div>
-            <label className="ct-field-label">
-              {t("commitment.edit.householdPayer")} <span className="ct-text-muted font-normal">{t("commitment.edit.householdPayerOptional")}</span>
-              <InfoTip text={CALC_HELP.householdPayerBillTag} />
-            </label>
-            <select
-              className={fieldClass("householdPayer")}
-              value={form.householdPayer || ""}
-              onChange={(e) => patchForm({ householdPayer: e.target.value })}
-            >
-              <option value="">{t("commitment.edit.payerUntagged")}</option>
-              <option value="primary">{t("commitment.edit.payerPrimary")}</option>
-              <option value="secondary">{t("commitment.edit.payerSecondary")}</option>
-              <option value="shared">{t("commitment.edit.payerShared")}</option>
-            </select>
           </div>
         )}
         <div>

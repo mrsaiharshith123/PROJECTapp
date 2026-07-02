@@ -13,17 +13,13 @@
   "ignore": [
     "scripts/**",
     "dist/**",
-    "src/governance/**"
+    "scripts/registries/**"
   ],
   "ignoreDependencies": ["sharp", "pdfkit", "gh-pages", "@capacitor/ios"],
   "ignoreExportsUsedInFile": true,
   "ignoreIssues": {
-    "src/engines/**": ["exports", "files"],
-    "src/utils/**": ["exports"],
-    "src/services/**": ["exports"],
     "src/ui/primitives/**": ["exports", "duplicates"],
     "src/ui/patterns/**": ["exports", "duplicates"],
-    "src/ui/features/**": ["exports", "duplicates"],
     "src/ui/layout/**": ["exports", "duplicates"],
     "src/constants/userModes.js": ["duplicates"],
     "src/constants/modeExperience.js": ["exports"],

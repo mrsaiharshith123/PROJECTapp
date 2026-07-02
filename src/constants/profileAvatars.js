@@ -7,11 +7,6 @@ export const MODE_AVATAR_STYLES = {
     icon: "briefcase",
     label: "Salaried pro",
   },
-  family: {
-    gradient: "from-emerald-500 to-teal-600",
-    icon: "users-three",
-    label: "Family",
-  },
   power: {
     gradient: "from-gray-800 to-indigo-900",
     icon: "user-circle",

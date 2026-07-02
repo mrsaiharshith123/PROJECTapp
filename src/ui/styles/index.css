@@ -1,4 +1,7 @@
 @import "./tokens.css";
-@import "./components.css";
+@import "./components-core.css";
+@import "./components-charts.css";
+@import "./components-surfaces.css";
+@import "./components-editorial.css";
 @import "./theme-light.css";
 @import "./net-worth.css";

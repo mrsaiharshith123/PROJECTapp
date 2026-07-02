@@ -77,19 +77,19 @@ export function isCloudSyncConfigured() {
  * @param {import('../../types/context.js').AppSettings | undefined} settings
  * @param {boolean} isLoggedIn
  */
-export function canUseAccountBackup(settings, isLoggedIn) {
+export function canUseAccountBackup(settings, isLoggedIn, serverTier = null) {
   if (!isLoggedIn || !isCloudSyncConfigured()) return false;
-  if (!hasPaidBackupTier(settings)) return false;
+  if (!hasPaidBackupTier(settings, serverTier)) return false;
   return Boolean(settings?.cloudSyncEnabled);
 }
 
-export function canUseCloudSync(settings, isLoggedIn) {
-  return canUseAccountBackup(settings, isLoggedIn);
+export function canUseCloudSync(settings, isLoggedIn, serverTier = null) {
+  return canUseAccountBackup(settings, isLoggedIn, serverTier);
 }
 
 /** Pro/Power + backup toggle from local device settings (no session required). */
-export function wasAccountBackupEnabledLocally(settings) {
-  if (!hasPaidBackupTier(settings)) return false;
+export function wasAccountBackupEnabledLocally(settings, serverTier = null) {
+  if (!hasPaidBackupTier(settings, serverTier)) return false;
   return Boolean(settings?.cloudSyncEnabled);
 }
 
@@ -97,6 +97,7 @@ export function wasAccountBackupEnabledLocally(settings) {
  * @param {{
  *   userId: string,
  *   getState: () => { commitments, lendings, settings, goals, monthlySnapshots },
+ *   serverSubscriptionTier?: string | null,
  * }} ctx
  */
 export async function pushLocalSnapshotToCloud(ctx) {
@@ -104,7 +105,8 @@ export async function pushLocalSnapshotToCloud(ctx) {
   pushInFlight = true;
   try {
     const state = ctx.getState();
-    if (!canUseAccountBackup(state.settings, true)) return { ok: false, reason: "disabled" };
+    const serverTier = ctx.serverSubscriptionTier ?? null;
+    if (!canUseAccountBackup(state.settings, true, serverTier)) return { ok: false, reason: "disabled" };
 
     const meta = loadSyncMeta();
     if (meta.lastPushedAt) {
@@ -237,11 +239,12 @@ export function scheduleCloudPush(ctx) {
 
 /**
  * Push at most once per calendar day when account backup is enabled.
- * @param {{ userId: string, getState: () => object }} ctx
+ * @param {{ userId: string, getState: () => object, serverSubscriptionTier?: string | null }} ctx
  */
 export async function pushDailyCloudBackupIfDue(ctx) {
   const state = ctx.getState();
-  if (!canUseAccountBackup(state.settings, true)) return { ok: false, reason: "disabled" };
+  const serverTier = ctx.serverSubscriptionTier ?? null;
+  if (!canUseAccountBackup(state.settings, true, serverTier)) return { ok: false, reason: "disabled" };
 
   const meta = loadSyncMeta();
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -279,36 +282,27 @@ export async function syncCloudBackupAtStartup(ctx) {
   saveSyncMeta({ userId: ctx.userId });
 
   const localHasData = localStateHasUserData(state);
-  const remote = await fetchRemoteSnapshot(ctx.userId);
-
   if (!localHasData) {
-    if (!remote?.payload || !snapshotHasUserData(remote.payload)) {
-      return { ok: false, reason: "empty", action: "none" };
-    }
-    const result = await pullRemoteSnapshotToLocal({ ...ctx, force: true });
-    return { ...result, action: result.ok ? "pull" : "none" };
+    return { ok: false, reason: "empty_local", action: "none" };
   }
 
+  const remote = await fetchRemoteSnapshot(ctx.userId);
   if (!remote?.payload || !snapshotHasUserData(remote.payload)) {
     const pushResult = await pushLocalSnapshotToCloud(ctx);
     return { ...pushResult, action: pushResult.ok ? "push" : "none" };
   }
 
   const meta = loadSyncMeta();
-  const localPushed = meta.lastPushedAt ? new Date(meta.lastPushedAt).getTime() : 0;
-  const localPulled = meta.lastPulledAt ? new Date(meta.lastPulledAt).getTime() : 0;
-  const remoteSynced = meta.remoteUpdatedAt ? new Date(meta.remoteUpdatedAt).getTime() : 0;
-  const localSyncedAt = Math.max(localPushed, localPulled, remoteSynced);
-  const remoteTime = new Date(remote.updatedAt).getTime();
-
-  if (remoteTime > localSyncedAt) {
-    const result = await pullRemoteSnapshotToLocal({ ...ctx, preferLocal: false });
-    return { ...result, action: result.ok ? "pull" : "none" };
-  }
-
   if (meta.pendingPush) {
     const pushResult = await pushLocalSnapshotToCloud(ctx);
     return { ...pushResult, action: pushResult.ok ? "push" : "none" };
+  }
+
+  const localTs = meta.lastPushedAt || state.settings?.updatedAt || "";
+  const remoteTs = remote.updatedAt || "";
+  if (remoteTs && (!localTs || new Date(remoteTs) > new Date(localTs))) {
+    const pullResult = await pullRemoteSnapshotToLocal({ ...ctx, force: false });
+    return { ...pullResult, action: pullResult.ok ? "pull" : "none" };
   }
 
   return { ok: true, reason: "up_to_date", action: "none" };

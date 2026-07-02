@@ -70,13 +70,11 @@ export function normalizeCityId(raw) {
 
 /**
  * @param {string} [cityId]
- * @param {"single"|"family"|string} [householdScope]
  */
-export function getCityDailyAvg(cityId, householdScope = "single") {
+export function getCityDailyAvg(cityId) {
   const normalized = normalizeCityId(cityId) || DEFAULT_CITY_ID;
   const city = CITY_BY_ID[normalized] || { dailyAvgInr: NATIONAL_DAILY_AVG_INR };
-  const base = city.dailyAvgInr;
-  return householdScope === "family" ? Math.round(base * 1.55) : base;
+  return city.dailyAvgInr;
 }
 
 /** @param {string} [cityId] */

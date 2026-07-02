@@ -14,13 +14,13 @@ import { Button } from "../../primitives/Button.jsx";
 export default function SpendsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { settings } = usePerovo();
+  const { settings, effectiveSubscriptionTier } = usePerovo();
   const [spendSmsOpen, setSpendSmsOpen] = useState(false);
   const [logSpendOpen, setLogSpendOpen] = useState(false);
   const [bankImportOpen, setBankImportOpen] = useState(false);
 
   const openBankImport = () => {
-    if (!tierHasFeature("bank_import", settings)) {
+    if (!tierHasFeature("bank_import", settings, effectiveSubscriptionTier)) {
       navigate("/profile#upgrade");
       return;
     }

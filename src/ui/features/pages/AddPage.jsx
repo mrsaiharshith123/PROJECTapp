@@ -15,7 +15,7 @@ import {
   applyChitFormSync,
   categoryIsChitFund,
 } from "../../../constants/chitFund.js";
-import { getCategoriesForUserMode, isSalariedFamily } from "../../../constants/modeExperience.js";
+import { getCategoriesForUserMode } from "../../../constants/modeExperience.js";
 import {
   emptyInsuranceFields,
   buildInsuranceBillName,
@@ -41,7 +41,7 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const Add = () => {
   const { t } = useTranslation();
-  const { addCommitment, addLending, commitments, lendings, settings, todayStr, getEffectiveStatus } =
+  const { addCommitment, addLending, commitments, lendings, settings, todayStr, getEffectiveStatus, effectiveSubscriptionTier } =
     usePerovo();
   const navigate = useNavigate();
   const [step, setStep] = useState(/** @type {"pick" | "form"} */ ("pick"));
@@ -63,8 +63,6 @@ const Add = () => {
     repeatType: "monthly",
     priority: "medium",
     notes: "",
-    householdPayer: "",
-    forMember: "shared",
     annualInterestRate: "",
     ...emptyInsuranceFields(),
     ...emptyChitFundFields(),
@@ -167,7 +165,6 @@ const Add = () => {
 
   const modeCfg = getUserModeConfig(settings.userMode || "salaried");
   const billCategories = getCategoriesForUserMode(settings);
-  const salariedFamily = isSalariedFamily(settings);
   const showAffordability = modeCfg.showAffordabilityOnAdd;
   const category = form.category || "Other";
   const showInterest = categoryShowsInterestRate(category);
@@ -231,7 +228,7 @@ const Add = () => {
     }
 
     if (showChit) {
-      const chitGate = canAddChitRecord(settings, commitments, getEffectiveStatus);
+      const chitGate = canAddChitRecord(settings, commitments, getEffectiveStatus, effectiveSubscriptionTier);
       if (!chitGate.ok) {
         setErrors({ chitValue: t("tier.limit.chitMessage", { limit: chitGate.limit }) });
         return;
@@ -276,8 +273,6 @@ const Add = () => {
           }
         : {}),
       ...(showChit ? chitPayload : {}),
-      householdPayer: salariedFamily ? (form.householdPayer || "").trim() : "",
-      forMember: salariedFamily ? form.forMember || "shared" : "shared",
     };
     const effective = getEffectiveStatus({
       ...draft,
@@ -302,7 +297,7 @@ const Add = () => {
       setErrors(/** @type {Record<string, string>} */ (/** @type {unknown} */ (errs)));
       return;
     }
-    const gate = canAddLendingRecord(settings, lendings);
+    const gate = canAddLendingRecord(settings, lendings, effectiveSubscriptionTier);
     if (!gate.ok) return;
     addLending(
       buildLendingRecord({
@@ -441,7 +436,6 @@ const Add = () => {
             isSubscription={isSubscription}
             isOther={isOther}
             category={category}
-            salariedFamily={salariedFamily}
             priorSpendHint={priorSpendHint}
             todayStr={todayStr}
             affordability={affordability}

@@ -137,12 +137,6 @@ Rule-based feeds: overdue bills, lending due, pressure spikes, subscription end 
 
 ---
 
-## Household / family (`familyStabilityScore.js`, `householdSpendBreakdown.js`)
-
-When `householdScope === "family"`, burdens can tag payer/member. Family stability blends combined income and tagged spends.
-
----
-
 ## Wrong vs right (engines)
 
 | Wrong assumption | Reality |

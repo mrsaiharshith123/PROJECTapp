@@ -13,10 +13,10 @@ export default function ProfileCloudSyncSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isLoggedIn, user, profile } = useAuth();
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const sync = useCloudSync();
   const configured = isCloudSyncConfigured();
-  const paid = hasPaidBackupTier(settings);
+  const paid = hasPaidBackupTier(settings, effectiveSubscriptionTier);
   const enabled = Boolean(settings.cloudSyncEnabled);
 
   const accountLabel =

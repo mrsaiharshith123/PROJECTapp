@@ -29,34 +29,18 @@ const MODE_PRESETS_SALARIED = {
 };
 
 const MODE_PRESETS = {
-  family: {
-    insurance: { label: "Family insurance", repeatType: "yearly", category: "Insurance" },
-    school: { label: "School fees", repeatType: "yearly", category: "School" },
-    subscription: { label: "Subscription", repeatType: "monthly", category: "Subscription" },
-    loan: { label: "Loan / EMI", repeatType: "monthly", category: "Loan" },
-    child: { label: "Child / education monthly", repeatType: "monthly", category: "School" },
-    marriage: { label: "Family event / wedding", repeatType: "none", category: "Other" },
-    festival: { label: "Festival / gifts (one-off)", repeatType: "none", category: "Other" },
-    salary_hike: { label: "Salary hike (+income)", repeatType: "none", category: "Other", incomeDelta: 5000 },
-  },
   salaried: MODE_PRESETS_SALARIED,
 };
 
-import { getExperienceMode, isSalariedFamily } from "../constants/modeExperience.js";
+import { getExperienceMode } from "../constants/modeExperience.js";
 
 export function getExpensePresetsForMode(modeOrSettings) {
-  let mode = modeOrSettings;
-  let household = false;
-  if (typeof modeOrSettings === "object" && modeOrSettings !== null) {
-    mode = getExperienceMode(modeOrSettings);
-    household = isSalariedFamily(modeOrSettings);
-  }
-  if (mode === "salaried" || mode === "family") {
-    const base = { ...PRESETS, ...MODE_PRESETS_SALARIED };
-    if (household || mode === "family") {
-      return { ...base, ...MODE_PRESETS.family };
-    }
-    return base;
+  const mode =
+    typeof modeOrSettings === "object" && modeOrSettings !== null
+      ? getExperienceMode(modeOrSettings)
+      : modeOrSettings || "salaried";
+  if (mode === "salaried") {
+    return { ...PRESETS, ...MODE_PRESETS_SALARIED };
   }
   return MODE_PRESETS[mode] || PRESETS;
 }

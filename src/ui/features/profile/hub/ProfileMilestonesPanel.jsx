@@ -9,7 +9,7 @@ import { combinedMonthlyIncome } from "../../../../utils/combinedIncome.js";
 import { formatAchievementDate } from "../../../../i18n/formatLocale.js";
 import { SettingsGroup, SettingsGroupContent } from "../SettingsGroup.jsx";
 
-export default function ProfileMilestonesPanel({ household = false }) {
+export default function ProfileMilestonesPanel() {
   const { t, locale } = useTranslation();
   const { milestones } = useNetWorth();
   const {
@@ -44,16 +44,16 @@ export default function ProfileMilestonesPanel({ household = false }) {
 
   return (
     <SettingsGroup
-      title={household ? t("profileHub.milestonesTitleHousehold") : t("profileHub.milestonesTitle")}
+      title={t("profileHub.milestonesTitle")}
       icon="target"
-      description={household ? t("profileHub.milestonesSubtitleHousehold") : t("profileHub.milestonesSubtitle")}
+      description={t("profileHub.milestonesSubtitle")}
     >
       <SettingsGroupContent>
         {achievements.length === 0 ? (
           <EmptyState
             icon="trophy"
-            title={household ? t("profileHub.milestonesEmptyHousehold") : t("profileHub.milestonesEmpty")}
-            hint={household ? t("profileHub.milestonesEmptyHintHousehold") : t("profileHub.milestonesEmptyHint")}
+            title={t("profileHub.milestonesEmpty")}
+            hint={t("profileHub.milestonesEmptyHint")}
           />
         ) : (
           <ul className="ct-stack-sm">

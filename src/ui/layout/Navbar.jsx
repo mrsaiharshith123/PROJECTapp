@@ -332,7 +332,6 @@ export function Navbar() {
       <nav
         className={cn("ct-bottom-nav ed-nav", navScrollHidden && "ct-bottom-nav--hidden")}
         aria-label={t("nav.mainAria")}
-        aria-hidden={navScrollHidden}
       >
         <div className="ct-bottom-nav-inner">
           {navItems.map((item) => {

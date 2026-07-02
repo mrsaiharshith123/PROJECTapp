@@ -29,7 +29,7 @@ function resolveTab(tabParam, stateTab) {
 /** @route /ledger — Assets, Liabilities, Instruments */
 export default function LedgerPage() {
   const { t } = useTranslation();
-  const { settings } = usePerovo();
+  const { settings, effectiveSubscriptionTier } = usePerovo();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -63,7 +63,7 @@ export default function LedgerPage() {
   };
 
   const posToken = (tabId) => (tabId === "assets" ? "asset" : tabId === "liabilities" ? "liab" : "instrument");
-  const tier = getTier(settings);
+  const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
     <div className="ct-page ed-paper">

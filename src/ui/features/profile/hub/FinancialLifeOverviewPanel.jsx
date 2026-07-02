@@ -8,10 +8,9 @@ import { SettingsGroup, SettingsGroupContent } from "../SettingsGroup.jsx";
  * @param {{
  *   hub: ReturnType<import('../../../../hooks/useProfileHubIntel.js').useProfileHubIntel>,
  *   insights: { id: string, key: string, params?: object, tone: string }[],
- *   household?: boolean,
  * }} props
  */
-export default function FinancialLifeOverviewPanel({ hub, insights, household = false }) {
+export default function FinancialLifeOverviewPanel({ hub, insights }) {
   const { t } = useTranslation();
   const items = useMemo(
     () => mergeFinancialLifeItems(hub.journey, insights, 3, ["emergency", "pressure"]),
@@ -28,7 +27,7 @@ export default function FinancialLifeOverviewPanel({ hub, insights, household = 
 
   return (
     <SettingsGroup
-      title={household ? t("profileHub.journeyTitleHousehold") : t("profileHub.journeyTitle")}
+      title={t("profileHub.journeyTitle")}
       icon="lightning"
     >
       <SettingsGroupContent className="!pt-2">

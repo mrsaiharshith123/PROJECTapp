@@ -1,7 +1,6 @@
 import { parseISO, differenceInCalendarDays } from "date-fns";
 import { buildDueHeatmap } from "./analyticsSeries.js";
 import { buildCashflowForecastSeries } from "./forecastSeries.js";
-import { buildFamilyExpenseCalendar } from "./familyCalendar.js";
 import { analyzeGoalBalance } from "./goalBalance.js";
 import { freeMoneyAfterBurden } from "./pressureScore.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
@@ -176,19 +175,7 @@ export function buildStabilityAheadPlan({
   );
   const { rows: forecastMonths, heavyMonths, lightest, avgDue } = annotateForecastMonths(forecastRaw);
 
-  const familyCalendar =
-    mode === "family"
-      ? buildFamilyExpenseCalendar(commitments, todayStr, getEffectiveStatus)
-      : null;
-
   const mergedHeavy = [...heavyMonths];
-  if (familyCalendar?.heavyMonths) {
-    for (const fm of familyCalendar.heavyMonths) {
-      if (!mergedHeavy.some((h) => h.monthKey === fm.monthKey)) {
-        mergedHeavy.push({ month: fm.label, monthKey: fm.monthKey, due: fm.amount, free: 0, source: "household" });
-      }
-    }
-  }
 
   const goalBalance = analyzeGoalBalance(goals, {
     burdenRatio: income > 0 ? cash.monthlyBurden / income : 0,
@@ -253,13 +240,6 @@ export function buildStabilityAheadPlan({
       },
     });
   }
-  if (Number(settings.secondaryMonthlyIncome) > 0 && Number(settings.monthlyIncome) > 0) {
-    headlines.push({
-      id: "dual-income",
-      tone: "info",
-      key: "stability.headline.dualIncome",
-    });
-  }
 
   return {
     income,
@@ -267,7 +247,6 @@ export function buildStabilityAheadPlan({
     forecastMonths,
     heavyMonths: mergedHeavy.slice(0, 4),
     avgMonthlyDue: avgDue,
-    familyCalendar,
     goalBalance,
     goalCapacity,
     billPriority,
@@ -300,7 +279,7 @@ export function buildShareableStabilitySummary({
   void narrativeHeadlineKey;
   void narrativeHeadlineParams;
   const lines = [
-    `Perovo — ${mode === "family" ? "Household" : "Salary"} stability`,
+    `Perovo — Salary stability`,
     narrativeHeadline || "",
     income > 0
       ? `Income (${incomeEntryBasis === "gross" ? "gross" : "take-home"}): ₹${Math.round(income).toLocaleString("en-IN")}/mo`

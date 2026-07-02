@@ -12,8 +12,8 @@ const TIER_LABEL = { free: "Free", pro: "Pro", power: "Power" };
  */
 export function PlansButton({ className = "" }) {
   const location = useLocation();
-  const { settings } = usePerovo();
-  const tier = settings.subscriptionTier || "free";
+  const { settings, effectiveSubscriptionTier } = usePerovo();
+  const tier = effectiveSubscriptionTier || settings.subscriptionTier || "free";
   const [open, setOpen] = useState(() => location.hash === "#upgrade");
 
   const closePlans = () => {

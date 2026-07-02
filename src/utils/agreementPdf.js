@@ -1,8 +1,16 @@
-import pdfMake from "pdfmake/build/pdfmake.js";
-import pdfFonts from "pdfmake/build/vfs_fonts.js";
 import { numberToWords } from "../engines/lendingAgreement.js";
 
-pdfMake.vfs = pdfFonts.pdfMake?.vfs ?? pdfFonts;
+/** @returns {Promise<typeof import("pdfmake/build/pdfmake.js")>} */
+async function loadPdfMake() {
+  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
+    import("pdfmake/build/pdfmake.js"),
+    import("pdfmake/build/vfs_fonts.js"),
+  ]);
+  const pdfMake = pdfMakeMod.default;
+  const pdfFonts = pdfFontsMod.default;
+  pdfMake.vfs = pdfFonts.pdfMake?.vfs ?? pdfFonts;
+  return pdfMake;
+}
 
 /** @param {object} lending @param {object} [settings] */
 export function buildAgreementDocDefinition(lending, settings = {}) {
@@ -212,6 +220,7 @@ export function buildAgreementDocDefinition(lending, settings = {}) {
 
 /** @param {object} lending @param {object} [settings] */
 export async function generateAgreementPdfBase64(lending, settings = {}) {
+  const pdfMake = await loadPdfMake();
   const docDef = buildAgreementDocDefinition(lending, settings);
   return new Promise((resolve, reject) => {
     try {
@@ -225,6 +234,7 @@ export async function generateAgreementPdfBase64(lending, settings = {}) {
 
 /** @param {object} lending @param {object} [settings] */
 export async function downloadAgreementPdf(lending, settings = {}) {
+  const pdfMake = await loadPdfMake();
   const docDef = buildAgreementDocDefinition(lending, settings);
   const pdf = pdfMake.createPdf(docDef);
   const fileName = `perovo-agreement-${lending.id || Date.now()}.pdf`;

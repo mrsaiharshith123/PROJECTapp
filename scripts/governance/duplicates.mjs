@@ -21,7 +21,7 @@ export function runDuplicatesAudit() {
   const byBase = new Map();
   for (const file of walk(SRC, [], /\.(jsx|js)$/)) {
     const r = rel(file);
-    if (r.startsWith("src/governance/")) continue;
+    if (r.startsWith("scripts/registries/")) continue;
     const base = path.basename(file);
     if (!byBase.has(base)) byBase.set(base, []);
     byBase.get(base).push(r);

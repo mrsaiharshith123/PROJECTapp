@@ -4,11 +4,10 @@ import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 /** Bill category ids shown when adding a commitment. */
 export const MODE_CATEGORY_IDS = {
   salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
-  family: ["Rent", "School", "Insurance", "Groceries", "EMI", "Chit Fund", "Subscription", "Utility", "Loan", "Other"],
   power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
 };
 
-/** Quick calculator tool ids per mode (Home dashboard). Safety lives under Profile. */
+/** Quick calculator tool ids per mode (Home dashboard). */
 const TOOL_ORDER = [
   "planner",
   "advisor",
@@ -22,66 +21,8 @@ const TOOL_ORDER = [
 
 export const MODE_TOOL_IDS = {
   salaried: TOOL_ORDER,
-  family: TOOL_ORDER,
   power: TOOL_ORDER,
 };
-
-/** Scope-gated product features (single vs household vs both). */
-export const SCOPE_FEATURES = {
-  single: [
-    "paycheck_autopsy",
-    "personal_cibil_sim",
-    "salary_day_mode",
-    "individual_survival",
-    "personal_goals",
-  ],
-  household: [
-    "combined_income_display",
-    "spouse_income_field",
-    "school_fees_banner",
-    "family_emergency_target",
-    "household_pressure_score",
-    "family_cashflow_calendar",
-    "festival_planner",
-    "dependent_tracker",
-    "per_member_expense",
-    "household_runway",
-    "shared_goals",
-    "renewal_alerts",
-    "household_entity_card",
-  ],
-  both: [
-    "commitments",
-    "lending",
-    "chit_fund",
-    "income_tax",
-    "retirement_suite",
-    "net_worth",
-    "daily_spends",
-    "bill_split",
-    "analytics",
-    "ai_advisor",
-    "goals",
-    "survival_basic",
-    "pressure_score",
-    "bank_import",
-    "notification_smart",
-    "annual_report",
-  ],
-};
-
-/** @param {string} featureId @param {"single" | "family"} householdScope */
-export function isFeatureForScope(featureId, householdScope) {
-  if (SCOPE_FEATURES.both.includes(featureId)) return true;
-  if (householdScope === "family") return SCOPE_FEATURES.household.includes(featureId);
-  return SCOPE_FEATURES.single.includes(featureId);
-}
-
-/** @param {"single" | "family"} householdScope */
-export function getScopeOnlyFeatures(householdScope) {
-  if (householdScope === "family") return SCOPE_FEATURES.household;
-  return SCOPE_FEATURES.single;
-}
 
 export const MODE_TOOL_DEFS = {
   planner: {
@@ -152,25 +93,12 @@ export const MODE_TOOL_DEFS = {
   },
 };
 
-const MODE_TOOL_TITLES = {
-  family: {
-    planner: { title: "Household planner", subtitle: "Afford · scenarios · goals" },
-  },
-};
-
 export const MODE_ANALYTICS = {
   salaried: {
     monthTitle: "Paycheck this month",
     monthHint: "Salary vs what is due, paid, and left this month.",
     affordTitle: "Salary vs monthly bills",
     affordHint: "Income minus estimated monthly dues — your paycheck pressure read.",
-    showPaycheckFlow: true,
-  },
-  family: {
-    monthTitle: "Household month",
-    monthHint: "Shared income vs family bills due this month.",
-    affordTitle: "Household income vs bills",
-    affordHint: "What the home keeps after monthly obligations.",
     showPaycheckFlow: true,
   },
   power: {
@@ -184,27 +112,20 @@ export const MODE_ANALYTICS = {
 
 export function resolveUserMode(settings) {
   const raw = settings?.userMode || "salaried";
-  if (raw === "family" || raw === "power" || REMOVED_USER_MODE_IDS.includes(raw)) return "salaried";
+  if (raw === "power" || REMOVED_USER_MODE_IDS.includes(raw)) return "salaried";
   return USER_MODE_IDS.includes(raw) ? raw : "salaried";
 }
 
-/** Salaried user managing a family household (merged former “family” mode). */
-export function isSalariedFamily(settings) {
-  if (!settings) return false;
-  if (settings.userMode === "family") return true;
-  return resolveUserMode(settings) === "salaried" && settings.householdScope === "family";
-}
-
 /** Subscription unlocks power features without a separate mode pick. */
-export function hasPowerFeatures(settings) {
+export function hasPowerFeatures(settings, serverTier = null) {
   if (!settings) return false;
-  return settings.subscriptionTier === "power" || settings.userMode === "power";
+  const tier = serverTier ?? settings.subscriptionTier ?? "free";
+  return tier === "power" || settings.userMode === "power";
 }
 
 /** Drives categories, tools, analytics copy, and intel engines. */
-export function getExperienceMode(settings) {
-  if (hasPowerFeatures(settings)) return "power";
-  if (isSalariedFamily(settings)) return "family";
+export function getExperienceMode(settings, serverTier = null) {
+  if (hasPowerFeatures(settings, serverTier)) return "power";
   return resolveUserMode(settings);
 }
 
@@ -214,36 +135,29 @@ export function getIncomeLabelKey(settingsOrMode) {
     typeof settingsOrMode === "object" && settingsOrMode !== null
       ? getExperienceMode(settingsOrMode)
       : settingsOrMode || "salaried";
-  if (mode === "family") return "income.household";
   if (mode === "power") return "income.monthly";
   return "income.monthlySalary";
 }
 
 /**
- * Profile scope for spends / wealth. `null` = entire household (family mode).
+ * Profile scope for spends / wealth.
  * @param {object | null | undefined} settings
  * @returns {string | null}
  */
 export function resolveDataProfileScope(settings) {
-  if (isSalariedFamily(settings)) return null;
   return settings?.activeProfileId || "default";
 }
 
 /**
- * Profile scope for analytics: family mode can view self only or full household.
+ * Profile scope for analytics.
  * @param {object | null | undefined} settings
- * @param {"self" | "household"} [view]
- * @returns {string | null}
  */
-export function resolveAnalyticsProfileScope(settings, view = "household") {
-  if (!isSalariedFamily(settings)) return settings?.activeProfileId || "default";
-  if (view === "self") return settings?.activeProfileId || "default";
-  return null;
+export function resolveAnalyticsProfileScope(settings) {
+  return settings?.activeProfileId || "default";
 }
 
 /** Icon + label key for mode badge in profile / home. */
-export function getHouseholdModeDisplay(settings) {
-  if (isSalariedFamily(settings)) return { icon: "users-three", labelKey: "mode.family" };
+export function getModeDisplay(settings) {
   if (hasPowerFeatures(settings)) return { icon: "lightning", labelKey: "brand.proSuffix" };
   return { icon: "briefcase", labelKey: "mode.salaried" };
 }
@@ -275,12 +189,11 @@ export function getToolsForMode(settingsOrMode) {
       ? getExperienceMode(settingsOrMode)
       : settingsOrMode || "salaried";
   const ids = MODE_TOOL_IDS[mode] || MODE_TOOL_IDS.salaried;
-  const overrides = MODE_TOOL_TITLES[mode] || {};
   return ids
     .map((id) => {
       const base = MODE_TOOL_DEFS[id];
       if (!base) return null;
-      return { ...base, ...(overrides[id] || {}) };
+      return { ...base };
     })
     .filter(Boolean);
 }
@@ -291,39 +204,13 @@ export function getDashboardToolsHeadingKey(settingsOrMode) {
     typeof settingsOrMode === "object" && settingsOrMode !== null
       ? getExperienceMode(settingsOrMode)
       : settingsOrMode || "salaried";
-  if (mode === "family") return "tools.householdTools";
   if (mode === "power") return "tools.powerTools";
   return "tools.salaryTools";
 }
 
 /** @param {string} toolId @param {string | object} settingsOrMode */
 export function getToolTileKeys(toolId, settingsOrMode) {
-  const mode =
-    typeof settingsOrMode === "object" && settingsOrMode !== null
-      ? getExperienceMode(settingsOrMode)
-      : settingsOrMode || "salaried";
-  if (mode === "family" && toolId === "planner") {
-    return { titleKey: "tools.householdPlanner.title", subtitleKey: "tools.householdPlanner.subtitle" };
-  }
   return { titleKey: `tools.${toolId}.title`, subtitleKey: `tools.${toolId}.subtitle` };
-}
-
-/** @param {object | null | undefined} settings @param {string} singleKey @param {string} familyKey */
-export function familyTextKey(settings, singleKey, familyKey) {
-  return isSalariedFamily(settings) ? familyKey : singleKey;
-}
-
-/**
- * Resolve i18n key for single vs family household copy.
- * @param {Function} t
- * @param {object} settings
- * @param {string} singleKey
- * @param {string} familyKey
- * @param {Record<string, unknown>} [params]
- */
-export function tFamily(t, settings, singleKey, familyKey, params = undefined) {
-  const key = familyTextKey(settings, singleKey, familyKey);
-  return params ? t(key, params) : t(key);
 }
 
 export function showSalariedStabilityCards(settings) {
@@ -331,5 +218,6 @@ export function showSalariedStabilityCards(settings) {
     const base = resolveUserMode(settings);
     return base === "salaried" || hasPowerFeatures(settings);
   }
-  return settings === "salaried" || settings === "family" || settings === "power";
+  return settings === "salaried" || settings === "power";
 }
+

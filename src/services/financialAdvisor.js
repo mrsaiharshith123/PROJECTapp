@@ -1,5 +1,5 @@
 import { pressureScoreLabel } from "../engines/pressureScore.js";
-import { getSupabaseClient } from "./supabase/auth.js";
+import { invokeEdgeFunction } from "./supabase/invokeEdgeFunction.js";
 
 const ADVISOR_FUNCTION = "financial-advisor";
 
@@ -73,18 +73,15 @@ Rules:
  * @returns {Promise<{ answer: string, source: "ai" | "local" }>}
  */
 export async function askFinancialAdvisor({ question, contextData }) {
-  const supabase = getSupabaseClient();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.functions.invoke(ADVISOR_FUNCTION, {
-        body: { question, contextData },
-      });
-      if (!error && data?.answer) {
-        return { answer: String(data.answer), source: "ai" };
-      }
-    } catch {
-      // fall through to local answer
+  try {
+    const { data, error } = await invokeEdgeFunction(ADVISOR_FUNCTION, {
+      body: { question, contextData },
+    });
+    if (!error && data?.answer) {
+      return { answer: String(data.answer), source: "ai" };
     }
+  } catch {
+    // fall through to local answer
   }
   return buildLocalAnswer(question, contextData);
 }

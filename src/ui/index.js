@@ -47,12 +47,9 @@ export { CelebrationOverlay } from "./patterns/CelebrationOverlay.jsx";
 export { ProGate } from "./patterns/ProGate.jsx";
 export { TierLimitBanner } from "./patterns/TierLimitBanner.jsx";
 
-export { HeroMonthCard } from "./features/HeroMonthCard.jsx";
 export { ToolTile } from "./features/ToolTile.jsx";
 export { ProfileHeroCard } from "./features/ProfileHeroCard.jsx";
 export { NotificationPanel } from "./features/NotificationPanel.jsx";
-export { default as HomeOverviewCard } from "./features/dashboard/HomeOverviewCard.jsx";
-export { default as ModeIntelligenceSection } from "./features/dashboard/ModeIntelligenceSection.jsx";
 export { default as FinancialPulseCard } from "./features/dashboard/FinancialPulseCard.jsx";
 export { default as DashboardTools } from "./features/dashboard/DashboardTools.jsx";
 export { default as ToolsDiscoveryToast } from "./features/dashboard/ToolsDiscoveryPrompt.jsx";

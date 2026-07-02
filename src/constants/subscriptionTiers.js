@@ -106,13 +106,12 @@ export const PLAN_PRESENTATION = [
       "plans.feature.power.bond",
       "plans.feature.power.payoff",
       "plans.feature.power.ca",
-      "plans.feature.power.household",
     ],
   },
 ];
 
-export function hasPaidBackupTier(settings) {
-  const tier = settings?.subscriptionTier || "free";
+export function hasPaidBackupTier(settings, serverTier = null) {
+  const tier = serverTier ?? settings?.subscriptionTier ?? "free";
   return tier === SUBSCRIPTION_TIERS.pro || tier === SUBSCRIPTION_TIERS.power;
 }
 

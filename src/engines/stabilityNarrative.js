@@ -1,7 +1,7 @@
 import { computePaymentMonthStreak } from "../utils/profileStats.js";
 
 /**
- * Human-readable salary / household health summary (composes existing scores — no duplicate math).
+ * Human-readable financial health summary (composes existing scores — no duplicate math).
  * Returns i18n keys — translate in UI via translateEngineMessage().
  */
 export function buildStabilityHealthNarrative({
@@ -15,6 +15,7 @@ export function buildStabilityHealthNarrative({
   commitments = [],
   lendings = [],
 }) {
+  void mode;
   const strengths = [];
   const weaknesses = [];
 
@@ -71,8 +72,7 @@ export function buildStabilityHealthNarrative({
           ? "narrative.label.stretched"
           : "narrative.label.fragile";
 
-  const headlineKey =
-    mode === "family" ? "narrative.headline.family" : "narrative.headline.salaried";
+  const headlineKey = "narrative.headline.salaried";
 
   return {
     headlineKey,

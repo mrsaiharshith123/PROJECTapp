@@ -7,7 +7,6 @@ import { rankStressContributors } from "../engines/stressContributors.js";
 import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
 import { resolveEmergencyLiquidPool } from "../utils/emergencyLiquid.js";
-import { computeFamilyPressure } from "../engines/modeFamily.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
 import { mergeExtendedInsights } from "../engines/insightsExtended.js";
 import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
@@ -15,10 +14,9 @@ import { buildPressureIntelligence } from "../engines/pressureIntelligence.js";
 import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
 import { resolveUserMode, getExperienceMode, hasPowerFeatures } from "../constants/modeExperience.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
-import { householdPayerInsight } from "../engines/householdPayer.js";
 import { applyDevOverrideToStabilityIntel, useDevOverrideTick } from "../utils/devOverride.js";
 
-/** Mode-specific financial stability intelligence (salaried, family, etc.). */
+/** Mode-specific financial stability intelligence. */
 export function useStabilityIntel() {
   const ctx = usePerovo();
   const { entries: wealthEntries } = useNetWorth();
@@ -73,7 +71,7 @@ export function useStabilityIntel() {
         : null;
 
     const healthNarrative = buildStabilityHealthNarrative({
-      mode: experienceMode === "family" ? "family" : "salaried",
+      mode: "salaried",
       health: intel.health,
       stability: intel.stability,
       survival,
@@ -102,25 +100,6 @@ export function useStabilityIntel() {
       })),
     ].filter(Boolean);
 
-    let modeData = {};
-    if (experienceMode === "family") {
-      modeData = {
-        family: computeFamilyPressure(
-          ctx.commitments,
-          income,
-          ctx.getEffectiveStatus,
-          ctx.settings.dependents
-        ),
-      };
-      extraInsights.push(...(modeData.family.insights || []));
-      const payerIns = householdPayerInsight(
-        ctx.commitments,
-        ctx.getEffectiveStatus,
-        Math.max(0, Number(ctx.settings.secondaryMonthlyIncome) || 0)
-      );
-      if (payerIns) extraInsights.push(payerIns);
-    }
-
     const stabilityInsights = mergeExtendedInsights(intel.insights, extraInsights);
 
     const stable = {
@@ -137,11 +116,8 @@ export function useStabilityIntel() {
       ahead,
       goalBalance: ahead?.goalBalance || null,
       goalCapacity: ahead?.goalCapacity || [],
-      family: modeData.family || null,
-      familyCalendar: ahead?.familyCalendar ?? null,
       lendingOutflow: lendingMonthlyOutflow(ctx.lendings, ctx.getEffectiveLendingStatus, ctx.todayStr),
       stabilityInsights,
-      ...modeData,
     };
     return applyDevOverrideToStabilityIntel(stable);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- broad ctx fields drive one stability snapshot

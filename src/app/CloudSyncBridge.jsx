@@ -9,7 +9,6 @@ import {
   pushLocalSnapshotToCloud,
   syncCloudBackupAtStartup,
 } from "../services/sync/syncEngine.js";
-import { invalidateInitialAppStateCache } from "../utils/migrateStorage.js";
 import { SYNC_AUTO_BACKUP_INTERVAL_MS } from "../services/sync/constants.js";
 import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
@@ -18,6 +17,7 @@ import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
 export default function CloudSyncBridge() {
   const { user, isLoggedIn, isReady } = useAuth();
   const track = usePerovo();
+  const { effectiveSubscriptionTier } = track;
   const importAppDataRef = useRef(track.importAppData);
   useEffect(() => {
     importAppDataRef.current = track.importAppData;
@@ -35,15 +35,14 @@ export default function CloudSyncBridge() {
       userId: user.id,
       getState: loadFullAppStateForSync,
       applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
+      serverSubscriptionTier: effectiveSubscriptionTier,
     };
 
-    if (!canUseCloudSync(track.settings, true)) return;
+    if (!canUseCloudSync(track.settings, true, effectiveSubscriptionTier)) return;
 
     syncCloudBackupAtStartup(ctx)
-      .then((result) => {
-        if (result?.ok && result.action === "pull") {
-          invalidateInitialAppStateCache();
-        }
+      .then(() => {
+        /* push-only at startup — restore is manual via ProfileCloudSyncSection */
       })
       .catch(() => {
         /* non-blocking */
@@ -71,7 +70,7 @@ export default function CloudSyncBridge() {
     isLoggedIn,
     user?.id,
     track.settings.cloudSyncEnabled,
-    track.settings.subscriptionTier,
+    effectiveSubscriptionTier,
   ]);
 
   return null;

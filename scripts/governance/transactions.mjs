@@ -9,7 +9,7 @@ import {
   TRANSACTION_INTEL_PRODUCERS,
   MERCHANT_PARSER_PATHS,
   TRANSACTION_CATEGORY_PATHS,
-} from "../../src/governance/registries/transactions.js";
+} from "../registries/transactions.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");

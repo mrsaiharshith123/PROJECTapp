@@ -1,9 +1,6 @@
-/**
- * Stale folders, ghost files, and one-off scripts that should be removed.
- */
 import fs from "fs";
 import path from "path";
-import { ROOT, rel } from "../lib/audit-core.mjs";
+import { ROOT, rel, walk } from "../lib/audit-core.mjs";
 
 const STALE_ROOT_FILES = [
   { name: "public.zip", reason: "Stale archive of public/ — delete and use public/ only" },
@@ -75,6 +72,41 @@ export function runCleanupAudit() {
   }
   if (fs.existsSync(devDistPath)) {
     advisories.push({ kind: "build-artifact", message: "dev-dist/ present — PWA dev cache; safe to delete" });
+  }
+
+  const govSrc = path.join(ROOT, "src", "governance");
+  if (fs.existsSync(govSrc)) {
+    errors.push({
+      kind: "governance-in-bundle",
+      file: "src/governance/",
+      message: "Remove src/governance/ — registries live in scripts/registries/",
+    });
+  }
+
+  let buttonCount = 0;
+  for (const file of walk(path.join(ROOT, "src"), [], /\.(jsx|js)$/)) {
+    const code = fs.readFileSync(file, "utf8");
+    const matches = code.match(/<button(?=[^>]*>)(?![^>]*\btype\s*=)(\s)/g) || [];
+    buttonCount += matches.length;
+  }
+  if (buttonCount > 0) {
+    errors.push({
+      kind: "button-missing-type",
+      message: `${buttonCount} <button> elements missing type= — run npm run fix:buttons`,
+    });
+  }
+
+  const migrateFile = path.join(ROOT, "src", "utils", "migrateStorage.js");
+  if (fs.existsSync(migrateFile)) {
+    const code = fs.readFileSync(migrateFile, "utf8");
+    const count = (code.match(/export const SCHEMA_VERSION_KEY/g) || []).length;
+    if (count > 1) {
+      warnings.push({
+        kind: "duplicate-export",
+        file: "src/utils/migrateStorage.js",
+        message: `SCHEMA_VERSION_KEY exported ${count} times — remove duplicate`,
+      });
+    }
   }
 
   return {

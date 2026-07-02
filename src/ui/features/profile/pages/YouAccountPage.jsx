@@ -35,7 +35,6 @@ export default function YouAccountPage() {
         phone: normalizeIndianPhone(settings.phoneNumber || ""),
         monthly_income: Number(settings.monthlyIncome) || 0,
         user_mode: settings.userMode || "salaried",
-        household_scope: settings.householdScope || "single",
         pan: normalized,
         pan_verified: false,
       });

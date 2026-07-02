@@ -1,79 +1,34 @@
-# User mode architecture
+# Mode architecture (V1)
 
-Modes are configured in `constants/userModes.js` and `constants/modeExperience.js`.
+Perovo V1 is **single-user salaried only**. There is no household scope, family mode, or multi-user room.
 
-Registry: `src/governance/registries/modes.js`
+## User mode
 
-## Selectable modes (Profile / onboarding)
+| Mode | Description | Dashboard |
+|------|-------------|-----------|
+| **Salaried** | One person, one income profile, personal bills & net worth | `HomeOverviewCard`, `FinancialPulseCard`, Analytics |
 
-| Pick | Experience | Dashboard |
-|------|------------|-----------|
-| Salaried | Personal salary & bills | `ModeIntelligenceSection.jsx` (survival panel) |
-| Salaried + household scope **family** | Household (combined income, shared bills, household net worth) | `FamilyModeDashboard.jsx`, `HouseholdCommandPanel.jsx` |
+Removed modes (freelancer, student, business, family/household) **migrate to salaried** on load via `migrateStorage.js` and `userModes.js`.
 
-## Family data scope
+## Settings
 
-When `isSalariedFamily(settings)`:
+- **`settings.userMode`** — always `salaried` in V1.
+- **`settings.profiles`** — optional bill-tracking profiles (Power tier); not household members.
+- **`resolveDataProfileScope(settings)`** — returns active profile id or `null` for all profiles combined (single-user analytics only).
 
-- **`resolveDataProfileScope(settings)`** returns `null` — month summaries, analytics, and net worth include **all profiles** (household combined).
-- **`combinedMonthlyIncome(settings)`** — primary + spouse (`secondaryMonthlyIncome`) **in family only** + side incomes (`utils/combinedIncome.js`).
-- **Profile income UI** — family: second income field; single: side income list (`ProfilePersonalSection.jsx`).
-- **`householdMemberLimit(settings)`** — reads `settings.householdMemberLimit` (2–20 seats, set at room create).
-- **`settings.dependents`** — household dependents (0–99); edit via `HouseholdDependentsEditorModal`.
-- **Household rooms** — local-first registry (`householdRoomLocal.js`) with cloud fallback (`householdRoomService.js`); migration `supabase/migrations/20260614000000_household_rooms.sql`.
+## Home stack
 
-Copy rules: `.cursor/rules/family-mode-copy.mdc`. Audit: `npm run audit:household`.
+1. `HomeOverviewCard` → `HeroMonthCard` — month hero: scheduled / paid / unpaid, Insights status block, salary bar, sparkline → `/analytics`
+2. `HomeNeedsAttention` — overdue / due-soon bills
+3. `HomeUpcomingSection` — next 14 days
+4. `FinancialPulseCard` — personal stability pulse → Analytics
 
-## Legacy saves (migrated on load)
+## Tools & copy
 
-- **family** → `userMode: salaried`, `householdScope: family`
-- **power** → `userMode: salaried`, `subscriptionTier: power`
-- **freelancer** / **student** (removed) → `userMode: salaried`
+Mode-specific tools and onboarding copy live in `src/constants/modeExperience.js`. Governance audit: `npm run audit:modes`.
 
-## Shared across modes
+## Deferred / removed
 
-- Burden, forecast, pressure scoring
-- Commitments & payments model
-- Dashboard primitives: `ui/features/dashboard/shared/*`
-
-## Home composition
-
-1. `HomeOverviewCard` → `HeroMonthCard` — month hero: scheduled / paid / unpaid, **HouseholdFamilyBadge** (dependents + pencil) in family mode, Insights status block, salary bar, sparkline → `/analytics`
-2. `HomeInsightsSection` — titled Insights card below hero (tips + overdue chips)
-3. KPI row — `getHomeKpiTiles()` in `config/modeDashboardMetrics.js`
-4. `ModeIntelligenceSection` — one mode dashboard (Analytics; family uses `FamilyModeDashboard` + `HouseholdCommandPanel`)
-5. `FinancialPulseCard` — Analytics (Self = personal; Full house = household pulse)
-
-## Isolation rules
-
-- Mode-specific engines should only be imported from hooks, dashboard panels, or `modeExperience.js`.
-- Audit: `npm run audit:modes`.
-
-## Tools per mode
-
-`MODE_TOOL_IDS` in `modeExperience.js` drives calculator tiles on Home.
-
-**Current tool ids (all salaried experiences):**
-
-| Id | Panel / modal |
-|----|----------------|
-| `planner` | `MoneyPlannerPanel` — Afford · Scenarios · Goals |
-| `advisor` | `FinancialAdvisorTool` — AI on your numbers (Pro) |
-| `loan` | `LoanToolsPanel` — Extra EMI · Timing · Payoff order |
-| `insurance` | `InsuranceCalculatorModal` |
-| `chit` | `ChitFundAdvisor` |
-| `bond` | `BondAdvisor` (Power tier) |
-| `incomeTax` | `IncomeTaxPanel` — Tax + HRA |
-| `retirement` | `RetirementPlannerPanel` — EPF · PPF · NPS · gratuity |
-| `safety` | `SafetyPlannerPanel` — emergency fund only |
-| `invest` | `InvestSavingsPanel` — SIP · FD/RD (misplaced subs from Safety/Retirement) |
-
-Reorder per mode via `settings.dashboardToolOrderByMode` (persisted in `migrateStorage.js`).
-
-## Subscription vs mode
-
-- **User mode** = salaried + `householdScope` (`single` | `family`).
-- **Subscription tier** = `free` | `pro` | `power` — unlocks backup, reports, `ProGate` features.
-- Legacy save `userMode: power` migrates to `subscriptionTier: power`, `userMode: salaried`.
-
-See [../09-implementation-status.md](../09-implementation-status.md) for V1 scope.
+- Household scope (`single` | `family`), dependents editor, family dashboards
+- Household rooms (invite codes, shared activity feed) — tables dropped in `20260623130000_drop_household_rooms.sql`
+- `household_scope` on Supabase `profiles` is a **legacy column** (always `single`); not used in app logic

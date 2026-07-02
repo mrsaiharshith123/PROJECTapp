@@ -11,13 +11,6 @@ const BY_KEY = {
       actionLabelKey: "empty.homeScore.action",
       actionPath: "/add",
     },
-    family: {
-      icon: "users-three",
-      titleKey: "empty.homeScore.family.title",
-      hintKey: "empty.homeScore.family.hint",
-      actionLabelKey: "empty.homeScore.family.action",
-      actionPath: "/add",
-    },
   },
   "home-upcoming": {
     salaried: {
@@ -27,13 +20,6 @@ const BY_KEY = {
       actionLabelKey: "empty.upcoming.action",
       actionPath: "/add",
     },
-    family: {
-      icon: "house",
-      titleKey: "empty.homeUpcoming.family.title",
-      hintKey: "empty.homeUpcoming.family.hint",
-      actionLabelKey: "empty.homeUpcoming.family.action",
-      actionPath: "/add",
-    },
   },
   "bills-list": {
     salaried: {
@@ -41,13 +27,6 @@ const BY_KEY = {
       titleKey: "empty.billsList.salaried.title",
       hintKey: "empty.billsList.salaried.hint",
       actionLabelKey: "empty.billsList.salaried.action",
-      actionPath: "/add",
-    },
-    family: {
-      icon: "users-three",
-      titleKey: "empty.billsList.family.title",
-      hintKey: "empty.billsList.family.hint",
-      actionLabelKey: "empty.billsList.family.action",
       actionPath: "/add",
     },
   },

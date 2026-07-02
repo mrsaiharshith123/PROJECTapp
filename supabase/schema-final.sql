@@ -45,6 +45,7 @@ comment on column public.profiles.display_name is 'User name from signup/onboard
 comment on column public.profiles.monthly_income is 'Monthly salary in INR';
 comment on column public.profiles.onboarding_complete is 'True after onboarding flow finished';
 comment on column public.profiles.subscription_tier is 'Perovo plan: free, pro, or power';
+comment on column public.profiles.household_scope is 'Legacy unused — always single in V1 (household feature removed)';
 
 alter table public.profiles enable row level security;
 
@@ -66,6 +67,63 @@ create policy "profiles_update_own"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+create or replace function public.protect_profiles_subscription()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if coalesce(auth.jwt() ->> 'role', '') = 'service_role' then
+    return new;
+  end if;
+  if tg_op = 'INSERT' then
+    new.subscription_tier := 'free';
+    new.razorpay_payment_id := null;
+    return new;
+  end if;
+  if old.subscription_tier is distinct from new.subscription_tier
+     or old.razorpay_payment_id is distinct from new.razorpay_payment_id
+     or old.subscription_updated_at is distinct from new.subscription_updated_at then
+    new.subscription_tier := old.subscription_tier;
+    new.razorpay_payment_id := old.razorpay_payment_id;
+    new.subscription_updated_at := old.subscription_updated_at;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profiles_subscription on public.profiles;
+create trigger protect_profiles_subscription
+  before insert or update on public.profiles
+  for each row execute function public.protect_profiles_subscription();
+
+create or replace function public.protect_profiles_pan_verified()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if coalesce(auth.jwt() ->> 'role', '') = 'service_role' then
+    return new;
+  end if;
+  if tg_op = 'INSERT' then
+    new.pan_verified := false;
+    return new;
+  end if;
+  if old.pan_verified is distinct from new.pan_verified then
+    new.pan_verified := old.pan_verified;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profiles_pan_verified on public.profiles;
+create trigger protect_profiles_pan_verified
+  before insert or update on public.profiles
+  for each row execute function public.protect_profiles_pan_verified();
+
 -- ── 2. user_finance_snapshots (optional cloud backup, one row per user) ───────
 create table if not exists public.user_finance_snapshots (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -84,12 +142,44 @@ comment on table public.user_finance_snapshots is
 alter table public.user_finance_snapshots enable row level security;
 
 drop policy if exists "Users manage own finance snapshot" on public.user_finance_snapshots;
-create policy "Users manage own finance snapshot"
-  on public.user_finance_snapshots
-  for all
-  to authenticated
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+drop policy if exists "Users read own finance snapshot" on public.user_finance_snapshots;
+drop policy if exists "Paid users upsert own finance snapshot" on public.user_finance_snapshots;
+drop policy if exists "Paid users update own finance snapshot" on public.user_finance_snapshots;
+drop policy if exists "Users delete own finance snapshot" on public.user_finance_snapshots;
+
+create or replace function public.user_has_paid_backup_tier()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce(
+    (
+      select p.subscription_tier in ('pro', 'power')
+      from public.profiles p
+      where p.id = auth.uid()
+    ),
+    false
+  );
+$$;
+
+create policy "Users read own finance snapshot"
+  on public.user_finance_snapshots for select to authenticated
+  using (auth.uid() = user_id);
+
+create policy "Paid users upsert own finance snapshot"
+  on public.user_finance_snapshots for insert to authenticated
+  with check (auth.uid() = user_id and public.user_has_paid_backup_tier());
+
+create policy "Paid users update own finance snapshot"
+  on public.user_finance_snapshots for update to authenticated
+  using (auth.uid() = user_id and public.user_has_paid_backup_tier())
+  with check (auth.uid() = user_id and public.user_has_paid_backup_tier());
+
+create policy "Users delete own finance snapshot"
+  on public.user_finance_snapshots for delete to authenticated
+  using (auth.uid() = user_id);
 
 -- ── 3. agreement_hashes (lending integrity seals) ───────────────────────────
 create table if not exists public.agreement_hashes (

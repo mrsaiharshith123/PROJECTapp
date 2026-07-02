@@ -1,11 +1,4 @@
-import { openHtmlInNewTab } from "./lendingShareCard.js";
-
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+import { escapeHtml, openHtmlInNewTab } from "./shareCardHtml.js";
 
 /**
  * Privacy-safe share card — scores and labels, optional rounded amounts.

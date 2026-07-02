@@ -7,11 +7,11 @@ export const NAV_ITEMS = [
   { to: "/insights", labelKey: "nav.insights", icon: "chart-line-up", navGroup: "insights" },
 ];
 
-/** Only user mode — household uses salaried + householdScope. */
+/** Only user mode — salaried individual finances. */
 export const USER_MODE_IDS = ["salaried"];
 
 /** Removed modes — migrated to salaried on load. */
-export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business", "household"];
+export const REMOVED_USER_MODE_IDS = ["freelancer", "student", "business"];
 
 const NAV_FULL = [
   "/",
@@ -35,7 +35,7 @@ export const USER_MODES = [
     id: "salaried",
     label: "Salaried",
     icon: "briefcase",
-    description: "Salary, EMIs, and subscriptions — single or family household.",
+    description: "Salary, EMIs, and subscriptions for individual finances.",
     navPaths: NAV_FULL,
     showLending: true,
     showAffordabilityOnAdd: true,
@@ -43,15 +43,6 @@ export const USER_MODES = [
 ];
 
 const LEGACY_MODES = {
-  family: {
-    id: "family",
-    label: "Family household",
-    icon: "users-three",
-    description: "Shared expenses and joint goals.",
-    navPaths: NAV_FULL,
-    showLending: true,
-    showAffordabilityOnAdd: true,
-  },
   power: {
     id: "power",
     label: "Power user",

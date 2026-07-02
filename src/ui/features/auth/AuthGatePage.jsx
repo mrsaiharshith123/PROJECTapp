@@ -54,7 +54,6 @@ export default function AuthGatePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [income, setIncome] = useState("");
-  const [householdScope, setHouseholdScope] = useState("single");
   const [userCity, setUserCity] = useState("");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -88,13 +87,11 @@ export default function AuthGatePage() {
   const applySignupLocal = (incomeNum) => {
     const displayName = name.trim();
     const phoneNorm = normalizeIndianPhone(phone);
-    const scope = householdScope === "family" ? "family" : "single";
     updateSettings({
       displayName,
       phoneNumber: phoneNorm,
       monthlyIncome: incomeNum,
       userMode: "salaried",
-      householdScope: scope,
       userCity,
       onboardingComplete: false,
     });
@@ -103,13 +100,11 @@ export default function AuthGatePage() {
   const persistSignupProfile = async (userId, incomeNum) => {
     const displayName = name.trim();
     const phoneNorm = normalizeIndianPhone(phone);
-    const scope = householdScope === "family" ? "family" : "single";
     await saveUserProfile(userId, {
       username: displayName,
       display_name: displayName,
       phone: phoneNorm,
       user_mode: "salaried",
-      household_scope: scope,
       monthly_income: incomeNum,
       onboarding_complete: false,
     });
@@ -207,7 +202,6 @@ export default function AuthGatePage() {
             phone: normalizeIndianPhone(phone),
             monthly_income: incomeNum,
             user_mode: "salaried",
-            household_scope: householdScope === "family" ? "family" : "single",
             onboarding_complete: false,
           })
         );
@@ -373,16 +367,6 @@ export default function AuthGatePage() {
                   onChange={(e) => setIncome(e.target.value)}
                   required
                 />
-              </FormField>
-              <FormField label={t("auth.household")}>
-                <select
-                  className={fieldClass}
-                  value={householdScope}
-                  onChange={(e) => setHouseholdScope(e.target.value)}
-                >
-                  <option value="single">{t("auth.householdSingle")}</option>
-                  <option value="family">{t("auth.householdFamily")}</option>
-                </select>
               </FormField>
               <FormField label={t("profile.userCity")}>
                 <CitySelect value={userCity} onChange={setUserCity} required />

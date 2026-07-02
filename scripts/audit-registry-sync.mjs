@@ -13,7 +13,7 @@ const SRC = path.join(ROOT, "src");
 const JSON_OUT = process.argv.includes("--json");
 
 async function main() {
-  const mod = await import(pathToFileURL(path.join(SRC, "governance/registries/features.js")).href);
+  const mod = await import(pathToFileURL(path.join(ROOT, "scripts/registries/features.mjs")).href);
   const features = mod.FEATURES || [];
   const missing = [];
 

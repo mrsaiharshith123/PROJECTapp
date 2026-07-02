@@ -1,15 +1,15 @@
 import {
-  generateHouseholdInviteCode,
+  generateInviteCode,
   isValidInviteCode,
   normalizeInviteCode,
-} from "../../engines/householdRoom.js";
+} from "../../utils/inviteCode.js";
 
 const STORAGE_PREFIX = "perovo_lend_code_";
 const OFFER_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** @returns {string} 6-char offer code */
 export function generateOfferCode() {
-  return generateHouseholdInviteCode();
+  return generateInviteCode();
 }
 
 /**
@@ -43,11 +43,16 @@ export function loadLendingOffer(rawCode) {
   try {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${code}`);
     if (!raw) return null;
-    const offer = JSON.parse(raw);
-    if (!offer || offer.v !== 1) return null;
-    if (Date.now() - (Number(offer.savedAt) || 0) > OFFER_TTL_MS) return null;
-    return offer;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return null;
+    if (Date.now() - Number(data.savedAt || 0) > OFFER_TTL_MS) {
+      localStorage.removeItem(`${STORAGE_PREFIX}${code}`);
+      return null;
+    }
+    return data;
   } catch {
     return null;
   }
 }
+
+export { isValidInviteCode, normalizeInviteCode };

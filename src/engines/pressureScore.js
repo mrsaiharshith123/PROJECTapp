@@ -237,6 +237,15 @@ export function computePressureAnalysis({
 
 /**
  * Canonical 0–100 pressure score (higher = more stressed).
+ * @param {{
+ *   commitments: object[],
+ *   income: number,
+ *   getEffectiveStatus: (c: object) => string,
+ *   todayStr?: string,
+ *   dailySpends?: object[],
+ *   lendings?: object[],
+ * }} params
+ * @returns {number}
  */
 export function computeCanonicalPressureScore(params) {
   return safeScore(computePressureAnalysis(params).score);

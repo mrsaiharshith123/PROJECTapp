@@ -22,7 +22,7 @@ const profileInputClass = `${inputClassName()} ct-input-tint`;
 
 export default function ProfileManager() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const defaultProfile = { id: "default", label: t("profile.defaultProfileLabel"), color: "indigo" };
   const profiles = settings.profiles || [defaultProfile];
   const activeId = settings.activeProfileId || "default";
@@ -33,7 +33,7 @@ export default function ProfileManager() {
 
   const saveProfiles = (next) => updateSettings({ profiles: next });
 
-  const canAddProfile = tierHasFeature("multiple_profiles", settings);
+  const canAddProfile = tierHasFeature("multiple_profiles", settings, effectiveSubscriptionTier);
 
   const addProfile = () => {
     const label = newLabel.trim();

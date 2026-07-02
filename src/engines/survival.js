@@ -146,6 +146,18 @@ function buildSurvivalNarratives(baseline, stressed, classification, timeToSafet
 
 /**
  * How long user can cover monthly burn using liquid savings + current free cash runway.
+ * @param {{
+ *   income: number,
+ *   freeMoney: number,
+ *   liquidSavings: number,
+ *   monthlyBurden: number,
+ *   lendingOutflow?: number,
+ *   lifestyleMonthlyBurn?: number,
+ *   commitments?: object[],
+ *   getEffectiveStatus?: (c: object) => string,
+ *   todayStr?: string,
+ * }} input
+ * @returns {object}
  */
 export function computeSurvivalAnalysis({
   income,

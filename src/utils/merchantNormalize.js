@@ -90,7 +90,7 @@ const KNOWN_MERCHANTS = [
   { pattern: /coursera/i, profile: { id: "education_coursera", label: "Coursera", lifeCategory: "growth", spendType: "education" } },
   { pattern: /udemy/i, profile: { id: "education_udemy", label: "Udemy", lifeCategory: "growth", spendType: "education" } },
 
-  // ── Utilities / household essentials ─────────────────────────────────
+  // ── Utilities / essentials ─────────────────────────────────
   { pattern: /electricity|bescom|tneb|msedcl|mseb|best\b/i, profile: { id: "utility_electricity", label: "Electricity", lifeCategory: "survival", spendType: "utilities" } },
   { pattern: /water|jal|water\s*bill/i, profile: { id: "utility_water", label: "Water", lifeCategory: "survival", spendType: "utilities" } },
   { pattern: /gas\s*booking|indane|lpg|hp\s*gas|bharat\s*gas/i, profile: { id: "utility_lpg", label: "LPG / Gas", lifeCategory: "survival", spendType: "utilities" } },

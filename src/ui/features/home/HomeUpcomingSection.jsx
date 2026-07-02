@@ -5,13 +5,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
-
-function daysUntil(dueDate, todayStr) {
-  if (!dueDate || !todayStr) return 999;
-  const a = new Date(`${todayStr}T12:00:00`);
-  const b = new Date(`${dueDate}T12:00:00`);
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
-}
+import { daysUntil } from "../../../utils/dates.js";
 
 function attentionBillTitle(commitment) {
   if (commitment.category === "Insurance") {

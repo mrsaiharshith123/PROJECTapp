@@ -10,8 +10,6 @@ export const EVENTS = {
   GOAL_COMPLETED: "goal_completed",
   LOAN_CLEARED: "loan_cleared",
   PLAN_UPGRADED: "plan_upgraded",
-  HOUSEHOLD_JOINED: "household_joined",
-  FAMILY_REPORT_SHARED: "family_report_shared",
   TOOL_OPENED: "tool_opened",
 };
 

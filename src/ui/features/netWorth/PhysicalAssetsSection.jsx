@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { isPhysicalAssetCategory } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import { EmptyState } from "../../index.js";
@@ -13,8 +11,6 @@ import { Caption } from "../../primitives/Text.jsx";
 /** Physical assets panel — property, vehicle, gold, business. */
 export default function PhysicalAssetsSection() {
   const { t } = useTranslation();
-  const { settings } = usePerovo();
-  const isFamily = isSalariedFamily(settings);
   const { entries, addEntry, updateEntry, deleteEntry, privacyMode } = useNetWorth();
   const [modal, setModal] = useState(/** @type {{ entry?: object } | null} */ (null));
 
@@ -43,19 +39,13 @@ export default function PhysicalAssetsSection() {
     <section className="ct-nw-panel ct-animate-fade-up" aria-labelledby="physical-assets-heading">
       <div className="ct-hero-card wealth ct-tool-answer-hero">
         <div className="ct-hero-glow teal" aria-hidden />
-        <p className="ct-hero-label">{isFamily ? t("netWorth.physical.titleHousehold") : t("netWorth.physical.title")}</p>
+        <p className="ct-hero-label">{t("netWorth.physical.title")}</p>
         <p className="ct-hero-number">{privacyMode ? "••••" : formatInr(totalValue)}</p>
-        <Caption className="block mt-1 relative opacity-90">
-          {isFamily ? t("netWorth.physical.subtitleHousehold") : t("netWorth.physical.subtitle")}
-        </Caption>
+        <Caption className="block mt-1 relative opacity-90">{t("netWorth.physical.subtitle")}</Caption>
       </div>
 
       {physicalAssets.length === 0 ? (
-        <EmptyState
-          icon="house"
-          title={isFamily ? t("netWorth.physical.emptyHousehold") : t("netWorth.physical.empty")}
-          hint={t("netWorth.physical.emptyHint")}
-        />
+        <EmptyState icon="house" title={t("netWorth.physical.empty")} hint={t("netWorth.physical.emptyHint")} />
       ) : (
         <div className="ct-stack mt-3">
           {physicalAssets.map((entry) => (

@@ -25,9 +25,9 @@ import { formatInr } from "../../../constants/symbols.js";
 export default function PlansModal({ open, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, refreshSubscriptionTier, effectiveSubscriptionTier } = usePerovo();
   const { user } = useAuth();
-  const current = settings.subscriptionTier || "free";
+  const current = effectiveSubscriptionTier || "free";
   const [paying, setPaying] = useState(null);
   const [msg, setMsg] = useState({ type: "", text: "" });
   const [billing, setBilling] = useState(/** @type {"monthly"|"yearly"} */ ("yearly"));
@@ -71,6 +71,7 @@ export default function PlansModal({ open, onClose }) {
       settings,
       user,
       updateSettings,
+      refreshSubscriptionTier,
       onSuccess: ({ tier: paidTier, verified }) => {
         setMsg({
           type: "success",
@@ -160,7 +161,7 @@ export default function PlansModal({ open, onClose }) {
               simulatePay={simulatePay}
               razorpayReady={razorpayReady}
               onUpgrade={handleUpgrade}
-              onSelectFree={() => updateSettings({ subscriptionTier: "free", cloudSyncEnabled: false })}
+              onSelectFree={() => updateSettings({ cloudSyncEnabled: false })}
               t={t}
             />
           ))}

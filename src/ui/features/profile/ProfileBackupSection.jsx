@@ -55,7 +55,7 @@ export default function ProfileBackupSection({
       getEffectiveLendingStatus: ctx.getEffectiveLendingStatus,
       todayStr: ctx.todayStr,
     });
-    if (tierHasFeature("health_report", ctx.settings)) {
+    if (tierHasFeature("health_report", ctx.settings, ctx.effectiveSubscriptionTier)) {
       openHtmlInNewTab(generateAnnualReportHtml(report));
       return;
     }
@@ -292,7 +292,7 @@ export default function ProfileBackupSection({
         </Modal>
       )}
 
-      <SettingsGroup title={t("backup.annualReport")} icon="chart-bar" description={tierHasFeature("health_report", settings) ? t("backup.annualReportHintPro") : t("backup.annualReportHintFree")}>
+      <SettingsGroup title={t("backup.annualReport")} icon="chart-bar" description={tierHasFeature("health_report", settings, ctx.effectiveSubscriptionTier) ? t("backup.annualReportHintPro") : t("backup.annualReportHintFree")}>
         <SettingsGroupContent>
           <div className="ct-row-between gap-2">
             <div className="min-w-0 flex-1">
@@ -300,7 +300,7 @@ export default function ProfileBackupSection({
                 <CtIcon name="chart-line-up" size={18} weight="duotone" />
               </span>
               <Caption className="inline align-middle">
-                {tierHasFeature("health_report", settings)
+                {tierHasFeature("health_report", settings, ctx.effectiveSubscriptionTier)
                   ? t("backup.annualReportHintPro")
                   : t("backup.annualReportHintFree")}
               </Caption>

@@ -31,8 +31,9 @@ import { computeCurrentMonthSummary } from "../utils/monthPaymentSummary.js";
 import { totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { memoIntel, buildIntelCacheKey } from "../utils/intelMemo.js";
 import { applyDevOverrideToCommitIntel, useDevOverrideTick } from "../utils/devOverride.js";
+import { useCommitIntelFromContext } from "./intelContext.js";
 
-export function useCommitIntel() {
+export function useCommitIntelInternal() {
   const {
     commitments,
     lendings,
@@ -223,4 +224,12 @@ export function useCommitIntel() {
   // devTick intentionally invalidates dev override layer when panel toggles
   // eslint-disable-next-line react-hooks/exhaustive-deps -- devTick is not read inside memo; it forces recomputation
   return useMemo(() => applyDevOverrideToCommitIntel(rawIntel), [rawIntel, devTick]);
+}
+
+export function useCommitIntel() {
+  const cached = useCommitIntelFromContext();
+  if (cached == null) {
+    throw new Error("useCommitIntel must be used within IntelProvider");
+  }
+  return cached;
 }

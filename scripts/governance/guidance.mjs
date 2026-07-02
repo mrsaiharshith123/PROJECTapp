@@ -46,10 +46,10 @@ export function runGuidanceAudit() {
     }
   }
 
-  if (ONBOARDING_EXPERIENCES.length < 2) {
+  if (ONBOARDING_EXPERIENCES.length < 1) {
     warnings.push({
       kind: "onboarding",
-      message: "Expected at least 2 onboarding experiences (salaried, household)",
+      message: "Expected at least 1 onboarding experience (salaried)",
     });
   }
 

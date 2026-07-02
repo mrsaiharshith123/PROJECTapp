@@ -37,6 +37,7 @@ export type PerovoContextValue = {
   allGoals: AuthProfile[];
   activeProfileId: string;
   settings: AppSettings;
+  effectiveSubscriptionTier: string;
   monthlySnapshots: AuthProfile[];
   todayStr: string;
   getEffectiveStatus: (c: AuthProfile, todayStr?: string, all?: AuthProfile[]) => string;
@@ -65,4 +66,5 @@ export type PerovoContextValue = {
   logSavingsToGoal: (goalId: number | string, amount: number) => void;
   importAppData: (payload: AuthProfile, options?: AuthProfile) => unknown;
   refreshGoldRate: (options?: { force?: boolean }) => Promise<boolean>;
+  refreshSubscriptionTier: () => Promise<string>;
 };

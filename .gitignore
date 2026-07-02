@@ -33,6 +33,9 @@ supabase/.temp/
 # Generated reports
 eslint-report.json
 
+# i18n machine-translation cache (rebuild: npm run i18n:translate:fast)
+scripts/.i18n-translate-cache.json
+
 # Editor
 .vscode/*
 !.vscode/extensions.json

@@ -1,12 +1,8 @@
 import { repaymentModeLabel } from "../engines/lendingAgreement.js";
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import { escapeHtml } from "./shareCardHtml.js";
+
+export { openHtmlInNewTab } from "./shareCardHtml.js";
 
 function formatInr(n) {
   return `₹${Math.max(0, Number(n) || 0).toLocaleString("en-IN")}`;
@@ -161,14 +157,4 @@ export function generateLendingShareCardHtml(lending, settings = {}) {
   </div>
 </body>
 </html>`;
-}
-
-/** Open generated HTML in a new browser tab. */
-export function openHtmlInNewTab(html) {
-  const win = window.open("", "_blank");
-  if (!win) return false;
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
-  return true;
 }

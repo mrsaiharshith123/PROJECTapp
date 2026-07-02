@@ -60,6 +60,7 @@ export function PerovoProvider({ children }) {
   const [goals, setGoals] = useState(() => loadInitialAppState().goals);
   const [dailySpends, setDailySpends] = useState(() => loadInitialAppState().dailySpends);
   const [supplementalNotifications, setSupplementalNotifications] = useState([]);
+  const [serverSubscriptionTier, setServerSubscriptionTier] = useState(/** @type {string | null} */ (null));
 
   useEffect(() => {
     try {
@@ -113,9 +114,13 @@ export function PerovoProvider({ children }) {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setServerSubscriptionTier(null);
+      return;
+    }
     loadSubscriptionTier(user.id)
       .then((tier) => {
+        setServerSubscriptionTier(tier);
         setSettings((prev) => {
           if (tier === (prev.subscriptionTier || "free")) return prev;
           const next = { ...prev, subscriptionTier: tier };
@@ -128,7 +133,9 @@ export function PerovoProvider({ children }) {
           return next;
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        setServerSubscriptionTier("free");
+      });
   }, [user?.id]);
 
   useEffect(() => {
@@ -431,7 +438,29 @@ export function PerovoProvider({ children }) {
       persistSnapshots,
     ]
   );
+  const refreshSubscriptionTier = useCallback(async () => {
+    if (!user?.id) return "free";
+    const tier = await loadSubscriptionTier(user.id);
+    setServerSubscriptionTier(tier);
+    setSettings((prev) => {
+      if (tier === (prev.subscriptionTier || "free")) return prev;
+      const next = { ...prev, subscriptionTier: tier };
+      try {
+        localStorage.setItem("perovo_settings", JSON.stringify(next));
+        invalidateInitialAppStateCache();
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+    return tier;
+  }, [user?.id]);
+
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);
+  const effectiveSubscriptionTier = useMemo(() => {
+    if (user?.id) return serverSubscriptionTier ?? "free";
+    return settings.subscriptionTier || "free";
+  }, [user?.id, serverSubscriptionTier, settings.subscriptionTier]);
   const value = useMemo(
     () => ({
       commitments: profileCommitments,
@@ -445,14 +474,34 @@ export function PerovoProvider({ children }) {
       allDailySpends: dailySpends,
       activeProfileId,
       settings,
+      effectiveSubscriptionTier,
       monthlySnapshots,
       todayStr,
       getEffectiveStatus: getEffectiveStatusForCtx,
       getEffectiveLendingStatus: getEffectiveLendingStatusForCtx,
-      ...crud,
+      addCommitment: crud.addCommitment,
+      updateCommitment: crud.updateCommitment,
+      deleteCommitment: crud.deleteCommitment,
+      addCommitmentPayment: crud.addCommitmentPayment,
+      removeCommitmentPayment: crud.removeCommitmentPayment,
+      addLending: crud.addLending,
+      updateLending: crud.updateLending,
+      deleteLending: crud.deleteLending,
+      addLendingPayment: crud.addLendingPayment,
+      updateSettings: crud.updateSettings,
+      addGoal: crud.addGoal,
+      updateGoal: crud.updateGoal,
+      deleteGoal: crud.deleteGoal,
+      addDailySpend: crud.addDailySpend,
+      deleteDailySpend: crud.deleteDailySpend,
+      pushInAppNotification: crud.pushInAppNotification,
+      markNotificationRead: crud.markNotificationRead,
+      markAllNotificationsRead: crud.markAllNotificationsRead,
+      logSavingsToGoal: crud.logSavingsToGoal,
       supplementalNotifications,
       importAppData,
       refreshGoldRate,
+      refreshSubscriptionTier,
     }),
     [
       profileCommitments,
@@ -466,14 +515,34 @@ export function PerovoProvider({ children }) {
       profileDailySpends,
       activeProfileId,
       settings,
+      effectiveSubscriptionTier,
       monthlySnapshots,
       todayStr,
       getEffectiveStatusForCtx,
       getEffectiveLendingStatusForCtx,
-      crud,
+      crud.addCommitment,
+      crud.updateCommitment,
+      crud.deleteCommitment,
+      crud.addCommitmentPayment,
+      crud.removeCommitmentPayment,
+      crud.addLending,
+      crud.updateLending,
+      crud.deleteLending,
+      crud.addLendingPayment,
+      crud.updateSettings,
+      crud.addGoal,
+      crud.updateGoal,
+      crud.deleteGoal,
+      crud.addDailySpend,
+      crud.deleteDailySpend,
+      crud.pushInAppNotification,
+      crud.markNotificationRead,
+      crud.markAllNotificationsRead,
+      crud.logSavingsToGoal,
       supplementalNotifications,
       importAppData,
       refreshGoldRate,
+      refreshSubscriptionTier,
     ]
   );
 

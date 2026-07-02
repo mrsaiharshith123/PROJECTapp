@@ -65,7 +65,7 @@ The "chaotic monkey" suite: extreme inputs.
 - Bottom nav ≤ 5 items.
 - No duplicate hero titles.
 - Destructive actions de-emphasized.
-- Household routes hidden until v1.1.
+- Removed household/family routes redirect to `/you` (feature out of scope).
 
 ---
 

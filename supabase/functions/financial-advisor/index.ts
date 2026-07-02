@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { callGeminiWithFallback } from "../_shared/geminiClient.ts";
+import { sanitizeAdvisorContext, sanitizeUserQuestion } from "../_shared/sanitizeAdvisorContext.ts";
+import { checkUsageRateLimit, logUsage } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +16,11 @@ function json(data: unknown, status = 200) {
 }
 
 const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-2.5-flash";
-// kept for reference in responses — actual model chosen by callGeminiWithFallback
+
+const AI_DAILY_LIMITS: Record<string, number> = {
+  pro: 30,
+  power: 100,
+};
 
 function buildSystemInstruction(ctx: Record<string, unknown>): string {
   const stressLine = ctx.topStressor
@@ -46,9 +52,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const geminiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
       return json({ error: "server_not_configured" }, 500);
     }
 
@@ -71,16 +78,19 @@ Deno.serve(async (req) => {
       return json({ error: "pro_required" }, 403);
     }
 
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const rate = await checkUsageRateLimit(adminClient, userData.user.id, "financial-advisor", AI_DAILY_LIMITS[tier] ?? 0);
+    if (!rate.ok) {
+      return json({ error: rate.reason, limit: rate.limit }, rate.reason === "rate_limit_exceeded" ? 429 : 500);
+    }
+
     if (!geminiKey) {
       return json({ error: "ai_not_configured", source: "local" }, 503);
     }
 
     const body = await req.json();
-    const question = String(body?.question || "").trim();
-    const contextData =
-      body?.contextData && typeof body.contextData === "object"
-        ? (body.contextData as Record<string, unknown>)
-        : {};
+    const question = sanitizeUserQuestion(body?.question);
+    const contextData = sanitizeAdvisorContext(body?.contextData);
 
     if (!question) return json({ error: "question_required" }, 400);
 
@@ -106,6 +116,8 @@ Deno.serve(async (req) => {
     }
 
     if (!answer) return json({ error: "empty_ai_response" });
+
+    await logUsage(adminClient, userData.user.id, "financial-advisor");
 
     return json({ answer, source: "ai" });
   } catch (e) {

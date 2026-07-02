@@ -40,8 +40,55 @@ export default class ErrorBoundary extends Component {
 
   render() {
     if (this.state.error) {
+      if (this.props.fallback) return this.props.fallback;
       return <ErrorFallback error={this.state.error} onReload={() => window.location.reload()} />;
     }
     return this.props.children;
   }
+}
+
+/** Lightweight boundary for individual routes — inline error, not full screen */
+export function RouteErrorBoundary({ children, routeName }) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div
+          style={{
+            padding: "2rem 1.5rem",
+            textAlign: "center",
+            color: "var(--ed-ink-faint)",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "'Newsreader', Georgia, serif",
+              fontStyle: "italic",
+              fontSize: 14,
+              marginBottom: 12,
+            }}
+          >
+            {routeName ? `${routeName} failed to load.` : "This section couldn't load."}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "var(--ed-gold)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+          >
+            Reload app →
+          </button>
+        </div>
+      }
+    >
+      {children}
+    </ErrorBoundary>
+  );
 }

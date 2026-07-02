@@ -27,7 +27,6 @@ export default function AddCommitmentForm({
   isSubscription,
   isOther,
   category,
-  salariedFamily,
   priorSpendHint,
   todayStr,
   affordability,
@@ -236,43 +235,6 @@ export default function AddCommitmentForm({
               placeholder={t("add.phInterest")}
               className={fieldClass("annualInterestRate")}
             />
-          </div>
-        )}
-
-        {salariedFamily && (
-          <div>
-            <label className="ct-field-label">{t("add.forMember.label")}</label>
-            <Caption className="block mb-2">{t("add.forMember.hint")}</Caption>
-            <SegmentedControl
-              options={[
-                { id: "self", label: t("add.forMember.self") },
-                { id: "spouse", label: t("add.forMember.spouse") },
-                { id: "shared", label: t("add.forMember.shared") },
-              ]}
-              value={form.forMember || "shared"}
-              onChange={(id) => onChange({ target: { name: "forMember", value: id } })}
-            />
-          </div>
-        )}
-
-        {salariedFamily && (
-          <div>
-            <label className="ct-field-label">
-              {t("commitment.edit.householdPayer")}{" "}
-              <span className="ct-caption font-normal opacity-75">{t("add.form.optional")}</span>
-              <InfoTip text={CALC_HELP.householdPayerBillTag} />
-            </label>
-            <select
-              name="householdPayer"
-              value={form.householdPayer || ""}
-              onChange={onChange}
-              className={fieldClass("householdPayer")}
-            >
-              <option value="">{t("commitment.edit.payerUntagged")}</option>
-              <option value="primary">{t("commitment.edit.payerPrimary")}</option>
-              <option value="secondary">{t("commitment.edit.payerSecondary")}</option>
-              <option value="shared">{t("commitment.edit.payerShared")}</option>
-            </select>
           </div>
         )}
 

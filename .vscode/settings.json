@@ -13,7 +13,15 @@
     "**/ios": true,
     "**/.capacitor": true,
     "**/.cursor": true,
-    "**/*.zip": true
+    "**/*.zip": true,
+    "**/.i18n-translate-cache.json": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/dist-ota": true,
+    "**/dist-ota-*": true,
+    "**/scripts/.i18n-translate-cache.json": true
   },
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {

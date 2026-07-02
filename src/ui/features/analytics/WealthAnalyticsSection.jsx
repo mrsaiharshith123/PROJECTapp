@@ -1,7 +1,6 @@
 import { Heading, Caption } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { isSalariedFamily } from "../../../constants/modeExperience.js";
 import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { formatInr } from "../../../constants/symbols.js";
@@ -31,7 +30,6 @@ export default function WealthAnalyticsSection({
 }) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
-  const isFamily = isSalariedFamily(settings);
   const intel = useNetWorthIntel();
   const { privacyMode, dailySnapshots, entries } = useNetWorth();
   const profileScope = resolveDataProfileScope(settings);
@@ -101,15 +99,15 @@ export default function WealthAnalyticsSection({
           />
           <div className="relative">
             <Heading level={2} className="!text-base !font-semibold">
-              {isFamily ? t("analytics.wealth.titleHousehold") : t("analytics.wealth.title")}
+              {t("analytics.wealth.title")}
             </Heading>
             <Caption className="block mt-1">
-              {isFamily ? t("analytics.wealth.subtitleHousehold") : t("analytics.wealth.subtitle")}
+              {t("analytics.wealth.subtitle")}
             </Caption>
             <div className="ct-row-between items-end mt-4">
               <div>
                 <p className="ct-hero-label">
-                  {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+                  {t("netWorth.hero.eyebrow")}
                 </p>
                 <p
                   className="ct-numeral"
@@ -137,7 +135,7 @@ export default function WealthAnalyticsSection({
         <div className="ct-row-between items-end">
           <div>
             <p className="ct-hero-label">
-              {isFamily ? t("netWorth.hero.eyebrowHousehold") : t("netWorth.hero.eyebrow")}
+              {t("netWorth.hero.eyebrow")}
             </p>
             <p
               className="ct-numeral"

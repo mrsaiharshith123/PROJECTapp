@@ -4,7 +4,7 @@
 import fs from "fs";
 import path from "path";
 import { SRC, rel, walk, importSpecsFromFile, resolveImport } from "../lib/audit-core.mjs";
-import { FEATURES } from "../../src/governance/registries/features.js";
+import { FEATURES } from "../registries/features.mjs";
 
 function featureFromPath(r) {
   const m = r.match(/^src\/ui\/features\/([^/]+)/);

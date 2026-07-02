@@ -3,6 +3,7 @@ import { getEffectiveLendingStatus } from "../../../utils/lendingStatus.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateLendingStatus } from "../../../i18n/domainLabels.js";
+import { daysUntil } from "../../../utils/dates.js";
 
 function initials(name) {
   const parts = String(name || "?")
@@ -23,13 +24,6 @@ function formatShortDate(dateStr) {
     day: "numeric",
     month: "short",
   });
-}
-
-function daysUntil(dueDate, todayStr) {
-  if (!dueDate || !todayStr) return 999;
-  const a = new Date(`${todayStr}T12:00:00`);
-  const b = new Date(`${dueDate}T12:00:00`);
-  return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
 function trustFilledDots(score) {

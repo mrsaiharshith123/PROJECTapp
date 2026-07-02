@@ -1,5 +1,4 @@
-const GOLD_API = "https://www.goldapi.io/api/XAU/INR";
-const GOLD_KEY = import.meta.env.VITE_GOLD_API_KEY || "";
+import { invokeApiProxy, isApiProxyAvailable } from "../apiProxy.js";
 
 /** GoldAPI.io free tier — one request = one token. */
 export const GOLD_API_MONTHLY_TOKEN_LIMIT = 100;
@@ -10,7 +9,7 @@ export const GOLD_API_REFRESH_HOURS = 8;
 export const GOLD_API_REFRESH_MS = GOLD_API_REFRESH_HOURS * 60 * 60 * 1000;
 
 export function isGoldApiConfigured() {
-  return Boolean(GOLD_KEY);
+  return isApiProxyAvailable();
 }
 
 /**
@@ -43,20 +42,12 @@ export function getCachedGoldRatePerGram(settings) {
 }
 
 export async function fetchGoldPricePerGram() {
-  if (!GOLD_KEY) return null;
-  try {
-    const res = await fetch(GOLD_API, {
-      headers: { "x-access-token": GOLD_KEY, Accept: "application/json" },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const perGram = data.price / 31.1035;
-    return {
-      perGram: Math.round(perGram),
-      per10g: Math.round(perGram * 10),
-      date: new Date().toISOString(),
-    };
-  } catch {
-    return null;
-  }
+  if (!isGoldApiConfigured()) return null;
+  const data = await invokeApiProxy({ service: "gold-price" });
+  if (!data || data.error) return null;
+  return {
+    perGram: data.perGram,
+    per10g: data.per10g,
+    date: data.date,
+  };
 }

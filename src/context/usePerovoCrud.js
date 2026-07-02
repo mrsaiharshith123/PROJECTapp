@@ -14,20 +14,7 @@ import { canEditLending } from "../engines/lendingAgreement.js";
 import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "../utils/dailySpends.js";
-import { postRoomEvent } from "../services/household/householdRoomService.js";
 import { trackEvent, EVENTS } from "../services/analytics/perovoAnalytics.js";
-
-function emitRoomEvent(settings, userId, eventType, eventData) {
-  const roomId = settings?.householdRoomId;
-  if (!roomId || !userId) return;
-  postRoomEvent({
-    roomId,
-    userId,
-    displayName: settings.displayName || "Member",
-    eventType,
-    eventData,
-  });
-}
 
 function settingsPatchUnchanged(prev, next, patch) {
   return Object.keys(patch).every((key) => {
@@ -82,11 +69,6 @@ export function usePerovoCrud({
       });
       persistCommitments((prev) => [...prev, c]);
       trackEvent(EVENTS.COMMITMENT_ADDED, { category: c.category });
-      emitRoomEvent(currentSettings, currentUserId, "bill_added", {
-        name: c.name,
-        amount: c.amount,
-        category: c.category,
-      });
     },
     [persistCommitments]
   );
@@ -128,12 +110,6 @@ export function usePerovoCrud({
           const applied = totalPaidOnPayments(updated.payments) - prevPaid;
           if (applied > 0 && updated.goalId && updated.category === "SIP") {
             goalCredit = { goalId: updated.goalId, amount: applied };
-          }
-          if (applied > 0) {
-            emitRoomEvent(settingsRef.current, userIdRef.current, "bill_paid", {
-              name: updated.name,
-              amount: applied,
-            });
           }
           updated = normalizeCommitmentStatusForSave(normalizeCommitment(updated), todayStr, prev);
           if (Number(updated.remainingAmount) > 0) return [updated];
@@ -249,15 +225,8 @@ export function usePerovoCrud({
         if (patch.userMode != null && !USER_MODE_IDS.includes(patch.userMode)) {
           next.userMode = prev.userMode || "salaried";
         }
-        if (patch.householdScope != null) {
-          next.householdScope = patch.householdScope === "family" ? "family" : "single";
-          if (next.householdScope !== "family") {
-            next.secondaryMonthlyIncome = 0;
-          }
-        }
-        if (patch.subscriptionTier != null) {
-          const t = patch.subscriptionTier;
-          next.subscriptionTier = ["free", "pro", "power"].includes(t) ? t : prev.subscriptionTier || "free";
+        if ("subscriptionTier" in patch) {
+          delete next.subscriptionTier;
         }
         if (patch.appLanguage != null) {
           next.appLanguage = normalizeAppLanguage(patch.appLanguage);

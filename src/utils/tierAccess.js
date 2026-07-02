@@ -3,14 +3,15 @@ import { FREE_TIER_LIMITS, PRO_CASHFLOW_DAYS } from "../constants/tierLimits.js"
 import { isFeatureUnlocked } from "../constants/subscriptionTiers.js";
 import { getEffectiveDevTier } from "./devOverride.js";
 
-/** @param {{ subscriptionTier?: string } | null | undefined} settings */
-export function getTier(settings) {
-  return getEffectiveDevTier(settings?.subscriptionTier);
+/** @param {{ subscriptionTier?: string } | null | undefined} settings @param {string | null | undefined} [serverTier] */
+export function getTier(settings, serverTier = null) {
+  const raw = serverTier != null ? serverTier : settings?.subscriptionTier;
+  return getEffectiveDevTier(raw);
 }
 
-/** @param {string} featureId @param {{ subscriptionTier?: string } | null | undefined} settings */
-export function tierHasFeature(featureId, settings) {
-  return isFeatureUnlocked(featureId, getTier(settings));
+/** @param {string} featureId @param {{ subscriptionTier?: string } | null | undefined} settings @param {string | null | undefined} [serverTier] */
+export function tierHasFeature(featureId, settings, serverTier = null) {
+  return isFeatureUnlocked(featureId, getTier(settings, serverTier));
 }
 
 /** @param {object[]} lendings */
@@ -61,9 +62,9 @@ export function getBillSplitCountThisMonth(settings, todayStr) {
   return Math.max(0, Number(settings?.billSplitsThisMonth) || 0);
 }
 
-/** @param {{ subscriptionTier?: string } | null | undefined} settings */
-export function cashflowDaysForTier(settings) {
-  return tierHasFeature("cashflow_90d", settings) ? PRO_CASHFLOW_DAYS : FREE_TIER_LIMITS.cashflowDays;
+/** @param {{ subscriptionTier?: string } | null | undefined} settings @param {string | null | undefined} [serverTier] */
+export function cashflowDaysForTier(settings, serverTier = null) {
+  return tierHasFeature("cashflow_90d", settings, serverTier) ? PRO_CASHFLOW_DAYS : FREE_TIER_LIMITS.cashflowDays;
 }
 
 import { MONEY_OUTLOOK_WINDOW } from "../engines/forecastSeries.js";
@@ -74,16 +75,16 @@ export function moneyOutlookWindowForTier(_settings) {
 }
 
 /** Months shown in pulse “Ahead” forecast list. */
-export function aheadForecastMonthsForTier(settings) {
-  return tierHasFeature("forecast_12m", settings) ? 6 : 3;
+export function aheadForecastMonthsForTier(settings, serverTier = null) {
+  return tierHasFeature("forecast_12m", settings, serverTier) ? 6 : 3;
 }
 
 /**
  * @param {{ subscriptionTier?: string } | null | undefined} settings
  * @param {object[]} lendings
  */
-export function canAddLendingRecord(settings, lendings) {
-  if (tierHasFeature("unlimited_lending", settings)) {
+export function canAddLendingRecord(settings, lendings, serverTier = null) {
+  if (tierHasFeature("unlimited_lending", settings, serverTier)) {
     return { ok: true };
   }
   const count = countActiveLendings(lendings);
@@ -103,8 +104,8 @@ export function canAddLendingRecord(settings, lendings) {
  * @param {object[]} commitments
  * @param {(c: object) => string} getEffectiveStatus
  */
-export function canAddChitRecord(settings, commitments, getEffectiveStatus) {
-  if (tierHasFeature("unlimited_chits", settings)) return { ok: true };
+export function canAddChitRecord(settings, commitments, getEffectiveStatus, serverTier = null) {
+  if (tierHasFeature("unlimited_chits", settings, serverTier)) return { ok: true };
   const count = countActiveChits(commitments, getEffectiveStatus);
   if (count >= FREE_TIER_LIMITS.activeChitRecords) {
     return { ok: false, reason: "chit_limit", limit: FREE_TIER_LIMITS.activeChitRecords, count };
@@ -116,8 +117,8 @@ export function canAddChitRecord(settings, commitments, getEffectiveStatus) {
  * @param {{ subscriptionTier?: string } | null | undefined} settings
  * @param {object[]} goals
  */
-export function canAddGoal(settings, goals) {
-  if (tierHasFeature("unlimited_goals", settings)) return { ok: true };
+export function canAddGoal(settings, goals, serverTier = null) {
+  if (tierHasFeature("unlimited_goals", settings, serverTier)) return { ok: true };
   const count = countActiveGoals(goals);
   if (count >= FREE_TIER_LIMITS.activeGoals) {
     return { ok: false, reason: "goals_limit", limit: FREE_TIER_LIMITS.activeGoals, count };
@@ -130,8 +131,8 @@ export function canAddGoal(settings, goals) {
  * @param {object[]} dailySpends
  * @param {string} todayStr
  */
-export function canAddDailySpend(settings, dailySpends, todayStr) {
-  if (tierHasFeature("unlimited_daily_spend", settings)) return { ok: true };
+export function canAddDailySpend(settings, dailySpends, todayStr, serverTier = null) {
+  if (tierHasFeature("unlimited_daily_spend", settings, serverTier)) return { ok: true };
   const key = monthKeyFromToday(todayStr);
   const count = countDailySpendsInMonth(dailySpends, key);
   if (count >= FREE_TIER_LIMITS.dailySpendsPerMonth) {
@@ -145,8 +146,8 @@ export function canAddDailySpend(settings, dailySpends, todayStr) {
  * @param {string} todayStr
  * @param {number} participantCount
  */
-export function canRunBillSplit(settings, todayStr, participantCount) {
-  if (tierHasFeature("unlimited_bill_split", settings)) return { ok: true };
+export function canRunBillSplit(settings, todayStr, participantCount, serverTier = null) {
+  if (tierHasFeature("unlimited_bill_split", settings, serverTier)) return { ok: true };
   const splits = getBillSplitCountThisMonth(settings, todayStr);
   if (splits >= FREE_TIER_LIMITS.billSplitsPerMonth) {
     return { ok: false, reason: "split_limit", limit: FREE_TIER_LIMITS.billSplitsPerMonth, count: splits };

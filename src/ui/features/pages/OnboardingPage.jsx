@@ -7,7 +7,6 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { recordConsent } from "../../../utils/dpdpConsent.js";
 import { getOnboardingExperience } from "../../../guidance/index.js";
 import { ONBOARDING_EXPERIENCES } from "../../../guidance/registry/onboardingCopy.js";
-import { getExperienceMode } from "../../../constants/modeExperience.js";
 import { templateToCommitment, QUICK_COMMITMENT_TEMPLATES } from "../../../utils/onboardingTemplates.js";
 import { normalizeIndianPhone } from "../../../utils/phone.js";
 import { validateOnboardingFields } from "../../../utils/profileSetup.js";
@@ -21,9 +20,7 @@ import {
   OnboardingBillsStep,
 } from "../onboarding/OnboardingStepPanels.jsx";
 
-function experienceIdFromSettings(settings) {
-  const mode = getExperienceMode(settings);
-  if (mode === "family") return "household";
+function experienceIdFromSettings() {
   return "salaried";
 }
 
@@ -35,7 +32,7 @@ export default function Onboarding() {
   const { settings, updateSettings, addCommitment } = usePerovo();
   const { saveProfile, profile, user } = useAuth();
   const [step, setStep] = useState(0);
-  const [experienceId, setExperienceId] = useState(() => experienceIdFromSettings(settings));
+  const [experienceId, setExperienceId] = useState(() => experienceIdFromSettings());
   const [displayName, setDisplayName] = useState(
     () => settings.displayName || profile?.display_name || "",
   );
@@ -88,7 +85,6 @@ export default function Onboarding() {
     const incomeNum = Math.max(0, Number(monthlyIncome) || 0);
     const payload = {
       userMode: experience.userMode,
-      householdScope: experience.householdScope,
       displayName: displayName.trim(),
       phoneNumber: normalizeIndianPhone(phoneNumber),
       monthlyIncome: incomeNum,
@@ -103,7 +99,6 @@ export default function Onboarding() {
         display_name: payload.displayName,
         phone: payload.phoneNumber,
         user_mode: payload.userMode,
-        household_scope: payload.householdScope,
         monthly_income: payload.monthlyIncome,
         onboarding_complete: true,
       });

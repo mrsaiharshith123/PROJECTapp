@@ -46,7 +46,6 @@ npm run audit:fix-deps          # fix production npm audit issues
 | `audit:ui` / `audit:styles` / `audit:ui-depth` | Existing layout/CSS/screen wiring |
 | `audit:merge` / `audit:orphans` / `audit:tier` | File consolidation, dead modules, subscription gates |
 | `audit:copy` / `audit:i18n` | Formal copy tone; locale key parity |
-| `audit:household` | Family mode isolation + profile-scope + dependents editor |
 | `audit:docs-sync` | `docs/09-implementation-status.md` freshness |
 | `audit:pre-release` | Production gate + full governance + docs-sync + engine tests |
 
@@ -62,7 +61,7 @@ npm run audit:platform   # architecture, features
 | Scan | Item | Action |
 |------|------|--------|
 | `audit:charts` (duplicates) | Resolved: net worth categories → `wealthCategories.js` | Bill categories stay in `constants/categories.js` |
-| `audit:governance` | Large page files (AuthGate, HouseholdRoom, Analytics) | Extract sections when touching those files |
+| `audit:governance` | Large page files (AuthGate, Analytics) | Extract sections when touching those files |
 | `audit:performance` | Main JS chunk ~510 kB | Code-split when adding heavy routes |
 | Baseline | **120** QA tests / colocated `src/**/__tests__` / governance tree + Knip clean | Update docs when counts change |
 

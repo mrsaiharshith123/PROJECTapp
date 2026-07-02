@@ -4,6 +4,7 @@ import { log } from "../../utils/logger.js";
 import { formatAuthError } from "../../utils/authErrors.js";
 import { ProfilesTableMissingError } from "../../utils/authSessionCleanup.js";
 import { pickAccountSettingsForServer } from "../../utils/accountSettingsSync.js";
+import { invokeEdgeFunction } from "./invokeEdgeFunction.js";
 
 /**
  * Build a full profiles row for upsert — never null-out fields omitted from patch.
@@ -49,24 +50,12 @@ export function buildProfileUpsertPayload(userId, existing, patch) {
         ? String(ex.user_mode)
         : null;
 
-  const householdScope =
-    p.household_scope !== undefined && p.household_scope != null
-      ? String(p.household_scope)
-      : ex.household_scope
-        ? String(ex.household_scope)
-        : null;
-
   const onboardingComplete =
     p.onboarding_complete !== undefined
       ? Boolean(p.onboarding_complete)
       : Boolean(ex.onboarding_complete);
 
-  const panVerified =
-    p.pan_verified !== undefined ? Boolean(p.pan_verified) : Boolean(ex.pan_verified);
-
-  let subscriptionTier = "free";
-  if (p.subscription_tier === "power" || ex.subscription_tier === "power") subscriptionTier = "power";
-  else if (p.subscription_tier === "pro" || ex.subscription_tier === "pro") subscriptionTier = "pro";
+  const panVerified = Boolean(ex.pan_verified);
 
   return {
     id: userId,
@@ -76,11 +65,9 @@ export function buildProfileUpsertPayload(userId, existing, patch) {
     pan_verified: panVerified,
     pan_updated_at: new Date().toISOString(),
     user_mode: userMode,
-    household_scope: householdScope,
     monthly_income: monthlyIncome,
     onboarding_complete: onboardingComplete,
     phone,
-    subscription_tier: subscriptionTier,
   };
 }
 
@@ -327,29 +314,15 @@ export async function loadSubscriptionTier(userId) {
 }
 
 /**
- * @param {string} userId
- * @param {"free"|"pro"|"power"} tier
- * @param {string} [paymentId]
+ * @deprecated Client cannot write subscription_tier — use Razorpay edge verify or dev-simulate.
  * @returns {Promise<boolean>}
  */
 export async function saveSubscriptionTier(userId, tier, paymentId = "") {
-  const supabase = getSupabaseClient();
-  if (!supabase || !userId) return false;
-  try {
-    await requireActiveSession(supabase);
-    const { error } = await supabase.from(PROFILE_TABLE).upsert(
-      {
-        id: userId,
-        subscription_tier: tier,
-        razorpay_payment_id: paymentId || null,
-        subscription_updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
-    return !error;
-  } catch {
-    return false;
-  }
+  void userId;
+  void tier;
+  void paymentId;
+  log.auth.warn("saveSubscriptionTier is disabled — tier changes must go through server verify.");
+  return false;
 }
 
 /**
@@ -408,8 +381,11 @@ export async function deleteAccountData(userId) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId) throw new Error("Not signed in");
   await requireActiveSession(supabase);
-  const { error } = await supabase.from(PROFILE_TABLE).delete().eq("id", userId);
-  if (error) throwAuth(error, "Delete account failed");
+
+  const { data, error } = await invokeEdgeFunction("delete-account", { body: {}, retries: 0 });
+  if (error) throw new Error(error || "Delete account failed");
+  if (data?.error) throw new Error(String(data.error));
+
   await signOutAuth();
   return { ok: true };
 }

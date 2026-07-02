@@ -18,7 +18,6 @@ const REQUIRED_DIRS = [
   "services",
   "app",
   "guidance",
-  "governance",
 ];
 
 const UI_SUBDIRS = ["primitives", "patterns", "features", "layout", "styles", "guidance", "tokens", "dev"];

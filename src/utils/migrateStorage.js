@@ -1,4 +1,4 @@
-import { inferPriorityFromCategory } from "../constants/priority.js";
+﻿import { inferPriorityFromCategory } from "../constants/priority.js";
 import { CATEGORIES } from "../constants/categories.js";
 import {
   USER_MODE_IDS,
@@ -18,8 +18,6 @@ import { CONSENT_KEY } from "./dpdpConsent.js";
 import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { normalizeDailySpend } from "./dailySpends.js";
-import { normalizeHouseholdMembers } from "../engines/householdEntity.js";
-import { householdMemberLimit } from "../engines/householdRoom.js";
 import { loadWealthState } from "./netWorth/wealthStorage.js";
 import { resolveAccountCreatedAt } from "./accountOrigin.js";
 
@@ -193,12 +191,6 @@ export function normalizeCommitment(raw) {
       category === "Chit Fund" && raw.chitTakenPayout != null
         ? Math.max(0, Number(raw.chitTakenPayout))
         : null,
-    householdPayer: ["primary", "secondary", "shared"].includes(String(raw.householdPayer || "").toLowerCase())
-      ? String(raw.householdPayer).toLowerCase()
-      : "",
-    forMember: ["self", "spouse", "shared"].includes(String(raw.forMember || "").toLowerCase())
-      ? String(raw.forMember).toLowerCase()
-      : "shared",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
     schemeCode: String(raw.schemeCode || ""),
@@ -572,14 +564,11 @@ export function normalizeProfiles(raw) {
 
 const DEFAULT_SETTINGS = {
   monthlyIncome: 0,
-  secondaryMonthlyIncome: 0,
   /** "take_home" = what hits your account; "gross" = before tax — same math, clearer copy. */
   incomeEntryBasis: "take_home",
   displayName: "",
   phoneNumber: "",
   userMode: "salaried",
-  /** "single" | "family" — only when userMode is salaried */
-  householdScope: "single",
   /** "free" | "power" — subscription unlocks power features */
   subscriptionTier: "free",
   onboardingComplete: false,
@@ -593,45 +582,32 @@ const DEFAULT_SETTINGS = {
   liquidSavings: 0,
   goldRatePerGram: null,
   goldRateLastFetched: null,
-  /** City id from constants/cityLivingCosts.js — set during onboarding or account */
+  /** City id from constants/cityLivingCosts.js ΓÇö set during onboarding or account */
   userCity: "",
   dependents: 0,
   profiles: [{ id: "default", label: "Personal", color: "indigo" }],
   remindersEnabled: true,
   dashboardToolOrderByMode: {},
   homeQuickActionOrder: [],
-  /** Device preference — also stored in sync meta so server settings pull cannot turn it off. */
+  /** Device preference ΓÇö also stored in sync meta so server settings pull cannot turn it off. */
   cloudSyncEnabled: false,
-  /** Day of month (1–31) salary credits — paycheck timeline + safe-to-spend. */
+  /** Day of month (1ΓÇô31) salary credits ΓÇö paycheck timeline + safe-to-spend. */
   salaryCreditDay: null,
   /** Salary-day auto-save: [{ goalId, amount }] */
   goalAutoSaveRules: [],
-  /** yyyy-MM-dd — last salary-day auto-save run */
+  /** yyyy-MM-dd ΓÇö last salary-day auto-save run */
   goalAutoSaveLastRun: null,
   /** BCP-47-ish app locale: en + 22 scheduled Indian languages */
   appLanguage: "en",
-  /** Household entity model — members with roles and permissions */
-  householdMembers: [{ id: "owner", label: "You", role: "owner", incomeShare: 1, permission: "shared_edit" }],
-  householdRoomId: "",
-  householdInviteCode: "",
-  householdRoomRole: "",
-  householdRoomName: "",
-  householdShareSpends: true,
-  householdShareBillDetail: false,
-  householdRoomMembers: [],
-  householdRoomLocal: false,
-  householdMemberLimit: 2,
   epfBasicSalary: 0,
   epfCorpus: 0,
   epfAge: 30,
-  /** yyyy-MM — resets bill-split counter when month changes */
+  /** yyyy-MM ΓÇö resets bill-split counter when month changes */
   usageMonthKey: "",
   billSplitsThisMonth: 0,
-  /** ms epoch — when this device account was first created */
+  /** ms epoch ΓÇö when this device account was first created */
   accountCreatedAt: 0,
   sideIncomes: [],
-  spouseName: "",
-  familyName: "",
   /** ISO timestamp — last settings persist (local + server sync compare) */
   updatedAt: "",
 };
@@ -659,14 +635,9 @@ export function loadSettingsFromStorage() {
         return applyDeviceBackupPreference({ ...DEFAULT_SETTINGS });
       }
       let mode = USER_MODE_IDS.includes(o.userMode) ? o.userMode : "salaried";
-      let householdScope = o.householdScope === "family" ? "family" : "single";
       let subscriptionTier = "free";
       if (o.subscriptionTier === "power") subscriptionTier = "power";
       else if (o.subscriptionTier === "pro") subscriptionTier = "pro";
-      if (mode === "family") {
-        mode = "salaried";
-        householdScope = "family";
-      }
       if (mode === "power") {
         mode = "salaried";
         subscriptionTier = "power";
@@ -679,12 +650,10 @@ export function loadSettingsFromStorage() {
       }
       return applyDeviceBackupPreference({
         monthlyIncome: Math.max(0, Number(o.monthlyIncome) || 0),
-        secondaryMonthlyIncome: Math.max(0, Number(o.secondaryMonthlyIncome) || 0),
         incomeEntryBasis: o.incomeEntryBasis === "gross" ? "gross" : "take_home",
         displayName: String(o.displayName || ""),
         phoneNumber: String(o.phoneNumber || ""),
         userMode: mode,
-        householdScope,
         subscriptionTier,
         onboardingComplete: "onboardingComplete" in o ? Boolean(o.onboardingComplete) : false,
         appGuideComplete:
@@ -730,27 +699,6 @@ export function loadSettingsFromStorage() {
         goalAutoSaveLastRun:
           typeof o.goalAutoSaveLastRun === "string" ? o.goalAutoSaveLastRun.slice(0, 10) : null,
         appLanguage: normalizeAppLanguage(o.appLanguage),
-        householdMembers: normalizeHouseholdMembers(o.householdMembers),
-        householdRoomId: String(o.householdRoomId || ""),
-        householdInviteCode: String(o.householdInviteCode || "").toUpperCase().slice(0, 6),
-        householdRoomRole: ["owner", "member"].includes(o.householdRoomRole) ? o.householdRoomRole : "",
-        householdRoomName: String(o.householdRoomName || ""),
-        householdShareSpends: "householdShareSpends" in o ? Boolean(o.householdShareSpends) : true,
-        householdShareBillDetail: Boolean(o.householdShareBillDetail),
-        householdRoomMembers: Array.isArray(o.householdRoomMembers)
-          ? o.householdRoomMembers.map((m) => ({
-              userId: String(m?.userId || ""),
-              displayName: String(m?.displayName || "Member").slice(0, 40),
-              role: m?.role === "owner" ? "owner" : "member",
-              shareSpends: m?.shareSpends !== false,
-              shareBillDetail: Boolean(m?.shareBillDetail),
-            }))
-          : [],
-        householdRoomLocal: Boolean(o.householdRoomLocal),
-        householdMemberLimit: Math.min(
-          20,
-          Math.max(2, Math.floor(Number(o.householdMemberLimit) || 0) || householdMemberLimit({})),
-        ),
         epfBasicSalary: Math.max(0, Number(o.epfBasicSalary) || 0),
         epfCorpus: Math.max(0, Number(o.epfCorpus) || 0),
         epfAge: Math.min(70, Math.max(18, Math.floor(Number(o.epfAge) || 30))),
@@ -765,8 +713,6 @@ export function loadSettingsFromStorage() {
               type: ["rental", "freelance", "tuition", "other"].includes(inc?.type) ? inc.type : "other",
             }))
           : [],
-        spouseName: String(o.spouseName || ""),
-        familyName: String(o.familyName || ""),
         updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : "",
       });
     }

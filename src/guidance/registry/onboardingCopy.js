@@ -1,4 +1,4 @@
-/** Guided onboarding — salaried single or household. */
+/** Guided onboarding — salaried individual finances. */
 
 export const ONBOARDING_EXPERIENCES = [
   {
@@ -9,18 +9,6 @@ export const ONBOARDING_EXPERIENCES = [
     explain:
       "Perovo tracks paycheck pressure, EMIs, subscriptions, and monthly financial flexibility.",
     userMode: "salaried",
-    householdScope: "single",
-  },
-  {
-    id: "household",
-    icon: "users-three",
-    label: "Household / Family",
-    tagline: "Shared home finances",
-    explain:
-      "Perovo shows household burden, school fees, renewals, and shared runway for clearer household review.",
-    userMode: "salaried",
-    householdScope: "family",
-    hidden: true,
   },
 ];
 

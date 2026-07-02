@@ -21,7 +21,7 @@ const fieldClass = `${inputClassName()} ct-input-tint`;
 
 /** Inline variable spend on Add page — same data path as Bills → Variable spend. */
 export default function AddVariableSpendInline({ onSaved }) {
-  const { addDailySpend, allDailySpends, todayStr, settings } = usePerovo();
+  const { addDailySpend, allDailySpends, todayStr, settings, effectiveSubscriptionTier } = usePerovo();
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
@@ -54,7 +54,7 @@ export default function AddVariableSpendInline({ onSaved }) {
     if (draft.date) setDate(draft.date);
   };
 
-  const spendGate = canAddDailySpend(settings, allDailySpends, todayStr || date);
+  const spendGate = canAddDailySpend(settings, allDailySpends, todayStr || date, effectiveSubscriptionTier);
 
   const save = () => {
     const amt = Math.max(0, Number(amount) || 0);

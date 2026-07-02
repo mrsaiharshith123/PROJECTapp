@@ -114,7 +114,7 @@ No gear icon (settings live on `/you` list). No duplicate Perovo Score row.
 | `/paycheck` | `/insights?card=paycheck` |
 | `/net-worth` | `/ledger` |
 | `/you/account`, `/you/money` | `/you/personal` |
-| `/you/household`, `/family-room` | `/you` |
+| `/you/household`, `/family-room` (removed) | `/you` |
 | `/auth` (inside main shell) | `/you` |
 | Unknown `*` | `/` |
 

@@ -56,11 +56,7 @@ export function resolveDailyLivingCost({
   }
 
   const cityId = normalizeCityId(settings.userCity);
-  const dailyInr = cityId
-    ? getCityDailyAvg(cityId, settings.householdScope)
-    : settings.householdScope === "family"
-      ? Math.round(NATIONAL_DAILY_AVG_INR * 1.55)
-      : NATIONAL_DAILY_AVG_INR;
+  const dailyInr = cityId ? getCityDailyAvg(cityId) : NATIONAL_DAILY_AVG_INR;
   return {
     dailyInr,
     monthlyInr: dailyInr * 30,

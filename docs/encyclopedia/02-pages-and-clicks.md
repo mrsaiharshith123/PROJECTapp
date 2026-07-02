@@ -96,8 +96,6 @@ Hub built from `insightSectionsConfig.js`. Each section has carousel cards; "Vie
 | Score | Perovo score | `/insights/score` |
 | Net worth | assets, liabilities, instruments | `/insights/networth` + per-type routes |
 
-**Family mode** (`householdScope === "family"`): toggle Self | Household — extra panels (`HouseholdCommandPanel`, etc.).
-
 Header: Spends history → `/ledger/spends`.
 
 ---

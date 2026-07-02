@@ -28,11 +28,17 @@ const sentryEnabled =
 if (sentryEnabled) {
   Sentry.init({
     dsn: sentryDsn,
-    environment: import.meta.env.PROD ? "production" : "development",
+    enabled: Boolean(sentryDsn),
+    environment: import.meta.env.MODE,
+    release: import.meta.env.VITE_APP_VERSION,
     tracesSampleRate: import.meta.env.PROD ? 0.1 : 1,
     ignoreErrors: ["ResizeObserver loop limit exceeded", "Network request failed"],
     beforeSend(event) {
       if (localStorage.getItem("perovo_no_analytics") === "1") return null;
+      if (event.user) {
+        delete event.user.email;
+        delete event.user.username;
+      }
       return event;
     },
   });

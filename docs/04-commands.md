@@ -23,17 +23,31 @@ All commands run from the project root (`PROJECTapp/`).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run audit` / `audit:all` | **Full production gate** — env, deps, CSS, UI, code, tests, types, build |
-| `npm run audit -- --strict` | Same; most warnings also fail |
-| `npm run audit:governance:quick` | Fast governance-only scan |
-| `npm run audit:governance` | All governance audits (8 checks) |
-| `npm run audit:governance:full` | Governance + UI/CSS/depth/merge |
-| `npm run audit:summary` | Human-readable report from `reports/` |
-| `npm run audit:fix-deps` | `npm audit fix` for production deps |
-| `npm run audit:list` | List every audit id |
-| `npm run audit:report` | Write `reports/governance-latest.json` |
+### Essential audit commands
 
-### Focused governance
+| Command | What it does |
+|---------|----------------|
+| `npm run audit` | Full production gate |
+| `npm run audit:gov` | All governance audits (28 checks) |
+| `npm run audit:gov:quick` | Fast governance-only scan |
+| `npm run audit:fix` | Report auto-fixable issues |
+| `npm run audit:fix:apply` | Apply safe auto-fixes |
+| `npm run audit:fix:buttons` | Add `type="button"` to untyped buttons |
+| `npm run audit:i18n` | Locale key parity |
+| `npm run audit:apis` | External API usage audit |
+
+To run a specific governance category directly:
+
+```bash
+node scripts/audit-runner.mjs security
+node scripts/audit-runner.mjs testing
+node scripts/audit-runner.mjs business-logic
+# …any of the 28 governance IDs — see: node scripts/audit-runner.mjs --list
+```
+
+### Legacy focused audits (removed from package.json)
+
+Individual category scripts were trimmed to reduce npm script sprawl. Run them via `node scripts/audit-runner.mjs [id]` instead of `npm run audit:*`.
 
 | Command | Focus |
 |---------|--------|
@@ -42,7 +56,6 @@ All commands run from the project root (`PROJECTapp/`).
 | `audit:features` | Feature registry & cross-feature imports |
 | `audit:modes` | User mode isolation |
 | `audit:sync` | Local-first vs cloud sync boundaries (no auto-pull, allowed Supabase UI paths) |
-| `audit:household` | Family mode isolation + profile-scope wiring + dependents UI |
 | `audit:docs-sync` | `09-implementation-status.md` matches shipped features |
 | `audit:pre-release` | Full gate + governance + docs-sync + engine tests |
 | `audit:guidance` | Financial guidance / education copy wiring |

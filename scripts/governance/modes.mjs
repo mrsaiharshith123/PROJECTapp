@@ -4,11 +4,9 @@
 import fs from "fs";
 import path from "path";
 import { SRC, rel, walk } from "../lib/audit-core.mjs";
-import { MODE_CAPABILITIES, MODE_LOGIC_ALLOWLIST, MODE_IDS } from "../../src/governance/registries/modes.js";
+import { MODE_CAPABILITIES, MODE_LOGIC_ALLOWLIST, MODE_IDS } from "../registries/modes.mjs";
 
-const MODE_ENGINE_IMPORT = {
-  modeFamily: "family",
-};
+const MODE_ENGINE_IMPORT = {};
 
 export function runModesAudit() {
   const errors = [];
@@ -17,7 +15,7 @@ export function runModesAudit() {
 
   for (const file of walk(SRC, [], /\.(jsx|js)$/)) {
     const r = rel(file);
-    if (r.includes("__tests__") || r.startsWith("src/governance/")) continue;
+    if (r.includes("__tests__") || r.startsWith("scripts/registries/")) continue;
     const code = fs.readFileSync(file, "utf8");
 
     const modeLiterals = [...code.matchAll(/mode\s*===?\s*["'](\w+)["']/g)].map((m) => m[1]);

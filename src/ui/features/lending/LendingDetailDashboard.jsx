@@ -46,7 +46,7 @@ export default function LendingDetailDashboard({
   onAddProof,
 }) {
   const { t } = useTranslation();
-  const { settings, updateLending, allLendings } = usePerovo();
+  const { settings, updateLending, allLendings, effectiveSubscriptionTier } = usePerovo();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [legalOpen, setLegalOpen] = useState(false);
@@ -68,7 +68,7 @@ export default function LendingDetailDashboard({
     }
     prevRemaining.current = rem;
   }, [lending.remainingAmount, lending.type]);
-  const canPrintAgreement = tierHasFeature("legal_agreement", settings);
+  const canPrintAgreement = tierHasFeature("legal_agreement", settings, effectiveSubscriptionTier);
   const dash = useMemo(
     () => buildLendingDashboard(lending, settings),
     [lending, settings],

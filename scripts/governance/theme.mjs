@@ -3,6 +3,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { readComponentsCss } from "./componentsCss.mjs";
 import { ROOT, rel } from "../lib/audit-core.mjs";
 
 const CRITICAL_TOKENS = [
@@ -33,11 +34,22 @@ export function runThemeAudit() {
 
   const tokensPath = path.join(ROOT, "src/ui/styles/tokens.css");
   const themeLightPath = path.join(ROOT, "src/ui/styles/theme-light.css");
-  const componentsPath = path.join(ROOT, "src/ui/styles/components.css");
+  const stylesDir = path.join(ROOT, "src/ui/styles");
 
   if (!fs.existsSync(tokensPath)) {
     errors.push({ kind: "tokens", message: "Missing src/ui/styles/tokens.css" });
     return { id: "theme", title: "Theme token parity", errors, warnings, advisories };
+  }
+
+  const componentsCss = readComponentsCss(stylesDir);
+  if (componentsCss) {
+    if (!componentsCss.includes('[data-theme="light"]') && !componentsCss.includes('data-theme="light"')) {
+      advisories.push({
+        kind: "light-components",
+        file: "src/ui/styles/components-*.css",
+        message: "components CSS has no light-theme overrides — verify contrast on light mode",
+      });
+    }
   }
 
   const tokensCss = fs.readFileSync(tokensPath, "utf8");
@@ -78,17 +90,6 @@ export function runThemeAudit() {
         kind: "import",
         file: rel(mainCss),
         message: "Ensure tokens.css and theme-light.css are imported in main entry",
-      });
-    }
-  }
-
-  if (fs.existsSync(componentsPath)) {
-    const comp = fs.readFileSync(componentsPath, "utf8");
-    if (!comp.includes('[data-theme="light"]') && !comp.includes("data-theme=\"light\"")) {
-      advisories.push({
-        kind: "light-components",
-        file: rel(componentsPath),
-        message: "components.css has no light-theme overrides — verify contrast on light mode",
       });
     }
   }

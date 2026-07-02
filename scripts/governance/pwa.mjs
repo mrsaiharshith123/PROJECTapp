@@ -4,6 +4,7 @@
 import fs from "fs";
 import path from "path";
 import { ROOT, rel, walk, UI } from "../lib/audit-core.mjs";
+import { readComponentsCss } from "./componentsCss.mjs";
 
 const REQUIRED_PUBLIC = ["pwa-192.png", "pwa-512.png", "notification-handler.js"];
 
@@ -58,9 +59,9 @@ export function runPwaAudit() {
     }
   }
 
-  const componentsCss = path.join(UI, "styles/components.css");
-  if (fs.existsSync(componentsCss)) {
-    const css = fs.readFileSync(componentsCss, "utf8");
+  const componentsCssText = readComponentsCss(path.join(UI, "styles"));
+  if (componentsCssText) {
+    const css = componentsCssText;
     if (!css.includes("safe-area-inset")) {
       errors.push({
         kind: "safe-area",

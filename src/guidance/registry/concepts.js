@@ -54,12 +54,6 @@ export const FINANCIAL_CONCEPTS = {
     why: "Uneven months make planning harder than a single average.",
     action: "Log income each month in Profile for a clearer picture.",
   },
-  householdSafety: {
-    title: "Household safety",
-    short: "How comfortably shared family obligations fit household income.",
-    why: "School fees, insurance, and rent spikes affect the whole home.",
-    action: "Tag school and insurance bills for better household views.",
-  },
   payStreak: {
     title: "Pay streak",
     short: "Consecutive months where you recorded at least one payment.",

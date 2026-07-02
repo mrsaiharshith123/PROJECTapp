@@ -1,4 +1,7 @@
-import ExcelJS from "exceljs";
+async function createWorkbook() {
+  const { default: ExcelJS } = await import("exceljs");
+  return new ExcelJS.Workbook();
+}
 
 async function downloadWorkbook(wb, filename) {
   const buffer = await wb.xlsx.writeBuffer();
@@ -38,13 +41,13 @@ function addCommitmentSheet(wb, commitments) {
 }
 
 export async function exportCommitmentsToExcel(commitments) {
-  const wb = new ExcelJS.Workbook();
+  const wb = await createWorkbook();
   addCommitmentSheet(wb, commitments);
   await downloadWorkbook(wb, `perovo-commitments-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 export async function exportLendingToExcel(lendings) {
-  const wb = new ExcelJS.Workbook();
+  const wb = await createWorkbook();
   const ws = wb.addWorksheet("Lending");
   ws.columns = [
     { header: "Person", key: "person", width: 24 },
@@ -70,7 +73,7 @@ export async function exportLendingToExcel(lendings) {
 }
 
 export async function exportAnnualReportToExcel({ commitments, lendings, snapshots }) {
-  const wb = new ExcelJS.Workbook();
+  const wb = await createWorkbook();
   const monthly = wb.addWorksheet("Monthly Summary");
   monthly.columns = [
     { header: "Month", key: "month", width: 12 },

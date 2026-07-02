@@ -18,8 +18,7 @@
 | [CHANGELOG.md](./CHANGELOG.md) | **Version history** |
 | **[encyclopedia/00-index.md](./encyclopedia/00-index.md)** | **Full product encyclopedia** — every route, page, click, engine math, tests |
 | [MOBILE.md](./MOBILE.md) | **Android TWA + Capacitor dev APK + iOS** |
-| [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) | Modes, tools, household scope |
-| [architecture/FamilyOperatingSystem.md](./architecture/FamilyOperatingSystem.md) | **Family OS** — philosophy, engines, phases |
+| [architecture/ModeArchitecture.md](./architecture/ModeArchitecture.md) | Modes, tools, V1 salaried scope |
 | [architecture/PaymentsAndLending.md](./architecture/PaymentsAndLending.md) | Razorpay, promissory notes, confirmation service |
 | [architecture/AdminAnalytics.md](./architecture/AdminAnalytics.md) | **Admin intelligence** — `/admin`, tracking, Supabase migrations, granting admin |
 

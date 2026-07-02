@@ -2,16 +2,14 @@ import { usePerovo } from "../../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { tierHasFeature } from "../../../../utils/tierAccess.js";
-import { isSalariedFamily } from "../../../../constants/modeExperience.js";
 import ProfileManager from "../ProfileManager.jsx";
 import YouSubPageShell from "./YouSubPageShell.jsx";
 
-/** Name, phone, avatar, and family profiles. */
+/** Name, phone, avatar, and optional profiles. */
 export default function YouPersonalPage() {
   const { t } = useTranslation();
-  const { settings, updateSettings } = usePerovo();
+  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
   const { user } = useAuth();
-  const salariedFamily = isSalariedFamily(settings);
 
   const displayName = settings.displayName || "";
   const initials = (displayName || user?.email || "?")
@@ -84,7 +82,7 @@ export default function YouPersonalPage() {
         </div>
       </div>
 
-      {!salariedFamily && tierHasFeature("multiple_profiles", settings) ? (
+      {tierHasFeature("multiple_profiles", settings, effectiveSubscriptionTier) ? (
         <div className="ed-you-section">
           <div className="ed-ins-kicker">{t("profile.profilesTitle")}</div>
           <ProfileManager />

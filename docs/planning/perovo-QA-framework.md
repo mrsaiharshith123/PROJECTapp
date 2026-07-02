@@ -4,6 +4,9 @@
 # Every prompt references real Perovo file paths, real feature names, real limits.
 # Run each prompt by pasting it into Cursor Agent mode.
 #
+# **V1 scope (2026):** single-user salaried only. Household / family room prompts
+# are marked **REMOVED** — skip them unless reintroducing multi-user features.
+#
 # OUTPUT FORMAT each QA prompt produces:
 #   - BUG ID + severity (P0 critical / P1 high / P2 medium / P3 low)
 #   - Steps to reproduce (exact, numbered)
@@ -19,7 +22,7 @@ ROLE PREAMBLE — paste this before any QA prompt below
 You are a senior QA engineer specializing in fintech applications.
 Your job is to find bugs, UX failures, security holes, logic errors,
 and architectural weaknesses in Perovo — a personal finance OS for
-salaried Indian households.
+salaried Indian users.
 
 ALWAYS:
   - Read the actual file before testing it (don't guess)
@@ -268,12 +271,7 @@ AUDIT 02 — Admin RLS recursion fix (already has a migration):
   Is is_admin read from the database or from localStorage?
   If from localStorage: a user could set is_admin=true locally. P0.
 
-AUDIT 03 — Household room data isolation:
-  Read 20260614000000_household_rooms.sql and 20260615000000_household_room_events.sql.
-  Policy says "room members can read events from their room."
-  Test: can user A read user B's household room events if they share a room?
-  That's intentional. But can user A read user C's events from a DIFFERENT room?
-  Check the RLS policy logic for this cross-room case.
+AUDIT 03 — Household room data isolation: **REMOVED** (feature dropped; tables dropped in `20260623130000_drop_household_rooms.sql`). Skip.
 
 AUDIT 04 — Subscription tier in database vs localStorage:
   Read src/services/supabase/auth.js — where is subscriptionTier saved?
@@ -398,7 +396,6 @@ EXPLORATION 01 — Navigate to every route directly via URL:
   /lending               (Lending)
   /analytics             (Analytics — IS this in the nav? Should it be?)
   /paycheck              (Paycheck — IS this in the nav?)
-  /family-room           (Household room)
   /profile               (Profile)
   /profile/analytics     (Wealth analytics)
   /net-worth             (same as profile/analytics)
@@ -429,7 +426,6 @@ EXPLORATION 04 — Navigation interruption:
 
 EXPLORATION 05 — Wrong order interactions:
   Create a lending agreement before adding borrower details → what errors appear?
-  Try to view household room before enabling household mode → crash or graceful?
   Open the bill scanner before granting camera permission → crash or graceful?
   Try to export CA report with no data → what does an empty Excel look like?
 
@@ -488,11 +484,7 @@ MONKEY TEST 06 — Import with malformed data:
   Does bankStatementParser.js crash on unrecognized formats?
   Read src/engines/bankStatementParser.js for format detection.
 
-MONKEY TEST 07 — Household invite code:
-  Enter wrong invite code (6 random characters) → clear error or silent fail?
-  Enter empty invite code → error message?
-  Enter invite code of your OWN room (join your own room) → what happens?
-  Enter invite code 100 times rapidly → rate limiting?
+MONKEY TEST 07 — Household invite code: **REMOVED** (feature dropped). Skip.
 
 Document every crash as P0, every data corruption as P0, every
 bad UX as P2/P3.
@@ -781,18 +773,11 @@ KNOWN REGRESSION 01 — Admin RLS recursion (already fixed in migration):
   Read RequireAdmin.jsx — does it query the database for is_admin, or check
   a cached/local value? Caching is safer against RLS recursion.
 
-KNOWN REGRESSION 02 — Household room membership:
-  Files: 20260614000000_household_rooms.sql + 20260615000000_household_room_events.sql
-  Test: join a household room. Leave the room. Rejoin with the same code.
-  Does the second join work? Is the membership record unique-constrained?
-  (primary key is (room_id, user_id) — so rejoining should be an upsert, not an error)
+KNOWN REGRESSION 02 — Household room membership: **REMOVED** (feature dropped). Skip.
 
-REGRESSION TEST — pressureScore after adding household mode:
-  Single mode: add 5 commitments, record pressureScore.
-  Enable household mode: the income formula changes (combinedMonthlyIncome).
-  Does pressureScore recalculate with the new combined income?
-  Or does it still use single income? Read how combinedMonthlyIncome is
-  passed to computeCanonicalPressureScore.
+REGRESSION TEST — pressureScore with dual income sources:
+  Add secondary income in profile. Does pressureScore use combined income?
+  Read combinedMonthlyIncome and computeCanonicalPressureScore wiring.
 
 REGRESSION TEST — Free tier limits after upgrading to Pro:
   Free: add 5 lending records (at the limit).
@@ -833,7 +818,6 @@ AUDIT 01 — Navigation accessibility:
     /paycheck     → NOT in nav — paycheck breakdown unreachable
     /tools        → NOT in nav — 15 tools unreachable
     /net-worth    → NOT in nav — net worth management unreachable
-    /family-room  → NOT in nav — household features unreachable
   Report each missing nav entry with: what content is lost + priority.
 
 AUDIT 02 — Content duplication score:
@@ -1247,7 +1231,7 @@ READ FIRST:
 
 ARCHITECTURE GAP 01 — Missing routes:
   Expected routes (per spec): /money, /plan, /you, /you/personal, /you/money,
-  /you/household, /you/appearance, /you/security, /you/backup, /you/notifications,
+  /you/appearance, /you/security, /you/backup, /you/notifications,
   /you/history, /you/support, /you/plans
   Actual routes: read App.jsx, list them.
   For each missing route: what feature is unreachable? Severity?
@@ -1296,20 +1280,15 @@ You are the Database Integrity Tester.
 READ ALL: supabase/migrations/ (every .sql file, in date order)
 
 AUDIT 01 — Foreign key constraints:
-  For every table that references another (e.g., household_room_members.room_id →
-  household_rooms.id), is there an ON DELETE behavior defined?
-  If a household room is deleted: are members cascade-deleted or left orphaned?
+  For every table that references another, is there an ON DELETE behavior defined?
+  (Household room tables were removed in `20260623130000_drop_household_rooms.sql`.)
 
 AUDIT 02 — NOT NULL constraints on critical fields:
-  Check the household_room_events table: is user_id NOT NULL?
-  Check household_room_members: is user_id + room_id the primary key?
-  Any nullable field that should never be null = P1 data integrity risk.
+  Check profiles, user_finance_snapshots, agreement_hashes for nullable fields
+  that should never be null = P1 data integrity risk.
 
 AUDIT 03 — Unique constraints:
-  Can a user join the same household room twice?
-  Primary key is (room_id, user_id) — this prevents duplicates. Good.
-  But: is there a unique constraint on room invite codes?
-  If two rooms get the same 6-character code: users could join the wrong family. P0.
+  Verify unique constraints on usernames, invite codes (if any), and snapshot keys.
 
 AUDIT 04 — RLS policy completeness:
   For every table with user data, verify ALL of: SELECT, INSERT, UPDATE, DELETE.
@@ -1443,71 +1422,10 @@ violations in motion (P1), and any battery-draining infinite loops (P2).
 ```
 
 ═══════════════════════════════════════════════════════════════════════
-QA PROMPT 24 — HOUSEHOLD / FAMILY MODE TESTING
-"Does the family financial OS actually work for families?"
+QA PROMPT 24 — HOUSEHOLD / FAMILY MODE TESTING — **REMOVED**
+Multi-user household / family mode was removed from product scope (V1 salaried-only).
+Skip this prompt. Historical reference only.
 ═══════════════════════════════════════════════════════════════════════
-```
-[ROLE PREAMBLE above]
-
-You are the Household Mode Tester. This is a differentiating feature —
-test it thoroughly as a family of 2: Harsha (owner) + Priya (member).
-
-READ FIRST:
-  src/engines/householdRoom.js
-  src/engines/familyStabilityScore.js
-  src/engines/familyPressureForecast.js
-  src/engines/familyContribution.js
-  supabase/migrations/20260614000000_household_rooms.sql
-
-TEST FLOW 01 — Room creation and joining:
-  Harsha creates a household room → gets a 6-character invite code.
-  Is the invite code unique? (check: is there a UNIQUE constraint on the code column?)
-  Priya enters the code → joins the room.
-  Does Harsha see Priya in the members list immediately?
-  Without page refresh? (real-time subscription to household_room_members?)
-
-TEST FLOW 02 — Sharing settings:
-  Priya turns OFF "Share my spends with this household."
-  Can Harsha see Priya's spends now? Should be: NO.
-  Harsha turns ON "Let the owner see my bill names and amounts."
-  Wait — Harsha IS the owner. Does this toggle make sense on the owner's view?
-  Who sees what when? Map the full permission matrix and verify it.
-
-TEST FLOW 03 — Combined pressure score:
-  Harsha's individual pressure: 65.
-  Priya's individual pressure: 45.
-  Combined household pressure: what should it be?
-  Is it an average? A weighted average by income? A sum?
-  Read familyStabilityScore.js — what's the formula?
-  Verify the displayed number matches the formula.
-
-TEST FLOW 04 — Family calendar:
-  Read familyCalendar.js and FamilyCalendarWidget.jsx.
-  Does the calendar show BOTH Harsha and Priya's bill due dates?
-  Or only the owner's?
-  Is it filtered by the sharing settings from flow 02?
-
-TEST FLOW 05 — Room leaving and re-joining:
-  Priya leaves the room.
-  Does her data disappear from Harsha's view immediately?
-  Priya rejoins with the same code.
-  Is there a gap in the activity feed? Or does history restore?
-
-TEST FLOW 06 — Single member household:
-  Harsha creates a room but Priya never joins.
-  Does the "household outlook" section still work?
-  Does combinedMonthlyIncome fall back to Harsha's income alone?
-  Are there any division-by-zero risks in family pressure calculations
-  when there's only 1 member?
-
-TEST FLOW 07 — Festival planner:
-  Enable household mode. Check if FestivalPlannerCard appears.
-  Does it show upcoming Indian festivals within a 90-day window?
-  Are festival dates hardcoded or computed?
-  Read familyCalendar.js for the festival date logic.
-
-Report all broken family mode flows with severity and impact on users.
-```
 
 ═══════════════════════════════════════════════════════════════════════
 QA PROMPT 25 — i18n / LOCALIZATION TESTING

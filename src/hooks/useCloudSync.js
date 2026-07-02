@@ -14,11 +14,12 @@ import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
 export function useCloudSync() {
   const { user, isLoggedIn } = useAuth();
   const track = usePerovo();
+  const { effectiveSubscriptionTier } = track;
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const enabled = canUseCloudSync(track.settings, isLoggedIn);
+  const enabled = canUseCloudSync(track.settings, isLoggedIn, effectiveSubscriptionTier);
   const configured = isCloudSyncConfigured();
   const meta = loadSyncMeta();
 
@@ -27,17 +28,18 @@ export function useCloudSync() {
       userId: user?.id,
       getState: loadFullAppStateForSync,
       applySnapshot: track.importAppData,
+      serverSubscriptionTier: effectiveSubscriptionTier,
     }),
-    [user?.id, track.importAppData],
+    [user?.id, track.importAppData, effectiveSubscriptionTier],
   );
 
   const backupDisabledReason = useCallback(() => {
     if (!isLoggedIn) return "Sign in to use account backup.";
     if (!configured) return "Cloud backup is not configured for this build.";
-    if (!hasPaidBackupTier(track.settings)) return "Account backup needs Pro or Power — see Plans.";
+    if (!hasPaidBackupTier(track.settings, effectiveSubscriptionTier)) return "Account backup needs Pro or Power — see Plans.";
     if (!track.settings.cloudSyncEnabled) return "Turn on Perovo cloud data backup in Backup & data.";
     return null;
-  }, [isLoggedIn, configured, track.settings]);
+  }, [isLoggedIn, configured, track.settings, effectiveSubscriptionTier]);
 
   const pushNow = useCallback(async () => {
     const block = backupDisabledReason();

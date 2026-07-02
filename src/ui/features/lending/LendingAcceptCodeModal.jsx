@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Caption, inputClassName } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { isValidInviteCode, normalizeInviteCode } from "../../../engines/householdRoom.js";
+import { isValidInviteCode, normalizeInviteCode } from "../../../utils/inviteCode.js";
 import { decodeOfferPayload } from "../../../engines/lendingAgreement.js";
 import { loadLendingOffer } from "../../../services/lending/offerRegistry.js";
 

@@ -31,6 +31,16 @@ import { runThemeAudit } from "./governance/theme.mjs";
 import { runEmptyStatesAudit } from "./governance/empty-states.mjs";
 import { runPwaAudit } from "./governance/pwa.mjs";
 import { runCleanupAudit } from "./governance/cleanup.mjs";
+import { runSecurityAudit } from "./governance/security.mjs";
+import { runTestingAudit } from "./governance/testing.mjs";
+import { runBusinessLogicAudit } from "./governance/business-logic.mjs";
+import { runRefactoringAudit } from "./governance/refactoring.mjs";
+import { runDevopsAudit } from "./governance/devops.mjs";
+import { runDatabaseAudit } from "./governance/database.mjs";
+import { runContextAudit } from "./governance/context.mjs";
+import { runDependenciesAudit } from "./governance/dependencies.mjs";
+import { runErrorHandlingAudit } from "./governance/error-handling.mjs";
+import { runUxFlowAudit } from "./governance/ux-flow.mjs";
 
 /** @type {{ id: string, label: string, group: string, quick: boolean, fn?: () => object, script?: string }[]} */
 const GOVERNANCE = [
@@ -52,6 +62,16 @@ const GOVERNANCE = [
   { id: "sync", label: "Local-first & cloud sync", group: "platform", quick: true, fn: runSyncAudit },
   { id: "guidance", label: "Financial guidance & education", group: "product", quick: true, fn: runGuidanceAudit },
   { id: "tree", label: "File tree & UI placement", group: "platform", quick: true, fn: runTreeAudit },
+  { id: "security", label: "Security (XSS, secrets, auth)", group: "platform", quick: true, fn: runSecurityAudit },
+  { id: "testing", label: "Test coverage & QA discipline", group: "quality", quick: true, fn: runTestingAudit },
+  { id: "business-logic", label: "Financial engine correctness", group: "quality", quick: false, fn: runBusinessLogicAudit },
+  { id: "refactoring", label: "Refactoring & duplicate code", group: "platform", quick: false, fn: runRefactoringAudit },
+  { id: "devops", label: "DevOps, build & CI/CD", group: "platform", quick: true, fn: runDevopsAudit },
+  { id: "database", label: "Database schema, RLS & migrations", group: "platform", quick: true, fn: runDatabaseAudit },
+  { id: "context", label: "React context & state management", group: "frontend", quick: false, fn: runContextAudit },
+  { id: "dependencies", label: "Bundle size & dependency health", group: "platform", quick: false, fn: runDependenciesAudit },
+  { id: "error-handling", label: "Error handling & reliability", group: "quality", quick: false, fn: runErrorHandlingAudit },
+  { id: "ux-flow", label: "UX flow & user journey quality", group: "product", quick: true, fn: runUxFlowAudit },
 ];
 
 const LEGACY = [

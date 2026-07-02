@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { callGeminiWithFallback } from "../_shared/geminiClient.ts";
+import { sanitizeAssetInsightBody } from "../_shared/sanitizeAssetInsight.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -234,7 +235,7 @@ Respond ONLY with valid JSON:
 }
 
 function buildGenericPrompt(b: Record<string, unknown>): string {
-  return `You are a personal finance analyst for Indian households. Search for current market conditions.
+  return `You are a personal finance analyst for Indian salaried users. Search for current market conditions.
 
 Asset: ${b.name} (${b.categoryId})
 Value: ₹${Number(b.currentValue || 0).toLocaleString("en-IN")}
@@ -251,6 +252,44 @@ Respond ONLY with valid JSON:
 }`;
 }
 
+const AI_DAILY_LIMITS: Record<string, number> = {
+  pro: 20,
+  power: 60,
+};
+
+async function checkAiRateLimit(
+  adminClient: ReturnType<typeof createClient>,
+  userId: string,
+  functionName: string,
+  tier: string,
+) {
+  const limit = AI_DAILY_LIMITS[tier] ?? 0;
+  if (limit <= 0) return { ok: false, reason: "pro_required" };
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count, error } = await adminClient
+    .from("ai_insight_usage")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("function_name", functionName)
+    .gte("created_at", since);
+
+  if (error) return { ok: false, reason: "rate_limit_error" };
+  if ((count ?? 0) >= limit) return { ok: false, reason: "rate_limit_exceeded", limit };
+  return { ok: true, limit };
+}
+
+async function logAiUsage(
+  adminClient: ReturnType<typeof createClient>,
+  userId: string,
+  functionName: string,
+) {
+  await adminClient.from("ai_insight_usage").insert({
+    user_id: userId,
+    function_name: functionName,
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -259,9 +298,10 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const geminiKey = Deno.env.get("GOOGLE_GEMINI_API_KEY");
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
       return json({ error: "server_not_configured" }, 500);
     }
 
@@ -274,11 +314,30 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) return json({ error: "unauthorized" }, 401);
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("subscription_tier")
+      .eq("id", userData.user.id)
+      .maybeSingle();
+    const tier = profile?.subscription_tier || "free";
+    if (tier !== "pro" && tier !== "power") {
+      return aiError("pro_required", "Asset AI insights require a Pro or Power plan.");
+    }
+
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const rate = await checkAiRateLimit(adminClient, userData.user.id, "asset-insight", tier);
+    if (!rate.ok) {
+      if (rate.reason === "rate_limit_exceeded") {
+        return aiError("rate_limit_exceeded", `Daily AI limit reached (${rate.limit}/day).`);
+      }
+      return aiError(rate.reason || "forbidden", "Unable to process AI request.");
+    }
+
     if (!geminiKey) {
       return aiError("ai_not_configured", "GOOGLE_GEMINI_API_KEY not set on server");
     }
 
-    const body = (await req.json()) as Record<string, unknown>;
+    const body = sanitizeAssetInsightBody(await req.json());
     const categoryId = String(body?.categoryId || "");
     const analysisMode = String(body.analysisMode || "market");
 
@@ -292,7 +351,7 @@ Deno.serve(async (req) => {
         geminiResult = await callGeminiWithFallback(geminiKey, {
           prompt: buildPropertyValueHistoryPrompt(body),
           latLng: lat,
-          useGoogleSearch: true,
+          useGoogleSearch: false,
           maxOutputTokens: 4096,
           temperature: 0.15,
         });
@@ -308,6 +367,7 @@ Deno.serve(async (req) => {
         if (milestones.length < 2) {
           return aiError("no_market_rate", "AI did not return enough historical milestones");
         }
+        await logAiUsage(adminClient, userData.user.id, "asset-insight");
         return json({
           insight: String(parsed.summary || ""),
           milestones,
@@ -351,7 +411,7 @@ Deno.serve(async (req) => {
       geminiResult = await callGeminiWithFallback(geminiKey, {
         prompt,
         latLng: lat,
-        useGoogleSearch: true,
+        useGoogleSearch: false,
         maxOutputTokens,
         temperature: 0.1,
       });
@@ -377,26 +437,13 @@ Deno.serve(async (req) => {
       marketData = parseMarket(rawText);
       structured = true;
     } catch {
-      if (PROPERTY_IDS.has(categoryId)) {
-        try {
-          geminiResult = await callGeminiWithFallback(geminiKey, {
-            prompt: buildPropertyRateOnlyPrompt(body),
-            latLng: lat,
-            useGoogleSearch: true,
-            maxOutputTokens: 4096,
-            temperature: 0.1,
-          });
-          rawText = geminiResult.text;
-          marketData = parseMarket(rawText);
-          structured = true;
-        } catch {
-          return aiError(
-            "unstructured_response",
-            "Model did not return parseable market JSON",
-            { rawPreview: rawText.slice(0, 300) },
-          );
+      try {
+        marketData = salvagePropertyJson(rawText);
+        if (PROPERTY_IDS.has(categoryId)) {
+          marketData = enrichPropertyMarketData(marketData as Record<string, unknown>, body);
         }
-      } else {
+        structured = true;
+      } catch {
         return aiError(
           "unstructured_response",
           "Model did not return parseable market JSON",
@@ -425,6 +472,8 @@ Deno.serve(async (req) => {
       (md?.summary as string) || holdRec?.reason || holdRec?.specificReason || rawText.slice(0, 300);
 
     const milestones = Array.isArray(md.milestones) ? md.milestones : null;
+
+    await logAiUsage(adminClient, userData.user.id, "asset-insight");
 
     return json({
       insight: summary,

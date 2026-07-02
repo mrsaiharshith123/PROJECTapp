@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
+import { ADMIN_UI_ENABLED } from "../../constants/featureFlags.js";
 
 /** Admin-only shortcut to /admin — left FAB (replaces legacy dev spanner). */
 export function AdminFloatingButton() {
@@ -10,7 +11,7 @@ export function AdminFloatingButton() {
   const location = useLocation();
   const { t } = useTranslation();
 
-  if (!isAdmin) return null;
+  if (!ADMIN_UI_ENABLED || !isAdmin) return null;
   if (location.pathname.startsWith("/admin")) return null;
 
   return (

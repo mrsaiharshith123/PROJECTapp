@@ -1,5 +1,3 @@
-import { getExperienceMode } from "../../constants/modeExperience.js";
-
 /**
  * Home dashboard attention guidance — what to review first.
  * @param {object} ctx
@@ -8,7 +6,6 @@ import { getExperienceMode } from "../../constants/modeExperience.js";
  * @param {number} ctx.stabilityScore
  */
 export function getDashboardFocus(ctx) {
-  const mode = getExperienceMode(ctx.settings);
   const overdue = ctx.overdueCount || 0;
   const score = ctx.stabilityScore ?? 0;
 
@@ -21,13 +18,6 @@ export function getDashboardFocus(ctx) {
   }
 
   if (score < 45) {
-    if (mode === "family") {
-      return {
-        tone: "warning",
-        label: "Priority",
-        message: "Household commitments are elevated — review shared expenses and school fees.",
-      };
-    }
     return {
       tone: "warning",
       label: "Priority",

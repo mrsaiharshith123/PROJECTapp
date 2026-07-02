@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update when you land a major feature.
 
-**Version:** `1.5.0` (see [CHANGELOG.md](./CHANGELOG.md)) · **Last reviewed:** 26 June 2026 · **Tests:** 122 Vitest · **Audit:** `npm run audit` blocking checks green
+**Version:** `1.5.0` (see [CHANGELOG.md](./CHANGELOG.md)) · **Last reviewed:** 2 July 2026 · **Tests:** 122 Vitest · **Audit:** run `npm run audit` — gate may fail until ESLint/TypeScript backlog is cleared
 
 **Product docs:** [encyclopedia/00-index.md](./encyclopedia/00-index.md) (routes, pages, engines, QA) — prefer encyclopedia over duplicating detail here.
 
@@ -17,7 +17,7 @@ Living snapshot of what is **shipped in code** vs **planned**. Update when you l
 | Bills & spends | ✅ | `/ledger/bills`, `/ledger/spends` |
 | Agreements (lending + docs) | ✅ | `/agreements` |
 | Add flow | ✅ | `/add` — picker → ledger / tools / spends |
-| Insights hub | ✅ | `/insights` — sections + breakdown pages; `HouseholdCommandPanel` when family mode |
+| Insights hub | ✅ | `/insights` — sections + breakdown pages |
 | Insights breakdowns | ✅ | `/insights/score`, `/insights/spending`, `/insights/networth`, `/insights/assets`, `/insights/liabilities`, `/insights/instruments`, `/insights/cashflow`, `/insights/pulse` |
 | You / settings | ✅ | `/you` — Groww-style list; avatar popover for identity |
 | Personal settings | ✅ | `/you/personal` — name, income, email, city, KYC (merged) |
@@ -42,8 +42,7 @@ Living snapshot of what is **shipped in code** vs **planned**. Update when you l
 | Bill health | ✅ | Per-bill scores |
 | Tax / paycheck insights | ✅ | `/paycheck` → `/insights?card=paycheck` |
 | CA export (Pro) | ✅ | `/you/backup` |
-| Household dependents editor | ✅ | `HouseholdDependentsEditorModal` (family mode) |
-| Household combined scope | ✅ | `resolveDataProfileScope` in data layer |
+| Product scope | ✅ | Single-user, salaried-only experience across all primary routes |
 
 ---
 
@@ -67,10 +66,10 @@ Full table: [encyclopedia/01-routes-and-navigation.md](./encyclopedia/01-routes-
 
 | Item | Notes |
 |------|-------|
-| Household room UI | Routes redirect to `/you`; v1.1 (`householdRoom` engines kept) |
+| Multi-user household room UI | Removed from scope (single-user salaried-only product) |
 | Setu AA / BBPS / live bank sync | Post-V1 |
 | Full legal lending workflow UI | Basic agreements shipped; deep legal deferred |
-| Dedicated unit test per engine | 86 engines; advisory `audit:engine-tests` |
+| Dedicated unit test per engine | Advisory `audit:engine-tests` still tracks coverage gaps |
 
 ---
 

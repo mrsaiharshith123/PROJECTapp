@@ -15,7 +15,6 @@ import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { formatInr } from "../../../constants/symbols.js";
-import { isSalariedFamily } from "../../../constants/modeExperience.js";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
 const fieldClass = `${inputClassName()} ct-input-tint`;
@@ -48,16 +47,15 @@ export default function GoalsToolPanel({
     logSavingsToGoal,
     updateSettings,
     todayStr,
+    effectiveSubscriptionTier,
   } = usePerovo();
   const [goalLogAmounts, setGoalLogAmounts] = useState({});
   const [gType, setGType] = useState(initialType);
   const [gTitle, setGTitle] = useState(initialTitle);
   const [gTarget, setGTarget] = useState("");
   const [gTargetDate, setGTargetDate] = useState("");
-  const [gForMember, setGForMember] = useState("shared");
   const [celebration, setCelebration] = useState(null);
   const celebratedGoals = useRef(new Set());
-  const salariedFamily = isSalariedFamily(settings);
 
   const openRemaining = commitments.reduce((s, c) => {
     if (getEffectiveStatus(c) === "paid") return s;
@@ -66,12 +64,12 @@ export default function GoalsToolPanel({
   const income = combinedMonthlyIncome(settings);
   const ratio = commitmentToIncomeRatio(commitments, income, getEffectiveStatus);
 
-  const goalGate = canAddGoal(settings, allGoals);
+  const goalGate = canAddGoal(settings, allGoals, effectiveSubscriptionTier);
 
   const submitGoal = () => {
     if (!gTitle.trim()) return;
     if (!goalGate.ok) return;
-    const base = { type: gType, title: gTitle.trim(), forMember: salariedFamily ? gForMember : "self" };
+    const base = { type: gType, title: gTitle.trim() };
     if (gType === "reduce_open_debt") {
       addGoal({ ...base, targetReduction: Math.max(1, Number(gTarget) || 25000) });
     } else if (gType === "income_ratio_cap") {
@@ -164,20 +162,6 @@ export default function GoalsToolPanel({
           ))}
         </select>
       </div>
-      {salariedFamily ? (
-        <div>
-          <label className="ct-field-label">{t("goals.forMemberLabel")}</label>
-          <SegmentedControl
-            options={[
-              { id: "shared", label: t("goals.forMember.shared") },
-              { id: "self", label: t("goals.forMember.self") },
-              { id: "spouse", label: t("goals.forMember.spouse") },
-            ]}
-            value={gForMember}
-            onChange={setGForMember}
-          />
-        </div>
-      ) : null}
       <div>
         <label className="ct-field-label">{t("goals.nameLabel")}</label>
         <input

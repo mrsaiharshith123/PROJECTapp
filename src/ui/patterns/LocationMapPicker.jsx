@@ -75,7 +75,9 @@ async function reverseGeocode(lat, lng) {
  *   longitude?: number | null,
  *   locationLabel?: string,
  *   defaultCityId?: string,
- *   onChange: (patch: { latitude?: number, longitude?: number, location?: string }) => void,
+ *   readOnly?: boolean,
+ *   style?: import('react').CSSProperties,
+ *   onChange?: (patch: { latitude?: number, longitude?: number, location?: string }) => void,
  * }} props
  */
 export function LocationMapPicker({
@@ -83,7 +85,9 @@ export function LocationMapPicker({
   longitude,
   locationLabel = "",
   defaultCityId = "",
-  onChange,
+  readOnly = false,
+  style,
+  onChange = () => {},
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState(locationLabel || "");
@@ -131,12 +135,13 @@ export function LocationMapPicker({
 
   const applyPin = useCallback(
     async (nextLat, nextLng, labelHint = "", recenter = true) => {
+      if (readOnly) return;
       const label = labelHint || (await reverseGeocode(nextLat, nextLng));
       onChange({ latitude: nextLat, longitude: nextLng, location: label });
       setSearch(label);
       if (recenter) setCenter({ lat: nextLat, lng: nextLng });
     },
-    [onChange],
+    [onChange, readOnly],
   );
 
   const coordsFromPointer = useCallback(
@@ -171,7 +176,7 @@ export function LocationMapPicker({
 
   const onMapPointerDown = useCallback(
     (e) => {
-      if (busy) return;
+      if (readOnly || busy) return;
       const centerPx = latLngToWorldPx(center.lat, center.lng, zoom);
       dragRef.current = {
         pointerId: e.pointerId,
@@ -182,10 +187,12 @@ export function LocationMapPicker({
       };
       e.currentTarget.setPointerCapture(e.pointerId);
     },
-    [busy, center.lat, center.lng, zoom],
+    [busy, center.lat, center.lng, zoom, readOnly],
   );
 
-  const onMapPointerMove = useCallback((e) => {
+  const onMapPointerMove = useCallback(
+    (e) => {
+      if (readOnly) return;
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== e.pointerId) return;
     const dx = e.clientX - drag.startX;
@@ -194,10 +201,11 @@ export function LocationMapPicker({
     drag.moved = true;
     const next = worldPxToLatLng(drag.originCenterPx.x - dx, drag.originCenterPx.y - dy, zoom);
     setCenter(next);
-  }, [zoom]);
+  }, [zoom, readOnly]);
 
   const onMapPointerUp = useCallback(
     (e) => {
+      if (readOnly) return;
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
       e.currentTarget.releasePointerCapture(e.pointerId);
@@ -206,10 +214,12 @@ export function LocationMapPicker({
       }
       dragRef.current = null;
     },
-    [dropPinAtPointer],
+    [dropPinAtPointer, readOnly],
   );
 
-  const onMapPointerCancel = useCallback((e) => {
+  const onMapPointerCancel = useCallback(
+    (e) => {
+      if (readOnly) return;
     if (dragRef.current?.pointerId === e.pointerId) {
       e.currentTarget.releasePointerCapture(e.pointerId);
       dragRef.current = null;
@@ -217,6 +227,7 @@ export function LocationMapPicker({
   }, []);
 
   const useMyLocation = useCallback(() => {
+    if (readOnly) return;
     setError("");
     if (!navigator.geolocation) {
       setError(t("wealthDetail.map.geoUnsupported"));
@@ -236,9 +247,10 @@ export function LocationMapPicker({
       },
       { enableHighAccuracy: true, timeout: 12000 },
     );
-  }, [applyPin, t]);
+  }, [applyPin, t, readOnly]);
 
   const searchPlace = useCallback(async () => {
+    if (readOnly) return;
     const q = search.trim();
     if (!q) return;
     setBusy(true);
@@ -268,32 +280,57 @@ export function LocationMapPicker({
       setError(t("wealthDetail.map.searchFailed"));
       setBusy(false);
     }
-  }, [applyPin, search, t]);
+  }, [applyPin, search, t, readOnly]);
 
-  const zoomIn = () => setZoom((z) => Math.min(MAX_ZOOM, z + 1));
-  const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, z - 1));
+  const zoomIn = () => {
+    if (readOnly) return;
+    setZoom((z) => Math.min(MAX_ZOOM, z + 1));
+  };
+  const zoomOut = () => {
+    if (readOnly) return;
+    setZoom((z) => Math.max(MIN_ZOOM, z - 1));
+  };
+
+  const mapStyle = {
+    display: "block",
+    width: "100%",
+    border: "0.5px solid var(--ed-rule)",
+    borderRadius: 10,
+    overflow: "hidden",
+    height: 200,
+    cursor: readOnly ? "default" : busy ? "wait" : "grab",
+    touchAction: readOnly ? "auto" : "none",
+    background: "#e8eef4",
+    position: "relative",
+    userSelect: "none",
+    ...style,
+  };
 
   return (
     <div className="ed-you-field">
-      <div className="ed-you-field-label">{t("wealthDetail.map.title")}</div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-        <input
-          className="ed-you-input"
-          style={{ flex: 1 }}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("wealthDetail.map.searchPlaceholder")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              searchPlace();
-            }
-          }}
-        />
-        <button type="button" className="ed-option-btn" style={{ flex: "0 0 auto" }} disabled={busy} onClick={searchPlace}>
-          {t("wealthDetail.map.searchBtn")}
-        </button>
-      </div>
+      {!readOnly ? (
+        <>
+          <div className="ed-you-field-label">{t("wealthDetail.map.title")}</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+            <input
+              className="ed-you-input"
+              style={{ flex: 1 }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("wealthDetail.map.searchPlaceholder")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  searchPlace();
+                }
+              }}
+            />
+            <button type="button" className="ed-option-btn" style={{ flex: "0 0 auto" }} disabled={busy} onClick={searchPlace}>
+              {t("wealthDetail.map.searchBtn")}
+            </button>
+          </div>
+        </>
+      ) : null}
       <div
         ref={mapRef}
         className="location-map-drop"
@@ -303,19 +340,7 @@ export function LocationMapPicker({
         onPointerMove={onMapPointerMove}
         onPointerUp={onMapPointerUp}
         onPointerCancel={onMapPointerCancel}
-        style={{
-          display: "block",
-          width: "100%",
-          border: "0.5px solid var(--ed-rule)",
-          borderRadius: 10,
-          overflow: "hidden",
-          height: 200,
-          cursor: busy ? "wait" : "grab",
-          touchAction: "none",
-          background: "#e8eef4",
-          position: "relative",
-          userSelect: "none",
-        }}
+        style={mapStyle}
       >
         {tiles.map((tile) => (
           <img
@@ -355,44 +380,46 @@ export function LocationMapPicker({
             }}
           />
         ) : null}
-        <div
-          style={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            zIndex: 2,
-          }}
-        >
-          <button
-            type="button"
-            className="ed-option-btn"
-            style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
-            aria-label={t("wealthDetail.map.zoomIn")}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              zoomIn();
+        {!readOnly ? (
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              zIndex: 2,
             }}
           >
-            +
-          </button>
-          <button
-            type="button"
-            className="ed-option-btn"
-            style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
-            aria-label={t("wealthDetail.map.zoomOut")}
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              zoomOut();
-            }}
-          >
-            −
-          </button>
-        </div>
+            <button
+              type="button"
+              className="ed-option-btn"
+              style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
+              aria-label={t("wealthDetail.map.zoomIn")}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                zoomIn();
+              }}
+            >
+              +
+            </button>
+            <button
+              type="button"
+              className="ed-option-btn"
+              style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
+              aria-label={t("wealthDetail.map.zoomOut")}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                zoomOut();
+              }}
+            >
+              −
+            </button>
+          </div>
+        ) : null}
         <span
           style={{
             position: "absolute",
@@ -409,20 +436,22 @@ export function LocationMapPicker({
           © OpenStreetMap
         </span>
       </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-        <button type="button" className="ed-you-text-btn" disabled={busy} onClick={useMyLocation}>
-          {busy ? t("common.loading") : t("wealthDetail.map.useMyLocation")}
-        </button>
-        {hasPin ? (
-          <span className="ed-you-field-hint" style={{ margin: 0 }}>
-            {t("wealthDetail.map.pinned", { lat: latitude, lng: longitude })}
-          </span>
-        ) : (
-          <span className="ed-you-field-hint" style={{ margin: 0 }}>
-            {t("wealthDetail.map.hint")}
-          </span>
-        )}
-      </div>
+      {!readOnly ? (
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          <button type="button" className="ed-you-text-btn" disabled={busy} onClick={useMyLocation}>
+            {busy ? t("common.loading") : t("wealthDetail.map.useMyLocation")}
+          </button>
+          {hasPin ? (
+            <span className="ed-you-field-hint" style={{ margin: 0 }}>
+              {t("wealthDetail.map.pinned", { lat: latitude, lng: longitude })}
+            </span>
+          ) : (
+            <span className="ed-you-field-hint" style={{ margin: 0 }}>
+              {t("wealthDetail.map.hint")}
+            </span>
+          )}
+        </div>
+      ) : null}
       {error ? <div className="ed-you-note error">{error}</div> : null}
     </div>
   );

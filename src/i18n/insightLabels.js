@@ -23,7 +23,7 @@ const EXPLAIN_RULES = [
   },
   { match: /emi|loan|debt/i, keys: ["guidance.explain.emi1"] },
   { match: /emergency|reserve|savings/i, keys: ["guidance.explain.emergency1"] },
-  { match: /school|education|household|family/i, keys: ["guidance.explain.household1"] },
+  { match: /school|education|rent/i, keys: ["guidance.explain.pressure1"] },
   {
     match: /volatil|income|revenue/i,
     keys: ["guidance.explain.income1", "guidance.explain.income2"],

@@ -38,7 +38,7 @@ const emptyLendingForm = () => ({
 export default function AgreementsPage() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { lendings, settings, todayStr, updateLending, addLendingPayment } =
+  const { lendings, settings, todayStr, updateLending, addLendingPayment, effectiveSubscriptionTier } =
     usePerovo();
 
   const [listTab, setListTab] = useState(/** @type {"lent" | "borrowed" | "documents"} */ ("lent"));
@@ -153,7 +153,7 @@ export default function AgreementsPage() {
     [listTab, lentList, borrowedList],
   );
 
-  const tier = getTier(settings);
+  const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
     <div className="ct-page ed-paper">
@@ -169,7 +169,7 @@ export default function AgreementsPage() {
         </div>
       </header>
 
-      {!canAddLendingRecord(settings, lendings).ok && (
+      {!canAddLendingRecord(settings, lendings, effectiveSubscriptionTier).ok && (
         <TierLimitBanner
           className="ct-tier-banner-warm"
           title={t("tier.limit.lendingTitle")}

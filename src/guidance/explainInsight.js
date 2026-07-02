@@ -25,8 +25,8 @@ export function explainInsight(insight, ctx = {}) {
       reasons: ["Emergency savings are lower than typical monthly burn."],
     },
     {
-      match: /school|education|household|family/i,
-      reasons: ["Household expenses such as school or rent weigh on shared income."],
+      match: /school|education|rent/i,
+      reasons: ["Fixed obligations such as school or rent weigh on monthly income."],
     },
     {
       match: /volatil|income|revenue/i,

@@ -25,8 +25,6 @@ export const LEGACY_SCORE_MAP = {
   financialHealth: { pillar: "protection", role: "child" },
   financialLifeScore: { role: "hidden" },
   financialPosition: { role: "hidden" },
-  householdScore: { role: "hidden" },
-  familyStabilityScore: { pillar: "cashflow", role: "child" },
   profileScore: { role: "setup" },
   pressureScore: { pillar: "cashflow", role: "child" },
   pressureAdvanced: { role: "hidden" },

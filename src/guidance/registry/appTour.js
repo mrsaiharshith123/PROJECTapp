@@ -1,5 +1,3 @@
-import { getExperienceMode } from "../../constants/modeExperience.js";
-
 /**
  * App guide — concise, professional copy.
  * @typedef {{ id: string, title: string, body: string, tip?: string }} TourStep
@@ -36,16 +34,9 @@ const COMMON = [
 ];
 
 const MODE_TAIL = {
-  salaried: {
-    id: "mode-salaried",
-    title: "Personal view",
-    body: "The dashboard emphasizes paycheck pressure, EMIs, free cash, and emergency readiness. Begin with your largest monthly commitments.",
-  },
-  family: {
-    id: "mode-family",
-    title: "Household view",
-    body: "The dashboard highlights shared bills, school fees, and household safety across all income sources.",
-  },
+  id: "mode-salaried",
+  title: "Personal view",
+  body: "The dashboard emphasizes paycheck pressure, EMIs, free cash, and emergency readiness. Begin with your largest monthly commitments.",
 };
 
 /**
@@ -53,9 +44,8 @@ const MODE_TAIL = {
  * @returns {TourStep[]}
  */
 export function getAppTourSteps(settings) {
-  const mode = getExperienceMode(settings);
-  const tail = MODE_TAIL[mode] || MODE_TAIL.salaried;
+  void settings;
   const steps = [...COMMON];
-  steps.splice(3, 0, tail);
+  steps.splice(3, 0, MODE_TAIL);
   return steps;
 }

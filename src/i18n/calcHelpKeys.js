@@ -27,5 +27,4 @@ export const CALC_HELP_KEYS = {
   chitMaxLoss: "help.chitMaxLoss",
   loanExtraTiming: "help.loanExtraTiming",
   incomeEntryBasis: "help.incomeEntryBasis",
-  householdPayerBillTag: "help.householdPayerBillTag",
 };
