@@ -2,9 +2,7 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
     "src/capgo-notify-only.js",
-    "src/capgo-notify-update-test-only.js",
     "src/main.jsx",
-    "src/main-update-test.jsx",
     "public/notification-handler.js",
     "src/**/*.test.js",
     "tests/**/*.test.mjs"

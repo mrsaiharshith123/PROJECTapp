@@ -15,7 +15,7 @@ const CHECKS = [
   { id: "multiple_profiles", paths: ["src/ui/features/profile/ProfileManager.jsx"] },
   { id: "ca_share", paths: ["src/engines/caExport.js", "src/ui/features/profile/ProfileBackupSection.jsx"] },
   { id: "ai_advisor", paths: ["src/services/financialAdvisor.js", "supabase/functions/financial-advisor/index.ts"] },
-  { id: "subscription_leak", paths: ["src/engines/subscriptionLeak.js", "src/ui/features/dashboard/FinancialPulseCard.jsx"] },
+  { id: "subscription_leak", paths: ["src/engines/subscriptionLeak.js", "src/ui/features/home/FinancialPulseCard.jsx"] },
 ];
 
 function main() {

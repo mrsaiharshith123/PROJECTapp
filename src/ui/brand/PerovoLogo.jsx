@@ -15,7 +15,7 @@ const SIZE_PX = {
  * Theme-aware Perovo app icon.
  * @param {{ size?: 'xs' | 'sm' | 'md' | 'lg' | number, className?: string, alt?: string }} props
  */
-export function PerovoLogo({ size = "md", className = "", alt = "" }) {
+export function PerovoLogo({ size = "md", className = "", alt = "Perovo logo" }) {
   const theme = useResolvedTheme();
   const file = brandIconForTheme(theme);
   const px = typeof size === "number" ? size : SIZE_PX[size] || SIZE_PX.md;

@@ -1,91 +1,20 @@
-import { format, subDays, parseISO, getDate, getDaysInMonth } from "date-fns";
+import { getDate, getDaysInMonth, parseISO } from "date-fns";
 import { detectLifestyleInflation } from "./lifestyleInflation.js";
 import { buildDueHeatmap } from "./analyticsSeries.js";
-import { sumDailySpendsInRange, dailySpendByLifeCategory, dailySpendByMerchant } from "../utils/dailySpends.js";
 import { groupCommitmentsByMerchant } from "../utils/merchantNormalize.js";
-import { detectRecurringFromDailySpends } from "./recurringSpendDetect.js";
 
-function analyzeDailySpendFlow(dailySpends, todayStr) {
-  const start7 = format(subDays(parseISO(`${todayStr}T12:00:00`), 6), "yyyy-MM-dd");
-  const start30 = format(subDays(parseISO(`${todayStr}T12:00:00`), 29), "yyyy-MM-dd");
-  const prev30Start = format(subDays(parseISO(`${todayStr}T12:00:00`), 59), "yyyy-MM-dd");
-  const prev30End = format(subDays(parseISO(`${todayStr}T12:00:00`), 30), "yyyy-MM-dd");
-
-  const weekTotal = sumDailySpendsInRange(dailySpends, start7, todayStr);
-  const monthTotal = sumDailySpendsInRange(dailySpends, start30, todayStr);
-  const prevMonthTotal = sumDailySpendsInRange(dailySpends, prev30Start, prev30End);
-
-  const weekByLife = dailySpendByLifeCategory(dailySpends, start7, todayStr);
-  const weekByMerchant = dailySpendByMerchant(dailySpends, start7, todayStr);
-  const lifestyleWeek = weekByLife.find((x) => x.lifeCategory === "lifestyle")?.amount || 0;
-  const survivalWeek = weekByLife.find((x) => x.lifeCategory === "survival")?.amount || 0;
-  const count = (dailySpends || []).filter((s) => s.date >= start7 && s.date <= todayStr).length;
-
-  const medicalWeek = (dailySpends || [])
-    .filter((s) => s.date >= start7 && s.date <= todayStr && (s.spendType === "medical" || /apollo|hospital|pharma/i.test(s.label)))
-    .reduce((s, x) => s + x.amount, 0);
-
-  const deliveryWeek = weekByMerchant
-    .filter((m) => /swiggy|zomato|food_delivery/.test(m.merchantId) || /swiggy|zomato/i.test(m.label))
-    .reduce((s, m) => s + m.amount, 0);
-
-  return {
-    hasData: count > 0 || monthTotal > 0,
-    weekTotal,
-    monthTotal,
-    prevMonthTotal,
-    weekByLife,
-    weekByMerchant,
-    lifestyleWeek,
-    survivalWeek,
-    medicalWeek,
-    deliveryWeek,
-    entryCount: count,
-    lifestyleShare: weekTotal > 0 ? lifestyleWeek / weekTotal : 0,
-    monthGrowthPercent:
-      prevMonthTotal > 0 ? Math.round(((monthTotal - prevMonthTotal) / prevMonthTotal) * 100) : 0,
-  };
-}
-
-function detectMerchantPressure(commitments, dailySpends, todayStr) {
-  const flow = analyzeDailySpendFlow(dailySpends, todayStr);
+function detectMerchantPressure(commitments) {
   const fromBills = groupCommitmentsByMerchant(commitments);
   const insights = [];
-
-  if (flow.deliveryWeek >= 800 && flow.lifestyleShare >= 0.35) {
-    insights.push({ id: "txn-delivery-dependency", tone: "caution" });
-  }
-  if (flow.medicalWeek >= 1500) {
-    insights.push({ id: "txn-health-spend-week", tone: "caution" });
-  }
-  if (flow.monthGrowthPercent >= 20 && flow.monthTotal >= 2000) {
-    insights.push({ id: "txn-discretionary-rise", tone: "caution" });
-  }
   const lifestyleBill = fromBills.find((m) => m.profile.lifeCategory === "lifestyle" && m.monthly >= 800);
-  if (lifestyleBill && flow.lifestyleWeek >= 1000) {
+  if (lifestyleBill) {
     insights.push({
       id: "txn-lifestyle-stack",
       tone: "warning",
       params: { merchant: lifestyleBill.profile.label },
     });
   }
-  if (flow.entryCount >= 5 && flow.weekTotal >= 500 && flow.weekTotal / flow.entryCount < 400) {
-    insights.push({ id: "txn-small-leaks", tone: "info" });
-  }
-
-  const recurring = detectRecurringFromDailySpends(dailySpends, {
-    todayStr,
-    minOccurrences: 3,
-  });
-  if (recurring.length >= 2) {
-    insights.push({
-      id: "txn-recurring-merchants",
-      tone: "info",
-      params: { count: recurring.length },
-    });
-  }
-
-  return { flow, merchantInsights: insights };
+  return { merchantInsights: insights };
 }
 
 function detectSalaryWeekPhase(todayStr, salaryCreditDay) {
@@ -110,7 +39,6 @@ function detectTransactionPatterns(input) {
     commitments = [],
     lendings = [],
     settings = {},
-    dailySpends = [],
     todayStr,
     getEffectiveStatus,
     getEffectiveLendingStatus,
@@ -121,7 +49,7 @@ function detectTransactionPatterns(input) {
   const rhythm = detectSalaryWeekPhase(todayStr, settings.salaryCreditDay);
   const heatmap = buildDueHeatmap(commitments, lendings, todayStr, getEffectiveStatus, getEffectiveLendingStatus);
   const unsafeWeeks = detectUnsafeWeeks(heatmap);
-  const merchant = detectMerchantPressure(commitments, dailySpends, todayStr);
+  const merchant = detectMerchantPressure(commitments);
 
   const thisWeekCount = heatmap[0]?.count || 0;
   const overlap = thisWeekCount >= 3 || (heatmap[0]?.count >= 2 && heatmap[1]?.count >= 2);
@@ -147,16 +75,9 @@ function transactionRhythmNote(patterns) {
   if (patterns.overlap) {
     return { id: "txn-rhythm-overlap", tone: "caution" };
   }
-  if (patterns.merchant?.flow?.lifestyleShare >= 0.5 && patterns.merchant.flow.hasData) {
-    return { id: "txn-rhythm-lifestyle", tone: "info" };
-  }
   return null;
 }
 
-/**
- * Behavioral transaction insights — integrates with existing insight shape { id, tone, text }.
- * @param {object} input
- */
 function dailySpendBudgetInsight(input) {
   const { todayStr, burdenRatio = 0, monthSummary } = input;
   const guidance = monthSummary?.spendGuidance;
@@ -199,7 +120,7 @@ export function buildTransactionInsights(input) {
       params: { percent: patterns.lifestyle.growthPercent },
     });
   }
-  if (patterns.highPressure && patterns.merchant.flow.lifestyleShare >= 0.2 && patterns.merchant.flow.hasData) {
+  if (patterns.highPressure) {
     insights.push({ id: "txn-under-pressure", tone: "warning" });
   }
 
@@ -217,18 +138,11 @@ export function buildTransactionInsights(input) {
 
 /** Lightweight life-feed lines (not a transaction list). */
 export function buildTransactionLifeFeed(input, limit = 4) {
-  const { insights, patterns } = buildTransactionInsights(input);
+  const { insights } = buildTransactionInsights(input);
   const feed = insights.slice(0, limit).map((ins) => ({
     ...ins,
     id: ins.id?.startsWith("feed-") ? ins.id : `feed-${ins.id}`,
   }));
-
-  if (patterns.merchant.flow.deliveryWeek >= 500 && feed.length < limit) {
-    feed.push({ id: "feed-restaurant-week", tone: "neutral" });
-  }
-  if (patterns.merchant.flow.medicalWeek >= 1000 && feed.length < limit) {
-    feed.push({ id: "feed-medical-month", tone: "caution" });
-  }
 
   const seen = new Set();
   return feed

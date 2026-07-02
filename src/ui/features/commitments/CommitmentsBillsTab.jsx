@@ -13,8 +13,8 @@ import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.j
 import { scoreBillHealth } from "../../../engines/billHealth.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
-import BillsHeroSummary from "../money/BillsHeroSummary.jsx";
-import BillsCategorySheet from "../money/BillsCategorySheet.jsx";
+import BillsHeroSummary from "./BillsHeroSummary.jsx";
+import BillsCategorySheet from "./BillsCategorySheet.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const CATEGORY_LABEL_KEYS = {
@@ -51,7 +51,6 @@ export default function CommitmentsBillsTab({
   onOpenPayment,
   onEdit,
   onDelete,
-  dailySpends = [],
   onAddCommitment,
   getEffectiveStatus: _getEffectiveStatus,
 }) {
@@ -164,7 +163,6 @@ export default function CommitmentsBillsTab({
           const progress = computeBillPaymentProgress(item, todayStr, commitments);
           const health = scoreBillHealth(item, {
             effectiveStatus: eff,
-            dailySpends,
             todayStr,
             topStressorName,
           });

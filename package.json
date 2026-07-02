@@ -60,8 +60,6 @@
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
     "apk:dev": "node scripts/build-dev-apk.mjs",
-    "apk:update-test": "node scripts/build-update-test-apk.mjs",
-    "apk:update-test:publish": "node scripts/build-update-test-apk.mjs --publish",
     "apk:twa": "cd twa && bubblewrap build --manifest twa-manifest.json",
     "apk:twa:install": "cd twa && bubblewrap install",
     "zip": "node scripts/zip.mjs"
@@ -90,6 +88,7 @@
     "react": "^19.2.5",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.2.5",
+    "react-is": "18.3.1",
     "react-router-dom": "^7.16.0",
     "recharts": "^3.8.1",
     "tesseract.js": "^7.0.0"
@@ -104,6 +103,7 @@
     "archiver": "^5.3.2",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.2.1",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",

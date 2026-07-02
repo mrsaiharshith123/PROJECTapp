@@ -27,8 +27,6 @@ import {
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { InfoTip } from "../../primitives/InfoTip.jsx";
-import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { searchFund } from "../../../services/market/amfiNav.js";
 

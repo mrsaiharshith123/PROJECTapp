@@ -1,6 +1,6 @@
 import { invalidateInitialAppStateCache, loadSettingsFromStorage } from "./migrateStorage.js";
-import { STORAGE_KEYS } from "../storage/keys.js";
-import { emitSettingsReset } from "../storage/events.js";
+import { STORAGE_KEYS } from "./storage/keys.js";
+import { emitSettingsReset } from "./storage/events.js";
 
 /** @see AuthGatePage - skip server profile check right after signup */
 export const SIGNUP_PENDING_KEY = "perovo_signup_pending";

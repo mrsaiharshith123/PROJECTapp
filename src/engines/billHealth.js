@@ -1,20 +1,14 @@
-import { differenceInCalendarDays, parseISO } from "date-fns";
-
 /**
  * Per-bill health score (0–100) with i18n insight id.
  * @param {object} commitment
  * @param {{
  *   effectiveStatus: string,
- *   dailySpends?: object[],
  *   todayStr?: string,
  *   topStressorName?: string | null,
- *   idleDaysThreshold?: number,
  * }} ctx
  */
 export function scoreBillHealth(commitment, ctx) {
   const eff = ctx.effectiveStatus || "pending";
-  const todayStr = ctx.todayStr || "";
-  const idleDays = ctx.idleDaysThreshold ?? 60;
   let score = 82;
   /** @type {string | null} */
   let insightId = null;
@@ -34,7 +28,6 @@ export function scoreBillHealth(commitment, ctx) {
   }
 
   const name = String(commitment.name || "").trim();
-  const isSubscription = commitment.category === "Subscription";
   const isEmi =
     commitment.category === "EMI" ||
     commitment.category === "Loan" ||
@@ -44,48 +37,6 @@ export function scoreBillHealth(commitment, ctx) {
     score = Math.min(score, 38);
     insightId = "bill-health-top-stress";
     params = { name };
-  }
-
-  if (isSubscription && todayStr) {
-    const start = commitment.startDate || commitment.dueDate || "";
-    let accountAgeDays = 0;
-    if (start) {
-      try {
-        accountAgeDays = differenceInCalendarDays(
-          parseISO(`${todayStr}T12:00:00`),
-          parseISO(`${start}T12:00:00`),
-        );
-      } catch {
-        accountAgeDays = 0;
-      }
-    }
-
-    const spends = (ctx.dailySpends || []).filter((s) => {
-      const merchant = String(s.merchant || s.note || "").toLowerCase();
-      const billName = name.toLowerCase();
-      return merchant && billName && (merchant.includes(billName.slice(0, 6)) || billName.includes(merchant.slice(0, 6)));
-    });
-
-    let daysSinceUse = null;
-    if (spends.length > 0) {
-      const last = spends.map((s) => s.date).sort().pop();
-      try {
-        daysSinceUse = differenceInCalendarDays(
-          parseISO(`${todayStr}T12:00:00`),
-          parseISO(`${last}T12:00:00`),
-        );
-      } catch {
-        daysSinceUse = 0;
-      }
-    } else if (accountAgeDays >= idleDays) {
-      daysSinceUse = accountAgeDays;
-    }
-
-    if (daysSinceUse != null && daysSinceUse >= idleDays) {
-      score = Math.min(score, 42);
-      insightId = "bill-health-idle-sub";
-      params = { name, days: idleDays };
-    }
   }
 
   if (isEmi && Number(commitment.remainingAmount) > 0 && eff === "pending") {

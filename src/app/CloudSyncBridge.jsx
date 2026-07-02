@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
-import { DATA_CHANGED_EVENT } from "../storage/events.js";
+import { DATA_CHANGED_EVENT } from "../utils/storage/events.js";
 import {
   canUseCloudSync,
   cancelScheduledCloudPush,

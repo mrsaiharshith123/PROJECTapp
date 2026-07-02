@@ -177,6 +177,7 @@ html[data-ui="ct"] {
   --ct-text: #f0eff9;
   --ct-text-secondary: #a8a6c2;
   --ct-text-muted: #6e6c8a;
+  --ct-text-caution: #e3a008;
   --ct-chart-plot-bg: rgba(7, 7, 10, 0.45);
   --ct-body-gradient-a: rgba(91, 77, 255, 0.18);
   --ct-body-gradient-b: rgba(18, 18, 37, 0.35);
@@ -389,6 +390,7 @@ html[data-ui="ct"][data-theme="light"] {
   --ct-text: var(--ct-life-heading);
   --ct-text-secondary: #5c6478;
   --ct-text-muted: #8b93a7;
+  --ct-text-caution: #b45309;
   --ct-chart-plot-bg: rgba(241, 245, 252, 0.95);
   --ct-body-gradient-a: rgba(124, 77, 255, 0.06);
   --ct-body-gradient-b: #e8ecf4;

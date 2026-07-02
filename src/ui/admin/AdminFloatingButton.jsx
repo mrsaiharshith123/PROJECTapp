@@ -26,5 +26,3 @@ export function AdminFloatingButton() {
     </button>
   );
 }
-
-export default AdminFloatingButton;

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { format } from "date-fns";
 import { todayYmd } from "../utils/dates.js";
 import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
-import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../storage/events.js";
+import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../utils/storage/events.js";
 import { useAuth } from "./AuthContext.jsx";
 import { loadSubscriptionTier, syncSettingsToServer, loadSettingsFromServer } from "../services/supabase/auth.js";
 import {
@@ -11,7 +11,6 @@ import {
   invalidateInitialAppStateCache,
   saveMonthlySnapshotsToStorage,
   saveGoalsToStorage,
-  saveDailySpendsToStorage,
   normalizeCommitment,
   normalizeLending,
   SCHEMA_VERSION_KEY,
@@ -30,7 +29,6 @@ import {
   registerDevSubscriptionTools,
   unregisterDevSubscriptionTools,
 } from "../utils/devSubscriptionTools.js";
-import { filterDailySpendsByProfile } from "../utils/dailySpends.js";
 import { sortCommitments } from "./perovoSort.js";
 import { usePerovoCrud } from "./usePerovoCrud.js";
 import { fetchFundNav } from "../services/market/amfiNav.js";
@@ -58,7 +56,6 @@ export function PerovoProvider({ children }) {
   const [settings, setSettings] = useState(() => loadInitialAppState().settings);
   const [monthlySnapshots, setMonthlySnapshots] = useState(() => loadInitialAppState().monthlySnapshots);
   const [goals, setGoals] = useState(() => loadInitialAppState().goals);
-  const [dailySpends, setDailySpends] = useState(() => loadInitialAppState().dailySpends);
   const [supplementalNotifications, setSupplementalNotifications] = useState([]);
   const [serverSubscriptionTier, setServerSubscriptionTier] = useState(/** @type {string | null} */ (null));
 
@@ -221,16 +218,6 @@ export function PerovoProvider({ children }) {
     });
   }, []);
 
-  const persistDailySpends = useCallback((updater) => {
-    setDailySpends((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      saveDailySpendsToStorage(next);
-      invalidateInitialAppStateCache();
-      emitLocalDataChanged();
-      return next;
-    });
-  }, []);
-
   const settingsRef = useRef(settings);
   useEffect(() => {
     settingsRef.current = settings;
@@ -264,7 +251,6 @@ export function PerovoProvider({ children }) {
     persistLendings,
     persistSettings,
     persistGoals,
-    persistDailySpends,
     setSupplementalNotifications,
   });
 
@@ -296,7 +282,7 @@ export function PerovoProvider({ children }) {
       goldRatePerGram: result.perGram,
       goldRateLastFetched: result.date,
     }));
-    applyGoldRateToWealth(result.perGram);
+    applyGoldRateToWealth(Number(result.perGram));
     return true;
   }, [persistSettings]);
 
@@ -394,10 +380,6 @@ export function PerovoProvider({ children }) {
     () => filterByProfile(goals, activeProfileId).filter((g) => g.active !== false && !g.archived),
     [goals, activeProfileId]
   );
-  const profileDailySpends = useMemo(
-    () => filterDailySpendsByProfile(dailySpends, activeProfileId),
-    [dailySpends, activeProfileId]
-  );
   const importAppData = useCallback(
     (payload, options = {}) => {
       const merged = mergeImportedAppState(
@@ -405,7 +387,6 @@ export function PerovoProvider({ children }) {
           commitments: commitmentsRef.current,
           lendings,
           goals,
-          dailySpends,
           settings: settingsRef.current,
           monthlySnapshots,
           wealth: loadWealthState(),
@@ -416,7 +397,6 @@ export function PerovoProvider({ children }) {
       persistCommitments(() => merged.commitments);
       persistLendings(() => merged.lendings);
       persistGoals(() => merged.goals);
-      persistDailySpends(() => merged.dailySpends);
       persistSettings(() => merged.settings);
       saveWealthState(merged.wealth);
       if (merged.monthlySnapshots?.length) {
@@ -428,12 +408,10 @@ export function PerovoProvider({ children }) {
     [
       lendings,
       goals,
-      dailySpends,
       monthlySnapshots,
       persistCommitments,
       persistLendings,
       persistGoals,
-      persistDailySpends,
       persistSettings,
       persistSnapshots,
     ]
@@ -454,7 +432,7 @@ export function PerovoProvider({ children }) {
       return next;
     });
     return tier;
-  }, [user?.id]);
+  }, [user]);
 
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);
   const effectiveSubscriptionTier = useMemo(() => {
@@ -470,8 +448,6 @@ export function PerovoProvider({ children }) {
       allLendings: lendings,
       goals: profileGoals,
       allGoals: goals,
-      dailySpends: profileDailySpends,
-      allDailySpends: dailySpends,
       activeProfileId,
       settings,
       effectiveSubscriptionTier,
@@ -492,8 +468,6 @@ export function PerovoProvider({ children }) {
       addGoal: crud.addGoal,
       updateGoal: crud.updateGoal,
       deleteGoal: crud.deleteGoal,
-      addDailySpend: crud.addDailySpend,
-      deleteDailySpend: crud.deleteDailySpend,
       pushInAppNotification: crud.pushInAppNotification,
       markNotificationRead: crud.markNotificationRead,
       markAllNotificationsRead: crud.markAllNotificationsRead,
@@ -511,8 +485,6 @@ export function PerovoProvider({ children }) {
       lendings,
       profileGoals,
       goals,
-      dailySpends,
-      profileDailySpends,
       activeProfileId,
       settings,
       effectiveSubscriptionTier,
@@ -533,8 +505,6 @@ export function PerovoProvider({ children }) {
       crud.addGoal,
       crud.updateGoal,
       crud.deleteGoal,
-      crud.addDailySpend,
-      crud.deleteDailySpend,
       crud.pushInAppNotification,
       crud.markNotificationRead,
       crud.markAllNotificationsRead,

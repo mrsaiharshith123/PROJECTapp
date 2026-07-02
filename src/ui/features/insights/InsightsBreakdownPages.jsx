@@ -1,5 +1,4 @@
 // InsightsBreakdownPages.jsx — re-export barrel
-export { default as InsightsSpendingBreakdownPage } from "./breakdown/SpendingBreakdown.jsx";
 export { default as InsightsYearlyBreakdownPage } from "./breakdown/YearlyBreakdown.jsx";
 export { default as InsightsNetWorthBreakdownPage } from "./breakdown/NetWorthBreakdown.jsx";
 export { default as InsightsCashflowBreakdownPage } from "./breakdown/CashflowBreakdown.jsx";

@@ -1,85 +1,12 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { CHART_VIEWS } from "../../../constants/plainLanguage.js";
 import { translateChartView } from "../../../i18n/domainLabels.js";
 import { useResolvedTheme } from "../../../hooks/useResolvedTheme.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getChartTheme } from "../../tokens/chartTheme.js";
-import { formatInr } from "../../../constants/symbols.js";
-import { variableSpendDrilldown } from "../../../utils/analyticsSpendSeries.js";
-import { translateTxnLifeCategory } from "../../../i18n/toolLabels.js";
-import { Heading, Caption, Body } from "../../primitives/Text.jsx";
-import { Button } from "../../primitives/Button.jsx";
+import { Heading, Caption } from "../../primitives/Text.jsx";
 import { FlexibleDataChart } from "./charts/FlexibleDataChart.jsx";
 import { ChartTypeSelect } from "./charts/ChartTypeSelect.jsx";
-
-function VariableSpendDrilldown({ monthLabel, drilldown, onClose }) {
-  const { t } = useTranslation();
-  if (!drilldown || drilldown.total <= 0) return null;
-
-  return (
-    <div className="ct-stat-tile indigo ct-stack">
-      <div className="ct-row-between gap-2">
-        <div>
-          <Heading level={4}>{t("charts.drilldownTitle", { month: monthLabel })}</Heading>
-          <Caption className="block mt-0.5">
-            {t("charts.drilldownTotal", { amount: formatInr(drilldown.total) })}
-          </Caption>
-        </div>
-        <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={onClose}>
-          {t("common.close")}
-        </Button>
-      </div>
-
-      {drilldown.merchants.length > 0 && (
-        <div>
-          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownMerchants")}</Body>
-          <ul className="ct-stack-sm">
-            {drilldown.merchants.map((m) => (
-              <li key={m.name} className="ct-row-between ct-caption">
-                <span className="truncate pr-2">{m.name}</span>
-                <span className="ct-stat-value ct-numeral shrink-0">
-                  {formatInr(m.amount)}
-                  {m.count > 1 ? ` · ${m.count}×` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {drilldown.categories.length > 0 && (
-        <div>
-          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownCategories")}</Body>
-          <ul className="ct-stack-sm">
-            {drilldown.categories.map((c) => (
-              <li key={c.lifeCategory} className="ct-row-between ct-caption">
-                <span>{c.name}</span>
-                <span className="ct-stat-value ct-numeral shrink-0">{formatInr(c.amount)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {drilldown.entries.length > 0 && (
-        <div>
-          <Body className="text-xs font-semibold mb-1">{t("charts.drilldownTopEntries")}</Body>
-          <ul className="ct-stack-sm">
-            {drilldown.entries.map((e) => (
-              <li key={e.id} className="ct-row-between ct-caption gap-2">
-                <span className="truncate">
-                  {e.label}
-                  <span className="opacity-70"> · {translateTxnLifeCategory(t, e.lifeCategory)}</span>
-                </span>
-                <span className="ct-stat-value ct-numeral shrink-0">{formatInr(e.amount)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
 
 const VIEW_CHART_TYPES = {
   forecast: ["bar", "line"],
@@ -93,7 +20,6 @@ const VIEW_DEFAULT_TYPE = {
   pressure: "line",
 };
 
-const VARIABLE_SERIES = new Set(["variableLogged", "variableSpent"]);
 const SWIPE_PX = 48;
 
 function seriesHasValues(rows, keys) {
@@ -102,23 +28,17 @@ function seriesHasValues(rows, keys) {
 }
 
 function pickChartView(forecastSeries, paymentsData, pressureTrend) {
-  if (seriesHasValues(forecastSeries, ["due", "variableSpent", "free"])) return "forecast";
-  if (seriesHasValues(paymentsData, ["billsPaid", "variableLogged", "amount"])) return "payments";
+  if (seriesHasValues(forecastSeries, ["due", "free"])) return "forecast";
+  if (seriesHasValues(paymentsData, ["billsPaid", "amount"])) return "payments";
   if (pressureTrend?.length) return "pressure";
   return "forecast";
 }
 
-export default function AnalyticsChartPanel({
-  forecastSeries,
-  paymentsData,
-  pressureTrend,
-  dailySpends = [],
-}) {
+export default function AnalyticsChartPanel({ forecastSeries, paymentsData, pressureTrend }) {
   const theme = useResolvedTheme();
   const chartColors = getChartTheme(theme);
   const { t } = useTranslation();
   const [chartTypes, setChartTypes] = useState({ ...VIEW_DEFAULT_TYPE });
-  const [drillMonth, setDrillMonth] = useState(/** @type {{ monthKey: string, monthLabel: string } | null} */ (null));
   const touchStartX = useRef(0);
 
   const views = CHART_VIEWS;
@@ -137,12 +57,10 @@ export default function AnalyticsChartPanel({
     const next = views[idx];
     if (!next) return;
     setViewId(next.id);
-    setDrillMonth(null);
   };
 
   const onViewChange = (id) => {
     setViewId(id);
-    setDrillMonth(null);
   };
 
   const onTouchStart = (e) => {
@@ -156,22 +74,8 @@ export default function AnalyticsChartPanel({
     if (dx > 0 && activeIndex > 0) goToIndex(activeIndex - 1);
   };
 
-  const openVariableDrill = useCallback((row, seriesKey) => {
-    if (!row?.monthKey) return;
-    const variableAmt = Number(row.variableLogged ?? row.variableSpent) || 0;
-    if (seriesKey && !VARIABLE_SERIES.has(seriesKey)) return;
-    if (!seriesKey && variableAmt <= 0) return;
-    setDrillMonth({ monthKey: row.monthKey, monthLabel: row.month || row.name || row.monthKey });
-  }, []);
-
-  const drilldown = useMemo(
-    () => (drillMonth ? variableSpendDrilldown(dailySpends, drillMonth.monthKey) : null),
-    [drillMonth, dailySpends],
-  );
-
   const chartPayload = useMemo(() => {
     const dueColor = chartColors.series.accent;
-    const variableBarColor = chartColors.series.warning;
     const freeColor = chartColors.series.success;
     const billsColor = chartColors.series.accentSoft;
 
@@ -182,11 +86,8 @@ export default function AnalyticsChartPanel({
           xKey: "month",
           seriesKeys: [
             { key: "due", name: t("charts.recurringDue"), color: dueColor },
-            { key: "variableSpent", name: t("charts.variableLogged"), color: variableBarColor },
             { key: "free", name: t("charts.likelyFree"), color: freeColor },
           ],
-          clickableSeriesKeys: ["variableSpent"],
-          onSeriesClick: openVariableDrill,
           emptyMessage: t("charts.emptyForecast"),
         };
       case "payments": {
@@ -198,23 +99,16 @@ export default function AnalyticsChartPanel({
               month: r.month,
               monthKey: r.monthKey,
               value: r.amount,
-              variableLogged: r.variableLogged,
             })),
             xKey: "name",
             valueKey: "value",
-            onSeriesClick: (row) => openVariableDrill(row),
             emptyMessage: t("charts.emptyPayments"),
           };
         }
         return {
           data: paymentsData,
           xKey: "month",
-          seriesKeys: [
-            { key: "billsPaid", name: t("charts.billsPaid"), color: billsColor },
-            { key: "variableLogged", name: t("charts.variableLogged"), color: variableBarColor },
-          ],
-          clickableSeriesKeys: ["variableLogged"],
-          onSeriesClick: openVariableDrill,
+          seriesKeys: [{ key: "billsPaid", name: t("charts.billsPaid"), color: billsColor }],
           emptyMessage: t("charts.emptyPayments"),
         };
       }
@@ -229,10 +123,9 @@ export default function AnalyticsChartPanel({
       default:
         return { data: [], emptyMessage: "" };
     }
-  }, [activeId, chartType, forecastSeries, paymentsData, pressureTrend, chartColors, openVariableDrill, t]);
+  }, [activeId, chartType, forecastSeries, paymentsData, pressureTrend, chartColors, t]);
 
   const allowedTypes = VIEW_CHART_TYPES[activeId] || ["bar", "line", "pie", "donut"];
-  const showTapHint = activeId === "forecast" || activeId === "payments";
 
   return (
     <div className="ct-hero-card pressure ct-chart-single ct-stack relative">
@@ -260,7 +153,7 @@ export default function AnalyticsChartPanel({
         </div>
 
         <div className="ct-row-between mt-2" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
-          <Caption>{showTapHint ? t("charts.tapBarHint") : t("charts.swipeHint")}</Caption>
+          <Caption>{t("charts.swipeHint")}</Caption>
           <ChartTypeSelect value={chartType} onChange={setChartType} allowed={allowedTypes} />
         </div>
 
@@ -277,20 +170,10 @@ export default function AnalyticsChartPanel({
             xKey={chartPayload.xKey}
             valueKey={"valueKey" in chartPayload ? chartPayload.valueKey : undefined}
             seriesKeys={"seriesKeys" in chartPayload ? chartPayload.seriesKeys : undefined}
-            onSeriesClick={"onSeriesClick" in chartPayload ? chartPayload.onSeriesClick : undefined}
-            clickableSeriesKeys={"clickableSeriesKeys" in chartPayload ? chartPayload.clickableSeriesKeys : undefined}
             emptyMessage={chartPayload.emptyMessage}
             scoreChart={"scoreChart" in chartPayload ? chartPayload.scoreChart : false}
           />
         </div>
-
-        {drillMonth && (
-          <VariableSpendDrilldown
-            monthLabel={drillMonth.monthLabel}
-            drilldown={drilldown}
-            onClose={() => setDrillMonth(null)}
-          />
-        )}
       </div>
     </div>
   );

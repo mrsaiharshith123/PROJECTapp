@@ -1,7 +1,7 @@
 import { parseISO, differenceInCalendarDays } from "date-fns";
 import { buildDueHeatmap } from "./analyticsSeries.js";
 import { buildCashflowForecastSeries } from "./forecastSeries.js";
-import { analyzeGoalBalance } from "./goalBalance.js";
+import { analyzeGoalBalance } from "./goalsProgress.js";
 import { freeMoneyAfterBurden } from "./pressureScore.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { goalTypeLabel } from "./goalsProgress.js";
@@ -266,7 +266,7 @@ export function buildStabilityAheadPlan({
 }
 
 export function buildShareableStabilitySummary({
-  mode,
+  mode: _mode,
   cash,
   income,
   forecastMonths,

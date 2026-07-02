@@ -9,7 +9,6 @@ import {
   PROPERTY_PICKER_ID,
   PROPERTY_STORED_IDS,
   resolveStoredCategoryId,
-  toFormCategoryFields,
 } from "../../../constants/netWorth/assetFormCategories.js";
 import { fetchPropertyAiBundle } from "../../../services/ai/assetInsight.js";
 import { isGoldApiConfigured, shouldRefreshGoldRate } from "../../../services/market/goldPrice.js";
@@ -24,7 +23,7 @@ import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { inputClassName } from "../../index.js";
 import { LocationMapPicker } from "../../patterns/LocationMapPicker.jsx";
-import { emptyForm, entryToForm, isPhysicalCategory, MONTH_OPTIONS, resolveEntryName } from "./wealthEntryFormState.js";
+import { AREA_UNITS, entryToForm, isPhysicalCategory, MONTH_OPTIONS, resolveEntryName } from "./wealthEntryFormState.js";
 
 export default function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories, onClose, onSave }) {
   const { t } = useTranslation();
@@ -152,6 +151,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
     if (savingRef.current) return;
 
     let resolvedValue = Number(form.value);
+    /** @type {Record<string, unknown>} */
     let propertyAiPayload = {};
 
     if (isProperty && !form.valueManual) {

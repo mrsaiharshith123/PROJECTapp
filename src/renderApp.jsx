@@ -59,9 +59,13 @@ log.app.info("Perovo starting", { mode: import.meta.env.MODE });
 const app = (
   <StrictMode>
     <I18nProvider>
-      <DevPhoneFrame>
+      {import.meta.env.DEV ? (
+        <DevPhoneFrame>
+          <App />
+        </DevPhoneFrame>
+      ) : (
         <App />
-      </DevPhoneFrame>
+      )}
     </I18nProvider>
   </StrictMode>
 );

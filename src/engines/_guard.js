@@ -11,8 +11,3 @@ export function safeScore(v) {
   const n = Number.isFinite(v) ? v : 0;
   return Math.min(100, Math.max(0, n));
 }
-
-/** Array of numbers → sum, never NaN */
-export function safeSum(arr) {
-  return (arr || []).reduce((s, v) => s + safeNum(v), 0);
-}

@@ -2,7 +2,6 @@
 const ROUTE_MODULES = {
   "/": "home",
   "/ledger/bills": "commitments",
-  "/ledger/spends": "spends",
   "/money/lending": "lending",
   "/insights": "stability_reports",
   "/money/insights": "stability_reports",

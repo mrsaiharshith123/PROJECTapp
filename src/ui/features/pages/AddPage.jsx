@@ -33,7 +33,7 @@ import {
   defaultEndDateFromStart,
 } from "../../../utils/billDates.js";
 import AddCommitmentForm from "../forms/AddCommitmentForm.jsx";
-import AddTypePicker from "../add/AddTypePicker.jsx";
+import AddTypePicker from "../../patterns/AddTypePicker.jsx";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { canAddChitRecord, canAddLendingRecord } from "../../../utils/tierAccess.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -45,8 +45,7 @@ const Add = () => {
     usePerovo();
   const navigate = useNavigate();
   const [step, setStep] = useState(/** @type {"pick" | "form"} */ ("pick"));
-  const [addKind, setAddKind] = useState(/** @type {"bill" | "spend" | "lending" | null} */ (null));
-  const [entryType, setEntryType] = useState("scheduled");
+  const [addKind, setAddKind] = useState(/** @type {"bill" | "lending" | null} */ (null));
   const [lendingForm, setLendingForm] = useState({
     personName: "",
     type: "lent",
@@ -83,17 +82,15 @@ const Add = () => {
       return;
     }
     if (id === "cashflow") {
-      navigate("/ledger/spends");
+      navigate("/insights/cashflow");
       return;
     }
     if (id === "liability") {
       navigate("/ledger", { state: { tab: "liabilities", openAdd: true } });
       return;
     }
-    setAddKind(/** @type {"bill" | "spend" | "lending"} */ (id));
+    setAddKind(/** @type {"bill" | "lending"} */ (id));
     setStep("form");
-    if (id === "spend") setEntryType("variable");
-    else setEntryType("scheduled");
   };
 
   const handleChange = (e) => {
@@ -325,11 +322,9 @@ const Add = () => {
   const formTitle =
     addKind === "bill"
       ? t("add.pick.bill")
-      : addKind === "spend"
-        ? t("add.pick.spend")
-        : addKind === "lending"
-          ? t("add.pick.lending")
-          : t("add.title");
+      : addKind === "lending"
+        ? t("add.pick.lending")
+        : t("add.title");
 
   const headerAction =
     step === "pick" ? (
@@ -423,9 +418,6 @@ const Add = () => {
             </button>
           )}
           <AddCommitmentForm
-            entryType={entryType}
-            onEntryTypeChange={setEntryType}
-            onVariableSaved={() => navigate("/ledger/spends")}
             form={form}
             errors={errors}
             fieldClass={fieldClass}
@@ -445,7 +437,6 @@ const Add = () => {
             onFillEndDate={fillEndDateIfEmpty}
             onSubmit={handleSubmit}
             embedded
-            hideTypeSwitcher
           />
         </>
       )}

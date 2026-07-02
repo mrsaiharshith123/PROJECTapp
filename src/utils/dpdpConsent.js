@@ -1,7 +1,7 @@
 export const CONSENT_VERSION = 1;
 export const CONSENT_KEY = "ct_dpdp_consent_v1";
 
-/** @returns {boolean} */
+/** @returns {boolean} @deprecated Unused — consent is recorded at sign-up via recordConsent only. */
 export function hasConsent() {
   try {
     const raw = localStorage.getItem(CONSENT_KEY);
@@ -25,7 +25,7 @@ export function recordConsent(userId = "anonymous") {
   return record;
 }
 
-/** @returns {object | null} */
+/** @returns {object | null} @deprecated Unused — no UI reads the stored consent record. */
 export function getConsentRecord() {
   try {
     const raw = localStorage.getItem(CONSENT_KEY);
@@ -36,6 +36,7 @@ export function getConsentRecord() {
   }
 }
 
+/** @deprecated Unused — no revoke-consent flow in the product. */
 export function revokeConsent() {
   localStorage.removeItem(CONSENT_KEY);
 }

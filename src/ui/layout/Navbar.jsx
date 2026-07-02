@@ -7,7 +7,6 @@ import { useTranslation } from "../../i18n/I18nProvider.js";
 import { cn } from "../utils/cn.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 import { Modal } from "../primitives/Modal.jsx";
-import LogSpendModal from "../features/modals/LogSpendModal.jsx";
 import { FAB_CHANGE_EVENT } from "../../constants/fabEvents.js";
 
 const BillScannerTool = lazy(() => import("../features/tools/BillScannerTool.jsx"));
@@ -147,9 +146,7 @@ function isNavItemActive(item, location) {
     return (
       path.startsWith("/ledger") ||
       path.startsWith("/ledger/bills") ||
-      path.startsWith("/ledger/spends") ||
       path === "/money/bills" ||
-      path === "/money/spends" ||
       path === "/commitments"
     );
   }
@@ -218,18 +215,6 @@ function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {
           className="ct-fab-item"
           role="menuitem"
           onClick={() => {
-            navTo("/ledger/spends");
-            onClose();
-          }}
-        >
-          <CtIcon name="fork-knife" size={16} />
-          {t("nav.fabLogSpend")}
-        </button>
-        <button
-          type="button"
-          className="ct-fab-item"
-          role="menuitem"
-          onClick={() => {
             onRequestMoney();
             onClose();
           }}
@@ -247,11 +232,8 @@ export function Navbar() {
   const location = useLocation();
   const { settings } = usePerovo();
   const { t } = useTranslation();
-  const [logSpendOpen, setLogSpendOpen] = useState(false);
   const [scanBillOpen, setScanBillOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
-  const longPressTimerRef = useRef(/** @type {number | null} */ (null));
-  const didLongPressRef = useRef(false);
 
   const hideOnYouSubpage = location.pathname.startsWith("/you/");
   const hideOnInsightsSubpage = /^\/insights\/.+/.test(location.pathname);
@@ -260,7 +242,6 @@ export function Navbar() {
 
   const navTo = useCallback((to) => {
     setFabOpen(false);
-    setLogSpendOpen(false);
     setScanBillOpen(false);
     navigate(to);
   }, [navigate]);
@@ -280,43 +261,11 @@ export function Navbar() {
 
   if (hideOnYouSubpage || hideOnInsightsSubpage) return null;
 
-  const clearLongPressTimer = () => {
-    if (longPressTimerRef.current != null) window.clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = null;
-  };
-
-  const openLogSpend = () => {
-    didLongPressRef.current = true;
-    setFabOpen(false);
-    setLogSpendOpen(true);
-  };
-
   const toggleFab = () => setFabOpen((v) => !v);
   const closeFab = () => setFabOpen(false);
 
   const fabPointerHandlers = {
-    onPointerDown: () => {
-      didLongPressRef.current = false;
-      clearLongPressTimer();
-      longPressTimerRef.current = window.setTimeout(() => {
-        openLogSpend();
-      }, 550);
-    },
-    onPointerUp: () => clearLongPressTimer(),
-    onPointerCancel: () => clearLongPressTimer(),
-    onPointerLeave: () => clearLongPressTimer(),
-    onContextMenu: (e) => {
-      e.preventDefault();
-      clearLongPressTimer();
-      openLogSpend();
-    },
-    onClick: () => {
-      if (didLongPressRef.current) {
-        didLongPressRef.current = false;
-        return;
-      }
-      toggleFab();
-    },
+    onClick: () => toggleFab(),
   };
 
   return (
@@ -363,16 +312,6 @@ export function Navbar() {
           })}
         </div>
       </nav>
-
-      {logSpendOpen && (
-        <LogSpendModal
-          onClose={() => {
-            setLogSpendOpen(false);
-            didLongPressRef.current = false;
-            clearLongPressTimer();
-          }}
-        />
-      )}
 
       {scanBillOpen && (
         <Suspense fallback={null}>

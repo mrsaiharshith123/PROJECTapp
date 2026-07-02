@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { usePerovo } from "./PerovoContext.jsx";
-import { DATA_CHANGED_EVENT } from "../storage/events.js";
+import { DATA_CHANGED_EVENT } from "../utils/storage/events.js";
 import {
   loadWealthState,
   saveWealthState,

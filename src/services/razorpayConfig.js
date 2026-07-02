@@ -52,9 +52,6 @@ export function isRazorpayTestMode() {
  * Set VITE_SIMULATE_PAYMENTS=true to force simulation even with a key (rare).
  */
 export function isPaymentSimulationEnabled() {
-  if (import.meta.env.VITE_SIMULATE_PAYMENTS === "true" && !isRazorpayConfigured()) {
-    return true;
-  }
-  if (isRazorpayConfigured()) return false;
-  return import.meta.env.DEV || import.meta.env.VITE_SIMULATE_PAYMENTS === "true";
+  if (import.meta.env.PROD) return false;
+  return import.meta.env.VITE_SIMULATE_PAYMENTS === "true";
 }

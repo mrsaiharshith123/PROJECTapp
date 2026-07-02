@@ -3,7 +3,7 @@ import { LocationMapPicker } from "../../../patterns/LocationMapPicker.jsx";
 import { CtIcon } from "../../../icons/CtIcon.jsx";
 import Verdict from "./Verdict.jsx";
 
-export default function PropertyDetailSections({ entry, intel, formatAmount, t, tierLabel, onEditPin }) {
+export default function PropertyDetailSections({ entry: _entry, intel, formatAmount, t, tierLabel, onEditPin }) {
   const prop = intel.propertyIntel;
   const [showMap, setShowMap] = useState(false);
   if (!prop) return null;

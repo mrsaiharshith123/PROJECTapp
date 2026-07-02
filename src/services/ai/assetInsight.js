@@ -585,7 +585,7 @@ export async function fetchPropertyValueHistory(fields) {
       series,
       summary: payload.insight ? String(payload.insight) : undefined,
     };
-  } catch (e) {
+  } catch (_e) {
     return { ok: false, errorCode: "invoke_failed" };
   }
 }

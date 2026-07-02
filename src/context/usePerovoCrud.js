@@ -13,7 +13,6 @@ import { USER_MODE_IDS } from "../constants/userModes.js";
 import { canEditLending } from "../engines/lendingAgreement.js";
 import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
-import { normalizeDailySpend } from "../utils/dailySpends.js";
 import { trackEvent, EVENTS } from "../services/analytics/perovoAnalytics.js";
 
 function settingsPatchUnchanged(prev, next, patch) {
@@ -37,7 +36,6 @@ export function usePerovoCrud({
   persistLendings,
   persistSettings,
   persistGoals,
-  persistDailySpends,
   setSupplementalNotifications,
 }) {
   const settingsRef = useRef(settings);
@@ -59,7 +57,6 @@ export function usePerovoCrud({
     (raw) => {
       const now = Date.now();
       const currentSettings = settingsRef.current;
-      const currentUserId = userIdRef.current;
       const c = normalizeCommitment({
         ...raw,
         id: raw.id ?? now,
@@ -281,25 +278,6 @@ export function usePerovoCrud({
     [persistGoals]
   );
 
-  const addDailySpend = useCallback(
-    (raw) => {
-      const spend = normalizeDailySpend({
-        ...raw,
-        profileId: raw.profileId ?? settingsRef.current.activeProfileId ?? "default",
-        createdAt: Date.now(),
-      });
-      persistDailySpends((prev) => [spend, ...prev].slice(0, 500));
-    },
-    [persistDailySpends]
-  );
-
-  const deleteDailySpend = useCallback(
-    (id) => {
-      persistDailySpends((prev) => prev.filter((s) => String(s.id) !== String(id)));
-    },
-    [persistDailySpends]
-  );
-
   const pushInAppNotification = useCallback((item) => {
     const row = {
       id: item.id || `local-${Date.now()}`,
@@ -371,8 +349,6 @@ export function usePerovoCrud({
       addGoal,
       updateGoal,
       deleteGoal,
-      addDailySpend,
-      deleteDailySpend,
       pushInAppNotification,
       markNotificationRead,
       markAllNotificationsRead,
@@ -392,8 +368,6 @@ export function usePerovoCrud({
       addGoal,
       updateGoal,
       deleteGoal,
-      addDailySpend,
-      deleteDailySpend,
       pushInAppNotification,
       markNotificationRead,
       markAllNotificationsRead,

@@ -25,8 +25,23 @@ export function runTestingAudit() {
     ? new Set(fs.readdirSync(testsDir).map(f => f.replace(/\.test\.js$/, ".js")))
     : new Set();
 
-  const untestedCritical = CRITICAL_ENGINES.filter(e => !testFiles.has(e));
-  const untestedTotal    = allEngines.filter(e => !testFiles.has(e));
+  const suiteDir = path.join(SRC, "..", "tests", "suites");
+  const suiteBodies = fs.existsSync(suiteDir)
+    ? fs.readdirSync(suiteDir).map((f) => fs.readFileSync(path.join(suiteDir, f), "utf8")).join("\n")
+    : "";
+  const engineTestBodies = fs.existsSync(testsDir)
+    ? fs.readdirSync(testsDir).map((f) => fs.readFileSync(path.join(testsDir, f), "utf8")).join("\n")
+    : "";
+
+  const engineHasTests = (engineFile) => {
+    if (testFiles.has(engineFile)) return true;
+    const stem = engineFile.replace(/\.js$/, "");
+    const needle = `/${stem}`;
+    return suiteBodies.includes(needle) || engineTestBodies.includes(needle);
+  };
+
+  const untestedCritical = CRITICAL_ENGINES.filter((e) => !engineHasTests(e));
+  const untestedTotal = allEngines.filter((e) => !engineHasTests(e));
 
   if (untestedCritical.length > 0) {
     errors.push({

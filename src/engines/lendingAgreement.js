@@ -256,14 +256,6 @@ export function decodeOfferPayload(encoded) {
   }
 }
 
-export function buildOfferShareUrl(offer, origin = "") {
-  const base = origin || (typeof window !== "undefined" ? window.location.origin : "");
-  const path = `${import.meta.env.BASE_URL || "/"}lend/offer`.replace(/\/{2,}/g, "/");
-  const url = new URL(path, base);
-  url.searchParams.set("d", encodeOfferPayload(offer));
-  return url.toString();
-}
-
 /** Both parties signed and record is locked — terms cannot be changed until settled or mutual cancel. */
 export function isAgreementFullyLocked(lending) {
   if (!lending) return false;

@@ -17,7 +17,6 @@ function resolveViteBase(raw) {
 
 const basePath = resolveViteBase(process.env.VITE_BASE_PATH);
 const embeddedApp = process.env.VITE_EMBEDDED_APP === "1";
-const updateTestShell = process.env.VITE_UPDATE_TEST_SHELL === "1";
 const appVersion = process.env.VITE_APP_VERSION || pkg.version || "0.0.0";
 let appBuiltAt = "";
 try {
@@ -28,10 +27,8 @@ try {
   /* dev without generated manifest */
 }
 
-const capgoNotifyEnabled = embeddedApp || updateTestShell;
-const capgoNotifyEntry = updateTestShell
-  ? path.resolve(process.cwd(), "src/capgo-notify-update-test-only.js")
-  : path.resolve(process.cwd(), "src/capgo-notify-only.js");
+const capgoNotifyEnabled = embeddedApp;
+const capgoNotifyEntry = path.resolve(process.cwd(), "src/capgo-notify-only.js");
 
 function capgoAssetPath(fileName) {
   if (basePath === "./") return `./${fileName}`;
@@ -62,9 +59,6 @@ function capgoNotifyFirstPlugin() {
 }
 
 function resolveBuildInput() {
-  if (updateTestShell) {
-    return path.resolve(process.cwd(), "update-test.html");
-  }
   const mainHtml = path.resolve(process.cwd(), "index.html");
   if (!capgoNotifyEnabled) return mainHtml;
   return {
@@ -84,22 +78,22 @@ export default defineConfig({
   resolve: {
     dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
   },
-  publicDir: updateTestShell ? false : "public",
+  publicDir: "public",
   define: {
     "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
     "import.meta.env.VITE_APP_BUILT_AT": JSON.stringify(appBuiltAt),
-    "import.meta.env.VITE_UPDATE_TEST_SHELL": JSON.stringify(updateTestShell ? "1" : ""),
   },
   server: {
     host: true,
     port: 5173,
   },
+  optimizeDeps: {
+    include: ["react-is", "recharts"],
+  },
   build: {
     rollupOptions: {
       input: resolveBuildInput(),
-      output: updateTestShell
-        ? { entryFileNames: "assets/[name]-[hash].js" }
-        : {
+      output: {
             entryFileNames: "assets/[name]-[hash].js",
             manualChunks(id) {
               const norm = id.replace(/\\/g, "/");

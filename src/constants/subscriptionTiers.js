@@ -19,7 +19,6 @@ export const PRO_FEATURES = new Set([
   "subscription_leak",
   "lifestyle_inflation",
   "unlimited_goals",
-  "unlimited_daily_spend",
   "unlimited_bill_split",
   "unlimited_chits",
   "sip_advisor",

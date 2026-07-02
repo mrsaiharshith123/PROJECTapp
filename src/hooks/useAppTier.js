@@ -6,7 +6,6 @@ import {
   canAddLendingRecord,
   canAddChitRecord,
   canAddGoal,
-  canAddDailySpend,
   canRunBillSplit,
   cashflowDaysForTier,
   aheadForecastMonthsForTier,
@@ -29,8 +28,6 @@ export function useAppTier() {
       canAddChit: (commitments, getEffectiveStatus) =>
         canAddChitRecord(settings, commitments, getEffectiveStatus, effectiveSubscriptionTier),
       canAddGoal: (goals) => canAddGoal(settings, goals, effectiveSubscriptionTier),
-      canAddDailySpend: (dailySpends, todayStr) =>
-        canAddDailySpend(settings, dailySpends, todayStr, effectiveSubscriptionTier),
       canRunBillSplit: (todayStr, participantCount) =>
         canRunBillSplit(settings, todayStr, participantCount, effectiveSubscriptionTier),
       cashflowDays: () => cashflowDaysForTier(settings, effectiveSubscriptionTier),

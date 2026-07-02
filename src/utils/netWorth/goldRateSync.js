@@ -1,4 +1,4 @@
-import { emitLocalDataChanged } from "../../storage/events.js";
+import { emitLocalDataChanged } from "../storage/events.js";
 import { computeGoldAutoValue, shouldSuggestGoldSync } from "./physicalAssetHelpers.js";
 import { loadWealthState, saveWealthState } from "./wealthStorage.js";
 

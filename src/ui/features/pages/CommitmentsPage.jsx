@@ -3,15 +3,17 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import CommitmentEditModal from "../../features/modals/CommitmentEditModal.jsx";
 import BillDetailModal from "../../features/modals/BillDetailModal.jsx";
 import SmsDetectModal from "../../features/modals/SmsDetectModal.jsx";
+import BankStatementImportModal from "../../features/modals/BankStatementImportModal.jsx";
 import CommitmentsBillsTab from "../../features/commitments/CommitmentsBillsTab.jsx";
 import CommitmentsPaymentModal from "../../features/commitments/CommitmentsPaymentModal.jsx";
-import PaymentDeadlineCalendarModal from "../../features/dashboard/PaymentDeadlineCalendarModal.jsx";
+import PaymentDeadlineCalendarModal from "../../features/home/PaymentDeadlineCalendarModal.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { Button } from "../../primitives/Button.jsx";
 import { useCommitmentsBillData } from "../../features/commitments/useCommitmentsBillData.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
+import { tierHasFeature } from "../../../utils/tierAccess.js";
 import { todayYmd } from "../../../utils/dates.js";
 import {
   isCurrentCyclePaid,
@@ -37,8 +39,8 @@ const Commitments = () => {
     removeCommitmentPayment,
     deleteCommitment,
     updateCommitment,
-    dailySpends,
     todayStr,
+    settings,
   } = usePerovo();
 
   const [search, setSearch] = useState("");
@@ -55,18 +57,10 @@ const Commitments = () => {
   const [paymentFor, setPaymentFor] = useState(null);
   const [payDate, setPayDate] = useState(() => todayYmd());
   const [smsOpen, setSmsOpen] = useState(false);
+  const [bankImportOpen, setBankImportOpen] = useState(false);
   const [celebration, setCelebration] = useState(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const billIdHandledRef = useRef(false);
-
-  const spendRedirectRef = useRef(false);
-  useEffect(() => {
-    if (spendRedirectRef.current) return;
-    if (searchParams.get("tab") !== "spend") return;
-    spendRedirectRef.current = true;
-    navigate("/ledger/spends", { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (billIdHandledRef.current) return;
@@ -153,12 +147,19 @@ const Commitments = () => {
           <CtIcon name="device-mobile" size={16} />
           {t("bills.detectSms")}
         </Button>
+        {tierHasFeature("bank_import", settings) ? (
+          <Button type="button" size="sm" variant="secondary" onClick={() => setBankImportOpen(true)}>
+            <CtIcon name="file-arrow-up" size={16} />
+            {t("bills.importBankStatement")}
+          </Button>
+        ) : null}
         <Button type="button" size="sm" onClick={() => navigate("/add")}>
           {t("bills.actionAddBill")}
         </Button>
       </div>
 
       <SmsDetectModal open={smsOpen} onClose={() => setSmsOpen(false)} />
+      {bankImportOpen ? <BankStatementImportModal onClose={() => setBankImportOpen(false)} /> : null}
       <PaymentDeadlineCalendarModal
         key={calendarOpen ? `cal-${todayStr}` : "closed"}
         open={calendarOpen}
@@ -187,7 +188,6 @@ const Commitments = () => {
         onOpenPayment={openPayment}
         onEdit={setEditing}
         onDelete={deleteCommitment}
-        dailySpends={dailySpends}
         onAddCommitment={() => navigate("/add")}
         getEffectiveStatus={getEffectiveStatus}
       />

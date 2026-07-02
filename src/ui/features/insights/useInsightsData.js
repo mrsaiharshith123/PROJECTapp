@@ -5,16 +5,12 @@ import { buildCashflowForecastSeries, MONEY_OUTLOOK_WINDOW } from "../../../engi
 import { analyzeCreditCardPressure } from "../../../engines/stabilityPlan.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
-import {
-  buildPaymentsOutlookSeries,
-  attachVariableSpendToForecast,
-} from "../../../utils/analyticsSpendSeries.js";
+import { buildPaymentsOutlookSeries } from "../../../utils/monthPaymentSummary.js";
 import { computeSalaryBreakdown } from "../../../engines/salaryBreakdown.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import {
   getAnalyticsCopy,
   getIncomeLabelKey,
-  resolveAnalyticsProfileScope,
 } from "../../../constants/modeExperience.js";
 
 /** Shared analytics payload for Insights hub and breakdown sub-pages. */
@@ -23,7 +19,6 @@ export function useInsightsData() {
   const {
     commitments,
     lendings,
-    dailySpends,
     settings,
     getEffectiveStatus,
     getEffectiveLendingStatus,
@@ -34,34 +29,21 @@ export function useInsightsData() {
   const pressureTrend = useMemo(() => snapshotsToPressureTrend(monthlySnapshots, 7), [monthlySnapshots]);
 
   const paymentsData = useMemo(
-    () => buildPaymentsOutlookSeries(commitments, dailySpends, MONEY_OUTLOOK_WINDOW),
-    [commitments, dailySpends],
+    () => buildPaymentsOutlookSeries(commitments, MONEY_OUTLOOK_WINDOW),
+    [commitments],
   );
 
   const analyticsCopy = getAnalyticsCopy(settings);
   const incomeLabel = t(getIncomeLabelKey(settings));
   const income = combinedMonthlyIncome(settings);
-  const profileScope = resolveAnalyticsProfileScope(settings);
   const today = todayStr || todayYmd();
 
   const paycheckFlow = useMemo(
     () =>
       analyticsCopy.showPaycheckFlow
-        ? computeSalaryBreakdown(commitments, income, getEffectiveStatus, {
-            dailySpends,
-            todayStr: today,
-            profileId: profileScope,
-          })
+        ? computeSalaryBreakdown(commitments, income, getEffectiveStatus)
         : null,
-    [
-      analyticsCopy.showPaycheckFlow,
-      commitments,
-      dailySpends,
-      income,
-      getEffectiveStatus,
-      today,
-      profileScope,
-    ],
+    [analyticsCopy.showPaycheckFlow, commitments, income, getEffectiveStatus],
   );
 
   const cardPressureAnalytics = useMemo(
@@ -70,7 +52,7 @@ export function useInsightsData() {
   );
 
   const forecastSeries = useMemo(() => {
-    const rows = buildCashflowForecastSeries(
+    return buildCashflowForecastSeries(
       commitments,
       income,
       getEffectiveStatus,
@@ -82,14 +64,12 @@ export function useInsightsData() {
         getEffectiveLendingStatus,
       },
     );
-    return attachVariableSpendToForecast(rows, dailySpends);
-  }, [commitments, income, getEffectiveStatus, today, lendings, getEffectiveLendingStatus, dailySpends]);
+  }, [commitments, income, getEffectiveStatus, today, lendings, getEffectiveLendingStatus]);
 
   return {
     forecastSeries,
     paymentsData,
     pressureTrend,
-    dailySpends,
     commitments,
     paycheckFlow,
     incomeLabel,

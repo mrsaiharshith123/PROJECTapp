@@ -5,10 +5,9 @@ import {
   recurringToCommitmentDrafts,
 } from "../../../engines/bankStatementParser.js";
 import { extractTextFromPdfFile } from "../../../utils/bankPdfExtract.js";
-import { bankRowsToDailySpendDrafts, filterDuplicateSpends } from "../../../utils/statementImport.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { Modal, Stack, Button, Caption, Body } from "../../index.js";
+import { Modal, Stack, Button, Caption } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { formatInr } from "../../../constants/symbols.js";
@@ -17,10 +16,9 @@ const fieldClass = `${inputClassName()} ct-input-tint`;
 
 export default function BankStatementImportModal({ onClose }) {
   const { t } = useTranslation();
-  const { addDailySpend, addCommitment, allDailySpends, settings } = usePerovo();
+  const { addCommitment } = usePerovo();
   const [status, setStatus] = useState("");
   const [preview, setPreview] = useState(null);
-  const [importing, setImporting] = useState(false);
 
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -34,20 +32,13 @@ export default function BankStatementImportModal({ onClose }) {
         text = await file.text();
       }
       const parsed = parseBankStatementText(text, { filename: file.name });
-      const { drafts } = bankRowsToDailySpendDrafts(parsed.rows, settings.activeProfileId || "default");
-      const filtered = filterDuplicateSpends(drafts, allDailySpends);
       const recurring = detectRecurringFromStatement(parsed.rows);
       const billDrafts = recurringToCommitmentDrafts(recurring);
       setPreview({
         bank: parsed.bank,
-        bankDetected: parsed.bankDetected || parsed.bank,
         confidence: parsed.confidence || "medium",
         rowCount: parsed.rowCount ?? parsed.rows.length,
         warnings: parsed.warnings,
-        total: parsed.rows.length,
-        toImport: filtered.length,
-        skippedDup: drafts.length - filtered.length,
-        drafts: filtered,
         recurring,
         billDrafts,
       });
@@ -59,16 +50,6 @@ export default function BankStatementImportModal({ onClose }) {
     e.target.value = "";
   };
 
-  const runImport = async () => {
-    if (!preview?.drafts?.length) return;
-    setImporting(true);
-    for (const d of preview.drafts) {
-      addDailySpend(d);
-    }
-    setImporting(false);
-    onClose();
-  };
-
   const addRecurringBills = () => {
     if (!preview?.billDrafts?.length) return;
     for (const d of preview.billDrafts) {
@@ -76,9 +57,6 @@ export default function BankStatementImportModal({ onClose }) {
     }
     onClose();
   };
-
-  const skippedText =
-    preview?.skippedDup > 0 ? t("bills.import.skippedDup", { count: preview.skippedDup }) : "";
 
   return (
     <Modal title={t("bills.importBankStatement")} onClose={onClose}>
@@ -97,15 +75,7 @@ export default function BankStatementImportModal({ onClose }) {
           <div className="ct-hero-card wealth ct-stack-sm">
             <div className="ct-hero-glow teal" aria-hidden />
             <p className="ct-hero-label relative">{t("bills.importBankStatement")}</p>
-            <p className="ct-hero-number ct-numeral relative">{preview.toImport}</p>
-            <Body className="!text-sm relative">
-              {t("bills.import.summary", {
-                total: preview.total,
-                bank: preview.bank,
-                toImport: preview.toImport,
-                skipped: skippedText,
-              })}
-            </Body>
+            <p className="ct-hero-number ct-numeral relative">{preview.billDrafts?.length || 0}</p>
             {preview.confidence ? (
               <Caption className="block relative">
                 {preview.confidence === "high"
@@ -145,10 +115,7 @@ export default function BankStatementImportModal({ onClose }) {
           <Button type="button" variant="outline" onClick={onClose}>
             {t("common.cancel")}
           </Button>
-          <Button type="button" disabled={!preview?.toImport || importing} onClick={runImport}>
-            {t("bills.import.importSpends", { count: preview?.toImport || 0 })}
-          </Button>
-          <Button type="button" variant="outline" disabled={!preview?.billDrafts?.length} onClick={addRecurringBills}>
+          <Button type="button" disabled={!preview?.billDrafts?.length} onClick={addRecurringBills}>
             {t("bills.import.addRecurring", { count: preview?.billDrafts?.length || 0 })}
           </Button>
         </div>

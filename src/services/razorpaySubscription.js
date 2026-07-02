@@ -198,7 +198,7 @@ export async function startSubscriptionCheckout({
   userId,
   settings,
   user,
-  updateSettings,
+  updateSettings: _updateSettings,
   refreshSubscriptionTier,
   onSuccess,
   onDismiss,

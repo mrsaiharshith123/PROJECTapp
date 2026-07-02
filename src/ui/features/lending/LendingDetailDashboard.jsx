@@ -121,7 +121,7 @@ export default function LendingDetailDashboard({
     });
     setEsignLoading(false);
     if (result.error) {
-      setEsignError(result.error);
+      setEsignError(String(result.error));
       return;
     }
     updateLending(lending.id, {
@@ -129,8 +129,8 @@ export default function LendingDetailDashboard({
       esignDocumentId: result.documentId,
       esignProvider: "leegality",
     });
-    if (result.signingUrl) window.open(result.signingUrl, "_blank", "noopener,noreferrer");
-    setEsignUrl(result.signingUrl || "");
+    if (result.signingUrl) window.open(String(result.signingUrl), "_blank", "noopener,noreferrer");
+    setEsignUrl(result.signingUrl ? String(result.signingUrl) : "");
   };
 
   const handleCheckEsign = async () => {

@@ -48,7 +48,7 @@ interface RazorpayConstructor {
 interface Window {
   Razorpay?: RazorpayConstructor;
   __PEROVO_EMBEDDED__?: boolean;
-  Capacitor?: { isNativePlatform?: () => boolean };
+  Capacitor?: { isNativePlatform?: () => boolean; getPlatform?: () => string };
   __perovoDev?: {
     simulatePayment?: (tier: "pro" | "power") => Promise<{ paymentId: string; tier: "pro" | "power" }>;
     resetSubscription?: () => { tier: "free" };

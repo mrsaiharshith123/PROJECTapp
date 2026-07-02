@@ -2,7 +2,6 @@
 export const FREE_TIER_LIMITS = {
   activeLendingRecords: 5,
   activeChitRecords: 2,
-  dailySpendsPerMonth: 50,
   activeGoals: 3,
   billSplitsPerMonth: 5,
   billSplitParticipants: 3,

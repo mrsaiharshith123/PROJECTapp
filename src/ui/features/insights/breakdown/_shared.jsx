@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- shared breakdown helpers */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { wealthCategoryLabel as wealthCategoryLabelUtil } from "../../../../utils/netWorth/wealthCategoryLabel.js";

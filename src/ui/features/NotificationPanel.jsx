@@ -153,5 +153,3 @@ export function NotificationPanel({ onClose }) {
     document.body,
   );
 }
-
-export default NotificationPanel;

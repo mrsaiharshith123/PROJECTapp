@@ -136,7 +136,7 @@ function findUnreachableUi(reachable) {
 }
 
 function findOrphanToolHandlers() {
-  const dashPath = path.join(UI, "features/dashboard/DashboardTools.jsx");
+  const dashPath = path.join(UI, "features/home/DashboardTools.jsx");
   if (!fs.existsSync(dashPath)) return [];
   const code = fs.readFileSync(dashPath, "utf8");
   const handlers = new Set([...code.matchAll(TOOL_HANDLER_RE)].map((m) => m[1]));

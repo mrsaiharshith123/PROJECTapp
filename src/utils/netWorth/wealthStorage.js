@@ -1,5 +1,5 @@
-import { emitLocalDataChanged } from "../../storage/events.js";
-import { STORAGE_KEYS } from "../../storage/keys.js";
+import { emitLocalDataChanged } from "../storage/events.js";
+import { STORAGE_KEYS } from "../storage/keys.js";
 import { getAssetCategory, getLiabilityCategory } from "../../constants/netWorth/wealthCategories.js";
 
 export const WEALTH_SCHEMA_VERSION = 1;
@@ -18,6 +18,7 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {boolean} [hidden]
  * @property {string} [currency]
  * @property {number} [interestRate]
+ * @property {string} [maturityDate]
  * @property {number} [emi]
  * @property {string} [profileId]
  * @property {string} [commitmentId] bill-derived rows link back to commitments

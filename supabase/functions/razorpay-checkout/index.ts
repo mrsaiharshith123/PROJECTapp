@@ -68,9 +68,15 @@ Deno.serve(async (req) => {
     const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID");
     const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
 
-    const webhookSecret = Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
     const webhookSig = req.headers.get("X-Razorpay-Signature");
-    if (webhookSig && webhookSecret && supabaseUrl && serviceRoleKey && razorpayKeyId && razorpayKeySecret) {
+    if (webhookSig) {
+      const webhookSecret = Deno.env.get("RAZORPAY_WEBHOOK_SECRET");
+      if (!webhookSecret) {
+        return json({ error: "webhook_not_configured" }, 500);
+      }
+      if (!supabaseUrl || !serviceRoleKey || !razorpayKeyId || !razorpayKeySecret) {
+        return json({ error: "server_misconfigured" }, 500);
+      }
       const raw = await req.text();
       const expected = await hmacSha256Hex(webhookSecret, raw);
       if (expected !== webhookSig) {
@@ -111,8 +117,9 @@ Deno.serve(async (req) => {
                 });
               }
             }
-          } catch {
-            /* webhook processing best-effort */
+          } catch (webhookErr) {
+            console.error("webhook processing failed:", webhookErr);
+            return json({ error: "webhook_processing_failed" }, 500);
           }
         }
       }

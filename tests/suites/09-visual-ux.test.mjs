@@ -43,7 +43,7 @@ describe("🧭 NAVIGATION: tab count and structure", () => {
 
 describe("🔁 DUPLICATE DATA: same number shown twice", () => {
   it("[P1] BillsHeroSummary returns null when there is only 1 bill", () => {
-    const content = src("src/ui/features/money/BillsHeroSummary.jsx");
+    const content = src("src/ui/features/commitments/BillsHeroSummary.jsx");
     const hasGuard =
       content.includes("length <= 1") ||
       content.includes("length < 2") ||
@@ -52,7 +52,7 @@ describe("🔁 DUPLICATE DATA: same number shown twice", () => {
   });
 
   it("[P2] BillsHeroSummary label says 'across N bills' not just the amount", () => {
-    const content = src("src/ui/features/money/BillsHeroSummary.jsx");
+    const content = src("src/ui/features/commitments/BillsHeroSummary.jsx");
     const hasContext = content.includes("bills") || content.includes("count");
     expect(hasContext).toBe(true);
   });

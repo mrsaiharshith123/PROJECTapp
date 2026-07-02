@@ -58,8 +58,8 @@ function runEslint() {
   try {
     const parsed = JSON.parse(r.stdout || "[]");
     results = Array.isArray(parsed) ? parsed : [];
-  } catch {
-    addWarning("eslint", "Could not parse ESLint JSON — run `npm run lint` manually");
+  } catch (e) {
+    addError("eslint", "ESLint failed to run — fix lint setup before deploying", String(e));
     return;
   }
 

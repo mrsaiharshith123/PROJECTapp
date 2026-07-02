@@ -135,5 +135,3 @@ export function SettingsGroupToggleRow({
     </label>
   );
 }
-
-export default SettingsGroup;

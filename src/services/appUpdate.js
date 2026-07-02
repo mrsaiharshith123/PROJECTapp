@@ -28,10 +28,10 @@ const LOCAL_BUILT_AT = import.meta.env.VITE_APP_BUILT_AT || "";
 const SW_WAIT_MS = 12000;
 
 /**
- * @typedef {"checking"|"downloading"|"restarting"|"current"|"available"|"unknown"} UpdatePhase
+ * @typedef {"checking"|"downloading"|"restarting"|"current"|"available"|"unknown"|"apk_ready"|"apk_pending"} UpdatePhase
  * @typedef {{ phase?: UpdatePhase | string, percent?: number, bytesLoaded?: number, bytesTotal?: number }} UpdateProgress
  * @typedef {{ version?: string, builtAt?: string, appUrl?: string, bundleUrl?: string, bundleSize?: number, apkUrl?: string, apkSize?: number, releaseNotes?: string }} UpdateManifest
- * @typedef {{ status: "current" | "available" | "unknown", updateKind?: "apk" | "ota", localVersion: string, localNativeVersion?: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number, apkUrl?: string }} UpdateCheckResult
+ * @typedef {{ status: "current" | "available" | "unknown" | "apk_ready" | "apk_pending", updateKind?: "apk" | "ota", localVersion: string, localNativeVersion?: string, remoteVersion?: string, builtAt?: string, releaseNotes?: string, bundleUrl?: string, bundleSize?: number, apkUrl?: string, apkInstallPending?: boolean, apkDownloaded?: boolean, needsApk?: boolean, needsOta?: boolean }} UpdateCheckResult
  */
 
 /**
@@ -108,7 +108,7 @@ export async function checkForAppUpdate() {
     bundleUrl: remote.bundleUrl,
     bundleSize: remote.bundleSize,
     apkUrl: remote.apkUrl,
-    updateKind: otaNeeded ? "ota" : apkNeeded && !apkWaiting ? "apk" : undefined,
+    updateKind: otaNeeded ? /** @type {"ota"} */ ("ota") : apkNeeded && !apkWaiting ? /** @type {"apk"} */ ("apk") : undefined,
     apkInstallPending: apkWaiting,
     apkDownloaded,
     needsApk: apkNeeded && !apkWaiting,

@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { routerBasename } from "./utils/basePath.js";
-import { isUpdateTestShell } from "./utils/updateTestShell.js";
 import { PerovoProvider, usePerovo } from "./context/PerovoContext.jsx";
 import { IntelProvider } from "./app/IntelProvider.jsx";
 import { NetWorthProvider } from "./context/NetWorthContext.jsx";
@@ -10,9 +9,7 @@ import { useAuth } from "./context/AuthContext.jsx";
 import { Navbar, Screen, MainContent, RouteFallback } from "./ui";
 import { PerovoLocaleSync } from "./i18n/index.js";
 import ErrorBoundary, { RouteErrorBoundary } from "./ui/layout/ErrorBoundary.jsx";
-import PrivacyPage from "./ui/features/pages/PrivacyPage.jsx";
 import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
-import UpdateTestShellApp from "./app/UpdateTestShellApp.jsx";
 import AuthGatePage from "./ui/features/auth/AuthGatePage.jsx";
 import ScrollToTop from "./app/ScrollToTop.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
@@ -35,6 +32,7 @@ import {
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
 import { AdminFloatingButton } from "./ui/admin/AdminFloatingButton.jsx";
 import { ADMIN_UI_ENABLED } from "./constants/featureFlags.js";
+import { STORAGE_KEYS } from "./utils/storage/keys.js";
 
 /** Eager — bottom nav pages load instantly with no Suspense stall on tap */
 import Home from "./ui/features/pages/HomePage.jsx";
@@ -45,16 +43,10 @@ import Profile from "./ui/features/pages/YouPage.jsx";
 import LedgerRootLayout from "./ui/features/pages/LedgerRootLayout.jsx";
 import LedgerOpsShell from "./ui/features/pages/MoneyShellPage.jsx";
 import Commitments from "./ui/features/pages/CommitmentsPage.jsx";
-import Spends from "./ui/features/pages/SpendsPage.jsx";
 
 const LendingOfferReview = lazy(() => import("./ui/features/pages/LendingOfferReviewPage.jsx"));
 const ScoreDetail = lazy(() => import("./ui/features/pages/ScoreDetailPage.jsx"));
 const Analytics = lazy(() => import("./ui/features/pages/AnalyticsPage.jsx"));
-const InsightsSpendingBreakdown = lazy(() =>
-  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
-    default: m.InsightsSpendingBreakdownPage,
-  })),
-);
 const InsightsYearlyBreakdown = lazy(() =>
   import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
     default: m.InsightsYearlyBreakdownPage,
@@ -138,19 +130,13 @@ function AppRoutes() {
           <Route index element={<Ledger />} />
           <Route element={<LedgerOpsShell />}>
             <Route path="bills" element={<Commitments />} />
-            <Route path="spends" element={<Spends />} />
           </Route>
         </Route>
         <Route path="/agreements" element={<LazyRoute name="Agreements"><Agreements /></LazyRoute>} />
         <Route path="/add" element={<Add />} />
         <Route path="/you" element={<Profile />} />
-        <Route path="/money" element={<Navigate to="/ledger/bills" replace />} />
-        <Route path="/money/bills" element={<Navigate to="/ledger/bills" replace />} />
-        <Route path="/money/spends" element={<Navigate to="/ledger/spends" replace />} />
-        <Route path="/money/lending" element={<Navigate to="/agreements" replace />} />
         <Route path="/insights" element={<LazyRoute name="Insights"><Analytics /></LazyRoute>} />
         <Route path="/insights/score" element={<LazyRoute name="Score"><ScoreDetail /></LazyRoute>} />
-        <Route path="/insights/spending" element={<LazyRoute name="Spending"><InsightsSpendingBreakdown /></LazyRoute>} />
         <Route path="/insights/spending/yearly" element={<LazyRoute name="Yearly spending"><InsightsYearlyBreakdown /></LazyRoute>} />
         <Route path="/insights/networth" element={<LazyRoute name="Net worth"><InsightsNetWorthBreakdown /></LazyRoute>} />
         <Route path="/insights/assets" element={<LazyRoute name="Assets"><InsightsAssetsBreakdown /></LazyRoute>} />
@@ -160,18 +146,6 @@ function AppRoutes() {
         <Route path="/insights/cashflow" element={<LazyRoute name="Cashflow"><InsightsCashflowBreakdown /></LazyRoute>} />
         <Route path="/insights/pulse" element={<LazyRoute name="Pulse"><InsightsPulseBreakdown /></LazyRoute>} />
         <Route path="/money/insights" element={<LegacyInsightsRedirect />} />
-        <Route path="/money/wealth" element={<Navigate to="/insights/networth" replace />} />
-        <Route path="/commitments" element={<Navigate to="/ledger/bills" replace />} />
-        <Route path="/lending" element={<Navigate to="/agreements" replace />} />
-        <Route path="/analytics" element={<Navigate to="/insights" replace />} />
-        <Route path="/plan" element={<Navigate to="/you/tools" replace />} />
-        <Route path="/tools" element={<Navigate to="/you/tools" replace />} />
-        <Route path="/paycheck" element={<Navigate to="/insights?card=paycheck" replace />} />
-        <Route path="/profile/analytics" element={<Navigate to="/insights/networth" replace />} />
-        <Route path="/net-worth" element={<Navigate to="/ledger" replace />} />
-        <Route path="/profile" element={<Navigate to="/you" replace />} />
-        <Route path="/profile/scores" element={<Navigate to="/insights/score" replace />} />
-        <Route path="/score-detail" element={<Navigate to="/insights/score" replace />} />
         <Route path="/you/personal" element={<LazyRoute name="Personal"><YouPersonalPage /></LazyRoute>} />
         <Route path="/you/account" element={<LazyRoute name="Account"><YouAccountPage /></LazyRoute>} />
         <Route path="/you/money" element={<LazyRoute name="Money"><YouMoneyPage /></LazyRoute>} />
@@ -213,7 +187,7 @@ function OnboardingShell() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/privacy" element={<LazyRoute name="Privacy"><Privacy /></LazyRoute>} />
           <Route path="*" element={<Navigate to="/onboarding" replace />} />
         </Routes>
       </Suspense>
@@ -252,7 +226,7 @@ function AppShell() {
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id || authSeededRef.current) return;
-    const key = `perovo_auth_seeded_${user.id}`;
+    const key = STORAGE_KEYS.authSeeded(user.id);
     if (localStorage.getItem(key) === "1") {
       authSeededRef.current = true;
       return;
@@ -277,7 +251,7 @@ function AppShell() {
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id || !setupComplete) return;
-    const key = `perovo_profile_seeded_${user.id}`;
+    const key = STORAGE_KEYS.profileSeeded(user.id);
     if (localStorage.getItem(key) === "1") return;
     if (profile?.monthly_income != null || profile?.user_mode || profile?.onboarding_complete === true) {
       localStorage.setItem(key, "1");
@@ -318,8 +292,6 @@ function AppShell() {
 }
 
 function App() {
-  if (isUpdateTestShell()) return <UpdateTestShellApp />;
-
   return (
     <BrowserRouter basename={routerBasename()} useTransitions={false}>
       <AuthProvider>

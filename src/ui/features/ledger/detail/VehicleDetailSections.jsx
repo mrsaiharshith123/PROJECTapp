@@ -1,6 +1,6 @@
 import Verdict from "./Verdict.jsx";
 
-export default function VehicleDetailSections({ entry, intel, formatAmount, t }) {
+export default function VehicleDetailSections({ entry: _entry, intel, formatAmount, t }) {
   if (!intel.isVehicle || intel.vehicleEstimate == null) return null;
   return (
     <>

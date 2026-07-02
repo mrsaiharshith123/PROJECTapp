@@ -1,5 +1,5 @@
-import { buildAppSnapshot } from "../../storage/appSnapshot.js";
-import { localStateHasUserData, snapshotDataCounts, snapshotHasUserData } from "../../storage/snapshotData.js";
+import { buildAppSnapshot } from "../../utils/storage/appSnapshot.js";
+import { localStateHasUserData, snapshotDataCounts, snapshotHasUserData } from "../../utils/storage/snapshotData.js";
 import { getSupabaseClient } from "../supabase/auth.js";
 import { hasPaidBackupTier } from "../../constants/subscriptionTiers.js";
 import { log } from "../../utils/logger.js";
@@ -174,13 +174,11 @@ export async function pullRemoteSnapshotToLocal(ctx) {
       localCounts.bills +
       localCounts.lending +
       localCounts.goals +
-      localCounts.spends +
       localCounts.wealth;
     const remoteTotal =
       remoteCounts.bills +
       remoteCounts.lending +
       remoteCounts.goals +
-      remoteCounts.spends +
       remoteCounts.wealth;
     if (localTotal > remoteTotal) {
       return { ok: false, reason: "local-richer" };

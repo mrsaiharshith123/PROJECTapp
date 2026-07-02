@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -228,9 +229,9 @@ export default function WealthEntryDetailPage() {
         : "wealthDetail.market.intro.generic";
 
   const tierLabel =
-    prop?.tier === "metro"
+    intel?.propertyIntel?.tier === "metro"
       ? t("wealthDetail.property.tierMetro")
-      : prop?.tier === "tier2"
+      : intel?.propertyIntel?.tier === "tier2"
         ? t("wealthDetail.property.tier2")
         : t("wealthDetail.property.tier3");
 
@@ -252,7 +253,7 @@ export default function WealthEntryDetailPage() {
       {isAutoEstimated ? (
         <div className="ed-est-banner">
           <span className="ed-est-banner-icon" aria-hidden="true">
-            ⚠
+            <CtIcon name="warning" size={14} aria-hidden="true" />
           </span>
           <div className="ed-est-banner-body">
             <div className="ed-est-banner-title">{t("wealthDetail.estimated.bannerTitle")}</div>

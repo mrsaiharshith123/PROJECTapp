@@ -1,22 +1,16 @@
-import { Card, InfoTip, Button, PageShell } from "../../index.js";
+import { Card, Button, PageShell } from "../../index.js";
 import { Caption } from "../../primitives/Text.jsx";
-import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import ChitFundFields from "./ChitFundFields.jsx";
 import InsuranceFields from "./InsuranceFields.jsx";
-import AddVariableSpendInline from "./AddVariableSpendInline.jsx";
 import { OTHER_PRIORITY_OPTIONS } from "../../../constants/priority.js";
 import { PROFILE_SETTINGS_HINT } from "../../../constants/plainLanguage.js";
 import { affordabilityTierTone } from "../../../engines/affordability.js";
 import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { REPEAT_OPTIONS } from "../../../constants/repeatTypes.js";
-import { CALC_HELP } from "../../../constants/calculationHelp.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useCopy } from "../../../i18n/useCopy.js";
 
 export default function AddCommitmentForm({
-  entryType,
-  onEntryTypeChange,
-  onVariableSaved,
   form,
   errors,
   fieldClass,
@@ -36,7 +30,6 @@ export default function AddCommitmentForm({
   onFillEndDate,
   onSubmit,
   embedded = false,
-  hideTypeSwitcher = false,
 }) {
   const { t } = useTranslation();
   const copy = useCopy();
@@ -44,21 +37,6 @@ export default function AddCommitmentForm({
   const formBody = (
     <>
     <Card className="ct-stack-lg">
-        {!hideTypeSwitcher && (
-        <SegmentedControl
-          options={[
-            { id: "scheduled", label: t("add.entryScheduled") },
-            { id: "variable", label: t("add.entryVariable") },
-          ]}
-          value={entryType}
-          onChange={onEntryTypeChange}
-        />
-        )}
-
-        {entryType === "variable" ? (
-          <AddVariableSpendInline onSaved={onVariableSaved} />
-        ) : (
-          <>
         <div>
           <label className="ct-field-label">{t("add.categoryLabel")}</label>
           <select name="category" value={form.category} onChange={onChange} className={fieldClass("category")}>
@@ -255,11 +233,9 @@ export default function AddCommitmentForm({
         <Button type="button" onClick={onSubmit} size="lg" className="ct-add-submit-sticky">
           {copy.addBill}
         </Button>
-          </>
-        )}
       </Card>
 
-      {!embedded && entryType === "scheduled" && affordability && (
+      {!embedded && affordability && (
         <div className="ct-stat-tile indigo ct-stack-sm">
           <div className="ct-row" style={{ flexWrap: "wrap" }}>
             <Caption className="font-semibold uppercase">{t("add.form.affordability")}</Caption>
@@ -281,7 +257,7 @@ export default function AddCommitmentForm({
         </div>
       )}
 
-      {embedded && entryType === "scheduled" && affordability && (
+      {embedded && affordability && (
         <p
           className={`ct-afford-chip ${semanticToneToClass(affordabilityTierTone(affordability.tier))}`}
         >
@@ -289,7 +265,7 @@ export default function AddCommitmentForm({
         </p>
       )}
 
-      {!embedded && entryType === "scheduled" && (
+      {!embedded && (
         <div className="ct-stat-tile teal ct-stack-sm">
           <p className="ct-body-strong">{t("add.guidanceTitle")}</p>
           <ul className="ct-stack-sm" style={{ fontSize: "0.75rem", color: "var(--ct-accent-muted)", listStyle: "none", padding: 0, margin: 0 }}>
@@ -307,7 +283,7 @@ export default function AddCommitmentForm({
 
   return (
     <PageShell
-      title={entryType === "variable" ? t("add.variableTitle") : copy.addBill}
+      title={copy.addBill}
       subtitle={t("add.newEntry")}
       className="ct-form-narrow"
     >

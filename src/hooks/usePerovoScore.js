@@ -7,7 +7,7 @@ import { scoreAllBillsHealth, aggregateBillHealthScore } from "../engines/billHe
 import { computePerovoScore, debtHealthToScore } from "../engines/perovoScore.js";
 import { analyzeCreditCardPressure } from "../engines/stabilityPlan.js";
 import { computeGoalProgress } from "../engines/goalsProgress.js";
-import { commitmentToIncomeRatio } from "../engines/pressureAdvanced.js";
+import { commitmentToIncomeRatio } from "../engines/pressureScore.js";
 import { combinedMonthlyIncome } from "../utils/combinedIncome.js";
 import { isActiveBill } from "../utils/billLifecycle.js";
 
@@ -24,7 +24,6 @@ export function usePerovoScore() {
       isActiveBill(c, ctx.getEffectiveStatus, ctx.todayStr),
     );
     const scored = scoreAllBillsHealth(activeBills, (c) => ctx.getEffectiveStatus(c), {
-      dailySpends: ctx.dailySpends,
       todayStr: ctx.todayStr,
     });
     const billPortfolio = aggregateBillHealthScore(scored);

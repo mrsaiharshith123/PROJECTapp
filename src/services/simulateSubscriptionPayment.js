@@ -1,4 +1,3 @@
-import { getSupabaseClient } from "./supabase/auth.js";
 import { invokeEdgeFunction } from "./supabase/invokeEdgeFunction.js";
 import { isPaymentSimulationEnabled } from "./razorpayConfig.js";
 
@@ -27,7 +26,7 @@ export async function completeSimulatedSubscriptionUpgrade({ tier, userId, updat
     });
     if (error) throw new Error(error || "Simulated upgrade failed.");
     if (data?.error) throw new Error(String(data.error));
-    paymentId = data?.paymentId || paymentId;
+    paymentId = String(data?.paymentId || paymentId);
     serverTier = data?.tier === "pro" || data?.tier === "power" ? data.tier : tier;
     updateSettings({ subscriptionTier: serverTier });
     return { paymentId, tier: serverTier };

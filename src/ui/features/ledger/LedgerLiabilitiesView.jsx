@@ -224,7 +224,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
       <button
         type="button"
         className="ct-settings-row ct-pressable"
-        onClick={() => navigate("/ledger/spends")}
+        onClick={() => navigate("/insights/cashflow")}
         style={{ marginTop: 4 }}
       >
         <span className="ct-settings-row-label" style={{ color: "var(--pos-text-muted)" }}>

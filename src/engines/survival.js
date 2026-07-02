@@ -153,6 +153,8 @@ function buildSurvivalNarratives(baseline, stressed, classification, timeToSafet
  *   monthlyBurden: number,
  *   lendingOutflow?: number,
  *   lifestyleMonthlyBurn?: number,
+ *   lifestyle?: object | null,
+ *   monthlySavingsRate?: number | null,
  *   commitments?: object[],
  *   getEffectiveStatus?: (c: object) => string,
  *   todayStr?: string,
@@ -313,13 +315,12 @@ export function buildSurvivalContext(
   getEffectiveLendingStatus,
   todayStr,
   cashMetrics,
-  dailySpends = [],
 ) {
   const income = Math.max(0, Number(settings.monthlyIncome) || 0);
   const burden = totalMonthlyBurden(commitments, getEffectiveStatus);
   const lendingOut = lendingMonthlyOutflow(lendings, getEffectiveLendingStatus, todayStr);
   const freeMoney = cashMetrics?.freeMoney ?? Math.max(0, income - burden);
-  const lifestyle = resolveDailyLivingCost({ settings, dailySpends, todayStr });
+  const lifestyle = resolveDailyLivingCost({ settings, todayStr });
   return computeSurvivalAnalysis({
     income,
     freeMoney,

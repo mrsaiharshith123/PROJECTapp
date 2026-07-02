@@ -291,7 +291,7 @@ export function LocationMapPicker({
     setZoom((z) => Math.max(MIN_ZOOM, z - 1));
   };
 
-  const mapStyle = {
+  const mapStyle = /** @type {import("react").CSSProperties} */ ({
     display: "block",
     width: "100%",
     border: "0.5px solid var(--ed-rule)",
@@ -304,7 +304,7 @@ export function LocationMapPicker({
     position: "relative",
     userSelect: "none",
     ...style,
-  };
+  });
 
   return (
     <div className="ed-you-field">

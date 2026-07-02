@@ -41,5 +41,3 @@ export function ToolTile({ icon, label, title, subtitle, accent = "indigo", onCl
     </button>
   );
 }
-
-export default ToolTile;

@@ -20,7 +20,6 @@ describe("DATA INTEGRITY: subscription pricing math", () => {
     expect(FREE_TIER_LIMITS.activeLendingRecords).toBe(5);
     expect(FREE_TIER_LIMITS.activeChitRecords).toBe(2);
     expect(FREE_TIER_LIMITS.activeGoals).toBe(3);
-    expect(FREE_TIER_LIMITS.dailySpendsPerMonth).toBe(50);
     expect(FREE_TIER_LIMITS.billSplitsPerMonth).toBe(5);
     expect(FREE_TIER_LIMITS.billSplitParticipants).toBe(3);
     expect(FREE_TIER_LIMITS.cashflowDays).toBe(30);

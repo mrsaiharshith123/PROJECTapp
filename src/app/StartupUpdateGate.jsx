@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
-import { isUpdateTestShell } from "../utils/updateTestShell.js";
 import { checkForAppUpdate, applyAppUpdate, fetchRemoteManifest } from "../services/appUpdate.js";
 import { downloadNativeApk, openCachedApkInstall } from "../services/nativeApkUpdate.js";
 import {
@@ -17,7 +16,7 @@ const CHECK_TIMEOUT_MS = 10000;
 const BOOTSTRAP_MAX_MS = 20000;
 
 function shouldRunStartupUpdate() {
-  return isEmbeddedApp() && !isUpdateTestShell();
+  return isEmbeddedApp();
 }
 
 function maybeShowApkPrompt(check, setApkPrompt) {
@@ -37,7 +36,7 @@ export default function StartupUpdateGate({ children }) {
   const [ready, setReady] = useState(!needsBootstrap);
   const [updating, setUpdating] = useState(false);
   const [apkPrompt, setApkPrompt] = useState(null);
-  const [progress, setProgress] = useState({ phase: "checking", percent: 0 });
+  const [progress, setProgress] = useState(/** @type {import("../services/appUpdate.js").UpdateProgress} */ ({ phase: "checking", percent: 0 }));
   const finishedRef = useRef(false);
 
   useEffect(() => {

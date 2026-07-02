@@ -27,7 +27,13 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type check
+        run: npm run typecheck
       - run: npm test
+      - name: Audit
+        run: npm run audit
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

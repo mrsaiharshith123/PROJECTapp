@@ -16,6 +16,7 @@ const S = { sm: "ct-btn-sm", md: "ct-btn-md", lg: "ct-btn-lg" };
  */
 export function Button({ variant = "primary", size = "md", className = "", type = "button", children, ...props }) {
   return (
+    // eslint-disable-next-line react/button-has-type -- type prop defaults to button; callers may pass submit
     <button type={type} className={cn(V[variant], S[size], className)} {...props}>
       {children}
     </button>

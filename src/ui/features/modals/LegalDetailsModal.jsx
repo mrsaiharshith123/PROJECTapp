@@ -113,7 +113,7 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
     const result = await verifyPan(panInput);
     setPanVerifying(false);
     if (result.verified) {
-      setPanVerifiedName(result.nameOnPan || result.name || "");
+      setPanVerifiedName(String(result.nameOnPan || result.name || ""));
       if (!form.borrowerFullName.trim() && result.name) set("borrowerFullName", result.name);
       set("idProofType", "PAN");
       set("idProofLast4", panInput.slice(-4));

@@ -99,10 +99,7 @@ export function buildSmartPressureNotifications({
     try {
       const today = parseISO(`${todayStr}T12:00:00`);
       if (getDate(today) === Math.min(31, Math.max(1, salaryDay))) {
-        const breakdown = computeSalaryBreakdown(commitments, inc, getEffectiveStatus, {
-          dailySpends: [],
-          todayStr,
-        });
+        const breakdown = computeSalaryBreakdown(commitments, inc, getEffectiveStatus);
         items.push({
           id: `salary-day-${todayStr}`,
           titleKey: "notifications.salaryDay.title",

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Caption, Body, Button, Modal } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { buildAppSnapshot } from "../../../storage/appSnapshot.js";
+import { buildAppSnapshot } from "../../../utils/storage/appSnapshot.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
@@ -125,7 +125,6 @@ export default function ProfileBackupSection({
       settings,
       monthlySnapshots,
       goals: allGoals,
-      dailySpends: ctx.allDailySpends,
       wealth: loadWealthState(),
     });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });

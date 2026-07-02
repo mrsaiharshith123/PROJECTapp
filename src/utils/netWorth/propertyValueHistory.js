@@ -100,7 +100,6 @@ export function buildPropertyValueSeries(entry) {
   const purchaseYear = entry.purchaseYear ? Number(entry.purchaseYear) : null;
   const currentValue = Number(entry.value) || 0;
   const purchasePrice = Number(entry.purchasePrice) || 0;
-  const area = Number(entry.areaMeasure) || 0;
 
   if (
     Array.isArray(entry.valueHistorySeries) &&

@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import pluginReact from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
@@ -22,6 +23,12 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
+    plugins: {
+      react: pluginReact,
+    },
+    settings: {
+      react: { version: 'detect' },
+    },
     languageOptions: {
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
@@ -34,6 +41,7 @@ export default defineConfig([
       // Valid sync-on-navigation / auth-callback patterns; refactor opportunistically.
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/immutability': 'warn',
+      'react/button-has-type': 'error',
     },
   },
   {
@@ -44,7 +52,6 @@ export default defineConfig([
   },
   {
     files: [
-      'src/app/UpdateTestShellI18n.jsx',
       'src/ui/features/plan/planToolPanels.jsx',
     ],
     rules: {

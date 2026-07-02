@@ -124,8 +124,11 @@
           var root = document.getElementById("root");
           if (!root || root.dataset.bootError) return;
           root.dataset.bootError = "1";
+          var ink = document.documentElement.dataset.theme === "dark" ? "#faf8f3" : "#1a1814";
           root.innerHTML =
-            '<p style="padding:24px;text-align:center;font-family:system-ui,sans-serif;color:#faf8f3;white-space:pre-wrap">' +
+            '<p style="padding:24px;text-align:center;font-family:system-ui,sans-serif;color:' +
+            ink +
+            ';white-space:pre-wrap">' +
             msg +
             "</p>";
         }

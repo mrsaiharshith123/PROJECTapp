@@ -31,7 +31,7 @@ describe("ARCHITECTURE: app update manifest", () => {
 describe("ARCHITECTURE: sync governance", () => {
   it("[P1] sync engine and snapshot guards exist", async () => {
     const sync = await import("../../src/services/sync/syncEngine.js");
-    const snap = await import("../../src/storage/snapshotData.js");
+    const snap = await import("../../src/utils/storage/snapshotData.js");
     expect(typeof sync.pushLocalSnapshotToCloud).toBe("function");
     expect(typeof sync.pullRemoteSnapshotToLocal).toBe("function");
     expect(typeof snap.snapshotHasUserData).toBe("function");

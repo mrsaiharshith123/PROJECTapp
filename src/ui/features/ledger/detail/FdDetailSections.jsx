@@ -1,6 +1,6 @@
 import Verdict from "./Verdict.jsx";
 
-export default function FdDetailSections({ entry, intel, formatAmount, t }) {
+export default function FdDetailSections({ entry: _entry, intel, formatAmount, t }) {
   const fd = intel.fdIntel;
   if (!fd) return null;
   return (

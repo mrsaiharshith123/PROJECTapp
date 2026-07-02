@@ -1,4 +1,4 @@
-import { format, parseISO, getDaysInMonth, getDate } from "date-fns";
+import { format, parseISO, getDaysInMonth, getDate, addMonths } from "date-fns";
 import { amountDueInMonth, scheduledGrossInMonth } from "../engines/forecastSeries.js";
 import {
   lendingDueInMonth,
@@ -7,7 +7,6 @@ import {
 } from "../engines/lendingMonthCash.js";
 import { isHistoryBill } from "./billLifecycle.js";
 import { todayYmd } from "./dates.js";
-import { sumDailySpendsInRange, filterDailySpendsByProfile } from "./dailySpends.js";
 
 /**
  * Suggested daily spend caps for the rest of the month given bills, lending, and logged spends.
@@ -67,7 +66,6 @@ function formatBurdenPercent(amount, monthlyIncome) {
  * Free cash subtracts bill payments, lending payments, and logged daily spends.
  *
  * @param {object} [options]
- * @param {object[]} [options.dailySpends]
  * @param {object[]} [options.lendings]
  * @param {(l: object, todayStr?: string) => string} [options.getEffectiveLendingStatus]
  * @param {string} [options.profileId]
@@ -79,11 +77,10 @@ export function computeCurrentMonthSummary(
   monthlyIncome = 0,
   options = {},
 ) {
-  const { dailySpends = [], lendings = [], getEffectiveLendingStatus, profileId = "default" } = options;
+  const { lendings = [], getEffectiveLendingStatus } = options;
   const monthKey = format(new Date(`${todayStr}T12:00:00`), "yyyy-MM");
   const monthNum = format(new Date(`${todayStr}T12:00:00`), "MM");
   const monthLabel = format(new Date(`${todayStr}T12:00:00`), "MMMM yyyy");
-  const monthStart = `${monthKey}-01`;
 
   let billsPaidThisMonth = 0;
   let billsScheduledThisMonth = 0;
@@ -116,8 +113,7 @@ export function computeCurrentMonthSummary(
       ? lendingScheduledInMonth(lendings, monthKey, getEffectiveLendingStatus, todayStr)
       : 0;
 
-  const profileSpends = filterDailySpendsByProfile(dailySpends, profileId);
-  const spentThisMonth = sumDailySpendsInRange(profileSpends, monthStart, todayStr);
+  const spentThisMonth = 0;
 
   const paidThisMonth = billsPaidThisMonth + lendingPaidThisMonth;
   const scheduledThisMonth = billsScheduledThisMonth + lendingScheduledThisMonth;
@@ -163,4 +159,39 @@ export function computeCurrentMonthSummary(
     spentThisMonth: Math.round(spentThisMonth),
     spendGuidance,
   };
+}
+
+function billsPaidInMonth(commitments, monthKey) {
+  let sum = 0;
+  for (const c of commitments || []) {
+    for (const p of c.payments || []) {
+      if (String(p.date || "").startsWith(monthKey)) {
+        sum += Math.max(0, Number(p.amount) || 0);
+      }
+    }
+  }
+  return sum;
+}
+
+/** Monthly bills-paid outlook for analytics charts (no variable spend). */
+export function buildPaymentsOutlookSeries(commitments, window = { months: 7, startOffset: 0 }) {
+  const months = Math.max(1, Number(window.months) || 7);
+  const startOffset = Number(window.startOffset) || 0;
+  const anchor = new Date();
+  const rows = [];
+
+  for (let i = startOffset; i < startOffset + months; i += 1) {
+    const d = addMonths(anchor, i);
+    const monthKey = format(d, "yyyy-MM");
+    const billsPaid = Math.round(billsPaidInMonth(commitments, monthKey));
+    rows.push({
+      month: format(d, "MMM yy"),
+      monthKey,
+      billsPaid,
+      variableLogged: 0,
+      amount: billsPaid,
+    });
+  }
+
+  return rows;
 }

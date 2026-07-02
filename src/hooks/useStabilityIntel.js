@@ -8,7 +8,7 @@ import { detectLifestyleInflation } from "../engines/lifestyleInflation.js";
 import { computeEmergencyFundIntel } from "../engines/emergencyFund.js";
 import { resolveEmergencyLiquidPool } from "../utils/emergencyLiquid.js";
 import { freeMoneyAfterBurden } from "../engines/pressureScore.js";
-import { mergeExtendedInsights } from "../engines/insightsExtended.js";
+import { mergeExtendedInsights } from "../engines/commitmentInsights.js";
 import { buildStabilityHealthNarrative } from "../engines/stabilityNarrative.js";
 import { buildPressureIntelligence } from "../engines/pressureIntelligence.js";
 import { buildStabilityAheadPlan } from "../engines/stabilityPlan.js";
@@ -42,7 +42,6 @@ export function useStabilityIntel() {
       ctx.getEffectiveLendingStatus,
       ctx.todayStr,
       cash,
-      ctx.dailySpends,
     );
     const stress = rankStressContributors(ctx.commitments, ctx.getEffectiveStatus);
     const lifestyle = detectLifestyleInflation(ctx.commitments, ctx.getEffectiveStatus);

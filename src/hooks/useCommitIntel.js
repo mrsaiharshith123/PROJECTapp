@@ -1,15 +1,16 @@
 import { useMemo } from "react";
 import { usePerovo } from "../context/PerovoContext.jsx";
-import { generateCommitmentInsights } from "../engines/intelligence.js";
 import {
+  generateCommitmentInsights,
   overlappingDueDatesInsight,
   forecastCrunchInsight,
   subscriptionYearlyCostInsight,
   emiBurdenPercentInsight,
   mergeExtendedInsights,
-} from "../engines/insightsExtended.js";
-import { yearlyBurdenEstimate, commitmentToIncomeRatio } from "../engines/pressureAdvanced.js";
+} from "../engines/commitmentInsights.js";
 import {
+  yearlyBurdenEstimate,
+  commitmentToIncomeRatio,
   computePressureAnalysis,
   pressureScoreLabel,
   pressureScoreTone,
@@ -39,7 +40,6 @@ export function useCommitIntelInternal() {
     lendings,
     settings,
     monthlySnapshots,
-    dailySpends,
     todayStr,
     getEffectiveStatus,
     supplementalNotifications,
@@ -60,7 +60,6 @@ export function useCommitIntelInternal() {
       paymentsLen,
       Math.round(paymentsTotal),
       lendings.length,
-      dailySpends?.length,
       todayStr,
       settings.monthlyIncome,
       settings.liquidSavings,
@@ -101,7 +100,6 @@ export function useCommitIntelInternal() {
     ].filter(Boolean);
 
     const monthSummary = computeCurrentMonthSummary(commitments, getEffectiveStatus, todayStr, income, {
-      dailySpends: dailySpends || [],
       lendings,
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
       profileId: settings.activeProfileId || "default",
@@ -110,7 +108,6 @@ export function useCommitIntelInternal() {
       commitments,
       lendings,
       settings,
-      dailySpends: dailySpends || [],
       todayStr,
       getEffectiveStatus,
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
@@ -132,7 +129,6 @@ export function useCommitIntelInternal() {
       lendings,
       getEffectiveLendingStatus: (l) => getEffectiveLendingStatus(l, todayStr),
       todayStr,
-      dailySpends: dailySpends || [],
     });
     const score = pressureAnalysis.score;
     const stabilityMeta = pressureScoreLabel(score);
@@ -216,7 +212,6 @@ export function useCommitIntelInternal() {
     settings,
     supplementalNotifications,
     monthlySnapshots,
-    dailySpends,
     todayStr,
     getEffectiveStatus,
   ]);

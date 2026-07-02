@@ -1,6 +1,4 @@
-import { format, parseISO } from "date-fns";
 import { normalizeRepeatType } from "../constants/repeatTypes.js";
-import { sumDailySpendsInRange, filterDailySpendsByProfile } from "../utils/dailySpends.js";
 
 function monthlyWeight(c, getEffectiveStatus) {
   if (getEffectiveStatus(c) === "paid") return 0;
@@ -14,12 +12,8 @@ function monthlyWeight(c, getEffectiveStatus) {
   return Math.max(0, Number(c.remainingAmount ?? amt));
 }
 
-/**
- * Salary → recurring bills → variable logged spend → free cash.
- * @param {{ dailySpends?: object[], todayStr?: string, profileId?: string }} [options]
- */
-export function computeSalaryBreakdown(commitments, income, getEffectiveStatus, options = {}) {
-  const { dailySpends = [], todayStr = "", profileId = "default" } = options;
+/** Salary → recurring bills → free cash. */
+export function computeSalaryBreakdown(commitments, income, getEffectiveStatus) {
   const inc = Math.max(0, income || 0);
   let recurringMonthly = 0;
 
@@ -27,14 +21,7 @@ export function computeSalaryBreakdown(commitments, income, getEffectiveStatus, 
     recurringMonthly += monthlyWeight(c, getEffectiveStatus);
   }
 
-  let loggedSpendThisMonth = 0;
-  if (todayStr) {
-    const monthKey = format(parseISO(`${todayStr}T12:00:00`), "yyyy-MM");
-    const profileSpends = filterDailySpendsByProfile(dailySpends, profileId);
-    loggedSpendThisMonth = sumDailySpendsInRange(profileSpends, `${monthKey}-01`, todayStr);
-  }
-
-  const total = recurringMonthly + loggedSpendThisMonth;
+  const total = recurringMonthly;
   const free = inc - total;
   const committedPercent = inc > 0 ? Math.round((total / inc) * 100) : null;
   const safeSpend = free > 0 ? Math.round(free * 0.7) : 0;
@@ -44,9 +31,8 @@ export function computeSalaryBreakdown(commitments, income, getEffectiveStatus, 
     recurringMonthly: Math.round(recurringMonthly),
     /** @deprecated use recurringMonthly — kept for callers */
     fixedMonthly: Math.round(recurringMonthly),
-    loggedSpendThisMonth: Math.round(loggedSpendThisMonth),
-    /** Variable = logged daily spend only */
-    variableMonthly: Math.round(loggedSpendThisMonth),
+    loggedSpendThisMonth: 0,
+    variableMonthly: 0,
     variableRecurring: 0,
     totalCommitted: Math.round(total),
     freeCash: Math.round(free),

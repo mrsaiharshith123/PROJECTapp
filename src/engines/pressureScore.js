@@ -1,8 +1,6 @@
-import { format, parseISO, getDate, getDaysInMonth, differenceInCalendarDays } from "date-fns";
+import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { totalMonthlyBurden } from "./burden.js";
-import { commitmentToIncomeRatio } from "./pressureAdvanced.js";
 import { totalMonthlyLendingBurden } from "./lendingMonthCash.js";
-import { sumDailySpendsInRange } from "../utils/dailySpends.js";
 import { safeScore } from "./_guard.js";
 
 const HOUSING_CATEGORIES = new Set(["Rent", "EMI", "Loan"]);
@@ -171,6 +169,15 @@ export function buildPressureNarratives(analysis) {
 
 /**
  * Full pressure analysis — canonical intelligence output.
+ * @param {{
+ *   commitments?: object[],
+ *   income: number,
+ *   getEffectiveStatus?: (c: object) => string,
+ *   monthlySnapshots?: object[],
+ *   lendings?: object[],
+ *   getEffectiveLendingStatus?: (l: object, todayStr?: string) => string,
+ *   todayStr?: string,
+ * }} params
  */
 export function computePressureAnalysis({
   commitments = [],
@@ -180,7 +187,6 @@ export function computePressureAnalysis({
   lendings = [],
   getEffectiveLendingStatus = undefined,
   todayStr = "",
-  dailySpends = [],
 }) {
   const inc = Math.max(0, income || 0);
   let ratio = commitmentToIncomeRatio(commitments, inc, getEffectiveStatus);
@@ -196,16 +202,6 @@ export function computePressureAnalysis({
 
   const clusterWeeks = detectDueClusters(commitments, getEffectiveStatus, todayStr);
   if (clusterWeeks.length > 0) score += 5;
-
-  if (inc > 0 && todayStr && dailySpends?.length) {
-    const monthKey = format(parseISO(`${todayStr}T12:00:00`), "yyyy-MM");
-    const spent = sumDailySpendsInRange(dailySpends, `${monthKey}-01`, todayStr);
-    const dayOfMonth = Math.max(1, getDate(parseISO(`${todayStr}T12:00:00`)));
-    const daysInMonth = getDaysInMonth(parseISO(`${todayStr}T12:00:00`));
-    const projected = (spent / dayOfMonth) * daysInMonth;
-    if (projected / inc > 0.35) score += 5;
-    else if (projected / inc > 0.25) score += 2;
-  }
 
   const sorted = [...(monthlySnapshots || [])]
     .filter((s) => s.pressureScore != null)
@@ -240,10 +236,10 @@ export function computePressureAnalysis({
  * @param {{
  *   commitments: object[],
  *   income: number,
- *   getEffectiveStatus: (c: object) => string,
+ *   getEffectiveStatus?: (c: object) => string,
  *   todayStr?: string,
- *   dailySpends?: object[],
  *   lendings?: object[],
+ *   monthlySnapshots?: object[],
  * }} params
  * @returns {number}
  */
@@ -299,17 +295,15 @@ export function freeMoneyAfterBurden(commitments, income, getEffectiveStatus, op
   };
 }
 
-/**
- * What-if free cash if income drops (same open dues / burden model).
- * @param {number[]} cuts — e.g. [0.1, 0.2] for −10% and −20%
- * @returns {{ cutPercent: number, hypotheticalIncome: number, freeMoney: number }[]}
- */
-export function buildIncomeSensitivityRows(commitments, income, getEffectiveStatus, cuts = [0.1, 0.2]) {
+/** Commitment-to-income ratio (burden / income). Returns 1.5 if income is 0 and burden exists. */
+export function commitmentToIncomeRatio(commitments, income, getEffectiveStatusFn) {
   const inc = Math.max(0, income || 0);
-  if (inc <= 0) return [];
-  return cuts.map((cut) => {
-    const hypotheticalIncome = Math.max(0, Math.round(inc * (1 - cut)));
-    const freeMoney = Math.round(freeMoneyAfterBurden(commitments, hypotheticalIncome, getEffectiveStatus).freeMoney);
-    return { cutPercent: Math.round(cut * 100), hypotheticalIncome, freeMoney };
-  });
+  const burden = totalMonthlyBurden(commitments, getEffectiveStatusFn);
+  if (inc <= 0) return burden > 0 ? 1.5 : 0;
+  return burden / inc;
+}
+
+/** Yearly burden estimate = monthly burden × 12. */
+export function yearlyBurdenEstimate(commitments, getEffectiveStatusFn) {
+  return totalMonthlyBurden(commitments, getEffectiveStatusFn) * 12;
 }

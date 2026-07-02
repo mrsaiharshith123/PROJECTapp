@@ -48,11 +48,10 @@ export { ProGate } from "./patterns/ProGate.jsx";
 export { TierLimitBanner } from "./patterns/TierLimitBanner.jsx";
 
 export { ToolTile } from "./features/ToolTile.jsx";
-export { ProfileHeroCard } from "./features/ProfileHeroCard.jsx";
 export { NotificationPanel } from "./features/NotificationPanel.jsx";
-export { default as FinancialPulseCard } from "./features/dashboard/FinancialPulseCard.jsx";
-export { default as DashboardTools } from "./features/dashboard/DashboardTools.jsx";
-export { default as ToolsDiscoveryToast } from "./features/dashboard/ToolsDiscoveryPrompt.jsx";
+export { default as FinancialPulseCard } from "./features/home/FinancialPulseCard.jsx";
+export { default as DashboardTools } from "./features/home/DashboardTools.jsx";
+export { default as ToolsDiscoveryToast } from "./features/home/ToolsDiscoveryPrompt.jsx";
 
 export { Screen, ScreenSection, MainContent } from "./layout/Screen.jsx";
 export { Navbar } from "./layout/Navbar.jsx";

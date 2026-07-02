@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { computeGoalProgress } from "../../../engines/goalsProgress.js";
 import { analyzeSipForGoal } from "../../../engines/sipAdvisor.js";
-import { commitmentToIncomeRatio } from "../../../engines/pressureAdvanced.js";
+import { commitmentToIncomeRatio } from "../../../engines/pressureScore.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { combinedMonthlyIncome } from "../../../utils/combinedIncome.js";
 import { INR } from "../../../constants/symbols.js";
@@ -11,7 +11,6 @@ import { ProgressBar } from "../../patterns/ProgressBar.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { canAddGoal } from "../../../utils/tierAccess.js";
 import { TierLimitBanner } from "../../patterns/TierLimitBanner.jsx";
-import { SegmentedControl } from "../../patterns/SegmentedControl.jsx";
 import { CelebrationOverlay } from "../../patterns/CelebrationOverlay.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { formatInr } from "../../../constants/symbols.js";

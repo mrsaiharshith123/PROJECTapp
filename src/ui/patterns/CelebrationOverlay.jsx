@@ -1,5 +1,9 @@
-import { Player } from "@lottiefiles/react-lottie-player";
+import { lazy, Suspense } from "react";
 import { useTranslation } from "../../i18n/I18nProvider.js";
+
+const LottiePlayer = lazy(() =>
+  import("@lottiefiles/react-lottie-player").then((mod) => ({ default: mod.Player })),
+);
 
 const ANIMATIONS = {
   confetti: "https://assets5.lottiefiles.com/packages/lf20_rcwhirwa.json",
@@ -24,15 +28,17 @@ export function CelebrationOverlay({ type = "confetti", show, onComplete, messag
       onClick={onComplete}
       onKeyDown={(e) => e.key === "Escape" && onComplete?.()}
     >
-      <Player
-        autoplay
-        keepLastFrame={false}
-        src={ANIMATIONS[type] || ANIMATIONS.confetti}
-        style={{ width: 280, height: 280 }}
-        onEvent={(e) => {
-          if (e === "complete") onComplete?.();
-        }}
-      />
+      <Suspense fallback={null}>
+        <LottiePlayer
+          autoplay
+          keepLastFrame={false}
+          src={ANIMATIONS[type] || ANIMATIONS.confetti}
+          style={{ width: 280, height: 280 }}
+          onEvent={(e) => {
+            if (e === "complete") onComplete?.();
+          }}
+        />
+      </Suspense>
       {message ? <div className="ct-celebration-message">{message}</div> : null}
       <div className="ct-celebration-hint">{t("celebration.tapToContinue")}</div>
     </div>

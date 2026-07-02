@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import { useTranslation } from "../i18n/I18nProvider.js";
 import { fetchRemoteBackupMeta, isCloudSyncConfigured, pullRemoteSnapshotToLocal } from "../services/sync/syncEngine.js";
-import { localStateHasUserData } from "../storage/snapshotData.js";
+import { localStateHasUserData } from "../utils/storage/snapshotData.js";
 import { loadFullAppStateForSync } from "../utils/migrateStorage.js";
 
 const DISMISS_KEY = "perovo_restore_offer_dismissed";
@@ -148,7 +148,7 @@ export default function CloudRestoreGate({ children }) {
       {autoRestoring ? (
         <div className="ct-update-progress-overlay" role="status" aria-live="polite" aria-busy="true">
           <div className="ct-update-progress-panel">
-            <Body className="mb-2 text-base">{t("sync.restoreAutoInProgress")}</Body>
+            <Body className="mb-2">{t("sync.restoreAutoInProgress")}</Body>
             <Caption className="block">{t("sync.working")}</Caption>
           </div>
         </div>

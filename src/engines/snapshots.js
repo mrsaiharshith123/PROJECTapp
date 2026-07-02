@@ -1,5 +1,5 @@
 import { totalMonthlyBurden } from "./burden.js";
-import { commitmentToIncomeRatio } from "./pressureAdvanced.js";
+import { commitmentToIncomeRatio } from "./pressureScore.js";
 import { computeCanonicalPressureScore } from "./pressureScore.js";
 
 /**

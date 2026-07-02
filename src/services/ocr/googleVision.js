@@ -12,5 +12,5 @@ export async function recognizeWithVision(imageBase64) {
   if (!isVisionConfigured() || !imageBase64) return null;
   const data = await invokeApiProxy({ service: "vision-ocr", imageBase64 });
   if (!data || data.error) return null;
-  return data.text || null;
+  return data.text ? String(data.text) : null;
 }

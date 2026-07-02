@@ -22,7 +22,10 @@ export function runDatabaseAudit() {
   // Check all tables have RLS enabled
   const allSql = migrationFiles.map(f => fs.readFileSync(path.join(migrationsDir, f), "utf8")).join("\n");
   const tables = [...allSql.matchAll(/create table (?:if not exists )?public\.(\w+)/gi)].map(m => m[1]);
-  const rlsEnabled = new Set([...allSql.matchAll(/enable row level security\s+on\s+(?:public\.)?(\w+)/gi)].map(m => m[1]));
+  const rlsEnabled = new Set([
+    ...[...allSql.matchAll(/enable row level security\s+on\s+(?:public\.)?(\w+)/gi)].map((m) => m[1]),
+    ...[...allSql.matchAll(/alter\s+table\s+(?:public\.)?(\w+)\s+enable\s+row\s+level\s+security/gi)].map((m) => m[1]),
+  ]);
 
   for (const table of tables) {
     if (!rlsEnabled.has(table)) {

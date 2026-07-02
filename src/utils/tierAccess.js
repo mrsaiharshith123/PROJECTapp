@@ -37,11 +37,6 @@ export function countActiveGoals(goals) {
   return (goals || []).filter((g) => g.active !== false && !g.archived).length;
 }
 
-/** @param {object[]} dailySpends @param {string} monthKey yyyy-MM */
-export function countDailySpendsInMonth(dailySpends, monthKey) {
-  return (dailySpends || []).filter((s) => String(s.date || "").startsWith(monthKey)).length;
-}
-
 /** @param {string} todayStr */
 export function monthKeyFromToday(todayStr) {
   if (!todayStr) return format(new Date(), "yyyy-MM");
@@ -65,13 +60,6 @@ export function getBillSplitCountThisMonth(settings, todayStr) {
 /** @param {{ subscriptionTier?: string } | null | undefined} settings @param {string | null | undefined} [serverTier] */
 export function cashflowDaysForTier(settings, serverTier = null) {
   return tierHasFeature("cashflow_90d", settings, serverTier) ? PRO_CASHFLOW_DAYS : FREE_TIER_LIMITS.cashflowDays;
-}
-
-import { MONEY_OUTLOOK_WINDOW } from "../engines/forecastSeries.js";
-
-/** Money outlook bars on Analytics — 7 months (3 back, current, 3 ahead). */
-export function moneyOutlookWindowForTier(_settings) {
-  return MONEY_OUTLOOK_WINDOW;
 }
 
 /** Months shown in pulse “Ahead” forecast list. */
@@ -127,21 +115,6 @@ export function canAddGoal(settings, goals, serverTier = null) {
 }
 
 /**
- * @param {{ subscriptionTier?: string } | null | undefined} settings
- * @param {object[]} dailySpends
- * @param {string} todayStr
- */
-export function canAddDailySpend(settings, dailySpends, todayStr, serverTier = null) {
-  if (tierHasFeature("unlimited_daily_spend", settings, serverTier)) return { ok: true };
-  const key = monthKeyFromToday(todayStr);
-  const count = countDailySpendsInMonth(dailySpends, key);
-  if (count >= FREE_TIER_LIMITS.dailySpendsPerMonth) {
-    return { ok: false, reason: "spend_limit", limit: FREE_TIER_LIMITS.dailySpendsPerMonth, count };
-  }
-  return { ok: true };
-}
-
-/**
  * @param {{ subscriptionTier?: string, usageMonthKey?: string, billSplitsThisMonth?: number } | null | undefined} settings
  * @param {string} todayStr
  * @param {number} participantCount
@@ -161,11 +134,4 @@ export function canRunBillSplit(settings, todayStr, participantCount, serverTier
     };
   }
   return { ok: true };
-}
-
-/** Patch to increment bill-split counter for the current month. */
-export function billSplitUsagePatch(settings, todayStr) {
-  const key = monthKeyFromToday(todayStr);
-  const prev = settings?.usageMonthKey === key ? Number(settings?.billSplitsThisMonth) || 0 : 0;
-  return { usageMonthKey: key, billSplitsThisMonth: prev + 1 };
 }

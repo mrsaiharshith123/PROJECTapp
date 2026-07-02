@@ -16,12 +16,19 @@ function clamp(n, min, max) {
 }
 
 /**
- * @param {{ year: number, value: number, ratePerSqyd?: number }[]} series
- * @param {string} [color]
- * @param {string} [caption]
- * @param {(n: number) => string} formatAmount
- * @param {(key: string, params?: object) => string} t
- * @param {string} [areaUnit]
+ * @typedef {{ year: number, value: number, ratePerSqyd?: number }} ValueHistoryPoint
+ * @typedef {{
+ *   series: ValueHistoryPoint[],
+ *   color?: string,
+ *   caption?: string,
+ *   formatAmount: (n: number) => string,
+ *   t: (key: string, params?: object) => string,
+ *   areaUnit?: string,
+ * }} ValueHistoryChartProps
+ */
+
+/**
+ * @param {ValueHistoryChartProps} props
  */
 export default function ValueHistoryChart({
   series,

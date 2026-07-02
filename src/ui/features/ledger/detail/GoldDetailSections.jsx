@@ -1,6 +1,6 @@
 import Verdict from "./Verdict.jsx";
 
-export default function GoldDetailSections({ entry, intel, formatAmount, t }) {
+export default function GoldDetailSections({ entry: _entry, intel, formatAmount, t }) {
   const gold = intel.goldIntel;
   if (!gold) return null;
   return (

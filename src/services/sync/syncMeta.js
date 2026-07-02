@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from "../../storage/keys.js";
+import { STORAGE_KEYS } from "../../utils/storage/keys.js";
 import { getDeviceInfo, refineDeviceInfoAsync } from "../../utils/deviceInfo.js";
 
 const DEVICE_KEY = "perovo_device_id";
@@ -25,7 +25,7 @@ function readDeviceId() {
   }
 }
 
-/** @typedef {{ type: 'push' | 'restore', at: string, deviceId: string, deviceLabel: string, remoteDeviceId?: string, counts?: { bills: number, lending: number, goals: number, spends: number } }} BackupLogEntry */
+/** @typedef {{ type: 'push' | 'restore', at: string, deviceId: string, deviceLabel: string, remoteDeviceId?: string, counts?: { bills: number, lending: number, goals: number, wealth: number } }} BackupLogEntry */
 
 /** @typedef {{ userId?: string, lastPushedAt?: string, lastPulledAt?: string, remoteUpdatedAt?: string, pendingPush?: boolean, deviceId?: string, deviceLabel?: string, lastDailyPushDate?: string, lastAutoRestoreAt?: string, cloudBackupEnabled?: boolean, backupLog?: BackupLogEntry[] }} SyncMeta */
 

@@ -4,7 +4,7 @@ import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../../context/NetWorthContext.jsx";
 import { buildProfileAchievements } from "../../../../engines/profileAchievements.js";
-import { commitmentToIncomeRatio } from "../../../../engines/pressureAdvanced.js";
+import { commitmentToIncomeRatio } from "../../../../engines/pressureScore.js";
 import { combinedMonthlyIncome } from "../../../../utils/combinedIncome.js";
 import { formatAchievementDate } from "../../../../i18n/formatLocale.js";
 import { SettingsGroup, SettingsGroupContent } from "../SettingsGroup.jsx";

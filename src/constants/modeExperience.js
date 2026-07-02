@@ -208,8 +208,8 @@ export function getDashboardToolsHeadingKey(settingsOrMode) {
   return "tools.salaryTools";
 }
 
-/** @param {string} toolId @param {string | object} settingsOrMode */
-export function getToolTileKeys(toolId, settingsOrMode) {
+/** @param {string} toolId @param {string | object} _settingsOrMode */
+export function getToolTileKeys(toolId, _settingsOrMode) {
   return { titleKey: `tools.${toolId}.title`, subtitleKey: `tools.${toolId}.subtitle` };
 }
 

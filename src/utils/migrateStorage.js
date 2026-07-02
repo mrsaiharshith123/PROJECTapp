@@ -13,11 +13,10 @@ import { normalizeRepeatType } from "../constants/repeatTypes.js";
 import { normalizePremiumFrequency } from "../constants/insurance.js";
 import { normalizeDashboardToolOrderByMode } from "./dashboardToolOrder.js";
 import { normalizeHomeQuickActionOrder } from "./homeQuickActionOrder.js";
-import { STORAGE_KEYS } from "../storage/keys.js";
+import { STORAGE_KEYS } from "./storage/keys.js";
 import { CONSENT_KEY } from "./dpdpConsent.js";
-import { emitLocalDataChanged, emitSettingsReset } from "../storage/events.js";
+import { emitLocalDataChanged, emitSettingsReset } from "./storage/events.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
-import { normalizeDailySpend } from "./dailySpends.js";
 import { loadWealthState } from "./netWorth/wealthStorage.js";
 import { resolveAccountCreatedAt } from "./accountOrigin.js";
 
@@ -32,7 +31,6 @@ export function migrateLegacyStorageKeys() {
     ["perovo_settings", STORAGE_KEYS.settings],
     ["perovo_monthly_snapshots", STORAGE_KEYS.monthlySnapshots],
     ["perovo_goals", STORAGE_KEYS.goals],
-    ["perovo_daily_spends", STORAGE_KEYS.dailySpends],
     ["perovo_schema_version", STORAGE_KEYS.schemaVersion],
     ["perovo_sync_meta", STORAGE_KEYS.syncMeta],
     ["perovo_wealth", STORAGE_KEYS.wealth],
@@ -426,7 +424,7 @@ export function normalizeGoal(raw) {
 
 export function loadGoalsFromStorage() {
   try {
-    const raw = localStorage.getItem("perovo_goals");
+    const raw = localStorage.getItem(STORAGE_KEYS.goals);
     if (raw) {
       const arr = JSON.parse(raw);
       if (Array.isArray(arr)) return mapNormalized(arr, normalizeGoal);
@@ -466,25 +464,6 @@ export function migrateLegacySavedTowardGoals(settings, goals) {
   return { settings: nextSettings, goals: nextGoals };
 }
 
-export function loadDailySpendsFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.dailySpends);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.map((s) => normalizeDailySpend(s)) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function saveDailySpendsToStorage(spends) {
-  try {
-    localStorage.setItem(STORAGE_KEYS.dailySpends, JSON.stringify(spends));
-  } catch {
-    /* ignore */
-  }
-}
-
 let cachedInitialAppState;
 
 export function invalidateInitialAppStateCache() {
@@ -521,7 +500,6 @@ export function loadInitialAppState() {
     settings,
     goals: migrated.goals,
     monthlySnapshots: loadMonthlySnapshotsFromStorage(),
-    dailySpends: loadDailySpendsFromStorage(),
     wealth: loadWealthState(),
   };
   return cachedInitialAppState;
@@ -535,7 +513,7 @@ export function loadFullAppStateForSync() {
 
 export function saveGoalsToStorage(goals) {
   try {
-    localStorage.setItem("perovo_goals", JSON.stringify(goals));
+    localStorage.setItem(STORAGE_KEYS.goals, JSON.stringify(goals));
   } catch {
     /* ignore */
   }
@@ -730,7 +708,6 @@ export function clearAllLocalData() {
     localStorage.removeItem(STORAGE_KEYS.settings);
     localStorage.removeItem(STORAGE_KEYS.monthlySnapshots);
     localStorage.removeItem(STORAGE_KEYS.goals);
-    localStorage.removeItem(STORAGE_KEYS.dailySpends);
     localStorage.removeItem(STORAGE_KEYS.wealth);
     localStorage.removeItem(STORAGE_KEYS.syncMeta);
     localStorage.removeItem(CONSENT_KEY);

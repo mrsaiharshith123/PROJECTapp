@@ -27,10 +27,10 @@ export default function HomeQuickActions() {
       onTap: () => navigate("/ledger/bills"),
     },
     {
-      icon: "arrows-down-up",
-      label: t("home.quick.spends"),
+      icon: "chart-line-up",
+      label: t("home.quick.insights"),
       badge: null,
-      onTap: () => navigate("/money/spends"),
+      onTap: () => navigate("/insights/cashflow"),
     },
     {
       icon: "target",
