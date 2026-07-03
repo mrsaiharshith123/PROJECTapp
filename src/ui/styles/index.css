@@ -1,7 +1,9 @@
+/* Style entry manifest — loaded via renderApp.jsx (direct imports avoid PostCSS @import path bugs on Windows). */
 @import "./tokens.css";
-@import "./components-core.css";
+@import "./components-dh.css";
+@import "./components-controls.css";
+@import "./components-shell.css";
+@import "./components-editorial-home.css";
+@import "./components-editorial-pages.css";
 @import "./components-charts.css";
-@import "./components-surfaces.css";
 @import "./components-editorial.css";
-@import "./theme-light.css";
-@import "./net-worth.css";

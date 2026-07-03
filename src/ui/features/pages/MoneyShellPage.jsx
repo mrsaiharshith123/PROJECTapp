@@ -1,11 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { PageShell } from "../../index.js";
-
-const LEDGER_OPS_TABS = [
-  { id: "bills", path: "/ledger/bills", labelKey: "money.tab.bills", subtitleKey: "money.bills.sectionSub", tone: "liab" },
-];
+import { usePerovo } from "../../../context/PerovoContext.jsx";
+import { getTier } from "../../../utils/tierAccess.js";
+import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
 
 /** Ledger bills shell — nested under /ledger/bills. */
 export default function LedgerOpsShell() {
@@ -13,31 +11,35 @@ export default function LedgerOpsShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const fadeKey = useRef(location.pathname);
-
-  const segment = location.pathname.split("/")[2] || "bills";
-  const tabs = LEDGER_OPS_TABS;
-  const activeTab = tabs.some((tab) => tab.id === segment) ? segment : "bills";
-  const activeMeta = tabs.find((tab) => tab.id === activeTab) || tabs[0];
+  const { settings, effectiveSubscriptionTier } = usePerovo();
+  const tier = getTier(settings, effectiveSubscriptionTier);
 
   useEffect(() => {
     fadeKey.current = location.pathname;
   }, [location.pathname]);
 
   useEffect(() => {
+    const segment = location.pathname.split("/")[2] || "bills";
     if (segment === "spends") {
       navigate("/ledger/bills", { replace: true });
     }
-  }, [segment, navigate]);
+  }, [location.pathname, navigate]);
 
   return (
-    <PageShell
-      title={t("nav.ledger")}
-      subtitle={t(activeMeta.subtitleKey)}
-      className="ct-ledger-ops-shell"
-    >
-      <div key={location.key} className="ct-money-tab-fade">
+    <div className="ed-page-full">
+      <header className="ed-masthead">
+        <div>
+          <h1 className="ed-masthead-title">{t("nav.ledger")}</h1>
+          <p className="ed-masthead-sub">{t("money.bills.sectionSub")}</p>
+        </div>
+        <div className="ed-masthead-right">
+          <HomeEditorialAvatar tier={tier} />
+        </div>
+      </header>
+
+      <div key={location.key}>
         <Outlet />
       </div>
-    </PageShell>
+    </div>
   );
 }

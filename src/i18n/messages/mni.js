@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "ꯄꯦꯃꯦꯟꯇ ꯇꯧꯔꯕꯥ · ꯄꯤꯒꯗꯕꯥ {date} .",
   "bill.started": "ꯍꯧꯗꯣꯀꯈ꯭ꯔꯦ __ꯇꯤ꯰__ .",
   "bill.ends": "ꯂꯣꯏꯁꯤꯜꯂꯀꯏ __ꯇꯤ꯰__꯫",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "ꯆꯠꯊꯔꯤ ꯫",
   "bill.dueOn": "ꯗ꯭ꯌꯨ __ꯇꯤ꯰__ ꯒꯤ ꯃꯇꯨꯡ ꯏꯟꯅꯥ꯫",
   "bill.dueNow": "ꯍꯧꯖꯤꯛ ꯗ꯭ꯌꯨ __ꯇꯤ꯰__ .",

@@ -34,7 +34,7 @@ function collectScrollRoots() {
   };
   add(document.documentElement);
   add(document.body);
-  document.querySelectorAll(".dev-phone-screen, .ct-screen, .ct-main").forEach(add);
+  document.querySelectorAll(".dev-phone-screen, .ed-page-full, .ed-paper").forEach(add);
   return roots;
 }
 
@@ -84,7 +84,6 @@ function useNavScrollHide(enabled, routeKey = "") {
       });
     };
 
-    /** Wheel fires even when scroll is clamped at top/bottom — catches “trying to scroll” gestures. */
     const onWheel = (e) => {
       if (Math.abs(e.deltaY) < 2 && Math.abs(e.deltaX) < 2) return;
       const y = readScrollTop(e.target instanceof Element ? e.target : document.documentElement);
@@ -171,56 +170,55 @@ function isNavItemActive(item, location) {
   return path === item.to || path.startsWith(`${item.to}/`);
 }
 
-function NavIcon({ item, active = false }) {
-  if (item.icon === "+") {
-    return <span className="ct-nav-fab-plus">+</span>;
-  }
-  return <CtIcon name={item.icon} size={24} context={active ? "nav" : "nav-off"} />;
-}
-
 function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {
   const { t } = useTranslation();
   if (!open) return null;
 
   return (
     <>
-      <div className="ct-fab-overlay" onClick={onClose} aria-hidden />
-      <div className="ct-fab-menu open" role="menu" aria-label={t("nav.fabAria")}>
+      <div className="ed-backdrop" onClick={onClose} aria-hidden />
+      <div className="ed-fab-menu" role="menu" aria-label={t("nav.fabAria")}>
         <button
           type="button"
-          className="ct-fab-item"
+          className="ed-row ed-row-press"
           role="menuitem"
           onClick={() => {
             navTo("/add");
             onClose();
           }}
         >
-          <CtIcon name="clipboard-text" size={16} />
-          {t("nav.fabAddCommitment")}
+          <span className="ed-row-icon">
+            <CtIcon name="clipboard-text" size={16} />
+          </span>
+          <span className="ed-row-title">{t("nav.fabAddCommitment")}</span>
         </button>
         <button
           type="button"
-          className="ct-fab-item"
+          className="ed-row ed-row-press"
           role="menuitem"
           onClick={() => {
             onScanBill();
             onClose();
           }}
         >
-          <CtIcon name="receipt" size={16} />
-          {t("tools.billScanner.title")}
+          <span className="ed-row-icon">
+            <CtIcon name="receipt" size={16} />
+          </span>
+          <span className="ed-row-title">{t("tools.billScanner.title")}</span>
         </button>
         <button
           type="button"
-          className="ct-fab-item"
+          className="ed-row ed-row-press"
           role="menuitem"
           onClick={() => {
             onRequestMoney();
             onClose();
           }}
         >
-          <CtIcon name="handshake" size={16} />
-          {t("nav.fabRequestMoney")}
+          <span className="ed-row-icon">
+            <CtIcon name="handshake" size={16} />
+          </span>
+          <span className="ed-row-title">{t("nav.fabRequestMoney")}</span>
         </button>
       </div>
     </>
@@ -264,10 +262,6 @@ export function Navbar() {
   const toggleFab = () => setFabOpen((v) => !v);
   const closeFab = () => setFabOpen(false);
 
-  const fabPointerHandlers = {
-    onClick: () => toggleFab(),
-  };
-
   return (
     <>
       <FabRadialMenu
@@ -278,36 +272,35 @@ export function Navbar() {
         onRequestMoney={openRequestMoney}
       />
 
-      <nav
-        className={cn("ct-bottom-nav ed-nav", navScrollHidden && "ct-bottom-nav--hidden")}
-        aria-label={t("nav.mainAria")}
-      >
-        <div className="ct-bottom-nav-inner">
+      <nav className={cn("ed-nav", navScrollHidden && "ed-nav--hidden")} aria-label={t("nav.mainAria")}>
+        <div className="ed-nav-inner">
           {navItems.map((item) => {
             if (item.fab) {
               return (
-                <div key={item.to} className="ct-nav-fab-slot">
-                  <button type="button" className="ct-nav-fab" aria-label={t("nav.fabAria")} {...fabPointerHandlers}>
-                    <span className="ct-nav-fab-icon">
-                      <NavIcon item={item} active />
-                    </span>
+                <div key={item.to} className="ed-nav-fab-slot">
+                  <button
+                    type="button"
+                    className={cn("ed-nav-fab", fabOpen && "active")}
+                    aria-label={t("nav.fabAria")}
+                    onClick={toggleFab}
+                  >
+                    <span className="ed-nav-fab-plus">+</span>
                   </button>
                 </div>
               );
             }
             const active = isNavItemActive(item, location);
             return (
-              <a
+              <button
                 key={item.to}
-                href={item.to}
-                onClick={(e) => { e.preventDefault(); navTo(item.to); }}
-                className={cn("ct-nav-item", active && "ct-nav-item-active")}
+                type="button"
+                className={cn("ed-nav-item", active && "active")}
+                onClick={() => navTo(item.to)}
               >
-                <span className="ct-nav-icon">
-                  <NavIcon item={item} active={active} />
-                </span>
-                <span className="ct-nav-label">{navLabel(item)}</span>
-              </a>
+                <CtIcon name={item.icon} size={20} />
+                <span className="ed-nav-label">{navLabel(item)}</span>
+                <span className="ed-nav-dot" />
+              </button>
             );
           })}
         </div>

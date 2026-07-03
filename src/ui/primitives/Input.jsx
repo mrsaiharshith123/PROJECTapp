@@ -1,11 +1,11 @@
 import { cn } from "../utils/cn.js";
 
 export function inputClassName(className = "") {
-  return cn("ct-input", className);
+  return cn("ed-input", className);
 }
 
 export function fieldInputClass(hasError = false, className = "") {
-  return cn("ct-input", hasError && "border-red-500/50", className);
+  return cn("ed-input", hasError && "border-red-500/50", className);
 }
 
 export function Input(props) {
@@ -14,14 +14,14 @@ export function Input(props) {
 
 export function Select({ className = "", children, ...props }) {
   return (
-    <select className={cn("ct-select", className)} {...props}>
+    <select className={cn("ed-select", className)} {...props}>
       {children}
     </select>
   );
 }
 
 export function Textarea({ className = "", ...props }) {
-  return <textarea className={cn("ct-textarea ct-input", className)} {...props} />;
+  return <textarea className={cn("ed-input", className)} {...props} />;
 }
 
 export default Input;

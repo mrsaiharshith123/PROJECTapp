@@ -1,15 +1,15 @@
 import { cn } from "../utils/cn.js";
 
 const V = {
-  primary: "ct-btn ct-btn-primary",
-  secondary: "ct-btn ct-btn-secondary",
-  ghost: "ct-btn ct-btn-ghost",
-  outline: "ct-btn ct-btn-outline",
-  danger: "ct-btn ct-btn-danger",
-  success: "ct-btn ct-btn-success",
-  teal: "ct-btn ct-btn-teal",
+  primary: "ed-btn ed-btn-primary",
+  secondary: "ed-btn ed-btn-secondary",
+  ghost: "ed-btn ed-btn-ghost",
+  outline: "ed-btn ed-btn-secondary",
+  danger: "ed-btn ed-btn-danger",
+  success: "ed-btn ed-btn-primary",
+  teal: "ed-btn ed-btn-secondary",
 };
-const S = { sm: "ct-btn-sm", md: "ct-btn-md", lg: "ct-btn-lg" };
+const S = { sm: "ed-btn-sm", md: "", lg: "ed-btn-block" };
 
 /**
  * @param {{ variant?: keyof typeof V, size?: keyof typeof S, className?: string, type?: 'button'|'submit'|'reset', children: import('react').ReactNode } & import('react').ButtonHTMLAttributes<HTMLButtonElement>} props

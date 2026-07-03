@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "ચૂકવેલ · બાકી {date}",
   "bill.started": "પ્રારંભ {date}",
   "bill.ends": "સમાપ્ત થાય છે {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "ચાલુ છે",
   "bill.dueOn": "નિયત {date}",
   "bill.dueNow": "હવે બાકી છે {amount}",

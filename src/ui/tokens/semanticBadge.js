@@ -6,15 +6,15 @@
 /** @typedef {'success'|'info'|'warning'|'coral'|'danger'|'teal'|'neutral'|'gold'|'premium'} SemanticTone */
 
 const TONE_CLASS = {
-  success: "ct-status ct-status-success",
-  warning: "ct-status ct-status-warning",
-  danger: "ct-status ct-status-danger",
-  info: "ct-status ct-status-info",
-  teal: "ct-badge ct-badge-teal",
-  coral: "ct-badge ct-badge-coral",
-  neutral: "ct-status ct-status-neutral",
-  gold: "ct-badge ct-badge-gold",
-  premium: "ct-badge ct-badge-gold",
+  success: "ed-pill ed-pill-green",
+  warning: "ed-pill ed-pill-amber",
+  danger: "ed-pill ed-pill-red",
+  info: "ed-pill ed-pill-violet",
+  teal: "ed-pill ed-pill-green",
+  coral: "ed-pill ed-pill-red",
+  neutral: "ed-pill ed-pill-neutral",
+  gold: "ed-pill ed-pill-gold",
+  premium: "ed-pill ed-pill-gold",
 };
 
 /**

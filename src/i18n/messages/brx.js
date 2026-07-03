@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "भुगतान कइल गइल · बकाया {date}",
   "bill.started": "शुरू भइल __टी0__",
   "bill.ends": "समाप्त हो जाला __टी0__।",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "चलत बा",
   "bill.dueOn": "देय __टी0__ के बा।",
   "bill.dueNow": "अब देय __टी0__ बा।",

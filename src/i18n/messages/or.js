@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "ଦେୟ · ଦେୟ {date}",
   "bill.started": "ଆରମ୍ଭ {date}",
   "bill.ends": "{date} ଶେଷ ହୁଏ",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "ଚାଲୁ ରହିଛି |",
   "bill.dueOn": "ଦେୟ {date}",
   "bill.dueNow": "ବର୍ତ୍ତମାନ {amount}",

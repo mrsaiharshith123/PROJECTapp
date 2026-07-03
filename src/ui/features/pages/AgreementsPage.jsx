@@ -156,7 +156,7 @@ export default function AgreementsPage() {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ct-page ed-paper">
+    <div className="ed-paper">
       <header className="ed-masthead">
         <div className="ed-masthead-top">
           <div className="ed-masthead-brand">

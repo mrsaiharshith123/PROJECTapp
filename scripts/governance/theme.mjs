@@ -7,23 +7,22 @@ import { readComponentsCss } from "./componentsCss.mjs";
 import { ROOT, rel } from "../lib/audit-core.mjs";
 
 const CRITICAL_TOKENS = [
-  "--ct-accent",
-  "--ct-surface",
-  "--ct-surface-inset",
-  "--ct-text",
-  "--ct-text-muted",
-  "--ct-border",
-  "--ct-border-strong",
-  "--ct-bg",
-  "--ct-life-violet",
-  "--ct-life-emerald",
-  "--ct-shadow-card",
+  "--ed-bg",
+  "--ed-surface",
+  "--ed-surface-2",
+  "--ed-ink",
+  "--ed-ink-soft",
+  "--ed-rule",
+  "--ed-gold",
+  "--ed-green",
+  "--ed-font",
+  "--ed-font-serif",
 ];
 
 function extractTokens(css, scopeRe) {
   const block = scopeRe ? css.match(scopeRe)?.[0] || "" : css;
   const tokens = new Set();
-  for (const m of block.matchAll(/(--ct-[\w-]+)\s*:/g)) tokens.add(m[1]);
+  for (const m of block.matchAll(/(--ed-[\w-]+)\s*:/g)) tokens.add(m[1]);
   return tokens;
 }
 
@@ -33,7 +32,7 @@ export function runThemeAudit() {
   const advisories = [];
 
   const tokensPath = path.join(ROOT, "src/ui/styles/tokens.css");
-  const themeLightPath = path.join(ROOT, "src/ui/styles/theme-light.css");
+  const themeLightPath = path.join(ROOT, "src/ui/styles/_archive/theme-light.css");
   const stylesDir = path.join(ROOT, "src/ui/styles");
 
   if (!fs.existsSync(tokensPath)) {
@@ -74,7 +73,10 @@ export function runThemeAudit() {
   }
 
   if (!fs.existsSync(themeLightPath)) {
-    warnings.push({ kind: "theme-light", message: "Missing theme-light.css polish overrides" });
+    advisories.push({
+      kind: "theme-light",
+      message: "theme-light.css archived — light mode lives in tokens.css",
+    });
   } else {
     const polish = fs.readFileSync(themeLightPath, "utf8");
     if (!polish.includes('[data-theme="light"]')) {

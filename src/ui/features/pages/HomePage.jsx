@@ -32,7 +32,7 @@ const Home = () => {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ct-page ed-paper">
+    <div className="ed-paper">
       <AppTourModal
         settings={settings}
         open={tourOpen}
@@ -42,25 +42,25 @@ const Home = () => {
 
       <HomeEditorialHeader tier={tier} />
 
-      <div className="ct-home-enter">
-        <div className="ct-home-enter-item" style={{ animationDelay: "0ms" }}>
+      <div className="ed-home-enter">
+        <div className="ed-home-enter-item" style={{ animationDelay: "0ms" }}>
           <HomeNetPositionHero />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "30ms" }}>
+        <div className="ed-home-enter-item" style={{ animationDelay: "30ms" }}>
           <HomeCategoryTiles />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "50ms" }}>
+        <div className="ed-home-enter-item" style={{ animationDelay: "50ms" }}>
           <HomeQuickActions />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "70ms" }}>
+        <div className="ed-home-enter-item" style={{ animationDelay: "70ms" }}>
           <HomeNeedsAttention />
         </div>
-        <div className="ct-home-enter-item" style={{ animationDelay: "90ms" }}>
+        <div className="ed-home-enter-item" style={{ animationDelay: "90ms" }}>
           <HomeUpcomingSection />
         </div>
         <HomeSavingGoal />
         <HomeFinancialPulse />
-        <div className="ct-home-enter-item" style={{ animationDelay: "130ms" }}>
+        <div className="ed-home-enter-item" style={{ animationDelay: "130ms" }}>
           <HomeToolsSection />
         </div>
       </div>

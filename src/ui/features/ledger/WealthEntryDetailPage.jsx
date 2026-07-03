@@ -145,7 +145,7 @@ export default function WealthEntryDetailPage() {
 
   if (!entry || !intel) {
     return (
-      <div className="ct-page ed-paper ed-ins-page">
+      <div className="ed-paper ed-ins-page">
         <div className="ed-ins-sub-mast">
           <button type="button" className="ed-ins-back" onClick={() => navigate(-1)}>
             {t("insights.subpages.back")}
@@ -236,7 +236,7 @@ export default function WealthEntryDetailPage() {
         : t("wealthDetail.property.tier3");
 
   return (
-    <div className="ct-page ed-paper ed-ins-page">
+    <div className="ed-paper ed-ins-page">
       <div className="ed-ins-sub-mast">
         <button type="button" className="ed-ins-back" onClick={() => navigate(-1)}>
           {t("insights.subpages.back")}

@@ -108,11 +108,11 @@ export function runMobileAudit() {
         message: "components.css has no @media queries — verify mobile resize rules exist",
       });
     }
-    if (!css.includes("--ct-page-inset")) {
+    if (!css.includes("--ed-page-x") && !css.includes("--ed-page-top")) {
       warnings.push({
         kind: "page-inset",
         file: "src/ui/styles/components-*.css",
-        message: "Missing --ct-page-inset tokens for device edge padding",
+        message: "Missing --ed-page-x / --ed-page-top tokens for device edge padding",
       });
     }
   }

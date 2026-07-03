@@ -113,7 +113,7 @@ const Profile = () => {
   }, [user, t, deleteInput]);
 
   return (
-    <div className="ct-page ed-paper">
+    <div className="ed-paper">
       <div className="ed-masthead">
         <div className="ed-masthead-top">
           <div className="ed-masthead-brand">

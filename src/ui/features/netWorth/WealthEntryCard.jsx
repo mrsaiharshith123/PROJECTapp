@@ -14,16 +14,6 @@ import {
 } from "../../../utils/netWorth/physicalAssetHelpers.js";
 import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
-import { Caption, Body } from "../../index.js";
-
-const ED_CARD_WRAP = /** @type {import("react").CSSProperties} */ ({
-  background: "transparent",
-  border: "0.5px solid var(--ed-rule)",
-  borderRadius: 12,
-  padding: "12px 14px",
-  marginBottom: 8,
-  position: "relative",
-});
 
 export default function WealthEntryCard({
   entry,
@@ -67,50 +57,49 @@ export default function WealthEntryCard({
       : null;
   const detailLine = physical && !privacyMode ? buildAssetDetailLine(entry, t) : "";
   const holding = physical && !privacyMode ? formatHoldingPeriod(entry.purchaseYear, t) : "";
+  const amountClass = entry.kind === "asset" ? "ed-amount-pos" : "ed-amount-neg";
 
   const body = (
     <>
-      <div className="ct-row-between gap-2">
-        <div className="ct-row gap-3 min-w-0">
-          <span className="ct-nw-entry-icon">
-            <CtIcon name={cat.icon} size={20} />
-          </span>
-          <div className="min-w-0">
-            <div className="ct-row gap-2 items-center min-w-0">
-              <Body className="font-semibold truncate">{entry.name}</Body>
-            </div>
-            <Caption>
-              {t(cat.labelKey)}
-              {sourceLabel ? ` · ${sourceLabel}` : ""}
-            </Caption>
-          </div>
+      <div className="ed-row" style={{ padding: 0, border: "none" }}>
+        <div className="ed-row-icon">
+          <CtIcon name={cat.icon} size={18} />
         </div>
-        <div className="ct-stat-tile teal shrink-0 text-right min-w-[5rem]">
-          <p className="ct-stat-tile-value ct-numeral">
+        <div className="ed-row-left">
+          <div className="ed-row-title">{entry.name}</div>
+          <div className="ed-row-sub">
+            {t(cat.labelKey)}
+            {sourceLabel ? ` · ${sourceLabel}` : ""}
+          </div>
+          {detailLine ? (
+            <div className="ed-caption" style={{ marginTop: 2 }}>
+              {detailLine}
+            </div>
+          ) : null}
+          {holding ? <div className="ed-caption">{holding}</div> : null}
+        </div>
+        <div className="ed-row-right">
+          <div className={`ed-row-value ${amountClass}`}>
             {privacyMode ? "••••" : formatInr(entry.value)}
-          </p>
-          {pct != null && <p className="ct-stat-tile-label">{pct.toFixed(0)}%</p>}
-          {cagr != null && (
-            <span className="ct-trend-chip ct-nw-cagr-chip">
+          </div>
+          {pct != null ? <div className="ed-caption">{pct.toFixed(0)}%</div> : null}
+          {cagr != null ? (
+            <div className={`ed-caption ${cagr >= 0 ? "ed-amount-pos" : "ed-amount-neg"}`}>
               {cagr >= 0 ? "+" : ""}
               {cagr.toFixed(1)}%
-            </span>
-          )}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      {detailLine && <Caption className="mt-2 block truncate">{detailLine}</Caption>}
-      {holding && <Caption className="mt-1 block">{holding}</Caption>}
-
       {showGoldSync && goldAutoValue != null && (
-        <div className="ct-nw-value-suggestion mt-2">
-          <Caption className="block">
-            {t("netWorth.asset.goldUpdate", { amount: formatInr(goldAutoValue) })}
-          </Caption>
+        <div className="ed-metric" style={{ marginTop: 10 }}>
+          <p className="ed-caption">{t("netWorth.asset.goldUpdate", { amount: formatInr(goldAutoValue) })}</p>
           {!readOnly && (
             <button
               type="button"
-              className="ct-suggestion-link mt-1"
+              className="ed-btn-link"
+              style={{ marginTop: 4, fontSize: 12 }}
               onClick={() => updateEntry(entry.id, { value: goldAutoValue })}
             >
               {t("netWorth.asset.syncValueCta")}
@@ -120,14 +109,15 @@ export default function WealthEntryCard({
       )}
 
       {showVehicleEstimate && (
-        <div className="ct-nw-value-suggestion mt-2">
-          <Caption className="block">
+        <div className="ed-metric" style={{ marginTop: 10 }}>
+          <p className="ed-caption">
             {t("netWorth.asset.vehicleEstimate", { value: formatInr(vehicleEstimate) })}
-          </Caption>
+          </p>
           {!readOnly && (
             <button
               type="button"
-              className="ct-suggestion-link mt-1"
+              className="ed-btn-link"
+              style={{ marginTop: 4, fontSize: 12 }}
               onClick={() => updateEntry(entry.id, { value: vehicleEstimate })}
             >
               {t("netWorth.asset.syncValueCta")}
@@ -137,48 +127,44 @@ export default function WealthEntryCard({
       )}
 
       {(Number(entry.emi) || 0) > 0 && (
-        <Caption className="mt-2 block">
+        <p className="ed-caption" style={{ marginTop: 8 }}>
           {t("netWorth.entry.emi", { amount: privacyMode ? "••••" : formatInr(entry.emi) })}
-        </Caption>
+        </p>
       )}
 
       {onAnalyze ? (
-        <button type="button" className="ed-ins-link" style={{ marginTop: 10, padding: 0 }} onClick={onAnalyze}>
+        <button type="button" className="ed-btn-link" style={{ marginTop: 10, fontSize: 12 }} onClick={onAnalyze}>
           {t("wealthDetail.viewAnalysis")}
         </button>
       ) : null}
     </>
   );
 
-  const cardClass = physical ? "ct-nw-entry ct-nw-entry--physical ct-animate-fade-in" : "ct-nw-entry ct-animate-fade-in";
-
   if (readOnly && onOpen) {
     return (
-      <button type="button" className="ct-nw-entry-btn w-full text-left" onClick={onOpen}>
-        <div className={cardClass} style={ED_CARD_WRAP}>
-          {body}
-        </div>
+      <button type="button" className="ed-card ed-card--entry ed-card-press" style={{ width: "100%", textAlign: "left" }} onClick={onOpen}>
+        {body}
       </button>
     );
   }
 
   return (
-    <div className={cardClass} style={ED_CARD_WRAP}>
+    <div className="ed-card ed-card--entry">
       {body}
-      {!readOnly && (
-        <div className="ct-row gap-2 mt-3 pt-2 border-t border-[var(--ct-border-subtle)]">
+      {!readOnly && (onEdit || onDelete) ? (
+        <div className="ed-actions-row" style={{ marginTop: 10, paddingTop: 10, borderTop: "0.5px solid var(--ed-rule)" }}>
           {typeof onEdit === "function" ? (
-            <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm flex-1" onClick={() => onEdit(entry)}>
+            <button type="button" className="ed-btn ed-btn-secondary" style={{ flex: 1 }} onClick={() => onEdit(entry)}>
               {t("common.edit")}
             </button>
           ) : null}
           {typeof onDelete === "function" ? (
-            <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => onDelete(entry.id)}>
+            <button type="button" className="ed-btn ed-btn-danger ed-btn-sm" onClick={() => onDelete(entry.id)}>
               {t("common.delete")}
             </button>
           ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

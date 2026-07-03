@@ -1,22 +1,28 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { differenceInMonths, format, parseISO } from "date-fns";
-import { Card } from "../primitives/Card.jsx";
-import { Button } from "../primitives/Button.jsx";
-import { Caption } from "../primitives/Text.jsx";
-import { CategoryChip } from "./CategoryChip.jsx";
-import { PriorityBadge } from "./PriorityBadge.jsx";
-import { BILL_STATUS_UI } from "../tokens/billStatus.js";
+import { differenceInMonths, parseISO } from "date-fns";
 import { getBillDisplayName } from "../../utils/billDisplayName.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { usePrivacyAmount } from "../../hooks/usePrivacyAmount.js";
-import { translateBillStatus, translateRepeatType } from "../../i18n/domainLabels.js";
+import {
+  translateBillStatus,
+  translateCategory,
+  translatePriority,
+  translateRepeatType,
+} from "../../i18n/domainLabels.js";
 import { formatLocaleDate } from "../../i18n/formatLocale.js";
+import { BILL_STATUS_UI } from "../tokens/billStatus.js";
 import { cn } from "../utils/cn.js";
 
 const LOAN_CATEGORIES = new Set(["EMI", "Loan", "Credit Card", "BNPL"]);
 
-function CommitmentProgress({ commitment, effectiveStatus = "pending" }) {
+function healthPillClass(band) {
+  if (band === "stress") return "ed-pill ed-pill-red";
+  if (band === "ok") return "ed-pill ed-pill-green";
+  return "ed-pill ed-pill-gold";
+}
+
+function CommitmentProgress({ commitment, effectiveStatus = "pending", t, locale }) {
   if (!commitment?.startDate || !commitment?.endDate) return null;
   if (commitment.repeatType !== "monthly") return null;
   if (!LOAN_CATEGORIES.has(commitment.category)) return null;
@@ -35,19 +41,24 @@ function CommitmentProgress({ commitment, effectiveStatus = "pending" }) {
   const doneMonths = Math.min(totalMonths, Math.max(0, differenceInMonths(today, start)));
   const pct = Math.min(100, Math.round((doneMonths / totalMonths) * 100));
 
-  let barClass = "ct-progress-bar";
-  if (effectiveStatus === "overdue") barClass += " ct-progress-bar-danger";
-  else if (pct >= 80) barClass += " ct-progress-bar-success";
-  else if (pct >= 50) barClass += " ct-progress-bar-warning";
+  let barClass = "ed-progress-bar";
+  if (effectiveStatus === "overdue") barClass += " ed-progress-bar--danger";
+  else if (pct >= 80) barClass += " ed-progress-bar--success";
+  else if (pct >= 50) barClass += " ed-progress-bar--warning";
 
   return (
-    <div className="ct-stack-sm" style={{ marginTop: "0.75rem" }}>
-      <div className="ct-progress">
-        <div className={`${barClass} ct-bar-animated`} style={{ width: `${pct}%` }} />
+    <div className="ed-section" style={{ marginTop: 10, paddingTop: 0 }}>
+      <div className="ed-progress">
+        <div className={barClass} style={{ width: `${pct}%` }} />
       </div>
-      <Caption className="block">
-        Month {doneMonths} of {totalMonths} · {pct}% complete · ends {format(end, "MMM yyyy")}
-      </Caption>
+      <p className="ed-caption" style={{ marginTop: 6 }}>
+        {t("bill.emiScheduleProgress", {
+          done: doneMonths,
+          total: totalMonths,
+          pct,
+          endDate: formatLocaleDate(commitment.endDate, locale),
+        })}
+      </p>
     </div>
   );
 }
@@ -101,13 +112,13 @@ export function BillCard({
   const { t, locale } = useTranslation();
   const { formatAmount } = usePrivacyAmount();
   const navigate = useNavigate();
-  const statusIconRef = useRef(null);
+  const paidBannerRef = useRef(null);
   const prevMonthPaid = useRef(monthPaid);
 
   useEffect(() => {
     if (monthPaid && !prevMonthPaid.current) {
-      statusIconRef.current?.classList.add("ct-celebrate");
-      const timer = setTimeout(() => statusIconRef.current?.classList.remove("ct-celebrate"), 600);
+      paidBannerRef.current?.classList.add("ed-paid-flash");
+      const timer = setTimeout(() => paidBannerRef.current?.classList.remove("ed-paid-flash"), 600);
       prevMonthPaid.current = monthPaid;
       return () => clearTimeout(timer);
     }
@@ -121,33 +132,34 @@ export function BillCard({
   const isHistory = variant === "history";
   const cardVariant = isHistory ? "status-paid" : billCardVariant(eff, item, monthPaid);
   const fmt = (dateStr) => formatLocaleDate(dateStr, locale);
+  const isOverdue = eff === "overdue";
 
   if (isHistory) {
     return (
-      <Card variant={cardVariant} className={cn("ct-bill-card ct-bill-card-history", "ct-stack-sm", "ct-pressable")}>
-        <button type="button" onClick={onOpen} className="ct-bill-card-head">
-          <div className="min-w-0">
-            <p className="ct-body-strong truncate">{getBillDisplayName(item)}</p>
-            <p className="ct-caption">{t("bill.historyPaid", { date: fmt(item.dueDate) })}</p>
+      <div className="ed-card ed-card-bill ed-card-paid">
+        <button type="button" onClick={onOpen} className="ed-bill-head">
+          <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+            <div className="ed-value" style={{ fontSize: 14 }}>
+              {getBillDisplayName(item)}
+            </div>
+            <p className="ed-caption">{t("bill.historyPaid", { date: fmt(item.dueDate) })}</p>
             {progress.totalCycles != null && progress.totalCycles > 0 && (
-              <p className="ct-caption ct-text-accent mt-0.5">{progress.label}</p>
+              <p className="ed-caption ed-amount-gold" style={{ marginTop: 4 }}>
+                {progress.label}
+              </p>
             )}
           </div>
-          <span className="ct-status ct-status-success">{t("bill.status.paid")}</span>
+          <span className="ed-pill ed-pill-green">{t("bill.status.paid")}</span>
         </button>
-        <div className="ct-bill-card-actions">
-          <Button variant="ghost" size="sm" type="button" onClick={onEdit}>
+        <div className="ed-actions-row ed-actions-row--two">
+          <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={onEdit}>
             {t("common.edit")}
-          </Button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="ct-bill-delete-btn"
-          >
+          </button>
+          <button type="button" className="ed-btn ed-btn-danger ed-btn-sm" onClick={onDelete}>
             {t("common.delete")}
           </button>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -158,58 +170,72 @@ export function BillCard({
   dateParts.push(t("bill.dueOn", { date: fmt(item.dueDate) }));
 
   return (
-    <Card variant={cardVariant} className="ct-bill-card ct-stack ct-pressable">
-      <button type="button" onClick={onOpen} className="ct-bill-card-head">
-        <div className="ct-stack-sm min-w-0">
-          <p className="ct-body-strong">{getBillDisplayName(item)}</p>
-          <div className="ct-row" style={{ flexWrap: "wrap" }}>
-            <CategoryChip categoryId={item.category} />
-            <PriorityBadge priorityId={item.priority} />
-            {item.repeatType !== "none" && (
-              <span className="ct-chip-repeat">{translateRepeatType(t, item.repeatType)}</span>
-            )}
-            {health && (
-              <span className={`ct-chip-health ct-chip-health-${health.band}`}>
+    <div
+      className={cn(
+        "ed-card ed-card-bill",
+        cardVariant === "status-overdue" && "ed-card-overdue",
+        cardVariant === "status-due-soon" && "ed-card-due-soon",
+        cardVariant === "status-paid" && "ed-card-paid",
+      )}
+    >
+      <button type="button" onClick={onOpen} className="ed-bill-head">
+        <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+          <div className="ed-value" style={{ fontSize: 14 }}>
+            {getBillDisplayName(item)}
+          </div>
+          <div className="ed-bill-pills">
+            {item.category ? (
+              <span className="ed-pill ed-pill-neutral">{translateCategory(t, item.category)}</span>
+            ) : null}
+            {item.priority ? (
+              <span className="ed-pill ed-pill-amber">{translatePriority(t, item.priority)}</span>
+            ) : null}
+            {item.repeatType !== "none" ? (
+              <span className="ed-pill ed-pill-neutral">{translateRepeatType(t, item.repeatType)}</span>
+            ) : null}
+            {health ? (
+              <span className={healthPillClass(health.band)}>
                 {health.band === "stress" && health.insightId === "bill-health-top-stress"
                   ? t("bill.health.topStressContributor")
                   : t(`bill.health.${health.band}`)}
               </span>
-            )}
+            ) : null}
           </div>
-          {health?.insightId && (
-            <p
-              className={
-                health.band === "stress" ? "ct-caption ct-text-warn font-medium" : "ct-caption text-[var(--ct-text-muted)]"
-              }
-            >
+          {health?.insightId ? (
+            <p className={cn("ed-caption", health.band === "stress" && "ed-amount-neg")} style={{ marginTop: 6 }}>
               {t(`insight.${health.insightId}`, health.params || {})}
             </p>
-          )}
-          <p className="ct-caption">
+          ) : null}
+          <p className="ed-caption" style={{ marginTop: 6 }}>
             {dateParts.join(" · ")}
-            {item.notes ? <span className="block mt-1">{item.notes}</span> : null}
+            {item.notes ? <span style={{ display: "block", marginTop: 4 }}>{item.notes}</span> : null}
           </p>
-          {progress.totalCycles != null && progress.totalCycles > 0 && (
-            <p className="ct-caption ct-text-accent">{progress.label}</p>
-          )}
+          {progress.totalCycles != null && progress.totalCycles > 0 ? (
+            <p className="ed-caption ed-amount-gold" style={{ marginTop: 4 }}>
+              {progress.label}
+            </p>
+          ) : null}
         </div>
-        <div className="ct-bill-card-amount ct-bill-card-amount-right">
-          <p className="ct-display ct-amount ct-numeral">{formatAmount(total)}</p>
-          {partial && (
-            <p className="ct-caption ct-amount-warn ct-numeral">
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div className={cn("ed-value", isOverdue && "ed-amount-neg")}>{formatAmount(total)}</div>
+          {partial ? (
+            <p className="ed-caption ed-amount-neg" style={{ marginTop: 4 }}>
               {t("bill.dueNow", { amount: formatAmount(cycleDue) })}
             </p>
-          )}
-          <span className={classes}>{statusLabel}</span>
+          ) : null}
+          <span className={classes} style={{ marginTop: 4, display: "inline-flex" }}>
+            {statusLabel}
+          </span>
         </div>
       </button>
 
-      <CommitmentProgress commitment={item} effectiveStatus={eff} />
+      <CommitmentProgress commitment={item} effectiveStatus={eff} t={t} locale={locale} />
 
       {(item.category === "EMI" || item.category === "Loan") && eff !== "paid" ? (
         <button
           type="button"
-          className="ct-suggestion-link mx-4 mb-1"
+          className="ed-btn-link"
+          style={{ margin: "4px 14px 0", fontSize: 12 }}
           onClick={(e) => {
             e.stopPropagation();
             navigate("/you/tools?tool=loan");
@@ -219,21 +245,25 @@ export function BillCard({
         </button>
       ) : null}
 
-      {monthPaid && <p ref={statusIconRef} className="ct-bill-paid-banner ct-celebrate">{t("bill.paidBanner")}</p>}
+      {monthPaid ? (
+        <p ref={paidBannerRef} className="ed-paid-banner">
+          {t("bill.paidBanner")}
+        </p>
+      ) : null}
 
       {(eff === "pending" || eff === "overdue") && (
-        <div className="ct-bill-card-actions">
-          <Button variant="success" size="sm" type="button" className="ct-bill-pay-btn" onClick={onPay}>
+        <div className="ed-actions-row">
+          <button type="button" className="ed-btn ed-btn-primary ed-btn-sm" onClick={onPay}>
             {t("common.pay")} {formatAmount(cycleDue)}
-          </Button>
-          <Button variant="secondary" size="sm" type="button" onClick={onEdit}>
+          </button>
+          <button type="button" className="ed-btn ed-btn-secondary ed-btn-sm" onClick={onEdit}>
             {t("common.edit")}
-          </Button>
-          <button type="button" onClick={onDelete} className="ct-bill-delete-btn">
+          </button>
+          <button type="button" className="ed-btn ed-btn-danger ed-btn-sm" onClick={onDelete}>
             {t("common.delete")}
           </button>
         </div>
       )}
-    </Card>
+    </div>
   );
 }

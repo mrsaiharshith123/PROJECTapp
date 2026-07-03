@@ -1,12 +1,31 @@
 import fs from "fs";
 import path from "path";
 
-const PARTS = [
-  "components-core.css",
+const ACTIVE_PARTS = [
+  "components-dh.css",
+  "components-controls.css",
+  "components-shell.css",
+  "components-editorial-home.css",
+  "components-editorial-pages.css",
   "components-charts.css",
-  "components-surfaces.css",
   "components-editorial.css",
 ];
+
+/** Archived ct-* bundles — reference only, not imported by index.css */
+const ARCHIVE_PARTS = [
+  "components-core.css",
+  "components-surfaces.css",
+  "net-worth.css",
+  "theme-light.css",
+];
+
+function readPart(stylesDir, name) {
+  const active = path.join(stylesDir, name);
+  if (fs.existsSync(active)) return fs.readFileSync(active, "utf8");
+  const archived = path.join(stylesDir, "_archive", name);
+  if (fs.existsSync(archived)) return fs.readFileSync(archived, "utf8");
+  return "";
+}
 
 /** @param {string} stylesDir absolute path to src/ui/styles */
 export function readComponentsCss(stylesDir) {
@@ -14,7 +33,13 @@ export function readComponentsCss(stylesDir) {
   if (fs.existsSync(legacy)) {
     return fs.readFileSync(legacy, "utf8");
   }
-  return PARTS.filter((name) => fs.existsSync(path.join(stylesDir, name)))
-    .map((name) => fs.readFileSync(path.join(stylesDir, name), "utf8"))
+  return [...ACTIVE_PARTS, ...ARCHIVE_PARTS]
+    .map((name) => readPart(stylesDir, name))
+    .filter(Boolean)
     .join("\n");
+}
+
+/** Active Direction H imports only (what index.css loads). */
+export function readActiveStylesCss(stylesDir) {
+  return ACTIVE_PARTS.map((name) => readPart(stylesDir, name)).filter(Boolean).join("\n");
 }

@@ -127,7 +127,7 @@ export default function InsightsEditorialPage({ data }) {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ct-page ed-paper ed-ins-page">
+    <div className="ed-paper ed-ins-page">
       <div className="ed-ins-mast">
         <div>
           <h1 className="ed-ins-mast-title">{t("nav.insights")}</h1>

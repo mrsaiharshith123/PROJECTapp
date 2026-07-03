@@ -8,7 +8,7 @@ export function InsightsBreakdownShell({ title, subtitle, children }) {
   const { t } = useTranslation();
 
   return (
-    <div className="ct-page ed-paper ed-ins-page">
+    <div className="ed-paper ed-ins-page">
       <div className="ed-ins-sub-mast">
         <button type="button" className="ed-ins-back" onClick={() => navigate("/insights")}>
           {t("insights.subpages.back")}

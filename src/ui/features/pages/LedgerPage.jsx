@@ -14,12 +14,6 @@ const TABS = [
   { id: "instruments", labelKey: "ledger.tab.instruments", tone: "instrument" },
 ];
 
-const POS_COLORS = {
-  asset: { color: "var(--ed-green)", border: "var(--ed-green)", bg: "rgba(94,199,149,0.1)" },
-  liab: { color: "var(--ed-red)", border: "var(--ed-red)", bg: "rgba(232,148,144,0.1)" },
-  instrument: { color: "var(--ed-violet)", border: "var(--ed-violet)", bg: "rgba(179,160,232,0.1)" },
-};
-
 function resolveTab(tabParam, stateTab) {
   if (tabParam && TABS.some((x) => x.id === tabParam)) return tabParam;
   if (stateTab && TABS.some((x) => x.id === stateTab)) return stateTab;
@@ -66,16 +60,14 @@ export default function LedgerPage() {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ct-page ed-paper">
+    <div className="ed-page-full">
       <header className="ed-masthead">
-        <div className="ed-masthead-top">
-          <div className="ed-masthead-brand">
-            <h1 className="ed-title">{t("nav.ledger")}</h1>
-            <div className="ed-tagline">{t("ledger.ed.tagline")}</div>
-          </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+        <div>
+          <h1 className="ed-masthead-title">{t("nav.ledger")}</h1>
+          <p className="ed-masthead-sub">{t("ledger.ed.tagline")}</p>
+        </div>
+        <div className="ed-masthead-right">
+          <HomeEditorialAvatar tier={tier} />
         </div>
       </header>
 
@@ -83,22 +75,12 @@ export default function LedgerPage() {
         {TABS.map((item) => {
           const token = posToken(item.id);
           const active = tab === item.id;
-          const tc = POS_COLORS[token];
           return (
             <button
               key={item.id}
               type="button"
-              className={`ed-insight-pill ${active ? "active" : "inactive"}`}
+              className={`ed-mast-tab ed-mast-tab--${token} ${active ? "active" : ""}`}
               onClick={() => switchTab(item.id)}
-              style={
-                active
-                  ? {
-                      background: tc.bg,
-                      borderColor: tc.border,
-                      color: tc.color,
-                    }
-                  : undefined
-              }
             >
               {t(item.labelKey)}
             </button>

@@ -10,5 +10,10 @@ export default defineConfig({
     ],
     reporters: ["verbose"],
     globals: true,
+    // CI runs `npm test` before secrets are injected; tier/auth smoke tests need these.
+    env: {
+      VITE_SUPABASE_URL: "https://test.supabase.co",
+      VITE_SUPABASE_ANON_KEY: "test-anon-key",
+    },
   },
 });

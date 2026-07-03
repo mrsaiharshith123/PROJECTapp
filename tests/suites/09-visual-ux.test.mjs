@@ -5,8 +5,13 @@ import { resolve } from "path";
 const src = (p) => readFileSync(resolve(process.cwd(), p), "utf-8");
 
 const componentsCss = () =>
-  ["components-core.css", "components-charts.css", "components-surfaces.css", "components-editorial.css"]
+  ["components-dh.css", "components-charts.css", "components-editorial.css"]
     .map((f) => src(`src/ui/styles/${f}`))
+    .concat(
+      ["components-core.css", "components-surfaces.css"].map((f) =>
+        src(`src/ui/styles/_archive/${f}`),
+      ),
+    )
     .join("\n");
 
 describe("🧭 NAVIGATION: tab count and structure", () => {
@@ -42,19 +47,15 @@ describe("🧭 NAVIGATION: tab count and structure", () => {
 });
 
 describe("🔁 DUPLICATE DATA: same number shown twice", () => {
-  it("[P1] BillsHeroSummary returns null when there is only 1 bill", () => {
-    const content = src("src/ui/features/commitments/BillsHeroSummary.jsx");
-    const hasGuard =
-      content.includes("length <= 1") ||
-      content.includes("length < 2") ||
-      content.includes("length === 0");
-    expect(hasGuard).toBe(true);
+  it("[P1] CommitmentsPage hero shows bill count in metric sub", () => {
+    const content = src("src/ui/features/pages/CommitmentsPage.jsx");
+    expect(content).toMatch(/bills\.heroSub/);
+    expect(content).toMatch(/ed-metrics/);
   });
 
-  it("[P2] BillsHeroSummary label says 'across N bills' not just the amount", () => {
-    const content = src("src/ui/features/commitments/BillsHeroSummary.jsx");
-    const hasContext = content.includes("bills") || content.includes("count");
-    expect(hasContext).toBe(true);
+  it("[P2] CommitmentsPage overdue metric uses counts.overdue", () => {
+    const content = src("src/ui/features/pages/CommitmentsPage.jsx");
+    expect(content).toMatch(/counts\.overdue/);
   });
 });
 
@@ -162,9 +163,14 @@ describe("VISUAL: home + insights layout tokens", () => {
     expect(content).toMatch(/Breakdown|breakdown/i);
   });
 
-  it("[P2] split components CSS index imports editorial bundle", () => {
+  it("[P2] Direction H CSS index imports tokens + dh + editorial", () => {
     const index = src("src/ui/styles/index.css");
+    expect(index).toContain("components-dh.css");
     expect(index).toContain("components-editorial.css");
     expect(index).not.toMatch(/@import "\.\/components\.css"/);
+    expect(index).not.toMatch(/@import "\.\/components-core\.css"/);
+    expect(index).not.toMatch(/@import "\.\/components-surfaces\.css"/);
+    expect(index).not.toMatch(/@import "\.\/net-worth\.css"/);
+    expect(index).not.toMatch(/@import "\.\/theme-light\.css"/);
   });
 });

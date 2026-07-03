@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "செலுத்தப்பட்டது · நிலுவையில் {date}",
   "bill.started": "தொடங்கப்பட்டது {date}",
   "bill.ends": "முடிவடைகிறது {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "நடந்து கொண்டிருக்கிறது",
   "bill.dueOn": "நிலுவையில் {date}",
   "bill.dueNow": "இப்போது செலுத்த வேண்டியவை {amount}",

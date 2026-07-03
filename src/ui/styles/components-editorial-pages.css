@@ -1,0 +1,409 @@
+/* Direction H — Ledger, bills, profile glimpse, shared page chrome */
+
+/* ── Masthead: date + avatar pinned top-right (home uses .ed-masthead-top) ── */
+html[data-ui="ct"] .ed-masthead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+html[data-ui="ct"] .ed-masthead-brand {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+html[data-ui="ct"] .ed-masthead-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+  text-align: right;
+}
+
+html[data-ui="ct"] .ed-masthead-right .ed-date {
+  text-align: right;
+  line-height: 1.35;
+}
+
+/* ── Profile glimpse popup (avatar tap) ── */
+html[data-ui="ct"] .ed-glimpse-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--ed-backdrop);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+html[data-ui="ct"] .ed-glimpse {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: max(var(--ed-page-x), env(safe-area-inset-right, 0px));
+  z-index: 101;
+  width: min(300px, calc(100vw - 2 * var(--ed-page-x)));
+  border-radius: var(--ed-r-lg);
+  border: 0.5px solid var(--ed-rule);
+  background: var(--ed-surface);
+  color: var(--ed-ink);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+html[data-ui="ct"] .ed-glimpse-head {
+  padding: 14px 16px 10px;
+  border-bottom: 0.5px solid var(--ed-rule);
+}
+
+html[data-ui="ct"] .ed-glimpse-name {
+  margin: 0;
+  font-family: var(--ed-font-serif);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ed-ink);
+  line-height: 1.25;
+}
+
+html[data-ui="ct"] .ed-glimpse-email {
+  margin: 4px 0 0;
+  font-family: var(--ed-font);
+  font-size: 11px;
+  color: var(--ed-ink-faint);
+  word-break: break-all;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 0.5px solid var(--ed-rule);
+  background: var(--ed-surface-2);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance:active {
+  opacity: 0.85;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--ed-r-sm);
+  background: var(--ed-gold-soft);
+  color: var(--ed-gold);
+  flex-shrink: 0;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance-amount {
+  font-family: var(--ed-font-serif);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ed-gold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+html[data-ui="ct"] .ed-glimpse-balance-sub {
+  font-family: var(--ed-font);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ed-ink-faint);
+}
+
+html[data-ui="ct"] .ed-glimpse-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-bottom: 0.5px solid var(--ed-rule-soft);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+}
+
+html[data-ui="ct"] .ed-glimpse-row:active {
+  background: var(--ed-rule-soft);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--ed-r-sm);
+  flex-shrink: 0;
+  background: var(--ed-surface-3);
+  color: var(--ed-ink-faint);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-icon.indigo {
+  background: var(--ed-indigo-soft);
+  color: var(--ed-indigo);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-icon.rose {
+  background: var(--ed-red-soft);
+  color: var(--ed-red);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-icon.teal {
+  background: var(--ed-green-soft);
+  color: var(--ed-green);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-text {
+  flex: 1;
+  font-family: var(--ed-font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ed-ink-soft);
+}
+
+html[data-ui="ct"] .ed-glimpse-row-chevron {
+  flex-shrink: 0;
+  color: var(--ed-ink-faint);
+  opacity: 0.7;
+}
+
+html[data-ui="ct"] .ed-glimpse-foot {
+  padding: 10px 16px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+html[data-ui="ct"] .ed-glimpse-logout {
+  border: none;
+  background: none;
+  color: var(--ed-ink-faint);
+  font-family: var(--ed-font);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Ledger group lists ── */
+html[data-ui="ct"] .ed-paper .pos-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 18px 6px;
+  font-family: var(--ed-font);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ed-ink-faint);
+}
+
+html[data-ui="ct"] .ed-paper .pos-group-header .ct-numeral {
+  font-family: var(--ed-font-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ed-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+html[data-ui="ct"] .ed-paper .pos-group-card {
+  margin: 0 18px 12px;
+  border: 0.5px solid var(--ed-rule);
+  border-radius: var(--ed-r-lg);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--ed-surface);
+}
+
+html[data-ui="ct"] .ed-paper .ct-nw-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--ed-r-sm);
+  background: var(--ed-gold-soft);
+  color: var(--ed-gold);
+  flex-shrink: 0;
+}
+
+html[data-ui="ct"] .ed-paper > .ct-stack > .ct-btn-ghost.w-full {
+  display: flex;
+  width: calc(100% - 36px);
+  margin: 4px 18px 16px;
+}
+
+/* ── Bills page (under ledger) ── */
+html[data-ui="ct"] .ed-bills-page {
+  padding-bottom: 8px;
+}
+
+html[data-ui="ct"] .ed-bills-page .ct-money-bills-list {
+  padding: 0 18px 16px;
+  gap: 12px;
+}
+
+html[data-ui="ct"] .ed-bills-page .ct-filter-row-search {
+  width: 100%;
+}
+
+html[data-ui="ct"] .ed-bills-page .ct-bill-card {
+  margin-bottom: 0;
+}
+
+html[data-ui="ct"] .ed-bills-page .ct-money-bills-hero {
+  margin: 0 18px 10px;
+  border-radius: var(--ed-r-lg);
+  border: 0.5px solid var(--ed-rule);
+}
+
+html[data-ui="ct"] .ed-bills-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 18px 14px;
+  border-bottom: 1px solid var(--ed-rule);
+}
+
+html[data-ui="ct"] .ed-bills-actions .ct-btn {
+  width: 100%;
+  min-width: 0;
+  font-size: 11px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+html[data-ui="ct"] .ed-bills-actions .ct-btn:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-bills-hero {
+  margin: 0;
+  padding: 16px 18px 14px;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid var(--ed-rule);
+  background: transparent;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-bills-hero .ct-hero-label {
+  font-family: var(--ed-font);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ed-gold);
+  margin: 0 0 6px;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-hero-amount {
+  font-family: var(--ed-font-serif);
+  font-size: clamp(28px, 6vw, 36px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ed-red);
+  margin: 0 0 6px;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-commit-bar {
+  display: flex;
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ed-rule);
+  margin: 8px 0;
+}
+
+html[data-ui="ct"] .ct-money-commit-seg.paid { background: var(--ed-green); }
+html[data-ui="ct"] .ct-money-commit-seg.pending { background: var(--ed-amber); }
+html[data-ui="ct"] .ct-money-commit-seg.overdue { background: var(--ed-red); }
+
+html[data-ui="ct"] .ed-paper .ct-money-hero-sub {
+  font-family: var(--ed-font-news);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ed-ink-faint);
+  margin: 0;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-bills-list {
+  padding: 0 18px;
+}
+
+html[data-ui="ct"] .ed-paper .ct-money-import-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--ed-rule);
+}
+
+/* ── Page shell (bills wrapper) ── */
+html[data-ui="ct"] .ed-paper .ct-page-shell {
+  padding: 0;
+  padding-bottom: 0;
+  max-width: none;
+}
+
+html[data-ui="ct"] .ed-paper .ct-page-shell-head {
+  display: none;
+}
+
+html[data-ui="ct"] .ed-paper .ct-page-shell-body {
+  gap: 0;
+}
+
+/* ── Ledger tabs row ── */
+html[data-ui="ct"] .ed-mast-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--ed-rule);
+}
+
+html[data-ui="ct"] .ed-mast-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Section padding inside ed-paper pages ── */
+html[data-ui="ct"] .ed-paper > .ct-stack {
+  gap: 0;
+}
+
+html[data-ui="ct"] .ed-paper .ct-page {
+  gap: 0;
+  padding-bottom: 0;
+}

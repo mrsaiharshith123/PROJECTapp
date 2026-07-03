@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "फारीक केल्लें · देय {date} .",
   "bill.started": "सुरू जालें {date} .",
   "bill.ends": "सोंपता __टी0__ .",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "चालू आसा",
   "bill.dueOn": "देय __टी०__ .",
   "bill.dueNow": "आतां देय {amount} .",

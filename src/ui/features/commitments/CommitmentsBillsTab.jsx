@@ -1,19 +1,11 @@
 import { useMemo, useState } from "react";
-import {
-  FilterChipsWithSearch,
-  BillCard,
-  Caption,
-  Body,
-  EmptyState,
-  Button,
-} from "../../index.js";
+import { BillCard, EmptyState } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { suggestedCyclePaymentAmount } from "../../../utils/commitmentPayments.js";
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { scoreBillHealth } from "../../../engines/billHealth.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
-import BillsHeroSummary from "./BillsHeroSummary.jsx";
 import BillsCategorySheet from "./BillsCategorySheet.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
@@ -36,7 +28,7 @@ export default function CommitmentsBillsTab({
   todayStr,
   activeBills,
   historyBills,
-  counts,
+  counts: _counts,
   search,
   onSearchChange,
   filterCategory,
@@ -104,25 +96,37 @@ export default function CommitmentsBillsTab({
       : t("money.bills.filterCategoryRow");
 
   return (
-    <div className="ct-stack ct-money-bills-list">
-      <BillsHeroSummary activeBills={activeBills} counts={counts} />
+    <div className="ed-section ed-section--flush">
+      <div className="ed-filter-row">
+        {presetChips.map((chip) => (
+          <button
+            key={chip.id || "all"}
+            type="button"
+            className={`ed-btn ed-btn-sm ${chipValue === chip.id ? "ed-btn-primary" : "ed-btn-ghost"}`}
+            onClick={() => onChipChange(chip.id)}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
 
-      <FilterChipsWithSearch
-        options={presetChips}
-        value={chipValue}
-        onChange={onChipChange}
-        search={search}
-        onSearchChange={onSearchChange}
-        searchPlaceholder={t("bills.searchPlaceholder")}
-      />
+      <div className="ed-field" style={{ marginTop: 10 }}>
+        <input
+          className="ed-input"
+          type="search"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={t("bills.searchPlaceholder")}
+        />
+      </div>
 
-      <button type="button" className="ct-link !text-xs text-left w-fit" onClick={onToggleHistory}>
+      <button type="button" className="ed-btn-link" style={{ marginTop: 8, fontSize: 12 }} onClick={onToggleHistory}>
         {showHistory ? t("money.bills.hidePaidHistory") : t("money.bills.showPaidHistory")}
       </button>
 
-      <button type="button" className="ct-settings-row ct-pressable" onClick={() => setCategoryOpen(true)}>
-        <span className="ct-settings-row-label">{categoryLabel}</span>
-        <CtIcon name="caret-right" size={14} className="ct-settings-row-caret shrink-0" aria-hidden />
+      <button type="button" className="ed-row ed-row-press" style={{ marginTop: 8 }} onClick={() => setCategoryOpen(true)}>
+        <span className="ed-row-title">{categoryLabel}</span>
+        <CtIcon name="caret-right" size={14} className="ed-icon-muted" />
       </button>
 
       <BillsCategorySheet
@@ -141,9 +145,9 @@ export default function CommitmentsBillsTab({
           message={t("bills.emptyHint", { action: copy.addBill })}
           action={
             onAddCommitment ? (
-              <Button type="button" onClick={onAddCommitment}>
+              <button type="button" className="ed-btn ed-btn-primary" onClick={onAddCommitment}>
                 {t("bills.emptyAction")}
-              </Button>
+              </button>
             ) : null
           }
         />
@@ -153,7 +157,7 @@ export default function CommitmentsBillsTab({
         <EmptyState icon="clipboard-text" title={t("bills.noMatchFilters")} hint={t("bills.recurringBills.clearFiltersHint")} />
       )}
 
-      <div className="ct-stack-sm ct-list-animate">
+      <div className="ed-section" style={{ paddingTop: 0 }}>
         {activeBills.map((item) => {
           const eff = item.effectiveStatus;
           const total = Number(item.amount ?? 0);
@@ -187,15 +191,15 @@ export default function CommitmentsBillsTab({
       </div>
 
       {activeBills.length > 0 && monthlyCommitted > 0 && (
-        <div className="ct-stat-tile teal ct-row-between gap-2 items-center">
-          <Caption className="ct-stat-tile-label">{t("bills.monthlyCommitted")}</Caption>
-          <Body className="ct-stat-tile-value ct-numeral">{formatAmount(monthlyCommitted)}</Body>
+        <div className="ed-metric">
+          <div className="ed-metric-label">{t("bills.monthlyCommitted")}</div>
+          <div className="ed-metric-value">{formatAmount(monthlyCommitted)}</div>
         </div>
       )}
 
       {showHistory && historyBills.length > 0 && (
-        <div className="ct-stack-sm">
-          <Body className="ct-body-strong">{t("bills.historyCount", { count: historyBills.length })}</Body>
+        <div className="ed-section">
+          <p className="ed-row-title">{t("bills.historyCount", { count: historyBills.length })}</p>
           {historyBills.map((item) => {
             const hp = computeBillPaymentProgress(item, todayStr, commitments);
             return (

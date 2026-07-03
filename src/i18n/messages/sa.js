@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "भुक्तम् · देयम् {date} .",
   "bill.started": "प्रारब्धः {date} .",
   "bill.ends": "समाप्तं भवति {date} .",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "प्रचलति",
   "bill.dueOn": "देय __त०__ २.",
   "bill.dueNow": "अधुना देयम् {amount} .",

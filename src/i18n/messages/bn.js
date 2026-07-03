@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "প্রদত্ত · বকেয়া {date}",
   "bill.started": "শুরু হয়েছে {date}",
   "bill.ends": "শেষ হবে {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "চলমান",
   "bill.dueOn": "বকেয়া {date}",
   "bill.dueNow": "এখন বাকি {amount}",

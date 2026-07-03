@@ -9,7 +9,7 @@ import { usePrivacyAmount } from "../../hooks/usePrivacyAmount.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
 
 /**
- * Groww-style profile briefing — identity, net position, quick jumps.
+ * Editorial profile briefing — identity, net position, quick jumps.
  * @param {{ open: boolean, onClose: () => void }} props
  */
 export default function ProfileGlimpseMenu({ open, onClose }) {
@@ -41,7 +41,7 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
     };
     const onPointer = (e) => {
       if (panelRef.current?.contains(e.target)) return;
-      if (e.target.closest?.(".ct-app-header-avatar")) return;
+      if (e.target.closest?.(".ed-avatar")) return;
       onClose();
     };
     document.addEventListener("keydown", onKey);
@@ -54,49 +54,58 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
 
   if (!open) return null;
 
-  const menuRow = (icon, label, onClick) => (
-    <button type="button" className="ct-profile-glimpse-row" onClick={onClick}>
-      <span className={`ct-profile-glimpse-row-icon ${icon.tone || "muted"}`}>
-        <CtIcon name={icon.name} size={18} />
-      </span>
-      <span className="ct-profile-glimpse-row-text">{label}</span>
-      <CtIcon name="caret-right" size={14} className="ct-profile-glimpse-row-chevron" />
-    </button>
-  );
+  const menuItems = [
+    { labelKey: "profileGlimpse.account", icon: "user-circle", path: "/you" },
+    { labelKey: "ledger.headerBills", icon: "clipboard-text", path: "/ledger/bills" },
+    { labelKey: "nav.insights", icon: "chart-bar", path: "/insights" },
+  ];
 
   return (
     <>
-      <div className="ct-profile-glimpse-backdrop" aria-hidden onClick={onClose} />
-      <div ref={panelRef} className="ct-profile-glimpse" role="dialog" aria-label={t("profileGlimpse.title")}>
-        <div className="ct-profile-glimpse-head">
-          <div className="ct-profile-glimpse-identity">
-            <p className="ct-profile-glimpse-name">{name}</p>
-            {email ? <p className="ct-profile-glimpse-email">{email}</p> : null}
+      <div className="ed-backdrop" aria-hidden onClick={onClose} />
+      <div ref={panelRef} className="ed-profile-sheet" role="dialog" aria-label={t("profileGlimpse.title")}>
+        <div className="ed-sheet-header">
+          <div>
+            <div className="ed-value">{name}</div>
+            {email ? <div className="ed-caption">{email}</div> : null}
           </div>
         </div>
 
-        <button type="button" className="ct-profile-glimpse-balance" onClick={() => go("/ledger")}>
-          <span className="ct-profile-glimpse-balance-icon">
-            <CtIcon name="wallet" size={20} />
-          </span>
-          <span className="ct-profile-glimpse-balance-text">
-            <span className="ct-profile-glimpse-balance-amount">{netDisplay}</span>
-            <span className="ct-profile-glimpse-balance-sub">{t("profileGlimpse.netSub")}</span>
-          </span>
-          <CtIcon name="caret-right" size={14} className="ct-profile-glimpse-row-chevron" />
-        </button>
+        <div className="ed-sheet-body" style={{ padding: 0 }}>
+          <button type="button" className="ed-row ed-row-press ed-profile-balance" onClick={() => go("/ledger")}>
+            <div className="ed-row-left">
+              <div className="ed-row-sub">{t("profileGlimpse.netSub")}</div>
+              <div className="ed-display-sm ed-amount-gold">{netDisplay}</div>
+            </div>
+            <CtIcon name="caret-right" size={16} className="ed-icon-muted" />
+          </button>
 
-        <div className="ct-profile-glimpse-divider" />
+          <div className="ed-divider" />
 
-        {menuRow({ name: "user-circle", tone: "indigo" }, t("profileGlimpse.account"), () => go("/you"))}
-        {menuRow({ name: "clipboard-text", tone: "rose" }, t("ledger.headerBills"), () => go("/ledger/bills"))}
-        {menuRow({ name: "chart-bar", tone: "teal" }, t("nav.insights"), () => go("/insights"))}
+          {menuItems.map((item) => (
+            <button
+              key={item.path}
+              type="button"
+              className="ed-row ed-row-press"
+              style={{ padding: "12px 18px", width: "100%", textAlign: "left" }}
+              onClick={() => go(item.path)}
+            >
+              <span className="ed-row-icon" style={{ width: 32, height: 32 }}>
+                <CtIcon name={item.icon} size={16} />
+              </span>
+              <span className="ed-row-left">
+                <span className="ed-row-title">{t(item.labelKey)}</span>
+              </span>
+              <CtIcon name="caret-right" size={14} className="ed-icon-muted" />
+            </button>
+          ))}
+        </div>
 
-        <div className="ct-profile-glimpse-foot">
+        <div className="ed-sheet-footer">
           {isLoggedIn ? (
             <button
               type="button"
-              className="ct-profile-glimpse-logout"
+              className="ed-btn ed-btn-ghost ed-btn-block"
               onClick={async () => {
                 onClose();
                 await signOut();
@@ -105,7 +114,7 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
               {t("settings.row.signOut")}
             </button>
           ) : (
-            <button type="button" className="ct-profile-glimpse-logout" onClick={() => go("/you")}>
+            <button type="button" className="ed-btn ed-btn-ghost ed-btn-block" onClick={() => go("/you")}>
               {t("profileGlimpse.openProfile")}
             </button>
           )}

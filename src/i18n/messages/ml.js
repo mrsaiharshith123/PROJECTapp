@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "പണമടച്ചു · അടയ്‌ക്കേണ്ട {date}",
   "bill.started": "ആരംഭിച്ചു {date}",
   "bill.ends": "{date} അവസാനിക്കുന്നു",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "നടന്നുകൊണ്ടിരിക്കുന്നു",
   "bill.dueOn": "അടയ്‌ക്കേണ്ട {date}",
   "bill.dueNow": "ഇപ്പോൾ അടയ്‌ക്കേണ്ടത് {amount}",

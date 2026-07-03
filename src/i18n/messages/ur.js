@@ -103,6 +103,7 @@ export default {
   "bill.historyPaid": "ادا شدہ · واجب الادا {date}",
   "bill.started": "شروع ہوا {date}",
   "bill.ends": "ختم ہوتا ہے {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "جاری ہے۔",
   "bill.dueOn": "واجب الادا {date}",
   "bill.dueNow": "ابھی واجب الادا {amount}",

@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "Paid · due {date}",
   "bill.started": "Started {date}",
   "bill.ends": "Ends {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "Ongoing",
   "bill.dueOn": "Due {date}",
   "bill.dueNow": "Due now {amount}",

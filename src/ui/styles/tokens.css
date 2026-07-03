@@ -1,551 +1,220 @@
-/**
- * Perovo — Obsidian Financial
- * Warm charcoal + restrained indigo + trust teal · Inter typography
- */
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Outfit:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap");
+/* ═══════════════════════════════════════════════════
+   Perovo — Direction H · Editorial Design System
+   Warm charcoal · Fraunces + Newsreader + Inter
+   All screens use ed-* tokens exclusively
+═══════════════════════════════════════════════════ */
 
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400;9..144,1,600;9..144,1,700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap");
+
+/* ── Dark mode (default) ── */
 html[data-ui="ct"] {
   color-scheme: dark;
-
-  /* ── Native app: disable browser UI behaviors (selection only in Capacitor — see renderApp.jsx) ── */
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 
-  /* ── Financial Life palette (Obsidian Financial) ── */
-  --ct-life-violet: #6366f1;
-  --ct-life-violet-deep: #4f46e5;
-  --ct-life-violet-glow: rgba(99, 102, 241, 0.2);
-  --ct-life-emerald: #0d9488;
-  --ct-life-emerald-text: #2dd4bf;
-  --ct-life-emerald-soft: rgba(13, 148, 136, 0.12);
-  --ct-life-grad: linear-gradient(145deg, rgba(99, 102, 241, 0.14), rgba(13, 148, 136, 0.05));
-  --ct-life-grad-soft: linear-gradient(145deg, rgba(99, 102, 241, 0.08), rgba(13, 148, 136, 0.03));
-  --ct-life-grad-surface: linear-gradient(165deg, rgba(99, 102, 241, 0.1) 0%, rgba(24, 25, 48, 0.9) 50%, var(--ct-surface) 100%);
-  --ct-life-grad-panel: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, var(--ct-surface-inset) 100%);
-  --ct-life-glow: radial-gradient(circle, var(--ct-life-violet-glow), transparent 70%);
-  --ct-life-inset-bg: rgba(255, 255, 255, 0.04);
-  --ct-life-inset-border: rgba(255, 255, 255, 0.06);
-  --ct-life-shadow: 0 2px 24px rgba(0, 0, 0, 0.5), 0 0 32px -12px rgba(99, 102, 241, 0.12);
-  --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.06));
-  --ct-life-nav-bg: rgba(24, 25, 48, 0.80);
-  --ct-life-grad-hero: linear-gradient(165deg, rgba(99, 102, 241, 0.14) 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
-  --ct-life-glass: rgba(24, 25, 48, 0.72);
-  --ct-life-btn-grad: linear-gradient(135deg, #818cf8 0%, #6366f1 52%, #4f46e5 100%);
-  --ct-life-btn-border: rgba(129, 140, 248, 0.35);
-  --ct-life-btn-shadow: 0 6px 20px -6px rgba(99, 102, 241, 0.3);
-  --ct-life-btn-shadow-hover: 0 8px 24px -6px rgba(99, 102, 241, 0.38);
-  --ct-life-success-grad: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
-  --ct-life-label: #a8a6c2;
-  --ct-life-heading: #f0eff9;
+  /* ── Backgrounds ── */
+  --ed-bg:          #16140f;
+  --ed-surface:     #1c1a13;
+  --ed-surface-2:   #232019;
+  --ed-surface-3:   #2a2720;
 
-  /* Position OS — category colors */
-  --pos-bg: #0d0e18;
-  --pos-surface: #181930;
-  --pos-surface-2: #1e1f3a;
-  --pos-border: rgba(255, 255, 255, 0.07);
-  --pos-text: #f0eff9;
-  --pos-text-muted: #6e6c8a;
-  --pos-asset: #10b981;
-  --pos-asset-bg: rgba(16, 185, 129, 0.1);
-  --pos-asset-border: rgba(16, 185, 129, 0.25);
-  --pos-asset-glow: radial-gradient(circle at 70% -20%, rgba(16, 185, 129, 0.25), transparent 60%);
-  --pos-asset-grad: linear-gradient(150deg, rgba(16, 185, 129, 0.18) 0%, rgba(13, 14, 24, 0.95) 60%);
-  --pos-liab: #f43f5e;
-  --pos-liab-bg: rgba(244, 63, 94, 0.1);
-  --pos-liab-border: rgba(244, 63, 94, 0.25);
-  --pos-liab-glow: radial-gradient(circle at 70% -20%, rgba(244, 63, 94, 0.2), transparent 60%);
-  --pos-liab-grad: linear-gradient(150deg, rgba(244, 63, 94, 0.15) 0%, rgba(13, 14, 24, 0.95) 60%);
-  --pos-inst: #8b5cf6;
-  --pos-inst-bg: rgba(139, 92, 246, 0.1);
-  --pos-inst-border: rgba(139, 92, 246, 0.25);
-  --pos-inst-glow: radial-gradient(circle at 70% -20%, rgba(139, 92, 246, 0.2), transparent 60%);
-  --pos-inst-grad: linear-gradient(150deg, rgba(139, 92, 246, 0.15) 0%, rgba(13, 14, 24, 0.95) 60%);
-  --pos-agr: #6366f1;
-  --pos-agr-bg: rgba(99, 102, 241, 0.1);
-  --pos-agr-border: rgba(99, 102, 241, 0.25);
-  --pos-goal: #f59e0b;
-  --pos-goal-bg: rgba(245, 158, 11, 0.1);
-  --pos-goal-border: rgba(245, 158, 11, 0.25);
-  --pos-cashflow: #6b7280;
-  --pos-cashflow-bg: rgba(107, 114, 128, 0.10);
-  --pos-cashflow-border: rgba(107, 114, 128, 0.20);
-  --pos-positive: #2dd4bf;
-  --pos-warning: #fbbf24;
-  --pos-danger: #f87171;
-  --pos-gold: #fcd34d;
+  /* ── Typography ── */
+  --ed-ink:         #f0ebe0;
+  --ed-ink-soft:    #c4bdac;
+  --ed-ink-faint:   #7d7665;
+  --ed-ink-zero:    #4a4636;
 
-  /* Tailwind utility bridge (gray / slate / indigo / violet / emerald / amber) */
-  --ct-tw-gray-50: var(--ct-life-inset-bg);
-  --ct-tw-gray-100: rgba(20, 18, 40, 0.65);
-  --ct-tw-gray-200: rgba(255, 255, 255, 0.08);
-  --ct-tw-gray-400: #7a7894;
-  --ct-tw-gray-500: #9a97b0;
-  --ct-tw-gray-600: #c8c5dc;
-  --ct-tw-gray-700: #e0dff0;
-  --ct-tw-gray-800: var(--ct-life-heading);
-  --ct-tw-gray-900: #f2f2f7;
-  --ct-tw-slate-100: var(--ct-life-heading);
-  --ct-tw-slate-200: #e8e6f5;
-  --ct-tw-slate-300: #c8c5dc;
-  --ct-tw-slate-400: #9a97b0;
-  --ct-tw-slate-600: rgba(155, 109, 255, 0.22);
-  --ct-tw-slate-700: rgba(255, 255, 255, 0.08);
-  --ct-tw-slate-800: var(--ct-life-inset-bg);
-  --ct-tw-slate-900: var(--ct-surface);
-  --ct-tw-slate-950: var(--ct-bg);
-  --ct-tw-indigo-50: rgba(91, 77, 255, 0.08);
-  --ct-tw-indigo-100: rgba(91, 77, 255, 0.12);
-  --ct-tw-indigo-300: #b8a8ff;
-  --ct-tw-indigo-600: var(--ct-life-violet);
-  --ct-tw-indigo-700: var(--ct-life-violet-deep);
-  --ct-tw-indigo-900: #e8e4ff;
-  --ct-tw-indigo-950: rgba(18, 16, 40, 0.95);
-  --ct-tw-violet-50: rgba(91, 77, 255, 0.08);
-  --ct-tw-violet-100: rgba(91, 77, 255, 0.14);
-  --ct-tw-violet-800: rgba(91, 77, 255, 0.35);
-  --ct-tw-violet-900: #ddd6ff;
-  --ct-tw-violet-950: rgba(18, 16, 40, 0.92);
-  --ct-tw-emerald-50: var(--ct-life-emerald-soft);
-  --ct-tw-emerald-100: rgba(16, 185, 129, 0.18);
-  --ct-tw-emerald-300: #6ee7b7;
-  --ct-tw-emerald-400: var(--ct-life-emerald-text);
-  --ct-tw-emerald-500: var(--ct-life-emerald);
-  --ct-tw-emerald-700: var(--ct-life-emerald-text);
-  --ct-tw-emerald-800: #059669;
-  --ct-tw-emerald-950: rgba(6, 40, 30, 0.85);
-  --ct-tw-amber-50: rgba(255, 176, 32, 0.08);
-  --ct-tw-amber-100: rgba(255, 176, 32, 0.14);
-  --ct-tw-amber-200: #fcd34d;
-  --ct-tw-amber-300: #fcd34d;
-  --ct-tw-amber-700: #ffc857;
-  --ct-tw-amber-800: #ffb020;
-  --ct-tw-amber-900: #fde68a;
-  --ct-tw-amber-950: rgba(50, 35, 8, 0.85);
-  --ct-tw-red-50: rgba(255, 77, 109, 0.08);
-  --ct-tw-red-950: rgba(40, 10, 18, 0.9);
-  --ct-tw-white: var(--ct-surface-raised);
+  /* ── Dividers ── */
+  --ed-rule:        rgba(240, 235, 224, 0.13);
+  --ed-rule-soft:   rgba(240, 235, 224, 0.07);
+  --ed-rule-strong: rgba(240, 235, 224, 0.22);
 
-  /* ── Obsidian Financial palette ── */
-  --ct-bg: #0d0e18;
-  --ct-bg-elevated: #12132a;
-  --ct-bg-deep: #08090f;
-  --ct-surface: #181930;
-  --ct-surface-raised: #1e1f38;
-  --ct-surface-hover: #22233e;
-  --ct-surface-inset: rgba(24, 25, 48, 0.85);
-  --ct-surface-glass: var(--ct-life-glass);
-  --ct-glass-blur: 18px;
-  --ct-border: rgba(255, 255, 255, 0.07);
-  --ct-border-subtle: rgba(255, 255, 255, 0.04);
-  --ct-border-strong: rgba(255, 255, 255, 0.11);
-  --ct-border-accent: rgba(99, 102, 241, 0.4);
-  --ct-border-accent-soft: rgba(99, 102, 241, 0.22);
-  --ct-border-success: rgba(20, 184, 166, 0.35);
-  --ct-page-inset-top: 1.25rem;
-  --ct-page-inset-x: 0.75rem;
-  --ct-accent: #6366f1;
-  --ct-accent-hover: #818cf8;
-  --ct-accent-muted: #a5b4fc;
-  --ct-accent-soft: rgba(99, 102, 241, 0.12);
-  --ct-accent-glow: rgba(99, 102, 241, 0.25);
-  --ct-hero-from: rgba(99, 102, 241, 0.14);
-  --ct-hero-mid: #181930;
-  --ct-hero-to: #0d0e18;
-  --ct-success: #0d9488;
-  --ct-success-text: #2dd4bf;
-  --ct-success-soft: rgba(13, 148, 136, 0.12);
-  --ct-warning: #d97706;
-  --ct-warning-text: #fbbf24;
-  --ct-warning-soft: rgba(217, 119, 6, 0.12);
-  --ct-danger: #dc2626;
-  --ct-danger-text: #f87171;
-  --ct-danger-soft: rgba(220, 38, 38, 0.12);
-  --ct-info: #6ecbff;
-  --ct-info-text: #9ddcff;
-  --ct-info-soft: rgba(110, 203, 255, 0.12);
-  --ct-gold: #f59e0b;
-  --ct-gold-text: #fcd34d;
-  --ct-gold-soft: rgba(245, 158, 11, 0.12);
-  --ct-teal: #0d9488;
-  --ct-teal-text: #5eead4;
-  --ct-teal-soft: rgba(13, 148, 136, 0.12);
-  --ct-teal-glow: rgba(13, 148, 136, 0.25);
-  --ct-coral: #ea580c;
-  --ct-coral-text: #fb923c;
-  --ct-coral-soft: rgba(234, 88, 12, 0.12);
-  --ct-coral-glow: rgba(234, 88, 12, 0.25);
-  --ct-text: #f0eff9;
-  --ct-text-secondary: #a8a6c2;
-  --ct-text-muted: #6e6c8a;
-  --ct-text-caution: #e3a008;
-  --ct-chart-plot-bg: rgba(7, 7, 10, 0.45);
-  --ct-body-gradient-a: rgba(91, 77, 255, 0.18);
-  --ct-body-gradient-b: rgba(18, 18, 37, 0.35);
-  --ct-body-gradient-c: rgba(16, 185, 129, 0.05);
-  --ct-font: "Inter", system-ui, sans-serif;
-  --ct-font-display: "Outfit", "DM Sans", system-ui, sans-serif;
-  --ct-radius-sm: 0.75rem;
-  --ct-radius-md: 0.875rem;
-  --ct-radius: 1rem;
-  --ct-radius-lg: 1.25rem;
-  --ct-radius-xl: 1.5rem;
-  --ct-radius-2xl: 2rem;
-  --ct-radius-full: 9999px;
-  --ct-shadow: 0 20px 56px -24px rgba(0, 0, 0, 0.88);
-  --ct-shadow-card:
-    0 16px 48px -20px rgba(0, 0, 0, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  --ct-shadow-glow: 0 0 32px -8px rgba(99, 102, 241, 0.18);
-  --ct-shadow-dock:
-    0 24px 64px -28px rgba(0, 0, 0, 0.92),
-    0 0 40px -16px rgba(124, 77, 255, 0.28);
-  --ct-nav-h: 4.25rem;
-  --ct-nav-fab-size: 3.35rem;
-  --ct-nav-dock-inset: 0.75rem;
-  --ct-card-grad-from: rgba(91, 77, 255, 0.14);
-  --ct-card-grad-mid: rgba(18, 18, 37, 0.9);
-  --ct-list-grad-to: rgba(18, 18, 37, 0.55);
-  --ct-insight-surface-end: rgba(18, 18, 37, 0.88);
-  --ct-nav-bar-bg: var(--ed-navbg);
-  --ct-top-nav-bg: rgba(7, 7, 10, 0.82);
-  --ct-hero-inset-bg: var(--ct-life-inset-bg);
-  --ct-hero-inset-border: var(--ct-life-inset-border);
-  --ct-progress-track-bg: rgba(255, 255, 255, 0.06);
-  --ct-modal-backdrop: rgba(3, 3, 5, 0.72);
-  --ct-health-strip-bg: var(--ct-life-grad-panel);
-  --ct-insight-violet-bg: rgba(124, 77, 255, 0.12);
-  --ct-chart-grid-stroke: rgba(155, 109, 255, 0.08);
-  --ct-chart-line-glow: rgba(155, 109, 255, 0.35);
-  --ct-card-danger-grad: linear-gradient(145deg, rgba(255, 77, 109, 0.1) 0%, rgba(18, 18, 37, 0.95) 100%);
-  --ct-motion: 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-  /* Animation */
-  --ct-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ct-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ct-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ct-duration-fast: 120ms;
-  --ct-duration-base: 200ms;
-  --ct-duration-slow: 350ms;
-  --ct-duration-enter: 280ms;
+  /* ── Brand accent ── */
+  --ed-gold:        #e3c489;
+  --ed-gold-soft:   rgba(227, 196, 137, 0.12);
+  --ed-gold-deep:   #c9a96a;
 
-  /* Hero gradient washes — each screen type */
-  --ct-grad-pressure: linear-gradient(150deg, rgba(99, 102, 241, 0.22), rgba(13, 148, 136, 0.1) 60%, rgba(20, 20, 40, 0.4));
-  --ct-grad-wealth: linear-gradient(150deg, rgba(13, 148, 136, 0.2), rgba(99, 102, 241, 0.08) 60%, rgba(20, 20, 40, 0.3));
-  --ct-grad-survival: linear-gradient(150deg, rgba(217, 119, 6, 0.2), rgba(99, 102, 241, 0.06) 60%, rgba(20, 20, 40, 0.3));
-  --ct-grad-lending: linear-gradient(150deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.08) 60%, rgba(20, 20, 40, 0.3));
-  --ct-grad-sim: linear-gradient(150deg, rgba(139, 92, 246, 0.18), rgba(20, 20, 40, 0.3));
-  --ct-glow-indigo: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%);
-  --ct-glow-teal: radial-gradient(circle, rgba(13, 148, 136, 0.3), transparent 70%);
-  --ct-glow-amber: radial-gradient(circle, rgba(217, 119, 6, 0.3), transparent 70%);
-  --ct-grad-primary-btn: linear-gradient(135deg, #6366f1, #4f46e5);
-  --ct-grad-teal-fill: linear-gradient(135deg, #2dd4bf, #0d9488);
-  --ct-grad-amber-fill: linear-gradient(135deg, #f59e0b, #d97706);
-  --ct-grad-danger-fill: linear-gradient(90deg, #f87171, #dc2626);
-  --ct-shadow-indigo: 0 4px 14px rgba(99, 102, 241, 0.4);
-  --ct-shadow-teal: 0 4px 14px rgba(13, 148, 136, 0.35);
+  /* ── Semantic colours ── */
+  --ed-green:       #5ec795;
+  --ed-green-soft:  rgba(94, 199, 149, 0.12);
+  --ed-red:         #e89490;
+  --ed-red-soft:    rgba(232, 148, 144, 0.12);
+  --ed-amber:       #e3b06a;
+  --ed-amber-soft:  rgba(227, 176, 106, 0.12);
+  --ed-violet:      #b3a0e8;
+  --ed-violet-soft: rgba(179, 160, 232, 0.12);
+  --ed-blue:        #7aaee3;
+  --ed-blue-soft:   rgba(122, 174, 227, 0.12);
+  --ed-indigo:      #8b9de8;
+  --ed-indigo-soft: rgba(139, 157, 232, 0.12);
+  --ed-zero:        var(--ed-ink-zero);
 
-  /* ── Direction H · Editorial palette · Dark ── */
-  --ed-bg: #16140f;
-  --ed-ink: #f0ebe0;
-  --ed-ink-soft: #c4bdac;
-  --ed-ink-faint: #7d7665;
-  --ed-rule: rgba(240, 235, 224, 0.13);
-  --ed-rule-soft: rgba(240, 235, 224, 0.07);
-  --ed-gold: #e3c489;
-  --ed-green: #5ec795;
-  --ed-red: #e89490;
-  --ed-violet: #b3a0e8;
-  --ed-indigo: #a0aae8;
-  --ed-zero: #4a4636;
-  --ed-navbg: #faf8f3;
-  --ed-navink: rgba(26, 24, 20, 0.38);
-  --ed-navon: #1a1814;
-  --ed-fab: #1a1814;
-  --ed-fabink: #e3c489;
+  /* ── Navigation ── */
+  --ed-navbg:       #faf8f3;
+  --ed-navink:      rgba(26, 24, 20, 0.38);
+  --ed-navon:       #1a1814;
+  --ed-nav-h:       60px;
+
+  /* ── FAB ── */
+  --ed-fab:         #1a1814;
+  --ed-fabink:      #e3c489;
+
+  /* ── Fonts ── */
+  --ed-font:        "Inter", system-ui, sans-serif;
+  --ed-font-serif:  "Fraunces", Georgia, serif;
+  --ed-font-news:   "Newsreader", Georgia, serif;
+
+  /* ── Spacing ── */
+  --ed-space-1:     4px;
+  --ed-space-2:     8px;
+  --ed-space-3:     12px;
+  --ed-space-4:     16px;
+  --ed-space-5:     20px;
+  --ed-space-6:     24px;
+  --ed-space-8:     32px;
+  --ed-space-12:    48px;
+
+  /* ── Page layout ── */
+  --ed-page-top:    16px;
+  --ed-page-x:      18px;
+  --ed-page-bottom: 84px;
+
+  /* ── Border radius ── */
+  --ed-r-sm:   6px;
+  --ed-r-md:   10px;
+  --ed-r-lg:   14px;
+  --ed-r-xl:   20px;
+  --ed-r-full: 9999px;
+
+  /* ── Motion ── */
+  --ed-ease:         cubic-bezier(0.22, 1, 0.36, 1);
+  --ed-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ed-ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+  --ed-t-fast:       120ms;
+  --ed-t-base:       200ms;
+  --ed-t-slow:       320ms;
+  --ed-motion:       var(--ed-t-base) var(--ed-ease);
+
+  /* ── Backdrop ── */
+  --ed-backdrop: rgba(10, 9, 6, 0.72);
+
+  /* Legacy ct-* aliases (forms, modals, inline JSX) */
+  --ct-text: var(--ed-ink);
+  --ct-text-secondary: var(--ed-ink-soft);
+  --ct-text-muted: var(--ed-ink-faint);
+  --ct-border: var(--ed-rule);
+  --ct-border-subtle: var(--ed-rule-soft);
+  --ct-surface: var(--ed-surface);
+  --ct-surface-inset: var(--ed-surface-2);
+  --ct-surface-hover: var(--ed-surface-3);
+  --ct-accent: var(--ed-gold);
+  --ct-accent-muted: var(--ed-gold);
+  --ct-accent-hover: var(--ed-gold-deep);
+  --ct-accent-soft: var(--ed-gold-soft);
+  --ct-success: var(--ed-green);
+  --ct-success-text: var(--ed-green);
+  --ct-success-soft: var(--ed-green-soft);
+  --ct-warning: var(--ed-amber);
+  --ct-warning-text: var(--ed-amber);
+  --ct-warning-soft: var(--ed-amber-soft);
+  --ct-danger: var(--ed-red);
+  --ct-danger-text: var(--ed-red);
+  --ct-danger-soft: var(--ed-red-soft);
+  --ct-modal-backdrop: var(--ed-backdrop);
+  --ct-motion: var(--ed-motion);
+  --ct-radius: var(--ed-r-md);
+  --ct-radius-lg: var(--ed-r-lg);
+  --ct-radius-xl: var(--ed-r-xl);
+  --ct-radius-2xl: var(--ed-r-xl);
+  --ct-font-display: var(--ed-font-serif);
+  --ct-progress-track-bg: var(--ed-rule);
 }
 
+/* ── Light mode ── */
 html[data-ui="ct"][data-theme="light"] {
   color-scheme: light;
 
-  --ct-life-grad: linear-gradient(145deg, rgba(109, 74, 255, 0.12), rgba(16, 185, 129, 0.05));
-  --ct-life-grad-soft: linear-gradient(145deg, rgba(109, 74, 255, 0.08), rgba(16, 185, 129, 0.03));
-  --ct-life-grad-surface: linear-gradient(165deg, rgba(109, 74, 255, 0.08) 0%, #f8f9fd 50%, var(--ct-surface) 100%);
-  --ct-life-grad-panel: linear-gradient(135deg, rgba(109, 74, 255, 0.06) 0%, var(--ct-surface-inset) 100%);
-  --ct-life-glow: radial-gradient(circle, rgba(109, 74, 255, 0.18), transparent 70%);
-  --ct-life-inset-bg: rgba(109, 74, 255, 0.05);
-  --ct-life-inset-border: rgba(15, 23, 42, 0.06);
-  --ct-life-shadow: var(--ct-shadow-card);
-  --ct-life-footer-wash: linear-gradient(180deg, transparent, rgba(109, 74, 255, 0.06));
-  --ct-life-nav-bg: rgba(255, 255, 255, 0.94);
-  --ct-life-violet-glow: rgba(109, 74, 255, 0.2);
-  --ct-life-grad-hero: linear-gradient(165deg, #ebe6ff 0%, var(--ct-hero-mid) 45%, var(--ct-hero-to) 100%);
-  --ct-life-glass: rgba(255, 255, 255, 0.9);
-  --ct-life-btn-grad: linear-gradient(135deg, #7c4dff 0%, #6d4aff 52%, #5b4dff 100%);
-  --ct-life-btn-border: rgba(109, 74, 255, 0.35);
-  --ct-life-btn-shadow: 0 8px 24px -8px rgba(109, 74, 255, 0.28);
-  --ct-life-btn-shadow-hover: 0 12px 32px -8px rgba(109, 74, 255, 0.35);
-  --ct-life-success-grad: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  --ct-life-label: #5c6478;
-  --ct-life-heading: #12121f;
+  --ed-bg:          #faf8f3;
+  --ed-surface:     #f2efe8;
+  --ed-surface-2:   #eae6dd;
+  --ed-surface-3:   #e0dbd0;
 
-  --ct-tw-gray-50: rgba(109, 74, 255, 0.04);
-  --ct-tw-gray-100: #eef0f8;
-  --ct-tw-gray-200: #e4e8f4;
-  --ct-tw-gray-400: #a8adc0;
-  --ct-tw-gray-500: #8b93a7;
-  --ct-tw-gray-600: #5c6478;
-  --ct-tw-gray-700: #3d4558;
-  --ct-tw-gray-800: #252b3a;
-  --ct-tw-gray-900: #12121f;
-  --ct-tw-slate-100: #f0eff8;
-  --ct-tw-slate-200: #e8e6f5;
-  --ct-tw-slate-300: #c8c5dc;
-  --ct-tw-slate-400: #8b93a7;
-  --ct-tw-slate-600: rgba(109, 74, 255, 0.18);
-  --ct-tw-slate-700: #e4e8f4;
-  --ct-tw-slate-800: #f8f9fd;
-  --ct-tw-slate-900: #ffffff;
-  --ct-tw-slate-950: #eef0f8;
-  --ct-tw-indigo-50: rgba(109, 74, 255, 0.06);
-  --ct-tw-indigo-100: rgba(109, 74, 255, 0.1);
-  --ct-tw-indigo-300: #7c4dff;
-  --ct-tw-indigo-600: #6d4aff;
-  --ct-tw-indigo-700: #5b4dff;
-  --ct-tw-indigo-900: #2e1f6e;
-  --ct-tw-indigo-950: rgba(235, 230, 255, 0.95);
-  --ct-tw-violet-50: rgba(109, 74, 255, 0.06);
-  --ct-tw-violet-100: rgba(109, 74, 255, 0.1);
-  --ct-tw-violet-800: rgba(109, 74, 255, 0.25);
-  --ct-tw-violet-900: #3d2a8a;
-  --ct-tw-violet-950: rgba(245, 243, 255, 0.95);
-  --ct-tw-emerald-50: rgba(16, 185, 129, 0.06);
-  --ct-tw-emerald-100: rgba(16, 185, 129, 0.1);
-  --ct-tw-emerald-300: #34d399;
-  --ct-tw-emerald-400: #10b981;
-  --ct-tw-emerald-500: #059669;
-  --ct-tw-emerald-700: #15803d;
-  --ct-tw-emerald-800: #166534;
-  --ct-tw-emerald-950: rgba(236, 253, 245, 0.95);
-  --ct-tw-amber-50: rgba(217, 119, 6, 0.06);
-  --ct-tw-amber-100: rgba(217, 119, 6, 0.1);
-  --ct-tw-amber-200: #fcd34d;
-  --ct-tw-amber-300: #fbbf24;
-  --ct-tw-amber-700: #b45309;
-  --ct-tw-amber-800: #d97706;
-  --ct-tw-amber-900: #92400e;
-  --ct-tw-amber-950: rgba(255, 251, 235, 0.95);
-  --ct-tw-red-50: rgba(220, 38, 38, 0.06);
-  --ct-tw-red-950: rgba(254, 242, 242, 0.95);
-  --ct-tw-white: #ffffff;
+  --ed-ink:         #1a1814;
+  --ed-ink-soft:    #524d44;
+  --ed-ink-faint:   #8a8478;
+  --ed-ink-zero:    #b8b2a4;
 
-  --ct-bg: #eef0f8;
-  --ct-bg-elevated: #ffffff;
-  --ct-bg-deep: #e4e8f4;
-  --ct-surface: #ffffff;
-  --ct-surface-raised: #f8f9fd;
-  --ct-surface-hover: #f3f4fa;
-  --ct-surface-inset: rgba(241, 244, 252, 0.95);
-  --ct-surface-glass: rgba(255, 255, 255, 0.88);
-  --ct-border: rgba(15, 23, 42, 0.08);
-  --ct-border-subtle: rgba(15, 23, 42, 0.05);
-  --ct-border-strong: rgba(15, 23, 42, 0.12);
-  --ct-border-accent: rgba(109, 74, 255, 0.32);
-  --ct-border-accent-soft: rgba(109, 74, 255, 0.28);
-  --ct-border-success: rgba(21, 128, 61, 0.35);
-  --ct-accent: #4f46e5;
-  --ct-accent-hover: #4338ca;
-  --ct-accent-muted: #6366f1;
-  --ct-accent-soft: rgba(79, 70, 229, 0.1);
-  --ct-accent-glow: rgba(79, 70, 229, 0.18);
-  --ct-life-violet: #6d4aff;
-  --ct-life-violet-deep: #5b4dff;
-  --ct-life-emerald: #10b981;
-  --ct-life-emerald-text: #15803d;
-  --ct-life-emerald-soft: rgba(16, 185, 129, 0.1);
-  --ct-hero-from: #ebe6ff;
-  --ct-hero-mid: #f5f3ff;
-  --ct-hero-to: #ffffff;
-  --ct-success: #0f766e;
-  --ct-success-text: #0d9488;
-  --ct-success-soft: rgba(15, 118, 110, 0.1);
-  --ct-warning: #d97706;
-  --ct-warning-text: #b45309;
-  --ct-warning-soft: rgba(217, 119, 6, 0.1);
-  --ct-danger: #dc2626;
-  --ct-danger-text: #b91c1c;
-  --ct-danger-soft: rgba(220, 38, 38, 0.08);
-  --ct-info: #0284c7;
-  --ct-info-text: #0369a1;
-  --ct-info-soft: rgba(2, 132, 199, 0.08);
-  --ct-gold: #d97706;
-  --ct-gold-text: #b45309;
-  --ct-gold-soft: rgba(217, 119, 6, 0.1);
-  --ct-teal: #0f766e;
-  --ct-teal-text: #0d9488;
-  --ct-teal-soft: rgba(15, 118, 110, 0.1);
-  --ct-teal-glow: rgba(15, 118, 110, 0.2);
-  --ct-coral: #c2410c;
-  --ct-coral-text: #ea580c;
-  --ct-coral-soft: rgba(194, 65, 12, 0.1);
-  --ct-coral-glow: rgba(194, 65, 12, 0.2);
-  --ct-text: var(--ct-life-heading);
-  --ct-text-secondary: #5c6478;
-  --ct-text-muted: #8b93a7;
-  --ct-text-caution: #b45309;
-  --ct-chart-plot-bg: rgba(241, 245, 252, 0.95);
-  --ct-body-gradient-a: rgba(124, 77, 255, 0.06);
-  --ct-body-gradient-b: #e8ecf4;
-  --ct-shadow: 0 12px 40px -16px rgba(15, 23, 42, 0.12);
-  --ct-shadow-card: 0 8px 24px -12px rgba(15, 23, 42, 0.1);
-  --ct-shadow-glow: none;
-  --ct-shadow-dock: 0 16px 40px -20px rgba(15, 23, 42, 0.14);
-  --ct-card-grad-from: #ffffff;
-  --ct-card-grad-mid: #ffffff;
-  --ct-list-grad-to: #f1f5f9;
-  --ct-insight-surface-end: #f8fafc;
-  --ct-nav-bar-bg: var(--ed-navbg);
-  --ct-top-nav-bg: var(--ct-life-nav-bg);
-  --ct-hero-inset-bg: var(--ct-life-inset-bg);
-  --ct-hero-inset-border: var(--ct-life-inset-border);
-  --ct-progress-track-bg: #e2e8f0;
-  --ct-modal-backdrop: rgba(15, 23, 42, 0.38);
-  --ct-health-strip-bg: var(--ct-life-grad-panel);
-  --ct-insight-violet-bg: rgba(109, 74, 255, 0.07);
-  --ct-chart-grid-stroke: rgba(15, 23, 42, 0.08);
-  --ct-chart-line-glow: transparent;
-  --ct-card-danger-grad: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
+  --ed-rule:        rgba(26, 24, 20, 0.14);
+  --ed-rule-soft:   rgba(26, 24, 20, 0.07);
+  --ed-rule-strong: rgba(26, 24, 20, 0.24);
 
-  /* ── Direction H · Editorial palette · Light ── */
-  --ed-bg: #faf8f3;
-  --ed-ink: #1a1814;
-  --ed-ink-soft: #524d44;
-  --ed-ink-faint: #8a8478;
-  --ed-rule: rgba(26, 24, 20, 0.14);
-  --ed-rule-soft: rgba(26, 24, 20, 0.07);
-  --ed-gold: #b08642;
-  --ed-green: #147a57;
-  --ed-red: #b8453f;
-  --ed-violet: #6d3daa;
-  --ed-indigo: #3d4daa;
-  --ed-zero: #b8b2a4;
-  --ed-navbg: #1a1814;
-  --ed-navink: rgba(250, 248, 243, 0.45);
-  --ed-navon: #e3c489;
-  --ed-fab: #e3c489;
-  --ed-fabink: #1a1814;
+  --ed-gold:        #b08642;
+  --ed-gold-soft:   rgba(176, 134, 66, 0.10);
+  --ed-gold-deep:   #8a6428;
+
+  --ed-green:       #147a57;
+  --ed-green-soft:  rgba(20, 122, 87, 0.10);
+  --ed-red:         #b8453f;
+  --ed-red-soft:    rgba(184, 69, 63, 0.10);
+  --ed-amber:       #a06020;
+  --ed-amber-soft:  rgba(160, 96, 32, 0.10);
+  --ed-violet:      #6d3daa;
+  --ed-violet-soft: rgba(109, 61, 170, 0.10);
+  --ed-blue:        #3d5eaa;
+  --ed-blue-soft:   rgba(61, 94, 170, 0.10);
+  --ed-indigo:      #3d4daa;
+  --ed-indigo-soft: rgba(61, 77, 170, 0.10);
+
+  --ed-navbg:       #1a1814;
+  --ed-navink:      rgba(250, 248, 243, 0.45);
+  --ed-navon:       #e3c489;
+
+  --ed-fab:         #e3c489;
+  --ed-fabink:      #1a1814;
+
+  --ed-backdrop: rgba(26, 24, 20, 0.55);
 }
 
+/* ── Base body ── */
 html[data-ui="ct"] body {
-  font-family: var(--ct-font);
-  background: var(--ct-bg);
-  color: var(--ct-text);
-  -webkit-font-smoothing: antialiased;
+  font-family:              var(--ed-font);
+  background:               var(--ed-bg);
+  color:                    var(--ed-ink);
+  -webkit-font-smoothing:   antialiased;
+  -moz-osx-font-smoothing:  grayscale;
 }
 
-html[data-ui="ct"][data-theme="light"] body {
-  background: var(--ct-bg);
-}
-
-html[data-ui="ct"] .ct-display {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-family: var(--ct-font-display);
-}
-
-html[data-ui="ct"] .ct-numeral {
-  font-family: var(--ct-font-display);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  font-feature-settings: "tnum" 1;
-}
-
-html[data-ui="ct"] .ct-score-num {
-  font-family: var(--ct-font-display);
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.05em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-html[data-ui="ct"] .ct-text-accent {
-  color: var(--ct-accent-muted);
-}
-
-/* Global typography — Financial Life hierarchy */
-html[data-ui="ct"] label,
-html[data-ui="ct"] .ct-field-label {
-  color: var(--ct-life-label);
-  font-weight: 600;
-}
-
-html[data-ui="ct"] strong,
-html[data-ui="ct"] .font-semibold,
-html[data-ui="ct"] .font-bold {
-  color: inherit;
-}
-
-html[data-ui="ct"] .ct-amount-positive {
-  color: var(--ct-success-text);
-  font-weight: 700;
-}
-
-html[data-ui="ct"] .ct-amount-negative {
-  color: var(--ct-danger-text);
-  font-weight: 700;
-}
-
-/* Indic and regional script font stacks (set via document.documentElement.dataset.script) */
+/* ── Indic font stacks (23 languages) ── */
 html[data-ui="ct"][data-script="Devanagari"] {
-  --ct-font: "Noto Sans Devanagari", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Devanagari", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Devanagari", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Bengali"] {
-  --ct-font: "Noto Sans Bengali", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Bengali", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Bengali", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Gujarati"] {
-  --ct-font: "Noto Sans Gujarati", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Gujarati", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Gujarati", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Gurmukhi"] {
-  --ct-font: "Noto Sans Gurmukhi", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Gurmukhi", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Gurmukhi", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Kannada"] {
-  --ct-font: "Noto Sans Kannada", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Kannada", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Kannada", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Malayalam"] {
-  --ct-font: "Noto Sans Malayalam", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Malayalam", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Malayalam", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Tamil"] {
-  --ct-font: "Noto Sans Tamil", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Tamil", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Tamil", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Telugu"] {
-  --ct-font: "Noto Sans Telugu", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Telugu", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Telugu", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Odia"] {
-  --ct-font: "Noto Sans Oriya", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Oriya", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Oriya", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Ol Chiki"] {
-  --ct-font: "Noto Sans Ol Chiki", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Sans Ol Chiki", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Sans Ol Chiki", "Inter", system-ui, sans-serif;
 }
-
 html[data-ui="ct"][data-script="Arabic"] {
-  --ct-font: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif;
-  --ct-font-display: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif;
+  --ed-font: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif;
 }

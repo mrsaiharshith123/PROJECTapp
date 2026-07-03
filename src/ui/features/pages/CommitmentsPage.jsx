@@ -124,17 +124,21 @@ const Commitments = () => {
   const totalMonthly = sortedCommitments.reduce((s, c) => s + (Number(c.monthlyAmount || c.emiAmount || 0)), 0);
 
   return (
-    <div className="ct-page ct-stack ct-money-bills-page">
-      <div className="pos-hero liability" style={{ background: "linear-gradient(150deg, rgba(244,63,94,0.12), rgba(13,14,24,0.95) 50%)", borderColor: "var(--pos-liab-border)", marginBottom: 8 }}>
-        <div className="pos-hero-glow liability" aria-hidden />
-        <p className="ct-caption uppercase tracking-wide">{t("bills.heroLabel")}</p>
-        <p className="pos-display-amount" style={{ color: "var(--pos-liab)" }}>
-          {formatAmount(totalMonthly)}
-        </p>
-        <p className="ct-caption mt-1">{t("bills.heroSub", { count: sortedCommitments.length })}</p>
+    <div className="ed-section">
+      <div className="ed-metrics">
+        <div className="ed-metric">
+          <div className="ed-metric-label">{t("bills.heroLabel")}</div>
+          <div className="ed-metric-value ed-amount-neg">{formatAmount(totalMonthly)}</div>
+          <div className="ed-metric-sub">{t("bills.heroSub", { count: sortedCommitments.length })}</div>
+        </div>
+        <div className="ed-metric">
+          <div className="ed-metric-label">{t("bills.overdue")}</div>
+          <div className="ed-metric-value ed-amount-red">{counts.overdue ?? 0}</div>
+          <div className="ed-metric-sub">{t("profileHub.widget.pressureOverdue")}</div>
+        </div>
       </div>
 
-      <div className="ct-money-import-row">
+      <div className="ed-toolbar" style={{ marginTop: 12 }}>
         <Button type="button" size="sm" variant="secondary" onClick={() => exportCommitmentsToExcel(commitments)}>
           <CtIcon name="clipboard-text" size={16} />
           {t("export.excel.commitments")}
@@ -153,7 +157,7 @@ const Commitments = () => {
             {t("bills.importBankStatement")}
           </Button>
         ) : null}
-        <Button type="button" size="sm" onClick={() => navigate("/add")}>
+        <Button type="button" size="sm" className="ed-btn-block" onClick={() => navigate("/add")}>
           {t("bills.actionAddBill")}
         </Button>
       </div>

@@ -80,7 +80,7 @@ export default function ScoreDetailPage() {
         : "var(--ed-red)";
 
   return (
-    <div className="ct-page ed-paper ed-ins-page">
+    <div className="ed-paper ed-ins-page">
       {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
 
       <div className="ed-ins-sub-mast">

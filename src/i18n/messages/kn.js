@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "ಪಾವತಿಸಲಾಗಿದೆ · ಬಾಕಿ {date}",
   "bill.started": "ಪ್ರಾರಂಭಿಸಲಾಗಿದೆ {date}",
   "bill.ends": "{date} ಕೊನೆಗೊಳ್ಳುತ್ತದೆ",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "ಚಾಲ್ತಿಯಲ್ಲಿದೆ",
   "bill.dueOn": "ಬಾಕಿ {date}",
   "bill.dueNow": "ಈಗ ಬಾಕಿ {amount}",

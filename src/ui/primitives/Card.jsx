@@ -2,17 +2,17 @@ import { createElement } from "react";
 import { cn } from "../utils/cn.js";
 
 const VARIANT_CLASS = {
-  default: "ct-card",
-  glass: "ct-card-glass",
-  hero: "ct-card-hero",
-  glow: "ct-card ct-card-glow",
-  flat: "ct-card-flat",
-  metric: "ct-card-metric",
-  "module-tile": "ct-module-tile",
-  "status-overdue": "ct-card ct-card-status ct-card-status-overdue",
-  "status-due-soon": "ct-card ct-card-status ct-card-status-due-soon",
-  "status-paid": "ct-card ct-card-status ct-card-status-paid",
-  "status-safe": "ct-card ct-card-status ct-card-status-safe",
+  default: "ed-card",
+  glass: "ed-card",
+  hero: "ed-card",
+  glow: "ed-card",
+  flat: "ed-card",
+  metric: "ed-metric",
+  "module-tile": "ed-card",
+  "status-overdue": "ed-card ed-card-overdue",
+  "status-due-soon": "ed-card ed-card-due-soon",
+  "status-paid": "ed-card ed-card-paid",
+  "status-safe": "ed-card",
 };
 
 /**

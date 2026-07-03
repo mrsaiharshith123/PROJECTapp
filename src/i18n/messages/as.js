@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "পৰিশোধ কৰা · প্ৰাপ্য {date}",
   "bill.started": "আৰম্ভ কৰা হৈছে {date}",
   "bill.ends": "শেষ হয় {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "চলি আছে",
   "bill.dueOn": "প্ৰাপ্য {date}",
   "bill.dueNow": "এতিয়াৰ সময়সীমা {amount}",

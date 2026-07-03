@@ -44,7 +44,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
     [form.categoryId, form.assetSubtype],
   );
 
-  const fieldClass = `${inputClassName()} ct-input-tint`;
+  const fieldClass = inputClassName();
   const physical = form.kind === "asset" && isPhysicalCategory(storedCategoryId);
   const isProperty = PROPERTY_STORED_IDS.has(storedCategoryId);
   const isResidential = isResidentialProperty(storedCategoryId);
@@ -281,9 +281,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-section">
       <div>
-        <label className="ct-field-label">{t("netWorth.form.category")}</label>
+        <label className="ed-field-label">{t("netWorth.form.category")}</label>
         <select
           className={fieldClass}
           value={form.categoryId}
@@ -306,7 +306,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {form.kind === "asset" && form.categoryId === PROPERTY_PICKER_ID && (
         <div>
-          <label className="ct-field-label">{t("netWorth.form.propertySubtype")}</label>
+          <label className="ed-field-label">{t("netWorth.form.propertySubtype")}</label>
           <select
             className={fieldClass}
             value={form.assetSubtype}
@@ -323,7 +323,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {form.kind === "asset" && form.categoryId === LIQUID_PICKER_ID && (
         <div>
-          <label className="ct-field-label">{t("netWorth.form.assetSubtype")}</label>
+          <label className="ed-field-label">{t("netWorth.form.assetSubtype")}</label>
           <select
             className={fieldClass}
             value={form.assetSubtype}
@@ -338,7 +338,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         </div>
       )}
       <div>
-        <label className="ct-field-label">
+        <label className="ed-field-label">
           {form.kind === "asset" ? t("netWorth.form.nameOptional") : t("netWorth.form.name")}
         </label>
         <input
@@ -350,9 +350,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       </div>
 
       {isGold && (
-        <div className="ct-grid-2 gap-2">
+        <div className="ed-grid-2 gap-2">
           <div>
-            <label className="ct-field-label">{t("netWorth.form.weightGrams")}</label>
+            <label className="ed-field-label">{t("netWorth.form.weightGrams")}</label>
             <input
               type="number"
               min="0"
@@ -362,7 +362,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("netWorth.form.purityKarat")}</label>
+            <label className="ed-field-label">{t("netWorth.form.purityKarat")}</label>
             <input
               type="number"
               min="0"
@@ -378,7 +378,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       {!(isProperty && !form.valueManual) &&
         !(isGold && !form.valueManual && (goldEstimatedValue || goldCanDeferValue)) && (
         <div>
-          <label className="ct-field-label">{t("netWorth.form.value")}</label>
+          <label className="ed-field-label">{t("netWorth.form.value")}</label>
           <input
             type="number"
             min="0"
@@ -392,12 +392,12 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       {isProperty && !form.valueManual && (
         <>
           {!propertyHasLocation ? (
-            <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.propertyAiNeedLocation")}</p>
+            <p className="text-xs text-[var(--ed-ink-faint)]">{t("netWorth.form.propertyAiNeedLocation")}</p>
           ) : (
-            <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.propertyAiOnSave")}</p>
+            <p className="text-xs text-[var(--ed-ink-faint)]">{t("netWorth.form.propertyAiOnSave")}</p>
           )}
           {propertySaveError ? (
-            <p className="text-xs" style={{ color: "var(--ct-danger)" }}>
+            <p className="text-xs" style={{ color: "var(--ed-red)" }}>
               {propertySaveError}
             </p>
           ) : null}
@@ -405,7 +405,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       )}
 
       {isProperty && (
-        <label className="ct-row gap-2 items-center text-sm">
+        <label className="ed-row gap-2 items-center text-sm">
           <input
             type="checkbox"
             checked={form.valueManual}
@@ -416,10 +416,10 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       )}
 
       {isGold && goldEstimatedValue != null && !form.valueManual && (
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-label">{t("netWorth.form.estimatedValueToday")}</p>
-          <p className="ct-stat-tile-value">{formatInr(goldEstimatedValue)}</p>
-          <p className="ct-stat-tile-label text-xs mt-1">
+        <div className="ed-metric">
+          <p className="ed-metric-label">{t("netWorth.form.estimatedValueToday")}</p>
+          <p className="ed-metric-value">{formatInr(goldEstimatedValue)}</p>
+          <p className="ed-metric-label text-xs mt-1">
             {t("netWorth.form.goldEstimatedValueHint", {
               rate: formatInr(goldRatePerGram),
               karat: Number(form.purityKarat) || 24,
@@ -429,25 +429,25 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       )}
 
       {isGold && goldCanDeferValue && (
-        <div className="ct-stat-tile amber">
-          <p className="ct-stat-tile-value text-sm">{t("netWorth.form.goldRatePendingSave")}</p>
+        <div className="ed-metric">
+          <p className="ed-metric-value text-sm">{t("netWorth.form.goldRatePendingSave")}</p>
         </div>
       )}
 
       {isGold && goldRateLoading && !goldRatePerGram && (
-        <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.goldRateFetching")}</p>
+        <p className="text-xs text-[var(--ed-ink-faint)]">{t("netWorth.form.goldRateFetching")}</p>
       )}
 
       {isGold && !goldRatePerGram && !goldRateLoading && form.weightGrams && !isGoldApiConfigured() && (
-        <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.goldRateNotConfigured")}</p>
+        <p className="text-xs text-[var(--ed-ink-faint)]">{t("netWorth.form.goldRateNotConfigured")}</p>
       )}
 
       {isGold && !goldRatePerGram && !goldRateLoading && form.weightGrams && isGoldApiConfigured() && form.valueManual && (
-        <p className="text-xs text-[var(--ct-text-muted)]">{t("netWorth.form.goldRateUnavailable")}</p>
+        <p className="text-xs text-[var(--ed-ink-faint)]">{t("netWorth.form.goldRateUnavailable")}</p>
       )}
 
       {isGold && (
-        <label className="ct-row gap-2 items-center text-sm">
+        <label className="ed-row gap-2 items-center text-sm">
           <input
             type="checkbox"
             checked={form.valueManual}
@@ -459,7 +459,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {showGrowthHistory && (
         <>
-          <label className="ct-row gap-2 items-center text-sm">
+          <label className="ed-row gap-2 items-center text-sm">
             <input
               type="checkbox"
               checked={form.trackGrowth}
@@ -469,9 +469,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
           </label>
           {form.trackGrowth && (
             <>
-              <div className="ct-grid-2 gap-2">
+              <div className="ed-grid-2 gap-2">
                 <div>
-                  <label className="ct-field-label">{t("netWorth.form.purchaseYear")}</label>
+                  <label className="ed-field-label">{t("netWorth.form.purchaseYear")}</label>
                   <input
                     type="number"
                     min="1950"
@@ -483,7 +483,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
                   />
                 </div>
                 <div>
-                  <label className="ct-field-label">{t("netWorth.form.purchasePrice")}</label>
+                  <label className="ed-field-label">{t("netWorth.form.purchasePrice")}</label>
                   <input
                     type="number"
                     min="0"
@@ -494,8 +494,8 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
                 </div>
               </div>
               {cagr != null && (
-                <div className="ct-stat-tile teal">
-                  <p className="ct-stat-tile-value text-sm">
+                <div className="ed-metric">
+                  <p className="ed-metric-value text-sm">
                     {t("netWorth.physical.cagrHint", {
                       pct: `${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)}`,
                     })}
@@ -509,9 +509,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {isProperty && (
         <>
-          <div className="ct-grid-2 gap-2">
+          <div className="ed-grid-2 gap-2">
             <div>
-              <label className="ct-field-label">{t("netWorth.form.purchaseMonth")}</label>
+              <label className="ed-field-label">{t("netWorth.form.purchaseMonth")}</label>
               <select
                 className={fieldClass}
                 value={form.purchaseMonth}
@@ -526,7 +526,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
               </select>
             </div>
             <div>
-              <label className="ct-field-label">{t("netWorth.form.purchaseYear")}</label>
+              <label className="ed-field-label">{t("netWorth.form.purchaseYear")}</label>
               <input
                 type="number"
                 min="1950"
@@ -538,9 +538,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
               />
             </div>
           </div>
-          <div className="ct-grid-2 gap-2">
+          <div className="ed-grid-2 gap-2">
             <div>
-              <label className="ct-field-label">{t("netWorth.form.ratePerSqYard")}</label>
+              <label className="ed-field-label">{t("netWorth.form.ratePerSqYard")}</label>
               <input
                 type="number"
                 min="0"
@@ -551,7 +551,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
               />
             </div>
             <div>
-              <label className="ct-field-label">{t("netWorth.form.areaSqYards")}</label>
+              <label className="ed-field-label">{t("netWorth.form.areaSqYards")}</label>
               <input
                 type="number"
                 min="0"
@@ -569,14 +569,14 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             </div>
           </div>
           {propertyPurchaseTotal != null && (
-            <div className="ct-stat-tile amber">
-              <p className="ct-stat-tile-label">{t("netWorth.form.purchaseTotalThen")}</p>
-              <p className="ct-stat-tile-value">{formatInr(propertyPurchaseTotal)}</p>
+            <div className="ed-metric">
+              <p className="ed-metric-label">{t("netWorth.form.purchaseTotalThen")}</p>
+              <p className="ed-metric-value">{formatInr(propertyPurchaseTotal)}</p>
             </div>
           )}
           {cagr != null && (
-            <div className="ct-stat-tile teal">
-              <p className="ct-stat-tile-value text-sm">
+            <div className="ed-metric">
+              <p className="ed-metric-value text-sm">
                 {t("netWorth.physical.cagrHint", { pct: `${cagr >= 0 ? "+" : ""}${cagr.toFixed(1)}` })}
               </p>
             </div>
@@ -601,7 +601,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             }
           />
           <div>
-            <label className="ct-field-label">{t("netWorth.form.location")}</label>
+            <label className="ed-field-label">{t("netWorth.form.location")}</label>
             <input
               className={fieldClass}
               value={form.location}
@@ -614,7 +614,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {(isBusiness && !isProperty) && (
         <div>
-          <label className="ct-field-label">{t("netWorth.form.location")}</label>
+          <label className="ed-field-label">{t("netWorth.form.location")}</label>
           <input
             className={fieldClass}
             value={form.location}
@@ -625,9 +625,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       )}
 
       {isProperty && !isResidential && (
-        <div className="ct-grid-2 gap-2">
+        <div className="ed-grid-2 gap-2">
           <div>
-            <label className="ct-field-label">{t("netWorth.form.areaMeasure")}</label>
+            <label className="ed-field-label">{t("netWorth.form.areaMeasure")}</label>
             <input
               type="number"
               min="0"
@@ -637,7 +637,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("netWorth.form.areaUnit")}</label>
+            <label className="ed-field-label">{t("netWorth.form.areaUnit")}</label>
             <select
               className={fieldClass}
               value={form.areaUnit}
@@ -655,9 +655,9 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
       {isVehicle && (
         <>
-          <div className="ct-grid-2 gap-2">
+          <div className="ed-grid-2 gap-2">
             <div>
-              <label className="ct-field-label">{t("netWorth.form.vehicleMake")}</label>
+              <label className="ed-field-label">{t("netWorth.form.vehicleMake")}</label>
               <input
                 className={fieldClass}
                 value={form.vehicleMake}
@@ -666,7 +666,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
               />
             </div>
             <div>
-              <label className="ct-field-label">{t("netWorth.form.vehicleYear")}</label>
+              <label className="ed-field-label">{t("netWorth.form.vehicleYear")}</label>
               <input
                 type="number"
                 min="1980"
@@ -678,8 +678,8 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             </div>
           </div>
           {vehicleEstimate != null && (
-            <div className="ct-stat-tile amber">
-              <p className="ct-stat-tile-value text-sm">
+            <div className="ed-metric">
+              <p className="ed-metric-value text-sm">
                 {t("netWorth.physical.vehicleEstimate", { amount: formatInr(vehicleEstimate) })}
               </p>
             </div>
@@ -690,7 +690,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       {form.kind === "liability" && (
         <>
           <div>
-            <label className="ct-field-label">{t("netWorth.form.interest")}</label>
+            <label className="ed-field-label">{t("netWorth.form.interest")}</label>
             <input
               type="number"
               min="0"
@@ -701,7 +701,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("netWorth.form.emi")}</label>
+            <label className="ed-field-label">{t("netWorth.form.emi")}</label>
             <input
               type="number"
               min="0"
@@ -713,14 +713,14 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         </>
       )}
       <div>
-        <label className="ct-field-label">{t("netWorth.form.notes")}</label>
+        <label className="ed-field-label">{t("netWorth.form.notes")}</label>
         <textarea
           className={`${fieldClass} min-h-[64px]`}
           value={form.notes}
           onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
         />
       </div>
-      <button type="button" className="ct-btn ct-btn-primary w-full" disabled={saving} onClick={submit}>
+      <button type="button" className="ed-btn ed-btn-primary ed-btn-block" disabled={saving} onClick={submit}>
         {saving ? t("common.loading") : t("common.save")}
       </button>
     </div>

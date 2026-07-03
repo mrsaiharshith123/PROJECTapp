@@ -101,6 +101,7 @@ export default {
   "bill.historyPaid": "చెల్లించబడింది · బకాయి {date}",
   "bill.started": "ప్రారంభించబడింది {date}",
   "bill.ends": "ముగుస్తుంది {date}",
+  "bill.emiScheduleProgress": "Month {done} of {total} · {pct}% complete · ends {endDate}",
   "bill.ongoing": "కొనసాగుతున్నది",
   "bill.dueOn": "గడువు {date}",
   "bill.dueNow": "ఇప్పుడు గడువు {amount}",
