@@ -65,7 +65,6 @@ export function useAppUpdateAction() {
       setProgressOpen(true);
       const applyResult = await applyAppUpdate({
         allowApk: true,
-        force: result.status === "unknown",
         onProgress: (p) => {
           setProgress(p);
           if (p.phase === "installing") {

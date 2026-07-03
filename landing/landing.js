@@ -111,7 +111,7 @@ async function loadSiteMeta() {
   const el = document.getElementById("site-updated");
   if (!el) return;
   try {
-    const res = await fetch("./app-version.json", { cache: "no-store" });
+    const res = await fetch(`./app-version.json?_=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
     if (!data.builtAt) return;
