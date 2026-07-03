@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "బిల్లు స్కానర్‌తో బిల్లులు మరియు రసీదులను స్కాన్ చేయండి",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "మీ గ్యాలరీ నుండి బిల్ చిత్రాలను ఎంచుకోండి",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android కోసం వేచి ఉంది...",
   "permissions.continueWithout": "Not now",

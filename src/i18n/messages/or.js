@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "ବିଲ୍ ସ୍କାନର୍ ସହିତ ବିଲ୍ ଏବଂ ରସିଦ ସ୍କାନ୍ କରନ୍ତୁ |",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "ଆପଣଙ୍କ ଗ୍ୟାଲେରୀରୁ ବିଲ୍ ପ୍ରତିଛବିଗୁଡିକ ବାଛନ୍ତୁ |",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android ପାଇଁ ଅପେକ୍ଷା…",
   "permissions.continueWithout": "Not now",

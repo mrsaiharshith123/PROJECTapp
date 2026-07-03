@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Ensure AndroidManifest.xml declares runtime permissions for camera, gallery, notifications.
+ * Ensure AndroidManifest.xml declares runtime permissions for camera, gallery, location, notifications.
  * android/ is gitignored — run after every `cap sync` in APK build scripts.
  */
 import fs from "fs";
@@ -16,6 +16,8 @@ const PERMISSION_LINES = [
   '<uses-permission android:name="android.permission.CAMERA" />',
   '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
   '<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />',
+  '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+  '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
   '<uses-permission android:name="android.permission.VIBRATE" />',
   '<uses-permission android:name="android.permission.WAKE_LOCK" />',
   '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
@@ -51,4 +53,4 @@ if (xml.includes("<!-- Permissions -->")) {
 }
 
 fs.writeFileSync(manifestPath, xml);
-console.log("patch-android-manifest: added camera / gallery / notification permissions");
+console.log("patch-android-manifest: added camera / gallery / location / notification permissions");

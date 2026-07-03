@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "ബിൽ സ്കാനർ ഉപയോഗിച്ച് ബില്ലുകളും രസീതുകളും സ്കാൻ ചെയ്യുക",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "നിങ്ങളുടെ ഗാലറിയിൽ നിന്ന് ബിൽ ചിത്രങ്ങൾ തിരഞ്ഞെടുക്കുക",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android-നായി കാത്തിരിക്കുന്നു...",
   "permissions.continueWithout": "Not now",

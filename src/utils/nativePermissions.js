@@ -8,7 +8,7 @@ export function isNativeCapacitorShell() {
 }
 
 /**
- * @param {"camera"|"photos"|"notifications"} kind
+ * @param {"camera"|"photos"|"notifications"|"location"} kind
  * @returns {Promise<"granted"|"denied"|"prompt"|"unsupported">}
  */
 export async function checkNativePermission(kind) {
@@ -18,6 +18,11 @@ export async function checkNativePermission(kind) {
       const { LocalNotifications } = await import("@capacitor/local-notifications");
       const result = await LocalNotifications.checkPermissions();
       return normalizePerm(result.display);
+    }
+    if (kind === "location") {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const result = await Geolocation.checkPermissions();
+      return normalizePerm(result.location ?? result.coarseLocation);
     }
     const { Camera } = await import("@capacitor/camera");
     const result = await Camera.checkPermissions();
@@ -29,7 +34,7 @@ export async function checkNativePermission(kind) {
 }
 
 /**
- * @param {"camera"|"photos"|"notifications"} kind
+ * @param {"camera"|"photos"|"notifications"|"location"} kind
  * @returns {Promise<"granted"|"denied"|"prompt"|"unsupported">}
  */
 export async function requestNativePermission(kind) {
@@ -39,6 +44,11 @@ export async function requestNativePermission(kind) {
       const { LocalNotifications } = await import("@capacitor/local-notifications");
       const result = await LocalNotifications.requestPermissions();
       return normalizePerm(result.display);
+    }
+    if (kind === "location") {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const result = await Geolocation.requestPermissions();
+      return normalizePerm(result.location ?? result.coarseLocation);
     }
     const { Camera } = await import("@capacitor/camera");
     const result = await Camera.requestPermissions({ permissions: ["camera", "photos"] });
@@ -58,38 +68,41 @@ function normalizePerm(value) {
 const ANDROID_PACKAGE_ID = "app.perovo.mobile";
 
 /**
- * @returns {Promise<{ notifications: string, camera: string, photos: string }>}
+ * @returns {Promise<{ notifications: string, camera: string, photos: string, location: string }>}
  */
 export async function checkEssentialPermissions() {
-  const [notifications, camera, photos] = await Promise.all([
+  const [notifications, camera, photos, location] = await Promise.all([
     checkNativePermission("notifications"),
     checkNativePermission("camera"),
     checkNativePermission("photos"),
+    checkNativePermission("location"),
   ]);
-  return { notifications, camera, photos };
+  return { notifications, camera, photos, location };
 }
 
-/** @param {{ notifications: string, camera: string, photos: string }} status */
+/** @param {{ notifications: string, camera: string, photos: string, location: string }} status */
 export function allEssentialPermissionsGranted(status) {
   return (
     status.notifications === "granted" &&
     status.camera === "granted" &&
-    status.photos === "granted"
+    status.photos === "granted" &&
+    status.location === "granted"
   );
 }
 
-/** @param {{ notifications: string, camera: string, photos: string }} status */
+/** @param {{ notifications: string, camera: string, photos: string, location: string }} status */
 export function anyEssentialPermissionDenied(status) {
   return (
     status.notifications === "denied" ||
     status.camera === "denied" ||
-    status.photos === "denied"
+    status.photos === "denied" ||
+    status.location === "denied"
   );
 }
 
 /**
- * Show Android system permission dialogs for reminders, camera, and photos.
- * @returns {Promise<{ notifications: string, camera: string, photos: string } | null>}
+ * Show Android system permission dialogs for reminders, camera, photos, and location.
+ * @returns {Promise<{ notifications: string, camera: string, photos: string, location: string } | null>}
  */
 export async function requestEssentialPermissions() {
   if (!isNativeCapacitorShell()) return null;
@@ -110,7 +123,12 @@ export async function requestEssentialPermissions() {
     photos = normalizePerm(result.photos);
   }
 
-  return { notifications, camera, photos };
+  let location = await checkNativePermission("location");
+  if (location !== "granted") {
+    location = await requestNativePermission("location");
+  }
+
+  return { notifications, camera, photos, location };
 }
 
 /** Open this app's page in Android system settings (when user tapped Deny). */

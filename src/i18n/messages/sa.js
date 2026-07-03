@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "बिलस्कैनरेन बिलानि रसीदानि च स्कैन कुर्वन्तु",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "स्वस्य गैलरीतः बिलस्य चित्राणि चिनुत",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "प्रतीक्षमाणः Android...",
   "permissions.continueWithout": "Not now",

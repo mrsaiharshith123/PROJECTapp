@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "বিল স্ক্যানাৰৰ সহায়ত বিল আৰু ৰচিদ স্কেন কৰক",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "আপোনাৰ গেলেৰীৰ পৰা বিলৰ ছবি বাছি লওক",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android ৰ বাবে অপেক্ষা কৰি আছে...",
   "permissions.continueWithout": "Not now",

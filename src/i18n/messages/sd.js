@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "بل اسڪينر سان بل ۽ رسيدون اسڪين ڪريو",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "پنھنجي گيلري مان بل تصويرون چونڊيو",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "انتظار ڪري رهيو آهي Android...",
   "permissions.continueWithout": "Not now",

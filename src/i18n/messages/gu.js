@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "બિલ સ્કેનર વડે બિલ અને રસીદો સ્કેન કરો",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "તમારી ગેલેરીમાંથી બિલની છબીઓ ચૂંટો",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android ની રાહ જોઈ રહ્યાં છીએ…",
   "permissions.continueWithout": "Not now",

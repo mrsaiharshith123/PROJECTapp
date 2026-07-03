@@ -186,6 +186,7 @@ if (!publishOnly) {
   run("Capacitor sync android", "npx", ["cap", "sync", "android"]);
   run("Sync Android launcher icons", "node", ["scripts/sync-android-icons.mjs"]);
   run("Patch Android permissions", "node", ["scripts/patch-android-manifest.mjs"]);
+  run("Patch iOS usage descriptions", "node", ["scripts/patch-ios-info-plist.mjs"]);
 
   const jdkHome = resolveJdkHome();
   if (jdkHome) {

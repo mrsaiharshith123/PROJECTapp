@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "ಈ ಹಣಕಾಸು ಅಪ್ಲಿಕೇಶನ್ UI ಲೇಬಲ್ ಅನ್ನು ಅನುವಾದಿಸಿ: ಬಿಲ್ ಸ್ಕ್ಯಾನರ್‌ನೊಂದಿಗೆ ಬಿಲ್‌ಗಳು ಮತ್ತು ರಸೀದಿಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "ಈ ಹಣಕಾಸು ಅಪ್ಲಿಕೇಶನ್ UI ಲೇಬಲ್ ಅನ್ನು ಅನುವಾದಿಸಿ: ನಿಮ್ಮ ಗ್ಯಾಲರಿಯಿಂದ ಬಿಲ್ ಚಿತ್ರಗಳನ್ನು ಆರಿಸಿ",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Translate this finance app UI label: Waiting for Android…",
   "permissions.continueWithout": "Not now",

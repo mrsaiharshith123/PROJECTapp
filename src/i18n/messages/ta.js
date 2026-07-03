@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "பில் ஸ்கேனர் மூலம் பில்கள் மற்றும் ரசீதுகளை ஸ்கேன் செய்யவும்",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "உங்கள் கேலரியில் இருந்து பில் படங்களைத் தேர்ந்தெடுக்கவும்",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Androidக்காக காத்திருக்கிறது…",
   "permissions.continueWithout": "Not now",

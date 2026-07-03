@@ -1621,6 +1621,8 @@ export default {
   "permissions.itemCameraBody": "بل اسکٕنر سے بل اور رسیدیں اسکٕن کریں۔",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "اپنی گیلری سے بل کٕ تصاویر چنیں۔",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android کٕ انتظار چھُ…",
   "permissions.continueWithout": "Not now",

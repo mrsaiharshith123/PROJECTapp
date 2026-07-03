@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "बिल स्कॅनरसह बिले आणि पावत्या स्कॅन करा",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "तुमच्या गॅलरीमधून बिल प्रतिमा निवडा",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android ची वाट पाहत आहे...",
   "permissions.continueWithout": "Not now",

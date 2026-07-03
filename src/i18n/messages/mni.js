@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "ꯕꯤꯜ ꯁ꯭ꯀꯦꯅꯔ ꯑꯗꯨꯒꯥ ꯂꯣꯌꯅꯅꯥ ꯕꯤꯂꯁꯤꯡ ꯑꯃꯁꯨꯡ ꯔꯤꯁꯤꯇꯁꯤꯡ ꯁ꯭ꯀꯦꯟ ꯇꯧ꯫",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "ꯅꯍꯥꯛꯀꯤ ꯒꯦꯜꯂꯔꯤꯗꯒꯤ ꯕꯤꯂꯒꯤ ꯏꯃꯦꯖꯁꯤꯡ ꯂꯧꯈꯠꯀꯗꯕꯅꯤ꯫",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "__ꯇꯤ꯰__ꯒꯤꯗꯃꯛ ꯉꯥꯏꯗꯨꯅꯥ ꯂꯩꯔꯤ...",
   "permissions.continueWithout": "Not now",

@@ -1619,6 +1619,8 @@ export default {
   "permissions.itemCameraBody": "ਬਿੱਲ ਸਕੈਨਰ ਨਾਲ ਬਿੱਲਾਂ ਅਤੇ ਰਸੀਦਾਂ ਨੂੰ ਸਕੈਨ ਕਰੋ",
   "permissions.itemPhotosTitle": "Photos",
   "permissions.itemPhotosBody": "ਆਪਣੀ ਗੈਲਰੀ ਤੋਂ ਬਿੱਲ ਦੀਆਂ ਤਸਵੀਰਾਂ ਚੁਣੋ",
+  "permissions.itemLocationTitle": "Location",
+  "permissions.itemLocationBody": "Pin your property on the map when adding real estate",
   "permissions.allowAccess": "Allow access",
   "permissions.requesting": "Android ਦੀ ਉਡੀਕ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...",
   "permissions.continueWithout": "Not now",

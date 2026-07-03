@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { getCityMapCenter } from "../../constants/cityMapCenters.js";
+import { isNativeCapacitorShell, requestNativePermission } from "../../utils/nativePermissions.js";
 
 const DEFAULT_ZOOM = 15;
 const MIN_ZOOM = 11;
@@ -234,19 +235,29 @@ export function LocationMapPicker({
       return;
     }
     setBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const nextLat = roundCoord(pos.coords.latitude);
-        const nextLng = roundCoord(pos.coords.longitude);
-        await applyPin(nextLat, nextLng);
-        setBusy(false);
-      },
-      () => {
-        setError(t("wealthDetail.map.geoDenied"));
-        setBusy(false);
-      },
-      { enableHighAccuracy: true, timeout: 12000 },
-    );
+    (async () => {
+      if (isNativeCapacitorShell()) {
+        const perm = await requestNativePermission("location");
+        if (perm !== "granted") {
+          setError(t("wealthDetail.map.geoDenied"));
+          setBusy(false);
+          return;
+        }
+      }
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const nextLat = roundCoord(pos.coords.latitude);
+          const nextLng = roundCoord(pos.coords.longitude);
+          await applyPin(nextLat, nextLng);
+          setBusy(false);
+        },
+        () => {
+          setError(t("wealthDetail.map.geoDenied"));
+          setBusy(false);
+        },
+        { enableHighAccuracy: true, timeout: 12000 },
+      );
+    })();
   }, [applyPin, t, readOnly]);
 
   const searchPlace = useCallback(async () => {

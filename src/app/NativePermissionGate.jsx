@@ -119,6 +119,13 @@ export default function NativePermissionGate({ children }) {
               <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.photos}`)}</Caption>
             ) : null}
           </li>
+          <li>
+            <strong>{t("permissions.itemLocationTitle")}</strong>
+            <span>{t("permissions.itemLocationBody")}</span>
+            {status ? (
+              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.location}`)}</Caption>
+            ) : null}
+          </li>
         </ul>
 
         {showSettings ? (
