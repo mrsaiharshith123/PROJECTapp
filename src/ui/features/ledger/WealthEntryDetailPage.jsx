@@ -440,6 +440,7 @@ export default function WealthEntryDetailPage() {
                     insight={analysis.insight}
                     source={analysis.source}
                     formatAmount={formatAmount}
+                    areaMeasure={entry.areaMeasure}
                   />
 
                   {isAutoEstimated && impliedMarketValue > 0 ? (

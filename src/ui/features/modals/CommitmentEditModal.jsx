@@ -134,6 +134,14 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
     const errs = validate();
     if (Object.keys(errs).length) {
       setErrors(/** @type {Record<string, string>} */ (/** @type {unknown} */ (errs)));
+      const firstKey = Object.keys(errs)[0];
+      window.setTimeout(() => {
+        const el = document.querySelector(`[name="${firstKey}"]`);
+        if (el instanceof HTMLElement) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          el.focus();
+        }
+      }, 0);
       return;
     }
     const billName = showInsurance

@@ -35,7 +35,7 @@ function KickerBadge({ children }) {
  * Renders structured Gemini market data as editorial sections.
  * @param {object} props
  */
-export default function MarketAnalysis({ t, marketData, categoryId, insight, source, formatAmount }) {
+export default function MarketAnalysis({ t, marketData, categoryId, insight, source, formatAmount, areaMeasure = 0 }) {
   if (!marketData) {
     return insight ? (
       <div className="ed-ins-story" style={{ borderBottom: "none" }}>
@@ -144,6 +144,108 @@ export default function MarketAnalysis({ t, marketData, categoryId, insight, sou
               </div>
             ) : null}
           </div>
+
+          {md.governmentRate?.perSqyd ? (
+            <div style={{ marginTop: 14 }}>
+              <div
+                style={{
+                  fontFamily: "var(--ed-font)",
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: ".1em",
+                  textTransform: "uppercase",
+                  color: "var(--ed-ink-faint)",
+                  marginBottom: 8,
+                }}
+              >
+                {t("wealthDetail.market.govtVsMarket")}
+              </div>
+
+              <div className="ed-metrics">
+                <div className="ed-metric">
+                  <div className="ed-metric-label">
+                    {t("wealthDetail.market.govtRate", { source: md.governmentRate.source || "" })}
+                  </div>
+                  <div className="ed-metric-value" style={{ color: "var(--ed-violet)" }}>
+                    ₹{Number(md.governmentRate.perSqyd).toLocaleString("en-IN")}
+                  </div>
+                  <div className="ed-metric-sub">
+                    {t("wealthDetail.market.perSqydAsOf", { asOf: md.governmentRate.asOf || "" })}
+                  </div>
+                </div>
+
+                <div className="ed-metric">
+                  <div className="ed-metric-label">{t("wealthDetail.market.marketPremium")}</div>
+                  <div
+                    className="ed-metric-value"
+                    style={{
+                      color:
+                        md.marketVsGovtGap > 0 ? "var(--ed-amber)" : "var(--ed-green)",
+                    }}
+                  >
+                    {md.marketVsGovtGap != null
+                      ? `+${Number(md.marketVsGovtGap).toFixed(1)}%`
+                      : "—"}
+                  </div>
+                  <div className="ed-metric-sub">{t("wealthDetail.market.aboveGovtRate")}</div>
+                </div>
+              </div>
+
+              {md.governmentRate.note ? (
+                <p
+                  style={{
+                    fontFamily: "var(--ed-font-news)",
+                    fontSize: 12,
+                    fontStyle: "italic",
+                    color: "var(--ed-ink-faint)",
+                    marginTop: 8,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {md.governmentRate.note}
+                </p>
+              ) : null}
+
+              {areaMeasure > 0 && md.impliedMarketValue ? (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "10px 12px",
+                    background: "var(--ed-violet-soft)",
+                    border: "0.5px solid var(--ed-violet)",
+                    borderRadius: "var(--ed-r-sm)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "var(--ed-font)",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--ed-violet)",
+                      marginBottom: 3,
+                    }}
+                  >
+                    {t("wealthDetail.market.stampDutyTitle")}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--ed-font-news)",
+                      fontSize: 12,
+                      fontStyle: "italic",
+                      color: "var(--ed-ink-soft)",
+                    }}
+                  >
+                    {t("wealthDetail.market.stampDutyNote", {
+                      marketValue: formatAmount(md.impliedMarketValue),
+                      govtValue: formatAmount(
+                        Math.round(Number(md.governmentRate.perSqyd || 0) * Number(areaMeasure)),
+                      ),
+                    })}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
 

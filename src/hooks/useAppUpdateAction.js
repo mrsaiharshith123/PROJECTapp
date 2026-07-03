@@ -9,6 +9,27 @@ export function useAppUpdateAction() {
   const [busy, setBusy] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const [progress, setProgress] = useState(null);
+  const [canRetry, setCanRetry] = useState(false);
+
+  const retryInstall = async () => {
+    setCanRetry(false);
+    setBusy(true);
+    setStatus(t("support.updateAppApkInstalling"));
+    try {
+      const check = await checkForAppUpdate();
+      if (check.status === "apk_ready" && check.remoteVersion) {
+        const { openCachedApkInstall } = await import("../services/nativeApkUpdate.js");
+        await openCachedApkInstall(check.remoteVersion);
+        setStatus(t("support.updateAppApkInstall"));
+        setCanRetry(true);
+      }
+    } catch {
+      setStatus(t("support.updateAppError"));
+      setCanRetry(true);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const runUpdate = async () => {
     setBusy(true);
@@ -35,6 +56,7 @@ export function useAppUpdateAction() {
           setProgressOpen(false);
           setBusy(false);
           setStatus(t("support.updateAppApkInstall"));
+          setCanRetry(true);
         } else {
           setProgressOpen(false);
           setBusy(false);
@@ -79,6 +101,7 @@ export function useAppUpdateAction() {
         setProgressOpen(false);
         setBusy(false);
         setStatus(t("support.updateAppApkInstall"));
+        setCanRetry(true);
         return;
       }
 
@@ -103,5 +126,5 @@ export function useAppUpdateAction() {
     }
   };
 
-  return { status, busy, runUpdate, progressOpen, progress };
+  return { status, busy, runUpdate, progressOpen, progress, canRetry, retryInstall };
 }

@@ -10,7 +10,7 @@ const TILE_SIZE = 256;
 const DRAG_THRESHOLD_PX = 6;
 
 function roundCoord(n) {
-  return Math.round(n * 1e5) / 1e5;
+  return Math.round(n * 1e6) / 1e6;
 }
 
 function latLngToWorldPx(lat, lng, zoom) {
@@ -59,11 +59,28 @@ function buildTileLayout(centerLat, centerLng, zoom, viewW, viewH) {
 async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&zoom=18&accept-language=en`,
       { headers: { Accept: "application/json" } },
     );
     const data = await res.json();
-    return data.display_name?.split(",").slice(0, 3).join(", ") || `${lat}, ${lng}`;
+    const a = data.address || {};
+
+    const micro =
+      a.neighbourhood ||
+      a.suburb ||
+      a.village ||
+      a.hamlet ||
+      a.isolated_dwelling ||
+      a.quarter;
+    const road = a.road || a.pedestrian || a.footway || a.path || a.residential;
+    const town = a.city_district || a.city || a.town || a.municipality || a.county;
+    const state = a.state_district || a.state;
+
+    const parts = [micro, road, town, state].filter(Boolean);
+
+    return parts.length > 0
+      ? parts.slice(0, 4).join(", ")
+      : data.display_name?.split(",").slice(0, 3).join(", ") || `${lat}, ${lng}`;
   } catch {
     return `${lat}, ${lng}`;
   }
@@ -77,6 +94,8 @@ async function reverseGeocode(lat, lng) {
  *   locationLabel?: string,
  *   defaultCityId?: string,
  *   readOnly?: boolean,
+ *   nested?: boolean,
+ *   suppressFullscreen?: boolean,
  *   style?: import('react').CSSProperties,
  *   onChange?: (patch: { latitude?: number, longitude?: number, location?: string }) => void,
  * }} props
@@ -87,6 +106,8 @@ export function LocationMapPicker({
   locationLabel = "",
   defaultCityId = "",
   readOnly = false,
+  nested = false,
+  suppressFullscreen = false,
   style,
   onChange = () => {},
 }) {
@@ -94,8 +115,11 @@ export function LocationMapPicker({
   const [search, setSearch] = useState(locationLabel || "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [fullscreen, setFullscreen] = useState(false);
   const mapRef = useRef(null);
   const dragRef = useRef(null);
+  const pinchRef = useRef(null);
+  const activePointers = useRef(new Map());
   const [viewSize, setViewSize] = useState({ w: 320, h: 180 });
 
   const seedCenter = useMemo(() => {
@@ -178,15 +202,28 @@ export function LocationMapPicker({
   const onMapPointerDown = useCallback(
     (e) => {
       if (readOnly || busy) return;
-      const centerPx = latLngToWorldPx(center.lat, center.lng, zoom);
-      dragRef.current = {
-        pointerId: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        originCenterPx: centerPx,
-        moved: false,
-      };
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
       e.currentTarget.setPointerCapture(e.pointerId);
+
+      if (activePointers.current.size === 1) {
+        const centerPx = latLngToWorldPx(center.lat, center.lng, zoom);
+        dragRef.current = {
+          pointerId: e.pointerId,
+          startX: e.clientX,
+          startY: e.clientY,
+          originCenterPx: centerPx,
+          moved: false,
+        };
+      } else if (activePointers.current.size === 2) {
+        dragRef.current = null;
+        const pts = [...activePointers.current.values()];
+        const dx = pts[0].x - pts[1].x;
+        const dy = pts[0].y - pts[1].y;
+        pinchRef.current = {
+          startDist: Math.hypot(dx, dy),
+          startZoom: zoom,
+        };
+      }
     },
     [busy, center.lat, center.lng, zoom, readOnly],
   );
@@ -194,26 +231,52 @@ export function LocationMapPicker({
   const onMapPointerMove = useCallback(
     (e) => {
       if (readOnly) return;
-    const drag = dragRef.current;
-    if (!drag || drag.pointerId !== e.pointerId) return;
-    const dx = e.clientX - drag.startX;
-    const dy = e.clientY - drag.startY;
-    if (!drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-    drag.moved = true;
-    const next = worldPxToLatLng(drag.originCenterPx.x - dx, drag.originCenterPx.y - dy, zoom);
-    setCenter(next);
-  }, [zoom, readOnly]);
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (activePointers.current.size === 2 && pinchRef.current) {
+        const pts = [...activePointers.current.values()];
+        const dx = pts[0].x - pts[1].x;
+        const dy = pts[0].y - pts[1].y;
+        const dist = Math.hypot(dx, dy);
+        const scale = dist / pinchRef.current.startDist;
+        const rawZoom = pinchRef.current.startZoom + Math.log2(scale);
+        setZoom(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.round(rawZoom))));
+        return;
+      }
+
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== e.pointerId) return;
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+      if (!drag.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+      drag.moved = true;
+      const next = worldPxToLatLng(
+        drag.originCenterPx.x - dx,
+        drag.originCenterPx.y - dy,
+        zoom,
+      );
+      setCenter(next);
+    },
+    [zoom, readOnly],
+  );
 
   const onMapPointerUp = useCallback(
     (e) => {
       if (readOnly) return;
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== e.pointerId) return;
+      activePointers.current.delete(e.pointerId);
       e.currentTarget.releasePointerCapture(e.pointerId);
-      if (!drag.moved) {
-        void dropPinAtPointer(e.clientX, e.clientY);
+
+      if (activePointers.current.size < 2) {
+        pinchRef.current = null;
       }
-      dragRef.current = null;
+
+      const drag = dragRef.current;
+      if (drag && drag.pointerId === e.pointerId) {
+        if (!drag.moved) {
+          void dropPinAtPointer(e.clientX, e.clientY);
+        }
+        dragRef.current = null;
+      }
     },
     [dropPinAtPointer, readOnly],
   );
@@ -221,11 +284,14 @@ export function LocationMapPicker({
   const onMapPointerCancel = useCallback(
     (e) => {
       if (readOnly) return;
-    if (dragRef.current?.pointerId === e.pointerId) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-      dragRef.current = null;
-    }
-  }, []);
+      activePointers.current.delete(e.pointerId);
+      if (dragRef.current?.pointerId === e.pointerId) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        dragRef.current = null;
+      }
+    },
+    [readOnly],
+  );
 
   const useMyLocation = useCallback(() => {
     if (readOnly) return;
@@ -280,11 +346,8 @@ export function LocationMapPicker({
       const hit = data[0];
       const nextLat = roundCoord(Number(hit.lat));
       const nextLng = roundCoord(Number(hit.lon));
-      await applyPin(
-        nextLat,
-        nextLng,
-        hit.display_name?.split(",").slice(0, 3).join(", ") || q,
-      );
+      const deepLabel = await reverseGeocode(nextLat, nextLng);
+      await applyPin(nextLat, nextLng, deepLabel);
       setZoom(DEFAULT_ZOOM);
       setBusy(false);
     } catch {
@@ -293,22 +356,14 @@ export function LocationMapPicker({
     }
   }, [applyPin, search, t, readOnly]);
 
-  const zoomIn = () => {
-    if (readOnly) return;
-    setZoom((z) => Math.min(MAX_ZOOM, z + 1));
-  };
-  const zoomOut = () => {
-    if (readOnly) return;
-    setZoom((z) => Math.max(MIN_ZOOM, z - 1));
-  };
-
   const mapStyle = /** @type {import("react").CSSProperties} */ ({
     display: "block",
     width: "100%",
-    border: "0.5px solid var(--ed-rule)",
-    borderRadius: 10,
+    border: nested ? "none" : "0.5px solid var(--ed-rule)",
+    borderRadius: nested ? 0 : 10,
     overflow: "hidden",
-    height: 200,
+    height: nested ? "100%" : 200,
+    flex: nested ? 1 : undefined,
     cursor: readOnly ? "default" : busy ? "wait" : "grab",
     touchAction: readOnly ? "auto" : "none",
     background: "#e8eef4",
@@ -318,8 +373,8 @@ export function LocationMapPicker({
   });
 
   return (
-    <div className="ed-you-field">
-      {!readOnly ? (
+    <div className={nested ? undefined : "ed-you-field"} style={nested ? { height: "100%", display: "flex", flexDirection: "column" } : undefined}>
+      {!readOnly && !nested ? (
         <>
           <div className="ed-you-field-label">{t("wealthDetail.map.title")}</div>
           <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
@@ -391,45 +446,35 @@ export function LocationMapPicker({
             }}
           />
         ) : null}
-        {!readOnly ? (
-          <div
+        {!readOnly && !suppressFullscreen ? (
+          <button
+            type="button"
+            aria-label={t("wealthDetail.map.expandMap")}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setFullscreen(true);
+            }}
             style={{
               position: "absolute",
               top: 8,
-              right: 8,
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
+              left: 8,
               zIndex: 2,
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              background: "rgba(255,255,255,0.85)",
+              border: "0.5px solid rgba(0,0,0,0.15)",
+              cursor: "pointer",
+              fontSize: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
             }}
           >
-            <button
-              type="button"
-              className="ed-option-btn"
-              style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
-              aria-label={t("wealthDetail.map.zoomIn")}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                zoomIn();
-              }}
-            >
-              +
-            </button>
-            <button
-              type="button"
-              className="ed-option-btn"
-              style={{ width: 32, height: 32, padding: 0, lineHeight: 1 }}
-              aria-label={t("wealthDetail.map.zoomOut")}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                zoomOut();
-              }}
-            >
-              −
-            </button>
-          </div>
+            ⤢
+          </button>
         ) : null}
         <span
           style={{
@@ -447,23 +492,152 @@ export function LocationMapPicker({
           © OpenStreetMap
         </span>
       </div>
-      {!readOnly ? (
+      {!readOnly && !nested ? (
+        <span
+          style={{
+            fontSize: 11,
+            color: "var(--ed-ink-faint)",
+            display: "block",
+            marginTop: 4,
+            fontStyle: "italic",
+          }}
+        >
+          {t("wealthDetail.map.gestureHint")}
+        </span>
+      ) : null}
+      {!readOnly && !nested ? (
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           <button type="button" className="ed-you-text-btn" disabled={busy} onClick={useMyLocation}>
             {busy ? t("common.loading") : t("wealthDetail.map.useMyLocation")}
           </button>
           {hasPin ? (
-            <span className="ed-you-field-hint" style={{ margin: 0 }}>
-              {t("wealthDetail.map.pinned", { lat: latitude, lng: longitude })}
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span
+                style={{
+                  fontFamily: "var(--ed-font)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "var(--ed-ink-soft)",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                {t("wealthDetail.map.coords", {
+                  lat: latitude?.toFixed(6),
+                  lng: longitude?.toFixed(6),
+                })}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--ed-font-news)",
+                  fontSize: 11,
+                  fontStyle: "italic",
+                  color: "var(--ed-ink-faint)",
+                }}
+              >
+                {t("wealthDetail.map.precisionNote")}
+              </span>
+            </div>
           ) : (
             <span className="ed-you-field-hint" style={{ margin: 0 }}>
-              {t("wealthDetail.map.hint")}
+              {t("wealthDetail.map.tapToDropPin")}
             </span>
           )}
         </div>
       ) : null}
       {error ? <div className="ed-you-note error">{error}</div> : null}
+
+      {fullscreen && !suppressFullscreen ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "#e8eef4",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "12px 16px",
+              background: "var(--ed-bg)",
+              borderBottom: "0.5px solid var(--ed-rule)",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontFamily: "var(--ed-font)",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  color: "var(--ed-ink)",
+                }}
+              >
+                {t("wealthDetail.map.fullscreenTitle")}
+              </div>
+              {hasPin ? (
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ed-ink-faint)",
+                    fontFamily: "var(--ed-font)",
+                    marginTop: 2,
+                  }}
+                >
+                  {t("wealthDetail.map.coords", {
+                    lat: latitude?.toFixed(6),
+                    lng: longitude?.toFixed(6),
+                  })}
+                </div>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => setFullscreen(false)}
+              aria-label={t("common.close")}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: 22,
+                color: "var(--ed-ink)",
+                cursor: "pointer",
+                padding: "4px 8px",
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          <div style={{ flex: 1, position: "relative", overflow: "auto", padding: "0 16px 16px" }}>
+            <LocationMapPicker
+              suppressFullscreen
+              latitude={latitude}
+              longitude={longitude}
+              locationLabel={locationLabel}
+              defaultCityId={defaultCityId}
+              readOnly={false}
+              style={{ height: 280, borderRadius: 10 }}
+              onChange={(patch) => {
+                onChange(patch);
+                if (patch.location) setSearch(patch.location);
+              }}
+            />
+          </div>
+
+          <div style={{ padding: 16, background: "var(--ed-bg)", borderTop: "0.5px solid var(--ed-rule)" }}>
+            <button
+              type="button"
+              className="ed-btn ed-btn-primary ed-btn-block"
+              onClick={() => setFullscreen(false)}
+            >
+              {t("wealthDetail.map.confirmPin")}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

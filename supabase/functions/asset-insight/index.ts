@@ -156,8 +156,12 @@ function buildPropertyMarketCompact(b: Record<string, unknown>, withHistory = fa
     : "";
 
   return `Gemini (Google AI). ${loc}. ${area} ${b.areaUnit || "sqyd"}.
+Search:
+- "${loc} property rate per sqyard 2026"
+- "${loc} IGRS guideline rate 2025" OR "${loc} ready reckoner rate" OR "${loc} stamp duty value 2024-25"
 One web search for 2026 ₹/sqyd in this locality. JSON only, no markdown:
-{"marketRate":{"perSqyd":<N>,"rangeMin":<N>,"rangeMax":<N>,"confidence":"medium","dataSource":"<site>"},"impliedMarketValue":<perSqyd*${area}>,"trend":{"direction":"rising|flat|declining","annualGrowthPct":<N>,"description":"<short>"},"holdRecommendation":{"verdict":"hold|sell|wait","specificReason":"<short>"},"summary":"<one sentence>"${historyBlock}}`;
+{"marketRate":{"perSqyd":<N>,"rangeMin":<N>,"rangeMax":<N>,"confidence":"medium","dataSource":"<site>"},"governmentRate":{"perSqyd":<government guideline/circle rate per sqyard as number or null>,"source":"<IGRS Telangana / Ready Reckoner / Sub-registrar rate>","asOf":"<financial year e.g. 2024-25>","confidence":"high|medium|low","note":"<one line about what this rate means legally>"},"marketVsGovtGap":<((marketRate.perSqyd - governmentRate.perSqyd) / governmentRate.perSqyd * 100) rounded to 1 decimal or null>,"impliedMarketValue":<perSqyd*${area}>,"trend":{"direction":"rising|flat|declining","annualGrowthPct":<N>,"description":"<short>"},"holdRecommendation":{"verdict":"hold|sell|wait","specificReason":"<short>"},"summary":"<one sentence>"${historyBlock}}
+The government rate is the official IGRS (Inspector General of Registration & Stamps) guideline/circle rate — the MINIMUM value for stamp duty. Market rate is typically 1.5x–4x the government rate in urban India. Search for the actual IGRS rate for this specific area, not a city average.`;
 }
 
 function buildPropertyBundlePrompt(b: Record<string, unknown>): string {

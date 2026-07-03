@@ -95,8 +95,45 @@ export function clearPendingApkInstall() {
   }
 }
 
+const PERMISSION_REQUESTED_KEY = "perovo_apk_permission_requested";
+
+/** Mark that we opened Settings for install permission — need retry on return */
+export function markApkPermissionRequested(version) {
+  if (!version) return;
+  try {
+    localStorage.setItem(
+      PERMISSION_REQUESTED_KEY,
+      JSON.stringify({ version: String(version), at: new Date().toISOString() }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Was the permission settings page opened for this version? */
+export function wasApkPermissionRequested(version) {
+  if (!version) return false;
+  try {
+    const raw = localStorage.getItem(PERMISSION_REQUESTED_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return String(parsed?.version) === String(version);
+  } catch {
+    return false;
+  }
+}
+
+export function clearApkPermissionRequested() {
+  try {
+    localStorage.removeItem(PERMISSION_REQUESTED_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function clearApkUpdateTracking() {
   clearPendingApkInstall();
+  clearApkPermissionRequested();
   try {
     localStorage.removeItem(DOWNLOADED_KEY);
     localStorage.removeItem(DISMISS_KEY);

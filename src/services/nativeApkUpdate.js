@@ -54,7 +54,14 @@ export function apkCacheFileName(version) {
 /** Re-open a downloaded APK in the system installer (no re-download). */
 export async function openCachedApkInstall(version) {
   const fileName = apkCacheFileName(version);
-  const { markApkInstallPending, tryExitAppAfterApkInstall } = await import("./pendingApkInstall.js");
+  const {
+    markApkInstallPending,
+    markApkPermissionRequested,
+    wasApkPermissionRequested,
+    clearApkPermissionRequested,
+    clearApkUpdateTracking,
+  } = await import("./pendingApkInstall.js");
+
   markApkInstallPending(version || "latest");
 
   const { Filesystem, Directory } = await import("@capacitor/filesystem");
@@ -64,13 +71,54 @@ export async function openCachedApkInstall(version) {
   });
 
   const { FileOpener } = await import("@capacitor-community/file-opener");
-  await FileOpener.open({
-    filePath: uri,
-    contentType: "application/vnd.android.package-archive",
-    openWithDefault: true,
+
+  async function launchInstaller() {
+    await FileOpener.open({
+      filePath: uri,
+      contentType: "application/vnd.android.package-archive",
+      openWithDefault: true,
+    });
+  }
+
+  try {
+    await launchInstaller();
+  } catch {
+    markApkPermissionRequested(version || "latest");
+    const { App } = await import("@capacitor/app");
+    await App.minimizeApp().catch(() => {});
+    return;
+  }
+
+  const { App } = await import("@capacitor/app");
+
+  let stateHandle = null;
+  stateHandle = await App.addListener("appStateChange", async (state) => {
+    if (!state.isActive) return;
+
+    stateHandle?.remove?.();
+    stateHandle = null;
+
+    const localNative = await getLocalNativeAppVersion();
+    const stillNeeds = needsNativeApkUpdate({ version }, localNative);
+
+    if (!stillNeeds) {
+      clearApkPermissionRequested();
+      clearApkUpdateTracking();
+      return;
+    }
+
+    if (wasApkPermissionRequested(version || "latest")) {
+      clearApkPermissionRequested();
+      try {
+        await launchInstaller();
+        await App.minimizeApp().catch(() => {});
+      } catch {
+        /* permission still denied — UI retry */
+      }
+    }
   });
 
-  await tryExitAppAfterApkInstall();
+  await App.minimizeApp().catch(() => {});
 }
 
 /**

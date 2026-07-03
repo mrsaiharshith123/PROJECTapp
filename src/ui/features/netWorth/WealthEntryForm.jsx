@@ -23,11 +23,13 @@ import { estimateVehicleValue } from "../../../utils/vehicleDepreciation.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { inputClassName } from "../../index.js";
 import { LocationMapPicker } from "../../patterns/LocationMapPicker.jsx";
+import { useFormValidation } from "../../../hooks/useFormValidation.js";
 import { AREA_UNITS, entryToForm, isPhysicalCategory, MONTH_OPTIONS, resolveEntryName } from "./wealthEntryFormState.js";
 
 export default function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories, onClose, onSave }) {
   const { t } = useTranslation();
   const { settings, refreshGoldRate } = usePerovo();
+  const { register, validate, errors: fieldErrors, clearError } = useFormValidation();
   const [form, setForm] = useState(() => entryToForm(entry, kind, defaultCategoryId));
   const [saving, setSaving] = useState(false);
   const [goldRateLoading, setGoldRateLoading] = useState(false);
@@ -149,6 +151,21 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
 
   const submit = async () => {
     if (savingRef.current) return;
+
+    const showValueInput =
+      !(isProperty && !form.valueManual) &&
+      !(isGold && !form.valueManual && (goldEstimatedValue || goldCanDeferValue));
+
+    if (showValueInput) {
+      const ok = validate({
+        value: {
+          required: true,
+          label: t("netWorth.form.value"),
+          getValue: () => form.value,
+        },
+      });
+      if (!ok) return;
+    }
 
     let resolvedValue = Number(form.value);
     /** @type {Record<string, unknown>} */
@@ -380,12 +397,17 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         <div>
           <label className="ed-field-label">{t("netWorth.form.value")}</label>
           <input
+            ref={register("value")}
             type="number"
             min="0"
-            className={fieldClass}
+            className={`${fieldClass}${fieldErrors.value ? " error" : ""}`}
             value={form.value}
-            onChange={(e) => setForm((f) => ({ ...f, value: e.target.value }))}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, value: e.target.value }));
+              clearError("value");
+            }}
           />
+          {fieldErrors.value ? <div className="ed-field-error">{fieldErrors.value}</div> : null}
         </div>
       )}
 

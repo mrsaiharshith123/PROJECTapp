@@ -1064,3 +1064,33 @@ html[data-ui="ct"] .ed-skeleton {
 @keyframes ed-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Form validation error state ── */
+html[data-ui="ct"] .ed-input.error,
+html[data-ui="ct"] .ed-select.error,
+html[data-ui="ct"] .ed-you-input.error {
+  border-color: var(--ed-red);
+  background: var(--ed-red-soft);
+}
+
+html[data-ui="ct"] .ed-input.error:focus,
+html[data-ui="ct"] .ed-select.error:focus,
+html[data-ui="ct"] .ed-you-input.error:focus {
+  border-color: var(--ed-red);
+  outline: none;
+}
+
+html[data-ui="ct"] .ed-field-error {
+  font-family: var(--ed-font);
+  font-size:   11px;
+  color:       var(--ed-red);
+  margin-top:  3px;
+  display:     flex;
+  align-items: center;
+  gap:         4px;
+}
+
+html[data-ui="ct"] .ed-field-error::before {
+  content:  "⚠";
+  font-size: 10px;
+}
