@@ -9,7 +9,7 @@ import { getTier } from "../../../utils/tierAccess.js";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
 import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
-import { Body, Button, Caption, Modal, inputClassName } from "../../index.js";
+import { Body, Button, Caption, Modal } from "../../index.js";
 
 /** @route /you — Settings hub (identity in profile glimpse menu). */
 
@@ -114,7 +114,7 @@ const Profile = () => {
 
   return (
     <div className="ed-paper">
-      <div className="ed-masthead">
+      <header className="ed-masthead">
         <div className="ed-masthead-top">
           <div className="ed-masthead-brand">
             <h1 className="ed-title">{t("nav.you")}</h1>
@@ -124,7 +124,7 @@ const Profile = () => {
             <HomeEditorialAvatar tier={tier} />
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="ed-you-hero">
         <div className="ed-you-avatar-ring">
@@ -200,7 +200,7 @@ const Profile = () => {
 
       {confirmDelete ? (
         <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && setConfirmDelete(false)}>
-          <div className="ct-stack-sm">
+          <div className="ed-stack-sm">
             <Body className="!text-sm">
               {t("backup.deleteModalBody", {
                 cloud: user?.id ? t("backup.deleteCloudModal") : t("backup.deleteSignout"),
@@ -208,14 +208,14 @@ const Profile = () => {
             </Body>
             <Caption className="block">{t("profileHub.deleteTypePrompt")}</Caption>
             <input
-              className={`${inputClassName()} ct-input-tint`}
+              className="ed-input"
               value={deleteInput}
               onChange={(e) => setDeleteInput(e.target.value)}
               placeholder={t("profileHub.deleteConfirmWord")}
               autoComplete="off"
             />
-            {deleteError ? <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption> : null}
-            <div className="ct-row">
+            {deleteError ? <Caption className="block" style={{ color: "var(--ed-red)" }}>{deleteError}</Caption> : null}
+            <div className="ed-row">
               <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmDelete(false)} disabled={deleting}>
                 {t("common.cancel")}
               </Button>

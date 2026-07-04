@@ -12,7 +12,7 @@ const SCROLL_IDLE_MS = 220;
 
 function getNavAndToastReservePx() {
   const root = document.documentElement;
-  const navH = parseFloat(getComputedStyle(root).getPropertyValue("--ct-nav-h")) || 64;
+  const navH = parseFloat(getComputedStyle(root).getPropertyValue("--ed-nav-h")) || 64;
   return navH + 72;
 }
 
@@ -28,8 +28,8 @@ function isToolsSectionReached() {
 function ToolsDiscoveryCard({ variant, onGo, onDismiss, t }) {
   return (
     <div className="relative">
-      <button type="button" onClick={onGo} className="ct-stat-tile teal ct-tools-discovery-tile ct-pressable w-full">
-        <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0" aria-hidden>
+      <button type="button" onClick={onGo} className="ed-stat-tile teal ed-tools-discovery-tile ed-pressable w-full">
+        <span className="ed-icon-tile ed-icon-tile-sm teal shrink-0" aria-hidden>
           <CtIcon name="calculator" size={18} />
         </span>
         <div className="min-w-0 flex-1">
@@ -37,12 +37,12 @@ function ToolsDiscoveryCard({ variant, onGo, onDismiss, t }) {
           <Caption className="mt-0.5 block leading-snug">
             {variant === "analytics" ? t("tools.availableOnHome") : t("home.tools.nudgeHint")}
           </Caption>
-          <Caption className="ct-text-teal font-semibold mt-1 block">
+          <Caption className="ed-text-teal font-semibold mt-1 block">
             {variant === "analytics" ? `${t("tools.openHome")} ↓` : `${t("home.tools.nudgeCta")}`}
           </Caption>
         </div>
       </button>
-      <button type="button" onClick={onDismiss} className="ct-tools-toast-dismiss" aria-label={t("common.dismiss")}>
+      <button type="button" onClick={onDismiss} className="ed-tools-toast-dismiss" aria-label={t("common.dismiss")}>
         ×
       </button>
     </div>
@@ -145,7 +145,7 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false,
 
   if (inline) {
     return (
-      <div className="ct-tools-discovery-inline" aria-live="polite" role="complementary">
+      <div className="ed-tools-discovery-inline" aria-live="polite" role="complementary">
         <ToolsDiscoveryCard variant={variant} onGo={goToTools} onDismiss={dismiss} t={t} />
       </div>
     );
@@ -156,7 +156,7 @@ export default function ToolsDiscoveryToast({ variant = "home", blocked = false,
 
   return createPortal(
     <div
-      className={`ct-tools-toast ${visible ? "ct-tools-toast-visible" : "ct-tools-toast-hidden"}`}
+      className={`ed-tools-toast ${visible ? "ed-tools-toast-visible" : "ed-tools-toast-hidden"}`}
       aria-live="polite"
       role="complementary"
     >

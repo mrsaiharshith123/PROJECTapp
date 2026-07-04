@@ -75,35 +75,35 @@ export default function DashboardTools() {
   const modalTitle = widgets.find((w) => w.id === activeTool)?.title || t("tools.modalFallback");
 
   return (
-    <section className="ct-stack-sm" id="dashboard-tools">
-      <div className="ct-hero-card sim ct-stack-sm">
-      <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
+    <section className="ed-stack-sm" id="dashboard-tools">
+      <div className="ed-hero-card sim ed-stack-sm">
+      <div className="ed-row-between" style={{ flexWrap: "wrap" }}>
         <div>
-          <h2 className="ct-h2 !text-base">{toolsHeading}</h2>
-          <p className="ct-caption">{reorderTools ? t("tools.reorderHint") : t("tools.tapTileHint")}</p>
+          <h2 className="ed-h2 !text-base">{toolsHeading}</h2>
+          <p className="ed-caption">{reorderTools ? t("tools.reorderHint") : t("tools.tapTileHint")}</p>
         </div>
-        <div className="ct-row shrink-0">
+        <div className="ed-row shrink-0">
           {reorderTools && (
-            <button type="button" className="ct-link !text-xs" onClick={resetToolOrder}>
+            <button type="button" className="ed-link !text-xs" onClick={resetToolOrder}>
               {t("tools.resetOrder")}
             </button>
           )}
           <button
             type="button"
             onClick={() => setReorderTools((v) => !v)}
-            className={`ct-btn ct-btn-sm ${reorderTools ? "ct-btn-primary" : "ct-btn-outline"}`}
+            className={`ed-btn ed-btn-sm ${reorderTools ? "ed-btn-primary" : "ed-btn-secondary"}`}
           >
             {reorderTools ? t("tools.doneReorder") : t("tools.reorder")}
           </button>
         </div>
       </div>
       </div>
-      <div className="ct-grid-2">
+      <div className="ed-grid-2">
         {widgets.map((widget) =>
           reorderTools ? (
             <div
               key={widget.id}
-              className="ct-drag-tile-wrap"
+              className="ed-drag-tile-wrap"
               {...getDragProps(widget.id, { enabled: true })}
             >
               <ToolTile

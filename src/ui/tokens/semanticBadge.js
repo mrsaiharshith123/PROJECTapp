@@ -1,5 +1,5 @@
 /**
- * Maps semantic tones from engines to ct-* presentation classes.
+ * Maps semantic tones from engines to ed-* presentation classes.
  * Engines return tone tokens only — map score/tier → tone in engines (e.g. affordabilityTierTone).
  */
 

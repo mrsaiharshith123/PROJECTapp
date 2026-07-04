@@ -7,7 +7,7 @@ export default function YouHistoryPage() {
     usePerovo();
   return (
     <YouSubPageShell titleKey="settings.row.paymentHistory">
-      <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none !p-0">
+      <div className="!p-0">
         <ProfileHistorySection
           commitments={commitments}
           getEffectiveStatus={getEffectiveStatus}

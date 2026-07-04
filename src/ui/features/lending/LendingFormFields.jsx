@@ -14,7 +14,7 @@ const REPAYMENT_OPTIONS = ["monthly", "weekly", "biweekly", "lumpsum"];
 
 export default function LendingFormFields({ form, setForm, formErrors, fieldClass, todayStr }) {
   const { t } = useTranslation();
-  const inputClass = (field) => `${fieldClass(field)} ct-input-tint`;
+  const inputClass = (field) => `${fieldClass(field)} `;
 
   const onStartDate = (startDate) => {
     setForm((f) => ({
@@ -30,9 +30,9 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <div>
-        <label className="ct-field-label">{t("lending.form.person")}</label>
+        <label className="ed-field-label">{t("lending.form.person")}</label>
         <input
           className={inputClass("personName")}
           value={form.personName}
@@ -40,11 +40,11 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
           placeholder={t("lending.form.phName")}
         />
         {formErrors.personName ? (
-          <p className="ct-field-error">{formErrors.personName}</p>
+          <p className="ed-field-error">{formErrors.personName}</p>
         ) : null}
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.type")}</label>
+        <label className="ed-field-label">{t("lending.form.type")}</label>
         <select
           className={inputClass("type")}
           value={form.type}
@@ -55,46 +55,46 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
         </select>
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.principal")}</label>
+        <label className="ed-field-label">{t("lending.form.principal")}</label>
         <input
           type="number"
           min="0"
-          className={`${inputClass("totalAmount")} ct-numeral`}
+          className={`${inputClass("totalAmount")} ed-numeral`}
           value={form.totalAmount}
           onChange={(e) => setForm({ ...form, totalAmount: e.target.value })}
         />
         {formErrors.totalAmount ? (
-          <p className="ct-field-error">{formErrors.totalAmount}</p>
+          <p className="ed-field-error">{formErrors.totalAmount}</p>
         ) : null}
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.dueDate")}</label>
+        <label className="ed-field-label">{t("lending.form.dueDate")}</label>
         <input
           type="date"
           className={inputClass("dueDate")}
           value={form.dueDate}
           onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
         />
-        {formErrors.dueDate ? <p className="ct-field-error">{formErrors.dueDate}</p> : null}
+        {formErrors.dueDate ? <p className="ed-field-error">{formErrors.dueDate}</p> : null}
       </div>
-      <div className="ct-grid-2">
+      <div className="ed-grid-2">
         <div>
-          <label className="ct-field-label">{t("lending.form.interestRate")}</label>
+          <label className="ed-field-label">{t("lending.form.interestRate")}</label>
           <input
             type="number"
             min="0"
             max="60"
             step="0.1"
-            className={`${inputClass("interestRate")} ct-numeral`}
+            className={`${inputClass("interestRate")} ed-numeral`}
             value={form.interestRate}
             onChange={(e) => setForm({ ...form, interestRate: e.target.value })}
           />
           {formErrors.interestRate ? (
-            <p className="ct-field-error">{formErrors.interestRate}</p>
+            <p className="ed-field-error">{formErrors.interestRate}</p>
           ) : null}
         </div>
         <div>
-          <label className="ct-field-label">{t("lending.form.interestType")}</label>
+          <label className="ed-field-label">{t("lending.form.interestType")}</label>
           <select
             className={inputClass("interestType")}
             value={form.interestType}
@@ -106,7 +106,7 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
         </div>
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.repaymentFrequency")}</label>
+        <label className="ed-field-label">{t("lending.form.repaymentFrequency")}</label>
         <select
           className={inputClass("repaymentFrequency")}
           value={form.repaymentFrequency}
@@ -120,13 +120,13 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
             </option>
           ))}
         </select>
-        <div className="ct-stat-tile teal mt-2">
-          <p className="ct-stat-tile-label">{t("lending.form.repaymentHint")}</p>
+        <div className="ed-inset-green mt-2">
+          <p className="ed-field-label">{t("lending.form.repaymentHint")}</p>
         </div>
       </div>
-      <div className="ct-grid-2">
+      <div className="ed-grid-2">
         <div>
-          <label className="ct-field-label">{t("lending.form.start")}</label>
+          <label className="ed-field-label">{t("lending.form.start")}</label>
           <input
             type="date"
             className={inputClass("startDate")}
@@ -135,7 +135,7 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
           />
         </div>
         <div>
-          <label className="ct-field-label">{t("lending.form.end")}</label>
+          <label className="ed-field-label">{t("lending.form.end")}</label>
           <input
             type="date"
             className={inputClass("endDate")}
@@ -146,7 +146,7 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
         </div>
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.relationship")}</label>
+        <label className="ed-field-label">{t("lending.form.relationship")}</label>
         <select
           className={inputClass("relationshipTag")}
           value={form.relationshipTag}
@@ -160,7 +160,7 @@ export default function LendingFormFields({ form, setForm, formErrors, fieldClas
         </select>
       </div>
       <div>
-        <label className="ct-field-label">{t("lending.form.notes")}</label>
+        <label className="ed-field-label">{t("lending.form.notes")}</label>
         <textarea
           className={`${inputClass("notes")} min-h-[72px]`}
           value={form.notes}

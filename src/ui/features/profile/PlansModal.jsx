@@ -94,20 +94,20 @@ export default function PlansModal({ open, onClose }) {
 
   return (
     <Modal onClose={onClose} fullScreen>
-      <div className="ct-plans-layout">
-        <div className="ct-plans-topbar">
-          <button type="button" onClick={onClose} className="ct-btn ct-btn-ghost ct-btn-sm" aria-label={t("common.close")}>
+      <div className="ed-plans-layout">
+        <div className="ed-plans-topbar">
+          <button type="button" onClick={onClose} className="ed-btn ed-btn-ghost ed-btn-sm" aria-label={t("common.close")}>
             ×
           </button>
         </div>
-        <div className="ct-plans-hero">
+        <div className="ed-plans-hero">
           <Heading level={2} className="text-center">
             {t("plans.headline")}
           </Heading>
           <Caption className="block text-center mt-0.5 max-w-md mx-auto">{t("plans.subhead")}</Caption>
         </div>
 
-        <div className="ct-plans-billing-toggle">
+        <div className="ed-plans-billing-toggle">
           <SegmentedControl
             options={[
               { id: "monthly", label: t("plans.billingMonthly") },
@@ -118,7 +118,7 @@ export default function PlansModal({ open, onClose }) {
           />
         </div>
 
-        <div className="ct-plans-alerts">
+        <div className="ed-plans-alerts">
           {simulatePay && (
             <ToneSurface tone="warning">
               <Caption className="block">{t("plans.simulateHint")}</Caption>
@@ -150,7 +150,7 @@ export default function PlansModal({ open, onClose }) {
           )}
         </div>
 
-        <div className="ct-plans-grid">
+        <div className="ed-plans-grid">
           {PLAN_PRESENTATION.map((plan) => (
             <PlanTierCard
               key={plan.tier}
@@ -167,7 +167,7 @@ export default function PlansModal({ open, onClose }) {
           ))}
         </div>
 
-        <div className="ct-plans-footer">
+        <div className="ed-plans-footer">
           <Caption className="block">
             {simulatePay ? t("plans.footerSimulate") : t("plans.footerLive")}
           </Caption>
@@ -175,7 +175,7 @@ export default function PlansModal({ open, onClose }) {
           {current === "free" && (
             <button
               type="button"
-              className="ct-link !text-xs mt-1"
+              className="ed-link !text-xs mt-1"
               onClick={() => {
                 onClose();
                 navigate("/profile", { state: { openSection: "backup" } });
@@ -224,40 +224,40 @@ function PlanTierCard({
       : null;
 
   const cardClass = [
-    "ct-plan-card",
-    plan.featured ? "ct-plan-card--featured" : "",
-    isCurrent ? "ct-plan-card--current" : "",
+    "ed-plan-card",
+    plan.featured ? "ed-plan-card--featured" : "",
+    isCurrent ? "ed-plan-card--current" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
     <article className={cardClass}>
-      <div className="ct-plan-card-top">
-        <div className={cn("ct-icon-tile ct-icon-tile-sm", isFree ? "slate" : plan.tier === "power" ? "teal" : "violet")} aria-hidden>
-          <CtIcon name={isFree ? "wallet" : plan.tier === "power" ? "users-three" : "lightning"} size={18} weight="duotone" />
+      <div className="ed-plan-card-top">
+        <div className={cn("ed-icon-tile ed-icon-tile-sm", isFree ? "slate" : "violet")} aria-hidden>
+          <CtIcon name={isFree ? "wallet" : "lightning"} size={18} weight="duotone" />
         </div>
         {plan.featured && !isCurrent && (
-          <Badge tone="info" className="ct-plan-card-badge">
+          <Badge tone="info" className="ed-plan-card-badge">
             {t("plans.popular")}
           </Badge>
         )}
         {isCurrent && (
-          <Badge tone="success" className="ct-plan-card-badge">
+          <Badge tone="success" className="ed-plan-card-badge">
             {t("plans.currentBadge")}
           </Badge>
         )}
-        <Heading level={3} className="ct-plan-card-title">
+        <Heading level={3} className="ed-plan-card-title">
           {t(plan.titleKey)}
         </Heading>
-        <Body className="ct-plan-card-tagline">{t(plan.taglineKey)}</Body>
-        <div className="ct-plan-card-price">
-          <span className="ct-plan-card-price-main">{priceLine}</span>
-          {priceSub && <Caption className="block ct-plan-card-price-sub">{priceSub}</Caption>}
+        <Body className="ed-plan-card-tagline">{t(plan.taglineKey)}</Body>
+        <div className="ed-plan-card-price">
+          <span className="ed-plan-card-price-main">{priceLine}</span>
+          {priceSub && <Caption className="block ed-plan-card-price-sub">{priceSub}</Caption>}
         </div>
       </div>
 
-      <div className="ct-plan-card-cta">
+      <div className="ed-plan-card-cta">
         {isCurrent ? (
           <Button type="button" variant="outline" size="sm" disabled className="w-full">
             {t("plans.current")}
@@ -292,15 +292,15 @@ function PlanTierCard({
         {isPaid && !isCurrent && <Caption className="block text-center mt-2">{t("plans.cancelAnytime")}</Caption>}
       </div>
 
-      <ul className="ct-plan-card-features">
+      <ul className="ed-plan-card-features">
         {plan.includesKey && (
-          <li className="ct-plan-card-includes">
+          <li className="ed-plan-card-includes">
             <Body className="!text-sm font-semibold">{t(plan.includesKey)}</Body>
           </li>
         )}
         {plan.featureKeys.map((key) => (
-          <li key={key} className="ct-plan-card-feature">
-            <CtIcon name="check" size={13} className="ct-plan-card-check shrink-0" />
+          <li key={key} className="ed-plan-card-feature">
+            <CtIcon name="check" size={13} className="ed-plan-card-check shrink-0" />
             <Caption className="block">{t(key)}</Caption>
           </li>
         ))}

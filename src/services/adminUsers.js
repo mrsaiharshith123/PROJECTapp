@@ -81,3 +81,59 @@ export async function adminDeleteUser(userId) {
   const { error } = await supabase.rpc("admin_delete_user", { p_user_id: userId });
   if (error) throwAdminError(error);
 }
+
+/** @param {string} userId @param {boolean} ban */
+export async function adminBanUser(userId, ban = true) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Not configured.");
+  const { error } = await supabase.rpc("admin_ban_user", { p_user_id: userId, p_ban: ban });
+  if (error) throwAdminError(error);
+}
+
+/** @param {string} userId */
+export async function adminVerifyEmail(userId) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Not configured.");
+  const { error } = await supabase.rpc("admin_verify_email", { p_user_id: userId });
+  if (error) throwAdminError(error);
+}
+
+/** @param {string} userId */
+export async function adminRevokeSessions(userId) {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Not configured.");
+  const { error } = await supabase.rpc("admin_revoke_sessions", { p_user_id: userId });
+  if (error) throwAdminError(error);
+}
+
+/** @param {string} userId */
+export async function adminResetOnboarding(userId) {
+  return adminUpdateUser(userId, { onboarding_complete: false });
+}
+
+/** Export users to CSV string. */
+export async function adminExportUsersCsv() {
+  const result = await fetchAdminUsers({ limit: 1000, offset: 0 });
+  const rows = result.users;
+  const headers = [
+    "id",
+    "email",
+    "display_name",
+    "subscription_tier",
+    "phone",
+    "pan_verified",
+    "is_admin",
+    "onboarding_complete",
+    "created_at",
+    "last_active_at",
+    "banned_until",
+    "email_confirmed_at",
+    "subscription_updated_at",
+    "razorpay_payment_id",
+  ];
+  const lines = [
+    headers.join(","),
+    ...rows.map((u) => headers.map((h) => JSON.stringify(u[h] ?? "")).join(",")),
+  ];
+  return lines.join("\n");
+}

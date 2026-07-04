@@ -21,7 +21,7 @@ export function InfoTip({ text, textKey, label, labelKey = "help.infoLabel" }) {
         aria-expanded={open}
         aria-describedby={open ? id : undefined}
         onClick={() => setOpen((v) => !v)}
-        className="ct-info-tip-btn"
+        className="ed-info-tip-btn"
         title={tipLabel}
       >
         i
@@ -30,11 +30,11 @@ export function InfoTip({ text, textKey, label, labelKey = "help.infoLabel" }) {
         <>
           <button
             type="button"
-            className="ct-info-tip-backdrop"
+            className="ed-modal-backdrop"
             aria-label={t("common.close")}
             onClick={() => setOpen(false)}
           />
-          <span id={id} role="tooltip" className="ct-info-tip-pop">
+          <span id={id} role="tooltip" className="ed-inset">
             {content}
           </span>
         </>

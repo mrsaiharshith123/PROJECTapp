@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fieldInputClass, PageShell, Button } from "../../";
+import { Button, PageShell } from "../../";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import {
   categoryShowsInterestRate,
@@ -325,7 +325,7 @@ const Add = () => {
     navigate("/money/lending");
   };
 
-  const fieldClass = (field) => `${fieldInputClass(Boolean(errors[field]))} ct-input-tint`;
+  const fieldClass = (field) => `ed-input${errors[field] ? " error" : ""}`;
 
   const formTitle =
     addKind === "bill"
@@ -336,13 +336,13 @@ const Add = () => {
 
   const headerAction =
     step === "pick" ? (
-      <button type="button" className="ct-btn ct-btn-ghost ct-btn-sm" onClick={() => navigate(-1)} aria-label={t("common.close")}>
+      <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={() => navigate(-1)} aria-label={t("common.close")}>
         ×
       </button>
     ) : (
       <button
         type="button"
-        className="ct-btn ct-btn-ghost ct-btn-sm"
+        className="ed-btn ed-btn-ghost ed-btn-sm"
         onClick={() => {
           setStep("pick");
           setAddKind(null);
@@ -355,18 +355,17 @@ const Add = () => {
     );
 
   return (
-    <PageShell title={step === "pick" ? t("add.title") : formTitle} action={headerAction} className="ct-add-page ct-form-narrow">
+    <PageShell title={step === "pick" ? t("add.title") : formTitle} action={headerAction} className="ed-add-page">
       {step === "pick" ? (
         <AddTypePicker onSelect={handlePick} />
       ) : addKind === "lending" ? (
-        <div className="ct-stack ct-add-form-embedded">
-          <div className="ct-hero-card lending relative ct-stack-sm">
-            <div className="ct-hero-glow teal" aria-hidden />
-            <p className="ct-hero-label">{t("add.pick.lending")}</p>
-            <p className="ct-analytics-section-sub mt-1 relative">{t("add.pick.lendingDesc")}</p>
+        <div className="ed-stack-sm">
+          <div className="ed-inset ed-stack-sm">
+            <p className="ed-field-label">{t("add.pick.lending")}</p>
+            <p className="ed-field-note mt-1">{t("add.pick.lendingDesc")}</p>
           </div>
           <div>
-            <label className="ct-field-label">{t("add.lendingPersonName")}</label>
+            <label className="ed-field-label">{t("add.lendingPersonName")}</label>
             <input
               type="text"
               value={lendingForm.personName}
@@ -375,7 +374,7 @@ const Add = () => {
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("add.amountLabel")}</label>
+            <label className="ed-field-label">{t("add.amountLabel")}</label>
             <input
               type="number"
               value={lendingForm.totalAmount}
@@ -383,24 +382,24 @@ const Add = () => {
               className={fieldClass("totalAmount")}
             />
           </div>
-          <div className="ct-grid-2">
+          <div className="ed-grid-2">
             <button
               type="button"
-              className={`ct-add-type-mini ${lendingForm.type === "lent" ? "active" : ""}`}
+              className={`ed-add-type-mini ${lendingForm.type === "lent" ? "active" : ""}`}
               onClick={() => setLendingForm((f) => ({ ...f, type: "lent" }))}
             >
               {t("lending.sectionLent")}
             </button>
             <button
               type="button"
-              className={`ct-add-type-mini ${lendingForm.type === "borrowed" ? "active" : ""}`}
+              className={`ed-add-type-mini ${lendingForm.type === "borrowed" ? "active" : ""}`}
               onClick={() => setLendingForm((f) => ({ ...f, type: "borrowed" }))}
             >
               {t("lending.sectionOwe")}
             </button>
           </div>
           <div>
-            <label className="ct-field-label">{t("add.dueDateLabel")}</label>
+            <label className="ed-field-label">{t("add.dueDateLabel")}</label>
             <input
               type="date"
               value={lendingForm.dueDate}
@@ -408,15 +407,15 @@ const Add = () => {
               className={fieldClass("dueDate")}
             />
           </div>
-          <Button type="button" size="lg" className="ct-add-submit-sticky" onClick={submitLending}>
+          <Button type="button" size="lg" className="ed-form-submit" onClick={submitLending}>
             {t("add.submitLending")}
           </Button>
         </div>
       ) : (
         <>
           {addKind === "bill" && (
-            <button type="button" className="ct-tool-tile ct-add-scan-tile w-full" onClick={() => navigate("/tools?tool=bill-scanner")}>
-              <span className="ct-icon-tile primary shrink-0" aria-hidden>
+            <button type="button" className="ed-add-scan-tile w-full" onClick={() => navigate("/tools?tool=bill-scanner")}>
+              <span className="ed-icon-tile indigo shrink-0" aria-hidden>
                 <CtIcon name="camera" size={24} />
               </span>
               <span>

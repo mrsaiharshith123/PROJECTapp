@@ -49,27 +49,27 @@ export default function PlanGrowthSection({ initialTool = null }) {
   };
 
   return (
-    <section className="ct-plan-section">
-      <h2 className="ct-plan-section-title">{t("plan.section.growth")}</h2>
-      <p className="ct-plan-section-sub">{t("plan.section.growthSub")}</p>
+    <section className="ed-section">
+      <h2 className="ed-kicker">{t("plan.section.growth")}</h2>
+      <p className="ed-caption">{t("plan.section.growthSub")}</p>
 
       <div
         role="button"
         tabIndex={0}
-        className="ct-hero-card wealth ct-plan-retirement-feature ct-pressable w-full text-left"
+        className="ed-inset w-full text-left"
+        style={{ cursor: "pointer" }}
         onClick={() => setActiveTool("retirement")}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") setActiveTool("retirement");
         }}
       >
-        <div className="ct-hero-glow teal" aria-hidden />
-        <p className="ct-hero-label">{t("plan.retirement.label")}</p>
-        <p className="ct-hero-number ct-money-hero-amount">{formatInr(animatedCorpus)}</p>
+<p className="ed-field-label">{t("plan.retirement.label")}</p>
+        <p className="ed-hero-number">{formatInr(animatedCorpus)}</p>
         <Caption className="block">{t("plan.retirement.basis")}</Caption>
-        <span className="ct-btn ct-btn-primary ct-btn-sm mt-3 inline-flex">{t("plan.retirement.cta")}</span>
+        <span className="ed-btn ed-btn-primary ed-btn-sm mt-3 inline-flex">{t("plan.retirement.cta")}</span>
       </div>
 
-      <div className="ct-plan-grid-2">
+      <div className="ed-grid-2">
         {GROWTH_TOOLS.map((tool) => (
           <ToolTile
             key={tool.id}

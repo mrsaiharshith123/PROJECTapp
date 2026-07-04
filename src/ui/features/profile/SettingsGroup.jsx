@@ -1,14 +1,10 @@
-import { Heading, Caption, CtIcon } from "../../index.js";
+import { CtIcon } from "../../index.js";
 import { cn } from "../../utils/cn.js";
 
 /** @param {"violet"|"teal"|"amber"|"red"|"slate"|"gold"|"indigo"} color @param {boolean} danger */
-function tileColorClass(color, danger) {
-  if (danger) return "danger";
-  if (color === "red") return "danger";
-  if (color === "slate") return "slate";
-  if (color === "gold") return "gold";
-  if (color === "indigo") return "indigo";
-  return color;
+function toneClass(color, danger) {
+  if (danger || color === "red") return "danger";
+  return color || "slate";
 }
 
 /**
@@ -16,17 +12,15 @@ function tileColorClass(color, danger) {
  */
 export function SettingsGroup({ title, icon, children, description }) {
   return (
-    <section className="ct-settings-group ct-settings-group-modern">
-      <div className="ct-settings-group-head">
-        {icon ? <CtIcon name={icon} size={16} context="info" /> : null}
-        <div>
-          <Heading level={4} className="ct-settings-group-title">
-            {title}
-          </Heading>
-          {description ? <Caption>{description}</Caption> : null}
+    <section className="ed-settings-group">
+      <div className="ed-settings-group-head">
+        {icon ? <CtIcon name={icon} size={15} /> : null}
+        <div className="min-w-0 flex-1">
+          <p className="ed-settings-group-title">{title}</p>
+          {description ? <p className="ed-settings-group-desc">{description}</p> : null}
         </div>
       </div>
-      <div className="ct-settings-group-body">{children}</div>
+      <div className="ed-settings-group-body">{children}</div>
     </section>
   );
 }
@@ -35,7 +29,7 @@ export function SettingsGroup({ title, icon, children, description }) {
  * @param {{ children: import('react').ReactNode, className?: string }} props
  */
 export function SettingsGroupContent({ children, className }) {
-  return <div className={cn("ct-settings-group-content", className)}>{children}</div>;
+  return <div className={cn("ed-settings-group-content", className)}>{children}</div>;
 }
 
 /**
@@ -62,31 +56,31 @@ export function SettingsGroupRow({
   disabled = false,
   rightElement,
 }) {
-  const tileClass = tileColorClass(iconColor, danger);
+  const tone = toneClass(iconColor, danger);
   const Tag = onClick ? "button" : "div";
 
   return (
     <Tag
       type={onClick ? "button" : undefined}
-      className={cn("ct-settings-row", danger && "ct-settings-row-danger", !onClick && "ct-settings-row-static")}
+      className={cn("ed-settings-row", danger && "ed-settings-row-danger", !onClick && "ed-settings-row-static")}
       onClick={onClick}
       disabled={disabled}
     >
       {icon ? (
-        <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)}>
-          <CtIcon name={icon} size={18} weight="duotone" />
+        <span className={cn("ed-icon-tile ed-icon-tile-sm", tone)}>
+          <CtIcon name={icon} size={17} weight="duotone" />
         </span>
       ) : null}
       <span className="min-w-0 flex-1">
-        <span className="ct-settings-row-label">{label}</span>
-        {hint ? <Caption className="block mt-0.5 opacity-80">{hint}</Caption> : null}
+        <span className="ed-settings-row-label">{label}</span>
+        {hint ? <span className="ed-settings-row-hint">{hint}</span> : null}
       </span>
       {rightElement ? (
-        <span className="ct-settings-row-value shrink-0">{rightElement}</span>
+        <span className="ed-settings-row-value shrink-0">{rightElement}</span>
       ) : value ? (
-        <span className="ct-settings-row-value">{value}</span>
+        <span className="ed-settings-row-value">{value}</span>
       ) : onClick ? (
-        <CtIcon name="chevron-right" size={14} className="ct-settings-chevron-icon shrink-0" aria-hidden />
+        <CtIcon name="caret-right" size={13} className="ed-settings-chevron shrink-0" aria-hidden />
       ) : null}
     </Tag>
   );
@@ -112,25 +106,23 @@ export function SettingsGroupToggleRow({
   onChange,
   disabled = false,
 }) {
-  const tileClass = tileColorClass(iconColor, false);
-
   return (
-    <label className={cn("ct-settings-row ct-settings-toggle-row", disabled && "opacity-60")}>
+    <label className={cn("ed-settings-row ed-settings-toggle-row", disabled && "opacity-50")}>
       {icon ? (
-        <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)}>
-          <CtIcon name={icon} size={18} weight="duotone" />
+        <span className={cn("ed-icon-tile ed-icon-tile-sm", toneClass(iconColor, false))}>
+          <CtIcon name={icon} size={17} weight="duotone" />
         </span>
       ) : null}
       <span className="min-w-0 flex-1">
-        <span className="ct-settings-row-label">{label}</span>
-        {hint ? <Caption className="block mt-0.5 opacity-80">{hint}</Caption> : null}
+        <span className="ed-settings-row-label">{label}</span>
+        {hint ? <span className="ed-settings-row-hint">{hint}</span> : null}
       </span>
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
         disabled={disabled}
-        className="ct-checkbox shrink-0"
+        className="ed-toggle shrink-0"
       />
     </label>
   );

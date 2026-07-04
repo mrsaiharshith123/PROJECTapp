@@ -438,7 +438,7 @@ export function LocationMapPicker({
               marginLeft: -7,
               marginTop: -14,
               borderRadius: "50% 50% 50% 0",
-              background: "var(--ct-danger, #dc2626)",
+              background: "var(--ed-red)",
               border: "2px solid #fff",
               boxShadow: "0 1px 4px rgba(0,0,0,0.35)",
               transform: "rotate(-45deg)",

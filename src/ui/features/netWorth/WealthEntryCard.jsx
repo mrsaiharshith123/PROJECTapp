@@ -152,7 +152,7 @@ export default function WealthEntryCard({
     <div className="ed-card ed-card--entry">
       {body}
       {!readOnly && (onEdit || onDelete) ? (
-        <div className="ed-actions-row" style={{ marginTop: 10, paddingTop: 10, borderTop: "0.5px solid var(--ed-rule)" }}>
+        <div className="ed-actions-row" style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--ed-rule)" }}>
           {typeof onEdit === "function" ? (
             <button type="button" className="ed-btn ed-btn-secondary" style={{ flex: 1 }} onClick={() => onEdit(entry)}>
               {t("common.edit")}

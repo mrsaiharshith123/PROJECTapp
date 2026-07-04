@@ -1,43 +1,55 @@
 import { useMemo } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
-import { cn } from "../../utils/cn.js";
-
-const TONE_CLASS = {
-  default: "indigo",
-  positive: "teal",
-  caution: "amber",
-};
 
 /**
- * @param {{ label: string, value: import('react').ReactNode, hint?: string, tone?: 'default' | 'positive' | 'caution', sparkline?: number[] }} props
+ * @param {{
+ *   label: string,
+ *   value: import("react").ReactNode,
+ *   hint?: string,
+ *   tone?: "default" | "green" | "amber" | "red" | "positive" | "caution",
+ *   sparkline?: number[],
+ *   wide?: boolean,
+ * }} props
  */
-export default function AdminMetricCard({ label, value, hint, tone = "default", sparkline }) {
+export default function AdminMetricCard({ label, value, hint, tone = "default", sparkline, wide = false }) {
   const sparkData = useMemo(
     () => (sparkline || []).map((v, i) => ({ i, v: Number(v) || 0 })),
     [sparkline],
   );
   const showSpark = sparkData.length > 1;
+  const resolvedTone =
+    tone === "positive" ? "green" : tone === "caution" ? "amber" : tone;
+  const valueColor =
+    resolvedTone === "green"
+      ? "var(--ed-green)"
+      : resolvedTone === "amber"
+        ? "var(--ed-amber)"
+        : resolvedTone === "red"
+          ? "var(--ed-red)"
+          : "var(--ed-ink)";
 
   return (
-    <div className={cn("ct-stat-tile", TONE_CLASS[tone] || "indigo")}>
-      <p className="ct-stat-tile-label">{label}</p>
-      <p className="ct-stat-tile-value ct-numeral">{value}</p>
-      {showSpark ? (
-        <div className="ct-admin-metric-spark mt-1.5" aria-hidden>
-          <ResponsiveContainer width="100%" height={30}>
-            <LineChart data={sparkData}>
+    <div className={`ed-admin-metric${wide ? " wide" : ""}`}>
+      <p className="ed-admin-metric-label">{label}</p>
+      <p className="ed-admin-metric-value" style={{ color: valueColor }}>
+        {value}
+      </p>
+      {showSpark && (
+        <div className="ed-admin-metric-spark" aria-hidden>
+          <ResponsiveContainer width="100%" height={24}>
+            <LineChart data={sparkData} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
               <Line
                 type="monotone"
                 dataKey="v"
-                stroke="var(--ct-accent)"
+                stroke={valueColor === "var(--ed-ink)" ? "var(--ed-gold)" : valueColor}
                 strokeWidth={1.5}
                 dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
-      ) : null}
-      {hint ? <p className="ct-stat-tile-label mt-1">{hint}</p> : null}
+      )}
+      {hint && <p className="ed-admin-metric-hint">{hint}</p>}
     </div>
   );
 }

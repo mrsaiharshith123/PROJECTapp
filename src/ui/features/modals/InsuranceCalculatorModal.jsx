@@ -9,10 +9,10 @@ import { translateRepeatType } from "../../../i18n/domainLabels.js";
 import { translateInsuranceVerdictDetail } from "../../../i18n/toolLabels.js";
 import { formatInr } from "../../../constants/symbols.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 function InsuranceShell({ embedded, title, onClose, children }) {
-  if (embedded) return <div className="ct-stack">{children}</div>;
+  if (embedded) return <div className="ed-stack">{children}</div>;
   return (
     <Modal title={title} onClose={onClose} footer={null}>
       {children}
@@ -121,7 +121,7 @@ export default function InsuranceCalculatorModal({
     });
   }, [form, fromBill, todayStr]);
 
-  const labelClass = "ct-field-label";
+  const labelClass = "ed-field-label";
   const verdictTone =
     analysis?.verdict === "positive"
       ? "wealth"
@@ -156,7 +156,7 @@ export default function InsuranceCalculatorModal({
   if (step === "manualSetup") {
     return (
       <InsuranceShell embedded={embedded} title={t("insurance.calculator.title")} onClose={onClose}>
-        <div className="ct-stack-sm">
+        <div className="ed-stack-sm">
           <Button type="button" variant="ghost" size="sm" className="!px-0" onClick={() => setStep("pick")}>
             ← {t("insurance.calculator.back")}
           </Button>
@@ -164,7 +164,7 @@ export default function InsuranceCalculatorModal({
             <label className={labelClass}>{t("insurance.calculator.premiumAmount")}</label>
             <input
               type="number"
-              className={`${fieldClass} ct-numeral`}
+              className={`${fieldClass} ed-numeral`}
               value={manualPremium}
               onChange={(e) => setManualPremium(e.target.value)}
             />
@@ -206,9 +206,8 @@ export default function InsuranceCalculatorModal({
             ← {t("insurance.calculator.otherPolicies")}
           </Button>
 
-          <div className="ct-hero-card wealth ct-stack-sm mt-3">
-            <div className="ct-hero-glow teal" aria-hidden />
-            <p className="font-semibold relative">{fromBill.displayName}</p>
+          <div className="ed-inset ed-stack-sm mt-3">
+<p className="font-semibold relative">{fromBill.displayName}</p>
             <Caption className="block relative">
               {t("insurance.calculator.premiumLine", {
                 amount: formatInr(fromBill.premiumAmount),
@@ -228,7 +227,7 @@ export default function InsuranceCalculatorModal({
             />
           </div>
 
-          <div className="ct-inset ct-stack-sm mt-3">
+          <div className="ed-inset ed-stack-sm mt-3">
             <p className={labelClass}>{t("insurance.calculator.fromDocument")}</p>
             <div>
               <label className={labelClass}>{t("insurance.calculator.sumAssured")}</label>
@@ -272,9 +271,9 @@ export default function InsuranceCalculatorModal({
           </div>
 
           {analysis && Number(form.insuranceMaturityBenefit) > 0 && (
-            <div className="ct-stack-sm pt-3">
-              <div className={`ct-hero-card ${verdictTone}`}>
-                <p className="ct-hero-label relative">{t(`insurance.verdict.${analysis.verdict || "unknown"}`)}</p>
+            <div className="ed-stack-sm pt-3">
+              <div className={`ed-inset ${verdictTone}`}>
+                <p className="ed-kicker relative">{t(`insurance.verdict.${analysis.verdict || "unknown"}`)}</p>
               </div>
               <Caption className="block">{translateInsuranceVerdictDetail(t, analysis)}</Caption>
             </div>

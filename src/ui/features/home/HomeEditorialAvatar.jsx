@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { getProfileInitials } from "../../../constants/profileAvatars.js";
+import { resolveProfileAvatar } from "../../../constants/profileAvatars.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import ProfileGlimpseMenu from "../../layout/ProfileGlimpseMenu.jsx";
 
@@ -8,7 +8,8 @@ import ProfileGlimpseMenu from "../../layout/ProfileGlimpseMenu.jsx";
 export default function HomeEditorialAvatar({ tier = "free" }) {
   const { t } = useTranslation();
   const { settings } = usePerovo();
-  const letter = getProfileInitials(settings).charAt(0) || "?";
+  const avatar = resolveProfileAvatar(settings);
+  const letter = avatar.initials.charAt(0) || "?";
   const [open, setOpen] = useState(false);
 
   const tierLabel =
@@ -26,7 +27,7 @@ export default function HomeEditorialAvatar({ tier = "free" }) {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        {letter}
+        {avatar.imageUrl ? <img src={avatar.imageUrl} alt="" /> : letter}
       </button>
       <ProfileGlimpseMenu open={open} onClose={() => setOpen(false)} />
     </>

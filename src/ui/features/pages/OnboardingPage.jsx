@@ -46,7 +46,7 @@ export default function Onboarding() {
   const [selectedLabels, setSelectedLabels] = useState(() => new Set());
   const [amounts, setAmounts] = useState(() => ({}));
   const [fieldError, setFieldError] = useState("");
-  const fieldClass = `${inputClassName()} ct-input-tint`;
+  const fieldClass = `${inputClassName()} `;
 
   const experience = getOnboardingExperience(experienceId);
   void ONBOARDING_EXPERIENCES;
@@ -152,11 +152,11 @@ export default function Onboarding() {
   };
 
   const wrapStep = (panel) => (
-    <div className="ct-page ct-form-narrow pb-8">
-      <div className="ct-stat-tile indigo mb-4 py-3 px-3 text-center">
-        <div className="ct-onboard-dots" aria-hidden>
+    <div className="ed-page ed-page-shell pb-8">
+      <div className="ed-inset mb-4 py-3 px-3 text-center">
+        <div className="ed-onboard-dots" aria-hidden>
           {Array.from({ length: 4 }, (_, i) => (
-            <span key={i} className={`ct-onboard-dot ${i === step ? "active" : ""}`} />
+            <span key={i} className={`ed-onboard-dot ${i === step ? "active" : ""}`} />
           ))}
         </div>
         <Caption className="block mt-2">{t("onboarding.stepOf", { current: step + 1, total: 4 })}</Caption>

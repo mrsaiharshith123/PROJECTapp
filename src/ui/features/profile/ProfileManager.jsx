@@ -18,7 +18,7 @@ const TILE_CLASS = {
   sky: "teal",
 };
 
-const profileInputClass = `${inputClassName()} ct-input-tint`;
+const profileInputClass = `${inputClassName()} ed-input-tint`;
 
 export default function ProfileManager() {
   const { t } = useTranslation();
@@ -67,17 +67,17 @@ export default function ProfileManager() {
   };
 
   return (
-    <div className="ct-stack-sm">
+    <div className="ed-stack-sm">
       <Caption className="font-semibold block">{t("profile.profilesTitle")}</Caption>
-      <ul className="ct-stack-sm">
+      <ul className="ed-stack-sm">
         {profiles.map((p) => {
           const isActive = p.id === activeId;
           const initial = (p.label || "?").charAt(0).toUpperCase();
           const tileClass = TILE_CLASS[p.color] || "indigo";
 
           return (
-            <li key={p.id} className="ct-settings-row ct-settings-row-static">
-              <span className={cn("ct-icon-tile ct-icon-tile-sm", tileClass)} aria-hidden>
+            <li key={p.id} className="ed-settings-row ed-settings-row-static">
+              <span className={cn("ed-icon-tile ed-icon-tile-sm", tileClass)} aria-hidden>
                 {initial}
               </span>
               {editingId === p.id ? (
@@ -89,27 +89,27 @@ export default function ProfileManager() {
                 />
               ) : (
                 <span className="min-w-0 flex-1">
-                  <span className="ct-settings-row-label block truncate">{p.label}</span>
+                  <span className="ed-settings-row-label block truncate">{p.label}</span>
                   {isActive ? (
-                    <Caption className="block mt-0.5 text-[var(--ct-success)]">{t("profile.activeBadge")}</Caption>
+                    <Caption className="block mt-0.5 text-[var(--ed-success)]">{t("profile.activeBadge")}</Caption>
                   ) : null}
                 </span>
               )}
               {p.id !== "default" && editingId !== p.id ? (
-                <span className="ct-row gap-2 shrink-0">
-                  <button type="button" onClick={() => startRename(p)} className="ct-link !text-xs">
+                <span className="ed-row gap-2 shrink-0">
+                  <button type="button" onClick={() => startRename(p)} className="ed-link !text-xs">
                     {t("profile.rename")}
                   </button>
                   <button
                     type="button"
                     onClick={() => removeProfile(p.id)}
-                    className="ct-link !text-xs text-[var(--ct-danger-text)]"
+                    className="ed-link !text-xs text-[var(--ed-red)]"
                   >
                     {t("common.delete")}
                   </button>
                 </span>
               ) : isActive ? (
-                <CtIcon name="check-circle" size={16} className="text-[var(--ct-success)] shrink-0" aria-hidden />
+                <CtIcon name="check-circle" size={16} className="text-[var(--ed-success)] shrink-0" aria-hidden />
               ) : null}
             </li>
           );
@@ -118,7 +118,7 @@ export default function ProfileManager() {
       {!canAddProfile && profiles.length <= 1 && (
         <TierLimitBanner title={t("tier.limit.profilesTitle")} message={t("tier.limit.profilesMessage")} />
       )}
-      <div className="ct-row flex-wrap gap-2">
+      <div className="ed-row flex-wrap gap-2">
         <input
           className={`${profileInputClass} flex-1 min-w-0 !text-sm`}
           placeholder={t("profile.newProfileName")}

@@ -13,6 +13,7 @@ import MarketAnalysis from "./MarketAnalysis.jsx";
 import ValueHistoryChart from "./ValueHistoryChart.jsx";
 
 import PropertyDetailSections from "./detail/PropertyDetailSections.jsx";
+import EditorialSubMasthead from "../../patterns/EditorialSubMasthead.jsx";
 import GoldDetailSections from "./detail/GoldDetailSections.jsx";
 import FdDetailSections from "./detail/FdDetailSections.jsx";
 import VehicleDetailSections from "./detail/VehicleDetailSections.jsx";
@@ -145,13 +146,12 @@ export default function WealthEntryDetailPage() {
 
   if (!entry || !intel) {
     return (
-      <div className="ed-paper ed-ins-page">
-        <div className="ed-ins-sub-mast">
-          <button type="button" className="ed-ins-back" onClick={() => navigate(-1)}>
-            {t("insights.subpages.back")}
-          </button>
-          <h1 className="ed-ins-sub-title">{t("wealthDetail.notFound")}</h1>
-        </div>
+      <div className="ed-page-full ed-ins-page">
+        <EditorialSubMasthead
+          title={t("wealthDetail.notFound")}
+          onBack={() => navigate(-1)}
+          backLabel={t("insights.subpages.back")}
+        />
       </div>
     );
   }
@@ -236,19 +236,18 @@ export default function WealthEntryDetailPage() {
         : t("wealthDetail.property.tier3");
 
   return (
-    <div className="ed-paper ed-ins-page">
-      <div className="ed-ins-sub-mast">
-        <button type="button" className="ed-ins-back" onClick={() => navigate(-1)}>
-          {t("insights.subpages.back")}
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 className="ed-ins-sub-title">{entry.name}</h1>
-          <p className="ed-ins-sub-sub">{t(intel.categoryLabelKey)}</p>
-        </div>
-        <button type="button" className="ed-ins-link" style={{ flexShrink: 0 }} onClick={() => setEditOpen(true)}>
-          {t("common.edit")}
-        </button>
-      </div>
+    <div className="ed-page-full ed-ins-page">
+      <EditorialSubMasthead
+        title={entry.name}
+        tagline={t(intel.categoryLabelKey)}
+        onBack={() => navigate(-1)}
+        backLabel={t("insights.subpages.back")}
+        right={
+          <button type="button" className="ed-ins-link" onClick={() => setEditOpen(true)}>
+            {t("common.edit")}
+          </button>
+        }
+      />
 
       {isAutoEstimated ? (
         <div className="ed-est-banner">

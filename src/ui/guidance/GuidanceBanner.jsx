@@ -13,7 +13,7 @@ export function GuidanceBanner({ focus }) {
   const tone = TONE_MAP[focus.tone] || "info";
 
   return (
-    <ToneSurface tone={tone} className="ct-guidance-banner">
+    <ToneSurface tone={tone} className="ed-inset">
       {focus.label && <Eyebrow>{focus.label}</Eyebrow>}
       <Body className="!text-sm">{focus.message}</Body>
     </ToneSurface>

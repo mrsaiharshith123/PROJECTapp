@@ -7,7 +7,7 @@ import { todayYmd } from "../../../utils/dates.js";
 
 const RELATIONSHIP_TAGS = ["friend", "family", "business", "other"];
 const DISPUTE_STATUSES = ["none", "open", "resolved"];
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 const MAX_PROOF_BYTES = 400_000;
 
@@ -51,7 +51,7 @@ export default function LendingDetailModal({ lending, onClose }) {
 
   return (
     <Modal title={lending.personName} onClose={onClose}>
-      <div className="max-h-[75vh] overflow-y-auto pb-2 ct-nw-panel">
+      <div className="max-h-[75vh] overflow-y-auto pb-2 ed-inset">
         <LendingDetailDashboard
           lending={lending}
           agreementDraft={agreementDraft}
@@ -61,8 +61,8 @@ export default function LendingDetailModal({ lending, onClose }) {
           fileRef={fileRef}
           onAddProof={addProof}
         />
-        <div className="mt-4 ct-stack-sm ct-stat-tile indigo">
-          <label className="ct-field-label">{t("lending.form.relationship")}</label>
+        <div className="mt-4 ed-stack-sm ed-inset">
+          <label className="ed-field-label">{t("lending.form.relationship")}</label>
           <select
             className={fieldClass}
             value={lending.relationshipTag || "Other"}
@@ -74,7 +74,7 @@ export default function LendingDetailModal({ lending, onClose }) {
               </option>
             ))}
           </select>
-          <label className="ct-field-label">{t("lending.dispute.label")}</label>
+          <label className="ed-field-label">{t("lending.dispute.label")}</label>
           <select
             className={fieldClass}
             value={lending.disputeStatus || "none"}

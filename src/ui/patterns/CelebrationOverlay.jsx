@@ -21,7 +21,7 @@ export function CelebrationOverlay({ type = "confetti", show, onComplete, messag
 
   return (
     <div
-      className="ct-celebration-overlay"
+      className="ed-celebration-overlay"
       role="dialog"
       aria-modal="true"
       aria-label={message || t("celebration.defaultTitle")}
@@ -39,8 +39,8 @@ export function CelebrationOverlay({ type = "confetti", show, onComplete, messag
           }}
         />
       </Suspense>
-      {message ? <div className="ct-celebration-message">{message}</div> : null}
-      <div className="ct-celebration-hint">{t("celebration.tapToContinue")}</div>
+      {message ? <div className="ed-display-sm">{message}</div> : null}
+      <div className="ed-caption">{t("celebration.tapToContinue")}</div>
     </div>
   );
 }

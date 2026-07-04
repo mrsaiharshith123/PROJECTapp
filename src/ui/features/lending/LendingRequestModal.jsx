@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Modal, Button, Caption, Body, ToneSurface, inputClassName } from "../../index.js";
+import { Modal, Button, Caption, Body, ToneSurface } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { buildAgreementText, borrowerTrustSnapshot } from "../../../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
@@ -11,7 +11,7 @@ import { encodeOfferPayload } from "../../../engines/lendingAgreement.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const inputClass = (hasError = false) => `ed-input${hasError ? " error" : ""}`;
 
 export default function LendingRequestModal({ onClose }) {
   const { t } = useTranslation();
@@ -153,69 +153,69 @@ export default function LendingRequestModal({ onClose }) {
       }
     >
       {step === "details" && (
-        <div className="ct-stack">
+        <div className="ed-stack" style={{ gap: 12 }}>
           <Caption className="block">{t("lending.request.intro")}</Caption>
           <div>
-            <label className="ct-field-label">{t("lending.request.borrowerName")}</label>
-            <input className={fieldClass} value={borrowerName} onChange={(e) => setBorrowerName(e.target.value)} />
+            <label className="ed-field-label">{t("lending.request.borrowerName")}</label>
+            <input className={inputClass()} value={borrowerName} onChange={(e) => setBorrowerName(e.target.value)} />
           </div>
           <div>
-            <label className="ct-field-label">{t("lending.request.lenderName")}</label>
+            <label className="ed-field-label">{t("lending.request.lenderName")}</label>
             <input
-              className={fieldClass}
+              className={inputClass()}
               value={lenderName}
               onChange={(e) => setLenderName(e.target.value)}
               placeholder={t("lending.form.phLender")}
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("lending.request.amount", { currency: INR })}</label>
+            <label className="ed-field-label">{t("lending.request.amount", { currency: INR })}</label>
             <input
               type="number"
               min="1"
-              className={`${fieldClass} ct-numeral`}
+              className={inputClass()}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
           </div>
-          <div className="ct-grid-2">
+          <div className="ed-grid-2">
             <div>
-              <label className="ct-field-label">{t("lending.request.interest")}</label>
+              <label className="ed-field-label">{t("lending.request.interest")}</label>
               <input
                 type="number"
                 min="0"
                 max="60"
-                className={`${fieldClass} ct-numeral`}
+                className={inputClass()}
                 value={interestRate}
                 onChange={(e) => setInterestRate(e.target.value)}
               />
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.request.payBackBy")}</label>
-              <input type="date" className={fieldClass} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              <label className="ed-field-label">{t("lending.request.payBackBy")}</label>
+              <input type="date" className={inputClass()} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
             </div>
           </div>
           <div>
-            <label className="ct-field-label">{t("lending.request.purpose")}</label>
+            <label className="ed-field-label">{t("lending.request.purpose")}</label>
             <input
-              className={fieldClass}
+              className={inputClass()}
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
               placeholder={t("lending.form.phPurpose")}
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("lending.request.collateral")}</label>
+            <label className="ed-field-label">{t("lending.request.collateral")}</label>
             <textarea
-              className={`${fieldClass} min-h-[72px]`}
+              className="ed-textarea"
               value={collateral}
               onChange={(e) => setCollateral(e.target.value)}
               placeholder={t("lending.form.phCollateral")}
             />
           </div>
-          <div className="ct-stat-tile indigo !p-3">
-            <div className="ct-row gap-2 items-start">
-              <span className="ct-icon-tile indigo shrink-0" aria-hidden>
+          <div className="ed-inset-indigo !p-3">
+            <div className="ed-row gap-2 items-start">
+              <span className="ed-icon-tile indigo shrink-0" aria-hidden>
                 <CtIcon name="shield" size={18} context="status" />
               </span>
               <div>
@@ -231,21 +231,21 @@ export default function LendingRequestModal({ onClose }) {
       )}
 
       {step === "agreement" && (
-        <div className="ct-stack">
-          <pre className="ct-inset text-xs whitespace-pre-wrap max-h-48 overflow-y-auto !p-3">{agreementText}</pre>
+        <div className="ed-stack" style={{ gap: 12 }}>
+          <pre className="ed-inset text-xs whitespace-pre-wrap max-h-48 overflow-y-auto !p-3">{agreementText}</pre>
           <ToneSurface tone="warning">
             <Caption className="block">{LEGAL_DISCLAIMER}</Caption>
           </ToneSurface>
           <div>
-            <label className="ct-field-label">{t("lending.request.signBorrower")}</label>
+            <label className="ed-field-label">{t("lending.request.signBorrower")}</label>
             <input
-              className={fieldClass}
+              className={inputClass()}
               value={signName}
               onChange={(e) => setSignName(e.target.value)}
               placeholder={t("lending.form.phSignName")}
             />
           </div>
-          <label className="ct-row gap-2 items-start ct-caption">
+          <label className="ed-row gap-2 items-start ed-caption">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
             {t("lending.request.agreeBorrower")}
           </label>
@@ -253,13 +253,15 @@ export default function LendingRequestModal({ onClose }) {
       )}
 
       {step === "share" && (
-        <div className="ct-stack">
-          <div className="ct-stat-tile teal !p-3">
-            <Body className="!text-sm font-semibold ct-text-success">{t("lending.request.codeReady")}</Body>
+        <div className="ed-stack" style={{ gap: 12 }}>
+          <div className="ed-inset-green !p-3">
+            <Body className="!text-sm font-semibold" style={{ color: "var(--ed-green)" }}>
+              {t("lending.request.codeReady")}
+            </Body>
             <Caption className="block mt-1">{t("lending.request.codeHint")}</Caption>
           </div>
           <div
-            className="ct-numeral text-center text-2xl font-bold tracking-[0.2em] py-3 rounded-xl"
+            className="text-center text-2xl font-bold tracking-[0.2em] py-3 rounded-xl"
             style={{ background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)" }}
           >
             {offerCode}

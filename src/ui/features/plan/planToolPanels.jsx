@@ -33,13 +33,12 @@ function PlanWealthSimulationPanel() {
   }, [simulationBase]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       {headline != null ? (
-        <div className="ct-hero-card wealth">
-          <div className="ct-hero-glow teal" aria-hidden />
-          <p className="ct-hero-label">{t("netWorth.sim.title")}</p>
-          <p className="ct-hero-number">{formatInr(headline)}</p>
-          <p className="ct-stat-tile-label mt-1">{t("netWorth.sim.subtitle")}</p>
+        <div className="ed-inset">
+<p className="ed-field-label">{t("netWorth.sim.title")}</p>
+          <p className="ed-hero-number">{formatInr(headline)}</p>
+          <p className="ed-field-label mt-1">{t("netWorth.sim.subtitle")}</p>
         </div>
       ) : null}
       <SimulationPanel simulationBase={simulationBase} />
@@ -50,7 +49,7 @@ function PlanWealthSimulationPanel() {
 /** Wrap plan tool panel content with modern sheet surface. */
 function PlanToolPanelShell({ children }) {
   if (!children) return null;
-  return <div className="ct-plan-tool-panel ct-stat-tile !p-0 !bg-transparent !border-0">{children}</div>;
+  return <>{children}</>;
 }
 
 /**

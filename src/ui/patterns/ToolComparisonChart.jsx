@@ -81,8 +81,8 @@ export function ToolComparisonChart({
       const baselinePt = payload.find((p) => p.dataKey === baselineKey);
       const whatIfPt = payload.find((p) => p.dataKey === whatIfKey);
       return (
-        <div className="ct-chart-tooltip">
-          <p className="ct-chart-tooltip-title">{label}</p>
+        <div className="ed-inset">
+          <p className="ed-inset-title">{label}</p>
           {row.emiPay > 0 ? (
             <p>
               {t("loan.advisor.tooltipEmi")}: {formatInr(row.emiPay)}
@@ -94,7 +94,7 @@ export function ToolComparisonChart({
             </p>
           ) : null}
           {row.totalPay > 0 ? (
-            <p className="ct-chart-tooltip-strong">
+            <p className="ed-inset-strong">
               {t("loan.advisor.tooltipTotal")}: {formatInr(row.totalPay)}
             </p>
           ) : null}
@@ -118,8 +118,8 @@ export function ToolComparisonChart({
   }
 
   return (
-    <div className="ct-stack-sm">
-      <Body className="ct-body-strong text-sm">{t(titleKey)}</Body>
+    <div className="ed-stack-sm">
+      <Body className="ed-body-strong text-sm">{t(titleKey)}</Body>
       {!pathsDiffer && singleSeriesWhenEqual ? (
         <Caption className="block opacity-80">{t("charts.loanNoExtraRoom")}</Caption>
       ) : null}

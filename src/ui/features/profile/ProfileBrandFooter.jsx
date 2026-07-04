@@ -7,7 +7,7 @@ export default function ProfileBrandFooter() {
   const { t } = useTranslation();
 
   return (
-    <div className="ct-profile-brand ct-stat-tile !bg-transparent !border-0 !shadow-none pt-8 pb-2">
+    <div className="ed-profile-brand pt-8 pb-2">
       <div className="ed-title" style={{ textAlign: "center", fontSize: 22 }}>
         {t("brand.appName")}
       </div>

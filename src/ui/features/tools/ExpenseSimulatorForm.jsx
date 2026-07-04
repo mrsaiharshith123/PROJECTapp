@@ -16,7 +16,7 @@ import {
 } from "../../../i18n/affordLabels.js";
 
 const LOAN_PRESETS = new Set(["loan", "emi", "home_loan", "car_loan", "personal_loan"]);
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 /** Affordability simulator — EMI presets support product price, rate, and tenure. */
 export default function ExpenseSimulatorForm() {
@@ -89,7 +89,7 @@ export default function ExpenseSimulatorForm() {
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="sim"
         label={t("tools.afford.heroLabel")}
@@ -98,16 +98,16 @@ export default function ExpenseSimulatorForm() {
             ? `${impactPositive ? "+" : ""}${formatInr(monthlyImpact)}`
             : formatInr(0)
         }
-        className={sim && !impactPositive ? "ct-hero-negative" : undefined}
+        className={sim && !impactPositive ? "ed-inset-amber" : undefined}
       />
       <Caption>{t("tools.afford.intro")}</Caption>
-      <div className="ct-row flex-wrap gap-2">
+      <div className="ed-row flex-wrap gap-2">
         {presetKeys.map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => setPreset(key)}
-            className={`ct-chip ${preset === key ? "ct-chip-active" : ""}`}
+            className={`ed-chip ${preset === key ? "active" : ""}`}
           >
             {presetLabel(key)}
           </button>
@@ -127,7 +127,7 @@ export default function ExpenseSimulatorForm() {
         disabled={isLoanPreset && useLoanCalc && computedEmi > 0}
       />
       {isLoanPreset && (
-        <div className="ct-inset ct-stack-sm !p-3">
+        <div className="ed-inset ed-stack-sm !p-3">
           <label className="flex items-center gap-2 text-xs font-semibold">
             <input
               type="checkbox"
@@ -138,7 +138,7 @@ export default function ExpenseSimulatorForm() {
           </label>
           {useLoanCalc && (
             <>
-              <div className="ct-grid-2 gap-2">
+              <div className="ed-grid-2 gap-2">
                 <input
                   type="number"
                   min="0"
@@ -174,7 +174,7 @@ export default function ExpenseSimulatorForm() {
                 />
               </div>
               {computedEmi > 0 && (
-                <Caption className="block ct-text-accent">
+                <Caption className="block ed-link">
                   {t("tools.afford.emiSummary", {
                     emi: formatInr(computedEmi),
                     total: formatInr(totalRepaymentFromEmi(computedEmi, tenure)),
@@ -188,17 +188,17 @@ export default function ExpenseSimulatorForm() {
         </div>
       )}
       {sim && (
-        <div className="ct-grid-2">
-          <div className={`ct-stat-tile ${impactPositive ? "teal" : "amber"}`}>
-            <p className="ct-stat-tile-label">{translateAffordabilityLabel(t, sim.affordability)}</p>
-            <p className="ct-stat-tile-value ct-numeral text-sm">
+        <div className="ed-grid-2">
+          <div className={`ed-inset ${impactPositive ? "teal" : "amber"}`}>
+            <p className="ed-stat-label">{translateAffordabilityLabel(t, sim.affordability)}</p>
+            <p className="ed-stat-value ed-numeral text-sm">
               {formatInr(Math.round(sim.affordability.freeMoneyAfter))}
             </p>
           </div>
           {sim.beforeSurvival && sim.afterSurvival && (
-            <div className="ct-stat-tile indigo">
-              <p className="ct-stat-tile-label">{t("netWorth.sim.survival")}</p>
-              <p className="ct-stat-tile-value text-sm">
+            <div className="ed-inset">
+              <p className="ed-stat-label">{t("netWorth.sim.survival")}</p>
+              <p className="ed-stat-value text-sm">
                 {t("tools.afford.survival", {
                   before: sim.beforeSurvival.survivalMonths ?? "—",
                   after: sim.afterSurvival.survivalMonths ?? "—",
@@ -207,9 +207,9 @@ export default function ExpenseSimulatorForm() {
             </div>
           )}
           {sim.loanMeta && (
-            <div className="ct-stat-tile col-span-2">
-              <p className="ct-stat-tile-label">{t("preset.loan")}</p>
-              <p className="ct-stat-tile-value text-sm">
+            <div className="ed-inset col-span-2">
+              <p className="ed-stat-label">{t("preset.loan")}</p>
+              <p className="ed-stat-value text-sm">
                 {t("tools.afford.loanOn", {
                   price: formatInr(sim.loanMeta.productPrice),
                   down: formatInr(sim.loanMeta.downPayment),
@@ -222,12 +222,12 @@ export default function ExpenseSimulatorForm() {
         </div>
       )}
       {sim?.warnings.map((w, i) => (
-        <div key={i} className="ct-stat-tile amber">
-          <p className="ct-stat-tile-value text-sm">{translateAffordWarning(t, w)}</p>
+        <div key={i} className="ed-inset-amber">
+          <p className="ed-stat-value text-sm">{translateAffordWarning(t, w)}</p>
         </div>
       ))}
-      <div className="ct-stat-tile">
-        <p className="ct-stat-tile-label">{t("tools.afford.disclaimer")}</p>
+      <div className="ed-inset">
+        <p className="ed-stat-label">{t("tools.afford.disclaimer")}</p>
       </div>
     </div>
   );

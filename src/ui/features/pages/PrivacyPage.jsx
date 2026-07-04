@@ -7,7 +7,7 @@ export default function PrivacyPage() {
 
   return (
     <PageShell title={t("privacy.title")}>
-      <div className="ct-hero-card relative max-h-[70vh] overflow-y-auto ct-stack">
+      <div className="ed-inset relative max-h-[70vh] overflow-y-auto ed-stack">
         <Caption className="block">{t("privacy.effective")}</Caption>
 
         <Body className="font-semibold mt-4">{t("privacy.collectTitle")}</Body>

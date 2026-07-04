@@ -54,49 +54,49 @@ export default function YouPermissionsPage() {
 
   return (
     <YouSubPageShell titleKey="settings.row.appPermissions">
-      <div className="ct-perm-gate-panel" style={{ maxWidth: "none" }}>
-        <Caption className="ct-perm-gate-body">{t("permissions.introBody")}</Caption>
+      <div className="ed-inset" style={{ maxWidth: "none" }}>
+        <Caption style={{ fontSize: 13, color: "var(--ed-ink-soft)" }}>{t("permissions.introBody")}</Caption>
 
-        <ul className="ct-perm-gate-list">
+        <ul style={{ listStyle: "none", padding: 0, margin: "12px 0" }}>
           <li>
             <strong>{t("permissions.itemNotificationsTitle")}</strong>
             <span>{t("permissions.itemNotificationsBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.notifications}`)}</Caption>
+              <Caption style={{ fontSize: 12, color: "var(--ed-ink-faint)" }}>{t(`permissions.state.${status.notifications}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemCameraTitle")}</strong>
             <span>{t("permissions.itemCameraBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.camera}`)}</Caption>
+              <Caption style={{ fontSize: 12, color: "var(--ed-ink-faint)" }}>{t(`permissions.state.${status.camera}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemPhotosTitle")}</strong>
             <span>{t("permissions.itemPhotosBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.photos}`)}</Caption>
+              <Caption style={{ fontSize: 12, color: "var(--ed-ink-faint)" }}>{t(`permissions.state.${status.photos}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemLocationTitle")}</strong>
             <span>{t("permissions.itemLocationBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.location}`)}</Caption>
+              <Caption style={{ fontSize: 12, color: "var(--ed-ink-faint)" }}>{t(`permissions.state.${status.location}`)}</Caption>
             ) : null}
           </li>
         </ul>
 
         {showSettings ? (
-          <Caption className="ct-perm-gate-denied">{t("permissions.deniedHint")}</Caption>
+          <Caption style={{ fontSize: 12, color: "var(--ed-amber)" }}>{t("permissions.deniedHint")}</Caption>
         ) : null}
 
         {allGranted ? (
           <Body style={{ textAlign: "center", color: "var(--ed-teal)" }}>{t("permissions.allGranted")}</Body>
         ) : null}
 
-        <div className="ct-perm-gate-actions">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
           <Button type="button" variant="primary" size="md" disabled={busy} onClick={onAllow}>
             {busy ? t("permissions.requesting") : t("permissions.allowAccess")}
           </Button>

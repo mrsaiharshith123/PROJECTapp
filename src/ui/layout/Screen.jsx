@@ -1,17 +1,13 @@
 export function Screen({ children, className = "", narrow = false }) {
   return (
-    <div className={`ct-screen ${narrow ? "ct-screen-narrow" : ""} ${className}`.trim()}>
+    <div className={`ed-screen ${narrow ? "ed-screen-narrow" : ""} ${className}`.trim()}>
       {children}
     </div>
   );
 }
 
 export function MainContent({ children, className = "" }) {
-  return (
-    <main className={`ct-main max-w-lg mx-auto w-full ${className}`.trim()}>
-      {children}
-    </main>
-  );
+  return <main className={`ed-main max-w-lg mx-auto w-full ${className}`.trim()}>{children}</main>;
 }
 
 /**
@@ -19,10 +15,10 @@ export function MainContent({ children, className = "" }) {
  */
 export function ScreenSection({ title, children, action }) {
   return (
-    <section className="ct-section">
+    <section className="ed-section">
       {(title || action) && (
-        <div className="ct-row-between mb-3">
-          {title && <h2 className="ct-h2">{title}</h2>}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          {title && <h2 className="ed-section-title">{title}</h2>}
           {action}
         </div>
       )}

@@ -71,7 +71,7 @@ export default function WealthAnalyticsSection({
       : null;
 
   return (
-    <section className={embedded ? "ct-stack" : "ct-analytics-section ct-stack"} id={embedded ? undefined : "wealth-analytics"}>
+    <section className={embedded ? "ed-stack" : "ed-section ed-stack"} id={embedded ? undefined : "wealth-analytics"}>
       {!embedded ? (
         <div
           style={{
@@ -104,13 +104,13 @@ export default function WealthAnalyticsSection({
             <Caption className="block mt-1">
               {t("analytics.wealth.subtitle")}
             </Caption>
-            <div className="ct-row-between items-end mt-4">
+            <div className="ed-row-between items-end mt-4">
               <div>
-                <p className="ct-hero-label">
+                <p className="ed-field-label">
                   {t("netWorth.hero.eyebrow")}
                 </p>
                 <p
-                  className="ct-numeral"
+                  className="ed-numeral"
                   style={{
                     fontSize: "clamp(26px,7vw,36px)",
                     fontWeight: 700,
@@ -122,7 +122,7 @@ export default function WealthAnalyticsSection({
                   {privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}
                 </p>
               </div>
-              {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
+              {trendChip ? <span className="ed-trend-chip">{trendChip}</span> : null}
             </div>
             {!privacyMode && sparkSeries.length > 1 ? (
               <div className="mt-3">
@@ -132,13 +132,13 @@ export default function WealthAnalyticsSection({
           </div>
         </div>
       ) : (
-        <div className="ct-row-between items-end">
+        <div className="ed-row-between items-end">
           <div>
-            <p className="ct-hero-label">
+            <p className="ed-field-label">
               {t("netWorth.hero.eyebrow")}
             </p>
             <p
-              className="ct-numeral"
+              className="ed-numeral"
               style={{
                 fontSize: "clamp(22px,6vw,30px)",
                 fontWeight: 700,
@@ -149,18 +149,18 @@ export default function WealthAnalyticsSection({
               {privacyMode ? "••••" : formatInr(intel.core?.netWorth ?? 0)}
             </p>
           </div>
-          {trendChip ? <span className="ct-trend-chip">{trendChip}</span> : null}
+          {trendChip ? <span className="ed-trend-chip">{trendChip}</span> : null}
         </div>
       )}
 
-      <div className={`ct-grid-2 gap-2${embedded ? "" : ""}`}>
+      <div className={`ed-grid-2 gap-2${embedded ? "" : ""}`}>
         <div className="pos-tile asset">
-          <p className="ct-stat-label">{t("netWorth.chart.assets")}</p>
-          <p className="ct-stat-value ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalAssets ?? 0)}</p>
+          <p className="ed-field-label">{t("netWorth.chart.assets")}</p>
+          <p className="ed-numeral ed-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalAssets ?? 0)}</p>
         </div>
         <div className="pos-tile liability">
-          <p className="ct-stat-label">{t("netWorth.chart.debt")}</p>
-          <p className="ct-stat-value ct-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalLiabilities ?? 0)}</p>
+          <p className="ed-field-label">{t("netWorth.chart.debt")}</p>
+          <p className="ed-numeral ed-numeral">{privacyMode ? "••••" : formatInr(intel.core?.totalLiabilities ?? 0)}</p>
         </div>
       </div>
 
@@ -180,9 +180,9 @@ export default function WealthAnalyticsSection({
       <LiquidityPanel liquidity={intel.liquidity} privacyMode={privacyMode} totalAssets={intel.core?.totalAssets ?? 0} />
       <HealthScorePanel lifeScore={intel.lifeScore} />
       {benchmark?.estimatedPercentile != null && !privacyMode ? (
-        <div className="ct-stat-tile indigo">
-          <p className="ct-stat-label">{t("netWorth.benchmark.title")}</p>
-          <p className="ct-stat-value ct-numeral">
+        <div className="ed-inset">
+          <p className="ed-field-label">{t("netWorth.benchmark.title")}</p>
+          <p className="ed-numeral ed-numeral">
             {t("netWorth.benchmark.percentile", { pct: benchmark.estimatedPercentile })}
           </p>
           <Caption className="block mt-1">

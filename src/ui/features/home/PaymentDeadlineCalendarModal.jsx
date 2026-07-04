@@ -50,11 +50,11 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
 
   return (
     <Modal title={t("calendar.title")} onClose={onClose}>
-      <div className="ct-stack">
+      <div className="ed-stack">
         <Caption className="block">{t("calendar.hint", { count: monthDeadlines })}</Caption>
 
-        <div className="ct-pay-cal-panel ct-stack-sm">
-          <div className="ct-row-between">
+        <div className="ed-pay-cal-panel ed-stack-sm">
+          <div className="ed-row-between">
             <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => setViewMonth((m) => subMonths(m, 1))}>
               ←
             </Button>
@@ -64,7 +64,7 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
             </Button>
           </div>
 
-          <div className="ct-pay-cal-grid">
+          <div className="ed-pay-cal-grid">
             {WEEKDAY_KEYS.map((d) => (
               <Caption key={d} className="text-center font-semibold !text-[10px]">
                 {t(`calendar.week.${d}`)}
@@ -82,29 +82,29 @@ export default function PaymentDeadlineCalendarModal({ open, onClose }) {
                 <button
                   key={cell.ymd}
                   type="button"
-                  className={`ct-pay-cal-day${hasDue ? " ct-pay-cal-day-has-dues" : ""}${selected ? " ct-pay-cal-day-selected" : ""}${cell.isToday ? " ct-pay-cal-day-today" : ""}${overdue ? " ct-pay-cal-day-overdue" : ""}`}
+                  className={`ed-pay-cal-day${hasDue ? " ed-pay-cal-day-has-dues" : ""}${selected ? " ed-pay-cal-day-selected" : ""}${cell.isToday ? " ed-pay-cal-day-today" : ""}${overdue ? " ed-pay-cal-day-overdue" : ""}`}
                   onClick={() => setSelectedYmd(cell.ymd)}
                   aria-label={`${cell.dayNum}${hasDue ? `, ${items.length} due` : ""}`}
                 >
                   <span>{cell.dayNum}</span>
-                  {hasDue && <span className="ct-pay-cal-dot" aria-hidden />}
+                  {hasDue && <span className="ed-pay-cal-dot" aria-hidden />}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="ct-pay-cal-panel ct-stack-sm">
+        <div className="ed-pay-cal-panel ed-stack-sm">
           {selectedYmd ? (
             <>
               <Body className="font-semibold !text-sm">{formatDeadlineHeading(selectedYmd)}</Body>
               {selectedItems.length === 0 ? (
                 <Caption>{t("calendar.noPayments")}</Caption>
               ) : (
-                <ul className="ct-stack-sm">
+                <ul className="ed-stack-sm">
                   {selectedItems.map((item) => (
-                    <li key={`${item.kind}-${item.id}`} className="ct-stat-tile">
-                      <div className="ct-row-between gap-2">
+                    <li key={`${item.kind}-${item.id}`} className="ed-stat-tile">
+                      <div className="ed-row-between gap-2">
                         <div className="min-w-0">
                           <Body className="font-semibold truncate !text-sm">{item.name}</Body>
                           <Caption>

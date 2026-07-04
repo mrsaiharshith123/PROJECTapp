@@ -2,7 +2,7 @@ import { Modal, Button, Caption, inputClassName } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function CommitmentsPaymentModal({
   paymentFor,
@@ -36,10 +36,10 @@ export default function CommitmentsPaymentModal({
         </Button>
       }
     >
-      <div className="ct-stack">
-        <div className="ct-hero-card survival ct-stack-sm">
+      <div className="ed-stack">
+        <div className="ed-inset-amber ed-stack-sm">
           <Caption className="block">
-            <span className="font-semibold text-[var(--ct-text)]">{paymentFor.name}</span>
+            <span className="font-semibold text-[var(--ed-ink)]">{paymentFor.name}</span>
             {contractStillToPay > installmentAmount && installmentAmount > 0 ? (
               <>
                 {" "}
@@ -52,17 +52,17 @@ export default function CommitmentsPaymentModal({
           </Caption>
         </div>
         {cycleAlreadyPaid ? (
-          <div className="ct-stat-tile teal">
+          <div className="ed-inset-green">
             <Caption className="block">{t("bills.alreadyPaidMonth")}</Caption>
           </div>
         ) : (
-          <div className="ct-stat-tile amber">
-            <label className="ct-stat-tile-label">{t("bills.installmentFixed")}</label>
-            <p className="ct-stat-tile-value ct-numeral">{installmentDisplay}</p>
+          <div className="ed-inset-amber">
+            <label className="ed-stat-label">{t("bills.installmentFixed")}</label>
+            <p className="ed-stat-value ed-numeral">{installmentDisplay}</p>
           </div>
         )}
         <div>
-          <label className="ct-field-label">{t("bills.date")}</label>
+          <label className="ed-field-label">{t("bills.date")}</label>
           <input type="date" className={fieldClass} value={payDate} onChange={(e) => onPayDateChange(e.target.value)} />
         </div>
       </div>

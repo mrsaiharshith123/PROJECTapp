@@ -44,24 +44,24 @@ export default function AgreementDocumentsList() {
   if (!documents.length) {
     return (
       <div className="pos-hero agreement">
-        <p className="ct-caption">{t("agreements.documentsEmpty")}</p>
+        <p className="ed-caption">{t("agreements.documentsEmpty")}</p>
       </div>
     );
   }
 
   return (
-    <div className="ct-stack-sm">
+    <div className="ed-stack-sm">
       {documents.map((lending) => {
         const signed = lending.esignStatus === "completed";
         const date = lending.esignCompletedAt || lending.agreementSealedAt || lending.dueDate;
         return (
           <div key={lending.id} className="pos-document-row">
-            <span className="ct-icon-tile pos-icon agreement shrink-0">
+            <span className="ed-row-icon pos-icon agreement shrink-0">
               <CtIcon name="file-text" size={18} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="ct-body-strong truncate">{lending.personName}</p>
-              <p className="ct-caption">{formatDocDate(date)}</p>
+              <p className="ed-body-strong truncate">{lending.personName}</p>
+              <p className="ed-caption">{formatDocDate(date)}</p>
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full border mt-1 inline-block ${semanticToneToClass(signed ? "success" : "warning")}`}
               >

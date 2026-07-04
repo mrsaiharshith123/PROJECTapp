@@ -49,7 +49,7 @@ function debtPickerItemFromLending(l, getEffectiveLendingStatus, t) {
   };
 }
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function LoanPayoffAdvisor({
   commitments,
@@ -152,22 +152,22 @@ export default function LoanPayoffAdvisor({
   }
 
   return (
-    <div className="ct-stack text-sm">
+    <div className="ed-stack text-sm">
       <button
         type="button"
         onClick={() => {
           setTarget(null);
           setStep("pick");
         }}
-        className="ct-link !text-xs"
+        className="ed-link !text-xs"
       >
         ← {t("loan.advisor.chooseAnother")}
       </button>
 
       {step === "manual" && (
-        <div className="ct-grid-2">
+        <div className="ed-grid-2">
           <div className="sm:col-span-2">
-            <label className="ct-field-label">{t("loan.advisor.loanName")}</label>
+            <label className="ed-field-label">{t("loan.advisor.loanName")}</label>
             <input
               className={fieldClass}
               value={manual.name}
@@ -176,7 +176,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("loan.advisor.balanceLeft")}</label>
+            <label className="ed-field-label">{t("loan.advisor.balanceLeft")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -185,7 +185,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("loan.advisor.regularPayment")}</label>
+            <label className="ed-field-label">{t("loan.advisor.regularPayment")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -194,7 +194,7 @@ export default function LoanPayoffAdvisor({
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("loan.advisor.interestOptional")}</label>
+            <label className="ed-field-label">{t("loan.advisor.interestOptional")}</label>
             <input
               type="number"
               className={fieldClass}
@@ -206,9 +206,9 @@ export default function LoanPayoffAdvisor({
       )}
 
       {step === "calc" && target && (
-        <div className="ct-stat-tile indigo text-xs">
-          <p className="ct-stat-tile-value text-sm font-semibold">{target.title}</p>
-          <p className="ct-stat-tile-label mt-0.5">{target.subtitle}</p>
+        <div className="ed-inset text-xs">
+          <p className="ed-stat-value text-sm font-semibold">{target.title}</p>
+          <p className="ed-stat-label mt-0.5">{target.subtitle}</p>
         </div>
       )}
 
@@ -227,7 +227,7 @@ export default function LoanPayoffAdvisor({
               }) : undefined}
             />
           ) : null}
-          <p className="text-xs text-[var(--ct-text-muted)]">
+          <p className="text-xs text-[var(--ed-muted-text)]">
             {t("loan.advisor.timingIntro")}
             <InfoTip text={CALC_HELP.loanExtraTiming} />
           </p>
@@ -262,7 +262,7 @@ export default function LoanPayoffAdvisor({
           )}
 
           {advice.debt?.emi > 0 && (
-            <ToneSurface tone="info" className="ct-stack-sm text-xs">
+            <ToneSurface tone="info" className="ed-stack-sm text-xs">
               <p className="font-bold">
                 {t("loan.advisor.paymentPlanTitle")}
               </p>
@@ -273,7 +273,7 @@ export default function LoanPayoffAdvisor({
                 })}
               </p>
               {advice.lightMonths.length > 0 && (
-                <p className="leading-relaxed ct-text-success">
+                <p className="leading-relaxed ed-success-text">
                   {t("loan.advisor.extraInMonths", {
                     schedule: advice.lightMonths
                       .slice(0, 4)
@@ -283,7 +283,7 @@ export default function LoanPayoffAdvisor({
                 </p>
               )}
               {advice.heavyMonths.length > 0 && (
-                <p className="leading-relaxed ct-text-warning">
+                <p className="leading-relaxed ed-field-note">
                   {t("loan.advisor.emiOnlyHeavy", {
                     months: advice.heavyMonths
                       .slice(0, 3)
@@ -298,8 +298,8 @@ export default function LoanPayoffAdvisor({
           {advice.rows.length > 0 && (
             <div className="overflow-x-auto -mx-1 max-h-64 overflow-y-auto">
               <table className="w-full text-[11px] border-collapse">
-                <thead className="sticky top-0 bg-[var(--ct-surface)]">
-                  <tr className="text-left ct-caption border-b">
+                <thead className="sticky top-0 bg-[var(--ed-surface)]">
+                  <tr className="text-left ed-caption border-b">
                     <th className="py-1 pr-2">{t("loan.advisor.colMonth")}</th>
                     <th className="py-1 pr-2">{t("loan.advisor.colEmi")}</th>
                     <th className="py-1 pr-2">{t("loan.advisor.colExtra")}</th>
@@ -312,13 +312,7 @@ export default function LoanPayoffAdvisor({
                   {advice.rows.map((r) => (
                     <tr
                       key={r.monthKey}
-                      className={`border-b border-[var(--ct-border-subtle)] ${
-                        advice.bestForExtra?.monthKey === r.monthKey
-                          ? "bg-[var(--ct-success-soft)] font-semibold"
-                          : r.heavy
-                            ? "bg-[var(--ct-danger-soft)]"
-                            : ""
-                      }`}
+                      className={`border-b border-[var(--ed-rule-soft)] ${ advice.bestForExtra?.monthKey === r.monthKey ? "bg-[var(--ed-green-soft)] font-semibold" : r.heavy ? "bg-[var(--ed-red-soft)]" : "" }`}
                     >
                       <td className="py-1.5 pr-2 whitespace-nowrap">{r.label}</td>
                       <td className="py-1.5 pr-2">{formatInr(r.loanDue)}</td>

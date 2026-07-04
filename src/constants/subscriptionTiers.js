@@ -1,10 +1,9 @@
 export const SUBSCRIPTION_TIERS = {
   free: "free",
   pro: "pro",
-  power: "power",
 };
 
-/** Pro-only feature ids (Power includes these too). */
+/** Pro feature ids (legacy power tier maps to pro). */
 export const PRO_FEATURES = new Set([
   "account_backup",
   "health_report",
@@ -23,10 +22,6 @@ export const PRO_FEATURES = new Set([
   "unlimited_chits",
   "sip_advisor",
   "ai_advisor",
-]);
-
-/** Power-only feature ids (on top of Pro). */
-export const POWER_FEATURES = new Set([
   "multiple_profiles",
   "bond_advisor",
   "payoff_optimizer",
@@ -66,11 +61,9 @@ export const PLAN_PRESENTATION = [
       "plans.feature.free.scores",
       "plans.feature.free.lending",
       "plans.feature.free.chitsGoals",
-      "plans.feature.free.spendSplits",
       "plans.feature.free.cashflow",
       "plans.feature.free.calculators",
       "plans.feature.free.export",
-      "plans.feature.free.report",
     ],
   },
   {
@@ -91,27 +84,16 @@ export const PLAN_PRESENTATION = [
       "plans.feature.pro.unlimited",
       "plans.feature.pro.insights",
       "plans.feature.pro.scenarios",
-    ],
-  },
-  {
-    tier: SUBSCRIPTION_TIERS.power,
-    titleKey: "plans.tier.power",
-    taglineKey: "plans.tagline.power",
-    monthlyInr: 199,
-    annualInr: yearlyInrAfterSave(199),
-    includesKey: "plans.includes.pro",
-    featureKeys: [
-      "plans.feature.power.profiles",
-      "plans.feature.power.bond",
-      "plans.feature.power.payoff",
-      "plans.feature.power.ca",
+      "plans.feature.pro.bond",
+      "plans.feature.pro.payoff",
+      "plans.feature.pro.ca",
     ],
   },
 ];
 
 export function hasPaidBackupTier(settings, serverTier = null) {
   const tier = serverTier ?? settings?.subscriptionTier ?? "free";
-  return tier === SUBSCRIPTION_TIERS.pro || tier === SUBSCRIPTION_TIERS.power;
+  return tier === SUBSCRIPTION_TIERS.pro || tier === "power";
 }
 
 /**
@@ -120,8 +102,7 @@ export function hasPaidBackupTier(settings, serverTier = null) {
  */
 export function isFeatureUnlocked(featureId, subscriptionTier = "free") {
   const tier = subscriptionTier || "free";
-  if (tier === "power") return true;
-  if (POWER_FEATURES.has(featureId)) return false;
-  if (PRO_FEATURES.has(featureId)) return tier === "pro";
+  if (tier === "pro" || tier === "power") return true;
+  if (PRO_FEATURES.has(featureId)) return false;
   return true;
 }

@@ -56,7 +56,7 @@ export default function BillDetailModal({
       onClose={onClose}
       sheet={sheet}
       footer={
-        <div className="ct-stack-sm w-full">
+        <div className="ed-stack-sm w-full">
           {canPay ? (
             <Button type="button" variant="primary" size="md" className="w-full" onClick={() => onAddPayment(bill)}>
               {t("bills.markPaid")}
@@ -73,7 +73,7 @@ export default function BillDetailModal({
               {t("bill.detail.undoPayment")}
             </Button>
           ) : null}
-          <div className="ct-row-wrap">
+          <div className="ed-row-wrap">
             <Button type="button" variant="secondary" size="md" onClick={() => onEdit(bill)}>
               {t("common.edit")}
             </Button>
@@ -84,17 +84,16 @@ export default function BillDetailModal({
         </div>
       }
     >
-      <div className="ct-stack">
-        <div className="ct-hero-card survival ct-bill-detail-hero">
-          <div className="ct-hero-glow amber" aria-hidden />
-          <p className="ct-hero-label">{statusLabel}</p>
-          <p className="ct-hero-number">{formatInr(amount)}</p>
+      <div className="ed-stack">
+        <div className="ed-inset-amber">
+          <p className="ed-kicker">{statusLabel}</p>
+          <p className="ed-hero-number">{formatInr(amount)}</p>
           {bill.dueDate ? (
             <Caption className="block relative mt-1">
               {t("bill.detail.nextDue", { date: formatDate(bill.dueDate) })}
             </Caption>
           ) : null}
-          <div className="ct-bill-detail-actions relative">
+          <div className="flex flex-col gap-2 relative">
             <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(bill)}>
               {t("common.edit")}
             </Button>
@@ -106,35 +105,35 @@ export default function BillDetailModal({
           </div>
         </div>
 
-        <div className="ct-row-wrap">
+        <div className="ed-row-wrap">
           <CategoryChip categoryId={bill.category} />
           <PriorityBadge priorityId={bill.priority} />
-          <span className="ct-status ct-status-neutral">{statusLabel}</span>
+          <span className="ed-status ed-status-neutral">{statusLabel}</span>
         </div>
 
         {isInsurance && (bill.insurancePolicyId || bill.insuredPersonName || bill.insuranceCompany) && (
-          <ToneSurface tone="info" className="ct-stack-sm text-xs">
+          <ToneSurface tone="info" className="ed-stack-sm text-xs">
             {bill.insurancePolicyId && (
               <p>
-                <span className="ct-caption">{t("bill.detail.policyId")}</span>{" "}
+                <span className="ed-caption">{t("bill.detail.policyId")}</span>{" "}
                 <span className="font-semibold">{bill.insurancePolicyId}</span>
               </p>
             )}
             {bill.insuredPersonName && (
               <p>
-                <span className="ct-caption">{t("bill.detail.insured")}</span>{" "}
+                <span className="ed-caption">{t("bill.detail.insured")}</span>{" "}
                 <span className="font-semibold">{bill.insuredPersonName}</span>
               </p>
             )}
             {bill.insuranceCompany && (
               <p>
-                <span className="ct-caption">{t("bill.detail.company")}</span>{" "}
+                <span className="ed-caption">{t("bill.detail.company")}</span>{" "}
                 <span className="font-semibold">{bill.insuranceCompany}</span>
               </p>
             )}
             {bill.repeatType && bill.repeatType !== "none" && (
               <p>
-                <span className="ct-caption">{t("bill.detail.premium")}</span> ₹
+                <span className="ed-caption">{t("bill.detail.premium")}</span> ₹
                 {Number(bill.amount || 0).toLocaleString()} · {translateRepeatType(t, bill.repeatType)}
               </p>
             )}
@@ -156,7 +155,7 @@ export default function BillDetailModal({
           </ToneSurface>
         )}
 
-        <div className="ct-inset ct-stack-sm px-3 py-2.5">
+        <div className="ed-inset ed-stack-sm px-3 py-2.5">
           <Body className="text-xs font-semibold">{t("bill.detail.paymentProgress")}</Body>
           <Caption>{translateBillProgressLabel(t, progress)}</Caption>
           <Caption>
@@ -200,7 +199,7 @@ export default function BillDetailModal({
         )}
 
         {bill.notes && (
-          <Caption className="border-t border-[var(--ct-border)] pt-3 block">{bill.notes}</Caption>
+          <Caption className="border-t border-[var(--ed-rule)] pt-3 block">{bill.notes}</Caption>
         )}
       </div>
     </Modal>

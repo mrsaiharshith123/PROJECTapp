@@ -5,6 +5,7 @@ import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { ShareScoreIconButton } from "../../patterns/ShareScoreIconButton.jsx";
+import EditorialSubMasthead from "../../patterns/EditorialSubMasthead.jsx";
 import { useCountUp } from "../../hooks/useCountUp.js";
 import Confetti from "react-confetti";
 
@@ -80,19 +81,16 @@ export default function ScoreDetailPage() {
         : "var(--ed-red)";
 
   return (
-    <div className="ed-paper ed-ins-page">
+    <div className="ed-page-full ed-ins-page">
       {showPayoffShare ? <Confetti numberOfPieces={180} recycle={false} /> : null}
 
-      <div className="ed-ins-sub-mast">
-        <button type="button" className="ed-ins-back" onClick={() => navigate("/insights")}>
-          {t("insights.subpages.back")}
-        </button>
-        <div style={{ flex: 1 }}>
-          <h1 className="ed-ins-sub-title">{t("insights.subpages.scoreTitle")}</h1>
-          <p className="ed-ins-sub-sub">{t("insights.subpages.scoreSubtitle")}</p>
-        </div>
-        <ShareScoreIconButton />
-      </div>
+      <EditorialSubMasthead
+        title={t("insights.subpages.scoreTitle")}
+        tagline={t("insights.subpages.scoreSubtitle")}
+        onBack={() => navigate("/insights")}
+        backLabel={t("insights.subpages.back")}
+        right={<ShareScoreIconButton />}
+      />
 
       <div className="ed-ins-story">
         <div className="ed-ins-kicker">{t("insights.subpages.scoreKicker")}</div>

@@ -18,7 +18,7 @@ export default function SafetyPlannerPanel() {
   const fundedPct = emergency?.progressPercent ?? 0;
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="survival"
         label={t("tools.safety.heroLabel")}
@@ -27,26 +27,26 @@ export default function SafetyPlannerPanel() {
       />
       <Caption>{t("tools.safety.introAuto")}</Caption>
       {!hasLiquidAssets && (
-        <Caption className="block ct-text-warning">{t("tools.safety.addBankAsset")}</Caption>
+        <Caption className="block ed-field-note">{t("tools.safety.addBankAsset")}</Caption>
       )}
-      <div className="ct-grid-2">
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-value text-sm">{t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}</p>
+      <div className="ed-grid-2">
+        <div className="ed-inset-green">
+          <p className="ed-stat-value text-sm">{t("tools.emergency.current", { amount: formatInr(emergency?.current || 0) })}</p>
         </div>
         {emergency?.gap > 0 ? (
-          <div className="ct-stat-tile amber">
-            <p className="ct-stat-tile-value text-sm">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</p>
+          <div className="ed-inset-amber">
+            <p className="ed-stat-value text-sm">{t("tools.emergency.gap", { amount: formatInr(emergency.gap) })}</p>
           </div>
         ) : null}
       </div>
       <ProgressBar value={fundedPct} />
       {emergency?.messageKey && (
-        <div className="ct-stat-tile indigo">
-          <p className="ct-stat-tile-value text-sm">{translateInsight(t, { key: emergency.messageKey })}</p>
+        <div className="ed-inset">
+          <p className="ed-stat-value text-sm">{translateInsight(t, { key: emergency.messageKey })}</p>
         </div>
       )}
-      <div className="ct-stat-tile">
-        <p className="ct-stat-tile-label">{t("tools.safety.disclaimer")}</p>
+      <div className="ed-inset">
+        <p className="ed-stat-label">{t("tools.safety.disclaimer")}</p>
       </div>
     </div>
   );

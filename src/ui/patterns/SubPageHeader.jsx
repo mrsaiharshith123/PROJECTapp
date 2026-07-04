@@ -12,22 +12,22 @@ export function SubPageHeader({ title, subtitle, onBack, action, hidePrivacyTogg
   const { t } = useTranslation();
 
   return (
-    <header className="ct-subpage-header-wrap">
-      <div className="ct-subpage-header">
+    <header className="ed-subpage-header">
+      <div className="ed-subpage-header-row">
         <button
           type="button"
-          className="ct-back-btn"
+          className="ed-subpage-back"
           onClick={onBack ?? (() => navigate(-1))}
           aria-label={t("common.back")}
         >
           <CtIcon name="arrow-left" size={18} />
         </button>
-        <span className="ct-subpage-title">{title}</span>
-        <span className="ct-subpage-action">
+        <span className="ed-subpage-title">{title}</span>
+        <span className="ed-subpage-action">
           <AppHeaderActions hidePrivacyToggle={hidePrivacyToggle} action={action} />
         </span>
       </div>
-      {subtitle ? <p className="ct-subpage-subtitle">{subtitle}</p> : null}
+      {subtitle ? <p className="ed-subpage-subtitle">{subtitle}</p> : null}
     </header>
   );
 }

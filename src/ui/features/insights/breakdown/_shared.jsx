@@ -2,22 +2,20 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { wealthCategoryLabel as wealthCategoryLabelUtil } from "../../../../utils/netWorth/wealthCategoryLabel.js";
+import EditorialSubMasthead from "../../../patterns/EditorialSubMasthead.jsx";
 
 export function InsightsBreakdownShell({ title, subtitle, children }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
-    <div className="ed-paper ed-ins-page">
-      <div className="ed-ins-sub-mast">
-        <button type="button" className="ed-ins-back" onClick={() => navigate("/insights")}>
-          {t("insights.subpages.back")}
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 className="ed-ins-sub-title">{title}</h1>
-          {subtitle ? <p className="ed-ins-sub-sub">{subtitle}</p> : null}
-        </div>
-      </div>
+    <div className="ed-page-full ed-ins-page">
+      <EditorialSubMasthead
+        title={title}
+        tagline={subtitle}
+        onBack={() => navigate("/insights")}
+        backLabel={t("insights.subpages.back")}
+      />
       {children}
     </div>
   );

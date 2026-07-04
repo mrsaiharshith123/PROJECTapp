@@ -1,8 +1,21 @@
+import { useEffect } from "react";
+import { syncApkUpdateTrackingWithInstalled } from "../services/pendingApkInstall.js";
+import { fetchRemoteManifest } from "../services/appUpdate.js";
+
 /**
- * Passthrough — updates are manual only (Settings → Update app).
- * Auto OTA/APK on cold start was removed; cloud backup stays in CloudSyncBridge.
+ * On cold boot: sync APK tracking state so stale apk_ready is cleared
+ * if the user already installed the APK outside the app.
+ * No UI — silent background task only.
  * @param {{ children: import("react").ReactNode }} props
  */
 export default function StartupUpdateGate({ children }) {
+  useEffect(() => {
+    fetchRemoteManifest()
+      .then((remote) => {
+        if (remote?.version) syncApkUpdateTrackingWithInstalled(remote);
+      })
+      .catch(() => {});
+  }, []);
+
   return children;
 }

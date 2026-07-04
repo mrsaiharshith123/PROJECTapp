@@ -7,7 +7,7 @@ import { isKycConfigured, verifyPan } from "../../../services/lending/kycVerific
 import { lookupIfsc } from "../../../services/market/ifscLookup.js";
 
 const ID_PROOF_TYPES = ["Aadhaar", "PAN", "Voter ID", "Passport", "Driving Licence"];
-const inputClass = `${inputClassName()} ct-input-tint`;
+const inputClass = `${inputClassName()} `;
 
 const STEPS = [
   { id: "borrower", titleKey: "lending.legal.step.borrower", subKey: "lending.legal.step.borrowerSub" },
@@ -18,20 +18,15 @@ const STEPS = [
 function LegalStepper({ activeStep, panVerified }) {
   const { t } = useTranslation();
   return (
-    <div className="ct-legal-stepper-v" role="list" aria-label={t("lending.legal.modalTitle")}>
+    <div className="ed-legal-stepper" role="list" aria-label={t("lending.legal.modalTitle")}>
       {STEPS.map((step, idx) => {
         const done = idx < activeStep || (idx === 0 && panVerified && activeStep > 0);
         const active = idx === activeStep;
-        const stateClass = done ? "ct-legal-step-v-done" : active ? "ct-legal-step-v-active" : "";
+        const stateClass = done ? "done" : active ? "active" : "";
         return (
-          <div key={step.id} className={`ct-legal-step-v ${stateClass}`} role="listitem">
-            <span className="ct-legal-step-v-marker" aria-hidden>
-              {done ? <CtIcon name="check" size={14} /> : idx + 1}
-            </span>
-            <div className="ct-legal-step-v-body">
-              <p className="ct-legal-step-v-title">{t(step.titleKey)}</p>
-              <p className="ct-legal-step-v-sub">{t(step.subKey)}</p>
-            </div>
+          <div key={step.id} className={`ed-legal-step ${stateClass}`.trim()} role="listitem">
+            <p className="ed-legal-step-title">{t(step.titleKey)}</p>
+            <p className="ed-legal-step-sub">{t(step.subKey)}</p>
           </div>
         );
       })}
@@ -144,12 +139,12 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
 
   return (
     <Modal onClose={onClose} title={t("lending.legal.modalTitle")}>
-      <div className="ct-stack ct-legal-flow ct-nw-panel">
-        <div className="ct-hero-card lending ct-stack-sm">
+      <div className="ed-stack ed-inset">
+        <div className="ed-inset ed-stack-sm">
           <LegalStepper activeStep={step} panVerified={Boolean(panVerifiedName)} />
         </div>
 
-        <div className="ct-stat-tile teal">
+        <div className="ed-inset-green">
           <Caption className="block">{t("lending.legal.itActInfo")}</Caption>
         </div>
 
@@ -157,24 +152,24 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
           <>
             <Heading level={3}>{t("lending.legal.borrowerSection")}</Heading>
             <div>
-              <label className="ct-field-label">{t("lending.legal.borrowerName")}</label>
+              <label className="ed-field-label">{t("lending.legal.borrowerName")}</label>
               <input className={inputClass} value={form.borrowerFullName} onChange={(e) => set("borrowerFullName", e.target.value)} />
               <Caption className="block mt-1">{t("lending.legal.borrowerNameHint")}</Caption>
-              {errors.borrowerFullName ? <Caption className="ct-text-danger block">{String(errors.borrowerFullName)}</Caption> : null}
+              {errors.borrowerFullName ? <Caption className="ed-field-error block">{String(errors.borrowerFullName)}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.legal.borrowerAddress")}</label>
+              <label className="ed-field-label">{t("lending.legal.borrowerAddress")}</label>
               <textarea className={`${inputClass} min-h-[72px]`} rows={3} value={form.borrowerAddress} onChange={(e) => set("borrowerAddress", e.target.value)} />
-              {errors.borrowerAddress ? <Caption className="ct-text-danger block">{errors.borrowerAddress}</Caption> : null}
+              {errors.borrowerAddress ? <Caption className="ed-field-error block">{errors.borrowerAddress}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.legal.borrowerPhone")}</label>
+              <label className="ed-field-label">{t("lending.legal.borrowerPhone")}</label>
               <input className={inputClass} value={form.borrowerPhone} onChange={(e) => set("borrowerPhone", e.target.value.replace(/\D/g, "").slice(0, 12))} />
-              {errors.borrowerPhone ? <Caption className="ct-text-danger block">{errors.borrowerPhone}</Caption> : null}
+              {errors.borrowerPhone ? <Caption className="ed-field-error block">{errors.borrowerPhone}</Caption> : null}
             </div>
-            <div className="ct-row gap-2">
+            <div className="flex gap-2">
               <div className="flex-1">
-                <label className="ct-field-label">{t("lending.legal.idProofType")}</label>
+                <label className="ed-field-label">{t("lending.legal.idProofType")}</label>
                 <select className={inputClass} value={form.idProofType} onChange={(e) => set("idProofType", e.target.value)}>
                   {ID_PROOF_TYPES.map((id) => (
                     <option key={id} value={id}>{id}</option>
@@ -182,29 +177,29 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
                 </select>
               </div>
               <div className="w-28">
-                <label className="ct-field-label">{t("lending.legal.idLast4")}</label>
+                <label className="ed-field-label">{t("lending.legal.idLast4")}</label>
                 <input className={inputClass} maxLength={4} value={form.idProofLast4} onChange={(e) => set("idProofLast4", e.target.value.replace(/\D/g, "").slice(0, 4))} />
               </div>
             </div>
             <div>
-              <label className="ct-field-label">{t("kyc.pan.label")}</label>
-              <div className="ct-row gap-2">
-                <input className={`${inputClass} flex-1 ct-numeral`} maxLength={10} value={panInput} onChange={(e) => setPanInput(e.target.value.replace(/\s/g, "").toUpperCase().slice(0, 10))} placeholder="AAAAA9999A" />
+              <label className="ed-field-label">{t("kyc.pan.label")}</label>
+              <div className="flex gap-2">
+                <input className={`${inputClass} flex-1 ed-numeral`} maxLength={10} value={panInput} onChange={(e) => setPanInput(e.target.value.replace(/\s/g, "").toUpperCase().slice(0, 10))} placeholder="AAAAA9999A" />
                 <Button type="button" variant="outline" size="sm" disabled={panVerifying || panInput.length !== 10} onClick={handleVerifyPan}>
                   {panVerifying ? t("common.loading") : t("kyc.pan.verify")}
                 </Button>
               </div>
-              {panVerifiedName ? <Caption className="ct-text-success block mt-1">{t("kyc.pan.verified", { name: panVerifiedName })}</Caption> : null}
-              {panError ? <Caption className="ct-text-danger block mt-1">{panError}</Caption> : null}
+              {panVerifiedName ? <Caption className="ed-success-text block mt-1">{t("kyc.pan.verified", { name: panVerifiedName })}</Caption> : null}
+              {panError ? <Caption className="ed-field-error block mt-1">{panError}</Caption> : null}
               {!isKycConfigured() ? <Caption className="block mt-1 opacity-80">{t("kyc.pan.notConfigured")}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("kyc.ifsc.label")}</label>
-              <input className={`${inputClass} ct-numeral`} maxLength={11} value={form.borrowerBankIfsc} onChange={(e) => set("borrowerBankIfsc", e.target.value.toUpperCase())} onBlur={handleIfscBlur} />
+              <label className="ed-field-label">{t("kyc.ifsc.label")}</label>
+              <input className={`${inputClass} ed-numeral`} maxLength={11} value={form.borrowerBankIfsc} onChange={(e) => set("borrowerBankIfsc", e.target.value.toUpperCase())} onBlur={handleIfscBlur} />
               {ifscHint ? <Caption className="block mt-1">{ifscHint}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("kyc.bankName.label")}</label>
+              <label className="ed-field-label">{t("kyc.bankName.label")}</label>
               <input className={inputClass} value={form.borrowerBankName} onChange={(e) => set("borrowerBankName", e.target.value)} />
             </div>
           </>
@@ -213,14 +208,14 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
         {step === 1 ? (
           <>
             <Heading level={3}>{t("lending.legal.step.esign")}</Heading>
-            <button type="button" className="ct-digilocker-btn" onClick={() => setDigiLockerOpen(true)}>
+            <button type="button" className="ed-digilocker-btn" onClick={() => setDigiLockerOpen(true)}>
               <CtIcon name="identification-card" size={20} />
               {t("kyc.digilocker.cta")}
             </button>
             {digiLockerOpen ? (
               <ToneSurface tone="info">
                 <Body className="!text-sm">{t("kyc.digilocker.placeholder")}</Body>
-                <a href="https://www.digilocker.gov.in" target="_blank" rel="noopener noreferrer" className="ct-link text-sm">
+                <a href="https://www.digilocker.gov.in" target="_blank" rel="noopener noreferrer" className="ed-link text-sm">
                   {t("kyc.digilocker.learnMore")}
                 </a>
               </ToneSurface>
@@ -233,17 +228,17 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
           <>
             <Heading level={3}>{t("lending.legal.termsSection")}</Heading>
             <div>
-              <label className="ct-field-label">{t("lending.legal.loanPurpose")}</label>
+              <label className="ed-field-label">{t("lending.legal.loanPurpose")}</label>
               <input className={inputClass} placeholder={t("lending.legal.loanPurposePh")} value={form.loanPurpose} onChange={(e) => set("loanPurpose", e.target.value)} />
-              {errors.loanPurpose ? <Caption className="ct-text-danger block">{errors.loanPurpose}</Caption> : null}
+              {errors.loanPurpose ? <Caption className="ed-field-error block">{errors.loanPurpose}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.legal.agreementCity")}</label>
+              <label className="ed-field-label">{t("lending.legal.agreementCity")}</label>
               <input className={inputClass} value={form.agreementCity} onChange={(e) => set("agreementCity", e.target.value)} />
-              {errors.agreementCity ? <Caption className="ct-text-danger block">{errors.agreementCity}</Caption> : null}
+              {errors.agreementCity ? <Caption className="ed-field-error block">{errors.agreementCity}</Caption> : null}
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.legal.penaltyRate")}</label>
+              <label className="ed-field-label">{t("lending.legal.penaltyRate")}</label>
               <input type="number" min="0" className={inputClass} value={form.penaltyRatePerMonth} onChange={(e) => set("penaltyRatePerMonth", e.target.value)} />
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -252,23 +247,23 @@ export default function LegalDetailsModal({ lending, open, onClose, onComplete }
             </label>
             <Heading level={3}>{t("lending.legal.lenderSection")}</Heading>
             <div>
-              <label className="ct-field-label">{t("lending.legal.lenderName")}</label>
+              <label className="ed-field-label">{t("lending.legal.lenderName")}</label>
               <input className={inputClass} value={form.lenderFullName} onChange={(e) => set("lenderFullName", e.target.value)} />
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.legal.lenderPhone")}</label>
+              <label className="ed-field-label">{t("lending.legal.lenderPhone")}</label>
               <input className={inputClass} value={form.lenderPhone} onChange={(e) => set("lenderPhone", e.target.value.replace(/\D/g, "").slice(0, 12))} />
             </div>
             <Heading level={3}>{t("lending.legal.witnessSection")}</Heading>
             <Caption className="block">{t("lending.legal.witnessHint")}</Caption>
             <div>
-              <label className="ct-field-label">{t("lending.legal.witnessName")}</label>
+              <label className="ed-field-label">{t("lending.legal.witnessName")}</label>
               <input className={inputClass} value={form.witness1Name} onChange={(e) => set("witness1Name", e.target.value)} />
             </div>
           </>
         ) : null}
 
-        <div className="ct-row gap-2">
+        <div className="flex gap-2">
           {step > 0 ? (
             <Button type="button" variant="ghost" className="flex-1" onClick={() => setStep(step - 1)}>
               {t("lending.legal.prevStep")}

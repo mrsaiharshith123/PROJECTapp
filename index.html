@@ -45,6 +45,12 @@
         var favicon = document.querySelector('link[rel="icon"]');
         if (favicon) favicon.setAttribute("href", theme === "light" ? "brand/icon-light.svg" : "brand/icon-dark.svg");
       })();
+      (function () {
+        var h = location.hostname;
+        if (h === "localhost" || h === "127.0.0.1" || h === "[::1]") {
+          document.documentElement.dataset.devPhoneFrame = "1";
+        }
+      })();
     </script>
     <style>
       html,
@@ -97,7 +103,15 @@
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: var(--boot-ink-faint);
-        margin-top: -8px;
+        margin-top: 4px;
+      }
+      html[data-dev-phone-frame="1"],
+      html[data-dev-phone-frame="1"] body,
+      html[data-dev-phone-frame="1"] #root {
+        background: #0d0d0d !important;
+      }
+      html[data-dev-phone-frame="1"] #boot-loader {
+        display: none !important;
       }
       #boot-loader .boot-ed-progress {
         width: 60px;

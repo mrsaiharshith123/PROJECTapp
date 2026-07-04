@@ -37,7 +37,11 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
+    if (deleteError) return json({ error: deleteError.message }, 500);
+
     await adminClient.from("user_finance_snapshots").delete().eq("user_id", user.id);
+    await adminClient.from("user_finance_backup_history").delete().eq("user_id", user.id);
     await adminClient.from("payment_verifications").delete().eq("user_id", user.id);
     await adminClient.from("ai_insight_usage").delete().eq("user_id", user.id);
     await adminClient.from("user_device_sessions").delete().eq("user_id", user.id);
@@ -45,10 +49,9 @@ Deno.serve(async (req) => {
     await adminClient.from("agreement_hashes").delete().eq("user_id", user.id);
     await adminClient.from("api_proxy_documents").delete().eq("user_id", user.id);
     await adminClient.from("daily_spends").delete().eq("user_id", user.id);
+    await adminClient.from("user_broadcast_dismissals").delete().eq("user_id", user.id);
+    await adminClient.from("user_notifications").delete().eq("user_id", user.id);
     await adminClient.from("profiles").delete().eq("id", user.id);
-
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id);
-    if (deleteError) return json({ error: deleteError.message }, 500);
 
     return json({ ok: true });
   } catch (e) {

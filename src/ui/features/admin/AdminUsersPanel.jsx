@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { useAdminUsers } from "../../../hooks/useAdminUsers.js";
-import { adminDeleteUser, adminSetUserAdmin, adminUpdateUser } from "../../../services/adminUsers.js";
+import {
+  adminBanUser,
+  adminDeleteUser,
+  adminExportUsersCsv,
+  adminResetOnboarding,
+  adminRevokeSessions,
+  adminSetUserAdmin,
+  adminUpdateUser,
+  adminVerifyEmail,
+} from "../../../services/adminUsers.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { Button, Caption, Heading, Body, inputClassName } from "../../index.js";
+import { Button, Caption, inputClassName } from "../../index.js";
 import { Modal } from "../../primitives/Modal.jsx";
 import AdminUserDetailDrawer from "./AdminUserDetailDrawer.jsx";
 
 function userInitials(user) {
   const name = String(user.display_name || user.email || "U").trim();
   return name.slice(0, 2).toUpperCase();
-}
-
-function tierBadgeClass(tier) {
-  if (tier === "power") return "ct-tier-badge-power";
-  if (tier === "pro") return "ct-tier-badge-pro";
-  return "ct-tier-badge-free";
 }
 
 function formatWhen(iso) {
@@ -25,6 +28,20 @@ function formatWhen(iso) {
   } catch {
     return "—";
   }
+}
+
+function formatActive(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" });
+  } catch {
+    return "—";
+  }
+}
+
+function isUserBanned(user) {
+  if (!user?.banned_until) return false;
+  return new Date(String(user.banned_until)).getTime() > Date.now();
 }
 
 /**
@@ -45,17 +62,16 @@ export default function AdminUsersPanel() {
     useAdminUsers();
   const [flash, setFlash] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [exporting, setExporting] = useState(false);
   const [editUser, setEditUser] = useState(/** @type {Record<string, unknown> | null} */ (null));
   const [viewUser, setViewUser] = useState(/** @type {Record<string, unknown> | null} */ (null));
-  const [editForm, setEditForm] = useState(
-    /** @type {{ display_name: string, phone: string, subscription_tier: string, monthly_income: string, onboarding_complete: boolean }} */ ({
-      display_name: "",
-      phone: "",
-      subscription_tier: "free",
-      monthly_income: "",
-      onboarding_complete: false,
-    }),
-  );
+  const [editForm, setEditForm] = useState({
+    display_name: "",
+    phone: "",
+    subscription_tier: "free",
+    monthly_income: "",
+    onboarding_complete: false,
+  });
 
   const showFlash = (msg) => {
     setFlash(msg);
@@ -68,20 +84,20 @@ export default function AdminUsersPanel() {
       await fn();
       refresh();
     } catch (e) {
-      showFlash(/** @type {{ message?: string }} */ (e)?.message || "Action failed");
+      showFlash(e instanceof Error ? e.message : t("admin.users.actionFailed"));
     } finally {
       setBusyId(null);
     }
   };
 
-  const openEdit = (user) => {
-    setEditUser(user);
+  const openEdit = (row) => {
+    setEditUser(row);
     setEditForm({
-      display_name: String(user.display_name || ""),
-      phone: String(user.phone || ""),
-      subscription_tier: String(user.subscription_tier || "free"),
-      monthly_income: user.monthly_income != null ? String(user.monthly_income) : "",
-      onboarding_complete: Boolean(user.onboarding_complete),
+      display_name: String(row.display_name || ""),
+      phone: String(row.phone || ""),
+      subscription_tier: String(row.subscription_tier || "free"),
+      monthly_income: row.monthly_income != null ? String(row.monthly_income) : "",
+      onboarding_complete: Boolean(row.onboarding_complete),
     });
   };
 
@@ -101,9 +117,27 @@ export default function AdminUsersPanel() {
       showFlash(t("admin.users.saved"));
       refresh();
     } catch (e) {
-      showFlash(/** @type {{ message?: string }} */ (e)?.message || "Save failed");
+      showFlash(e instanceof Error ? e.message : t("admin.users.actionFailed"));
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    setExporting(true);
+    try {
+      const csv = await adminExportUsersCsv();
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "perovo-users.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      showFlash(e instanceof Error ? e.message : t("admin.users.actionFailed"));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -111,41 +145,54 @@ export default function AdminUsersPanel() {
   const to = Math.min(offset + limit, total);
 
   return (
-    <div className="ct-hero-card lending ct-admin-panel ct-stack">
-      <Heading level={4}>{t("admin.section.users")}</Heading>
+    <div className="ed-admin-panel ed-stack-sm">
+      <p className="ed-admin-panel-title">{t("admin.section.users")}</p>
 
-      <form
-        className="ct-admin-users-search"
-        onSubmit={(e) => {
-          e.preventDefault();
-          runSearch();
-        }}
-      >
-        <input
-          className={`${inputClassName()} ct-admin-users-search-input`}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("admin.users.search")}
-        />
-        <Button type="submit" variant="outline" size="sm" className="!w-auto shrink-0" disabled={loading}>
-          {t("admin.users.searchBtn")}
-        </Button>
-      </form>
+      <div className="ed-row gap-2 flex-wrap">
+        <form
+          className="ed-row gap-2 flex-1 min-w-0"
+          onSubmit={(e) => {
+            e.preventDefault();
+            runSearch();
+          }}
+        >
+          <input
+            className={`${inputClassName()} ed-input flex-1 min-w-0`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("admin.users.search")}
+          />
+          <button type="submit" className="ed-btn ed-btn-secondary ed-btn-sm shrink-0" disabled={loading}>
+            {t("admin.users.searchBtn")}
+          </button>
+        </form>
+        <button
+          type="button"
+          className="ed-btn ed-btn-ghost ed-btn-sm shrink-0"
+          disabled={exporting}
+          onClick={handleExportCsv}
+        >
+          {exporting ? t("admin.users.exporting") : t("admin.users.exportCsv")}
+        </button>
+      </div>
 
-      {flash && <Caption className="text-[var(--ct-success)] font-semibold">{flash}</Caption>}
-      {error && error !== "NOT_ADMIN" && <Body className="ct-admin-error">{error}</Body>}
+      {flash ? <Caption style={{ color: "var(--ed-green)" }}>{flash}</Caption> : null}
+      {error && error !== "NOT_ADMIN" ? (
+        <Caption style={{ color: "var(--ed-red)" }}>{error}</Caption>
+      ) : null}
 
       {loading && users.length === 0 ? (
         <Caption>{t("admin.users.loading")}</Caption>
       ) : users.length === 0 ? (
         <Caption>{t("admin.users.empty")}</Caption>
       ) : (
-        <div className="ct-admin-users-table-wrap">
-          <table className="ct-admin-users-table">
+        <div style={{ overflowX: "auto" }}>
+          <table className="ed-admin-table">
             <thead>
               <tr>
                 <th>{t("admin.users.colUser")}</th>
                 <th>{t("admin.users.colTier")}</th>
+                <th>{t("admin.users.colLastActive")}</th>
                 <th>{t("admin.users.colStatus")}</th>
                 <th>{t("admin.users.colActions")}</th>
               </tr>
@@ -156,85 +203,114 @@ export default function AdminUsersPanel() {
                 const isSelf = id === selfId;
                 const verified = Boolean(u.pan_verified);
                 const isAdmin = Boolean(u.is_admin);
+                const banned = isUserBanned(u);
+                const emailVerified = Boolean(u.email_confirmed_at);
                 const busy = busyId === id;
 
                 return (
                   <tr key={id}>
                     <td>
-                      <div className="ct-admin-users-name-row">
-                        <span className="ct-icon-tile-sm indigo shrink-0 ct-admin-users-initials">{userInitials(u)}</span>
-                        <span className="ct-admin-users-name">{userLabel(u)}</span>
+                      <div className="ed-row gap-2 items-center">
+                        <span className="ed-admin-drawer-avatar" style={{ width: 32, height: 32, fontSize: 12 }}>
+                          {userInitials(u)}
+                        </span>
+                        <div className="min-w-0">
+                          <p style={{ fontSize: 13, fontWeight: 600 }}>{userLabel(u)}</p>
+                          <Caption className="block">
+                            {u.phone ? String(u.phone) : "—"} · {t("admin.users.joined", { when: formatWhen(u.created_at) })}
+                          </Caption>
+                        </div>
                       </div>
-                      <Caption className="block mt-0.5">
-                        {u.phone ? String(u.phone) : "—"} · joined {formatWhen(u.created_at)}
-                      </Caption>
                     </td>
                     <td>
-                      <span className={`ct-tier-badge ${tierBadgeClass(String(u.subscription_tier || "free"))}`}>
-                        {String(u.subscription_tier || "free")}
-                      </span>
+                      <span className="ed-admin-badge">{String(u.subscription_tier || "free")}</span>
                     </td>
+                    <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>{formatActive(u.last_active_at)}</td>
                     <td>
-                      <div className="ct-admin-users-badges">
-                        <span className={`ct-admin-badge${verified ? " ct-admin-badge-ok" : ""}`}>
+                      <div className="ed-row gap-1 flex-wrap">
+                        <span className={`ed-admin-badge${verified ? " ed-admin-badge-ok" : ""}`}>
                           {verified ? t("admin.users.verified") : t("admin.users.unverified")}
                         </span>
-                        {isAdmin && <span className="ct-admin-badge ct-admin-badge-admin">{t("admin.users.adminBadge")}</span>}
+                        {isAdmin ? (
+                          <span className="ed-admin-badge ed-admin-badge-admin">{t("admin.users.adminBadge")}</span>
+                        ) : null}
+                        {banned ? (
+                          <span className="ed-admin-badge ed-admin-badge-danger">{t("admin.users.banned")}</span>
+                        ) : null}
+                        {!emailVerified ? (
+                          <span className="ed-admin-badge ed-admin-badge-warn">{t("admin.users.emailUnverified")}</span>
+                        ) : null}
                       </div>
                     </td>
                     <td>
-                      <div className="ct-admin-users-actions">
-                        <Button
+                      <div className="ed-row gap-1 flex-wrap">
+                        <button
                           type="button"
-                          variant="outline"
-                          size="sm"
-                          className="!w-auto"
+                          className="ed-admin-action-btn"
                           disabled={busy}
                           onClick={() => setViewUser(u)}
                         >
                           {t("admin.users.view")}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="!w-auto"
-                          disabled={busy}
-                          onClick={() => openEdit(u)}
-                        >
+                        </button>
+                        <button type="button" className="ed-admin-action-btn" disabled={busy} onClick={() => openEdit(u)}>
                           {t("admin.users.edit")}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          variant="outline"
-                          size="sm"
-                          className="!w-auto"
+                          className="ed-admin-action-btn"
                           disabled={busy}
-                          onClick={() =>
-                            runAction(id, () =>
-                              adminUpdateUser(id, { pan_verified: !verified }),
-                            )
-                          }
+                          onClick={() => runAction(id, () => adminUpdateUser(id, { pan_verified: !verified }))}
                         >
                           {verified ? t("admin.users.unverify") : t("admin.users.verify")}
-                        </Button>
-                        <Button
+                        </button>
+                        {!emailVerified ? (
+                          <button
+                            type="button"
+                            className="ed-admin-action-btn"
+                            disabled={busy}
+                            onClick={() => runAction(id, () => adminVerifyEmail(id))}
+                          >
+                            {t("admin.users.verifyEmail")}
+                          </button>
+                        ) : null}
+                        <button
                           type="button"
-                          variant="outline"
-                          size="sm"
-                          className="!w-auto"
+                          className="ed-admin-action-btn"
                           disabled={busy || isSelf}
-                          onClick={() =>
-                            runAction(id, () => adminSetUserAdmin(id, !isAdmin))
-                          }
+                          onClick={() => runAction(id, () => adminBanUser(id, !banned))}
+                        >
+                          {banned ? t("admin.users.unban") : t("admin.users.ban")}
+                        </button>
+                        <button
+                          type="button"
+                          className="ed-admin-action-btn"
+                          disabled={busy}
+                          onClick={() => {
+                            if (!window.confirm(t("admin.users.revokeSessionsConfirm"))) return;
+                            runAction(id, () => adminRevokeSessions(id));
+                          }}
+                        >
+                          {t("admin.users.revokeSessions")}
+                        </button>
+                        <button
+                          type="button"
+                          className="ed-admin-action-btn"
+                          disabled={busy}
+                          onClick={() => runAction(id, () => adminResetOnboarding(id))}
+                        >
+                          {t("admin.users.resetOnboarding")}
+                        </button>
+                        <button
+                          type="button"
+                          className="ed-admin-action-btn"
+                          disabled={busy || isSelf}
+                          onClick={() => runAction(id, () => adminSetUserAdmin(id, !isAdmin))}
                         >
                           {isAdmin ? t("admin.users.revokeAdmin") : t("admin.users.makeAdmin")}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="!w-auto !text-[var(--ct-danger)]"
+                          className="ed-admin-action-btn danger"
                           disabled={busy || isSelf}
                           onClick={() => {
                             if (isSelf) {
@@ -249,7 +325,7 @@ export default function AdminUsersPanel() {
                           }}
                         >
                           {t("admin.users.delete")}
-                        </Button>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -261,79 +337,81 @@ export default function AdminUsersPanel() {
       )}
 
       {total > 0 && (
-        <div className="ct-admin-users-pager">
+        <div className="ed-row-between gap-2 flex-wrap">
           <Caption>{t("admin.users.showing", { from, to, total })}</Caption>
-          <div className="ct-row shrink-0">
-            <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={prevPage} disabled={loading || offset === 0}>
-              {t("admin.users.prev")}
-            </Button>
-            <Button
+          <div className="ed-row shrink-0">
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              className="!w-auto"
+              className="ed-btn ed-btn-ghost ed-btn-sm"
+              onClick={prevPage}
+              disabled={loading || offset === 0}
+            >
+              {t("admin.users.prev")}
+            </button>
+            <button
+              type="button"
+              className="ed-btn ed-btn-ghost ed-btn-sm"
               onClick={nextPage}
               disabled={loading || offset + limit >= total}
             >
               {t("admin.users.next")}
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       <AdminUserDetailDrawer user={viewUser} onClose={() => setViewUser(null)} />
 
-      {editUser && (
+      {editUser ? (
         <Modal title={t("admin.users.editTitle")} onClose={() => setEditUser(null)}>
-          <div className="ct-stack">
+          <div className="ed-stack-sm">
             <Caption className="block">{userLabel(editUser)}</Caption>
-            <div>
-              <label className="ct-field-label">{t("admin.users.fieldName")}</label>
+            <label className="ed-admin-form-row">
+              <span className="ed-admin-field-label">{t("admin.users.fieldName")}</span>
               <input
-                className={`${inputClassName()} mt-1`}
+                className="ed-input"
                 value={editForm.display_name}
                 onChange={(e) => setEditForm((f) => ({ ...f, display_name: e.target.value }))}
               />
-            </div>
-            <div>
-              <label className="ct-field-label">{t("admin.users.fieldPhone")}</label>
+            </label>
+            <label className="ed-admin-form-row">
+              <span className="ed-admin-field-label">{t("admin.users.fieldPhone")}</span>
               <input
-                className={`${inputClassName()} mt-1`}
+                className="ed-input"
                 value={editForm.phone}
                 onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value.replace(/[^\d]/g, "") }))}
                 inputMode="numeric"
               />
-            </div>
-            <div>
-              <label className="ct-field-label">{t("admin.users.fieldTier")}</label>
+            </label>
+            <label className="ed-admin-form-row">
+              <span className="ed-admin-field-label">{t("admin.users.fieldTier")}</span>
               <select
-                className={`${inputClassName()} mt-1`}
+                className="ed-select"
                 value={editForm.subscription_tier}
                 onChange={(e) => setEditForm((f) => ({ ...f, subscription_tier: e.target.value }))}
               >
                 <option value="free">{t("plans.tier.free")}</option>
                 <option value="pro">{t("plans.tier.pro")}</option>
-                <option value="power">{t("plans.tier.power")}</option>
               </select>
-            </div>
-            <div>
-              <label className="ct-field-label">{t("admin.users.fieldIncome")}</label>
+            </label>
+            <label className="ed-admin-form-row">
+              <span className="ed-admin-field-label">{t("admin.users.fieldIncome")}</span>
               <input
-                className={`${inputClassName()} mt-1`}
+                className="ed-input"
                 value={editForm.monthly_income}
                 onChange={(e) => setEditForm((f) => ({ ...f, monthly_income: e.target.value.replace(/[^\d]/g, "") }))}
                 inputMode="numeric"
               />
-            </div>
-            <label className="ct-row gap-2 cursor-pointer">
+            </label>
+            <label className="ed-row gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={editForm.onboarding_complete}
                 onChange={(e) => setEditForm((f) => ({ ...f, onboarding_complete: e.target.checked }))}
               />
-              <span className="text-sm">{t("admin.users.fieldOnboarding")}</span>
+              <span style={{ fontSize: 14 }}>{t("admin.users.fieldOnboarding")}</span>
             </label>
-            <div className="ct-row">
+            <div className="ed-row gap-2">
               <Button type="button" variant="outline" className="!w-auto" onClick={() => setEditUser(null)}>
                 {t("admin.users.cancel")}
               </Button>
@@ -343,7 +421,7 @@ export default function AdminUsersPanel() {
             </div>
           </div>
         </Modal>
-      )}
+      ) : null}
     </div>
   );
 }

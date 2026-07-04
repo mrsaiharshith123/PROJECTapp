@@ -213,15 +213,15 @@ export default function InsightsEditorialPage({ data }) {
       </div>
 
       {paycheckRows.length > 0 ? (
-        <div className="ed-ins-story">
+        <div className="ed-ins-story ed-ins-story--rows">
           <div className="ed-ins-kicker">{t("insights.editorial.paycheckKicker")}</div>
           {paycheckRows.map((row) => (
-            <div key={row.label} className="ed-ins-row" style={{ cursor: "default" }}>
-              <div className="ed-ins-row-left">
-                <div className="ed-ins-row-cat">{row.label}</div>
-                {row.sub ? <div className="ed-ins-row-sub">{row.sub}</div> : null}
-              </div>
-              <div className="ed-ins-row-val">{formatAmount(row.val)}</div>
+            <div key={row.label} className="ed-profile-sheet-row ed-profile-sheet-row--static">
+              <span className="ed-profile-sheet-row-label">
+                {row.label}
+                {row.sub ? <span className="ed-caption" style={{ display: "block", marginTop: 2 }}>{row.sub}</span> : null}
+              </span>
+              <span className="ed-profile-sheet-row-value">{formatAmount(row.val)}</span>
             </div>
           ))}
           <button type="button" className="ed-ins-link" onClick={() => navigate("/insights/spending")}>

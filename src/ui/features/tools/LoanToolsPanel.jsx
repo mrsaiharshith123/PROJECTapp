@@ -19,7 +19,7 @@ import { ToolComparisonChart } from "../../patterns/ToolComparisonChart.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import LoanPayoffAdvisor from "./LoanPayoffAdvisor.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 function DebtOrderPanel() {
   const { t } = useTranslation();
@@ -31,10 +31,10 @@ function DebtOrderPanel() {
   }, [commitments, getEffectiveStatus, payoffExtra]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <Caption>{t("tools.planner.debtIntro")}</Caption>
       <div>
-        <label className="ct-field-label">{t("tools.planner.extraDebt", { currency: INR })}</label>
+        <label className="ed-field-label">{t("tools.planner.extraDebt", { currency: INR })}</label>
         <input
           className={fieldClass}
           value={payoffExtra}
@@ -46,12 +46,12 @@ function DebtOrderPanel() {
       {payoff.debts.length === 0 ? (
         <Caption>{t("tools.planner.noDebts")}</Caption>
       ) : (
-        <div className="ct-stack-sm">
+        <div className="ed-stack-sm">
           {payoff.recommendation && (
-            <div className="ct-stat-tile teal">
-              <p className="ct-stat-tile-label">{payoff.recommendation.label}</p>
+            <div className="ed-inset-green">
+              <p className="ed-stat-label">{payoff.recommendation.label}</p>
               {payoff.recommendation.firstPay && (
-                <p className="ct-stat-tile-value text-sm">
+                <p className="ed-stat-value text-sm">
                   {t("tools.planner.startWith", {
                     name: payoff.recommendation.firstPay.name,
                     reason: payoff.recommendation.reason,
@@ -62,7 +62,7 @@ function DebtOrderPanel() {
           )}
           <div>
             <Caption className="font-semibold block">{t("tools.planner.snowball")}</Caption>
-            <ol className="list-decimal list-inside ct-stack-sm">
+            <ol className="list-decimal list-inside ed-stack-sm">
               {payoff.snowball.map((d) => (
                 <li key={d.id}>
                   {d.name} {EM_DASH} {formatInr(d.balance)} {EM_DASH} {d.interestRate}%
@@ -72,7 +72,7 @@ function DebtOrderPanel() {
           </div>
           <div>
             <Caption className="font-semibold block">{t("tools.planner.avalanche")}</Caption>
-            <ol className="list-decimal list-inside ct-stack-sm">
+            <ol className="list-decimal list-inside ed-stack-sm">
               {payoff.avalanche.map((d) => (
                 <li key={d.id}>
                   {d.name} {EM_DASH} {formatInr(d.balance)} {EM_DASH} {d.interestRate}%
@@ -153,7 +153,7 @@ export default function LoanToolsPanel() {
   }, [emi, extra, settings?.monthlyIncome, commitments, getEffectiveStatus]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "extra" && (
         <>
@@ -166,35 +166,35 @@ export default function LoanToolsPanel() {
             />
           ) : null}
           <Caption>{t("tools.loan.extraIntro")}</Caption>
-          <div className="ct-grid-2">
+          <div className="ed-grid-2">
             <div>
-              <label className="ct-field-label">{t("tools.loan.loanLeft", { currency: INR })}</label>
+              <label className="ed-field-label">{t("tools.loan.loanLeft", { currency: INR })}</label>
               <input className={fieldClass} value={principal} onChange={(e) => setPrincipal(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-field-label">{t("tools.loan.interestRate")}</label>
+              <label className="ed-field-label">{t("tools.loan.interestRate")}</label>
               <input className={fieldClass} value={rate} onChange={(e) => setRate(e.target.value)} inputMode="decimal" />
             </div>
             <div>
-              <label className="ct-field-label">{t("tools.loan.yourEmi", { currency: INR })}</label>
+              <label className="ed-field-label">{t("tools.loan.yourEmi", { currency: INR })}</label>
               <input className={fieldClass} value={emi} onChange={(e) => setEmi(e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="ct-field-label">{t("tools.loan.extraPerMonth", { currency: INR })}</label>
+              <label className="ed-field-label">{t("tools.loan.extraPerMonth", { currency: INR })}</label>
               <input className={fieldClass} value={extra} onChange={(e) => setExtra(e.target.value)} inputMode="numeric" />
             </div>
           </div>
           {sim && (
             <>
-              <div className="ct-grid-2">
-                <div className="ct-stat-tile indigo">
-                  <p className="ct-stat-tile-value text-sm">
+              <div className="ed-grid-2">
+                <div className="ed-inset">
+                  <p className="ed-stat-value text-sm">
                     {sim.baselineMonths} {ARROW} {sim.acceleratedMonths}
                   </p>
                 </div>
                 {stressDelta && (
-                  <div className="ct-stat-tile amber">
-                    <p className="ct-stat-tile-value text-sm">
+                  <div className="ed-inset-amber">
+                    <p className="ed-stat-value text-sm">
                       {t("charts.stressAfterPayoff", {
                         before: stressDelta.during,
                         after: stressDelta.after,
@@ -205,14 +205,14 @@ export default function LoanToolsPanel() {
                 )}
               </div>
               {Number(extra) > 0 && (
-                <div className="ct-stat-tile">
-                  <p className="ct-stat-tile-value text-sm opacity-80">{t("charts.stressDuringExtra")}</p>
+                <div className="ed-inset">
+                  <p className="ed-stat-value text-sm opacity-80">{t("charts.stressDuringExtra")}</p>
                 </div>
               )}
               {paidSeries && (
-                <div className="ct-grid-2">
-                  <div className="ct-stat-tile teal">
-                    <p className="ct-stat-tile-value text-sm">
+                <div className="ed-grid-2">
+                  <div className="ed-inset-green">
+                    <p className="ed-stat-value text-sm">
                       {t("charts.loanPayoffBaseline", {
                         month: payoffLabelFromMonths(paidSeries.baselineMonths, todayStr),
                         total: formatInr(paidSeries.baselineTotalPaid),
@@ -220,8 +220,8 @@ export default function LoanToolsPanel() {
                     </p>
                   </div>
                   {Number(extra) > 0 && (
-                    <div className="ct-stat-tile indigo">
-                      <p className="ct-stat-tile-value text-sm">
+                    <div className="ed-inset">
+                      <p className="ed-stat-value text-sm">
                         {t("charts.loanPayoffWithExtra", {
                           month: payoffLabelFromMonths(paidSeries.acceleratedMonths, todayStr),
                           total: formatInr(paidSeries.acceleratedTotalPaid),

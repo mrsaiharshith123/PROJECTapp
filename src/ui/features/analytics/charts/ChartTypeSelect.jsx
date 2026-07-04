@@ -24,7 +24,7 @@ export function ChartTypeSelect({ value, onChange, allowed, className = "" }) {
   };
 
   return (
-    <label className={`ct-row gap-2 items-center ${className}`.trim()}>
+    <label className={`flex items-center gap-2 ${className}`.trim()}>
       <Caption className="shrink-0">{t("charts.graphType")}</Caption>
       <Select
         className="!w-auto min-w-[7rem] text-sm"

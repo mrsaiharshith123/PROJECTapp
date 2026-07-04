@@ -128,16 +128,15 @@ export default function AnalyticsChartPanel({ forecastSeries, paymentsData, pres
   const allowedTypes = VIEW_CHART_TYPES[activeId] || ["bar", "line", "pie", "donut"];
 
   return (
-    <div className="ct-hero-card pressure ct-chart-single ct-stack relative">
-      <div className="ct-hero-glow" aria-hidden />
+    <div className="ed-chart-shell ed-stack relative">
       <div className="relative">
         <Heading level={2} className="!text-base !font-semibold">
           {t("charts.title")}
         </Heading>
 
-        <div className="ct-row-between items-center gap-2 mt-2">
+        <div className="ed-row-between items-center gap-2 mt-2">
           <Caption className="font-semibold">{translateChartView(t, activeId)}</Caption>
-          <div className="ct-chart-swipe-dots" role="tablist" aria-label={t("charts.swipeHint")}>
+          <div className="ed-chart-swipe-dots" role="tablist" aria-label={t("charts.swipeHint")}>
             {views.map((v) => (
               <button
                 key={v.id}
@@ -145,20 +144,20 @@ export default function AnalyticsChartPanel({ forecastSeries, paymentsData, pres
                 role="tab"
                 aria-selected={v.id === activeId}
                 aria-label={translateChartView(t, v.id)}
-                className={`ct-chart-swipe-dot${v.id === activeId ? " ct-chart-swipe-dot-active" : ""}`}
+                className={`ed-chart-swipe-dot${v.id === activeId ? " active" : ""}`}
                 onClick={() => onViewChange(v.id)}
               />
             ))}
           </div>
         </div>
 
-        <div className="ct-row-between mt-2" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
+        <div className="ed-row-between mt-2" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
           <Caption>{t("charts.swipeHint")}</Caption>
           <ChartTypeSelect value={chartType} onChange={setChartType} allowed={allowedTypes} />
         </div>
 
         <div
-          className="ct-chart-plot ct-chart-swipe-area"
+          className="ed-chart-area"
           style={{ height: plotHeight }}
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}

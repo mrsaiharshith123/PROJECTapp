@@ -196,7 +196,7 @@ export default function ProfileBackupSection({
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ProfileCloudSyncSection />
 
       <SettingsGroup title={t("backup.fileTitle")} icon="file-text" description={t("backup.fileSubtitle")}>
@@ -223,13 +223,13 @@ export default function ProfileBackupSection({
             onClick={exportCaJson}
           />
         </ProGate>
-        <SettingsGroupContent className="ct-stack">
+        <SettingsGroupContent className="ed-stack">
           <Body className="font-semibold !text-sm">{t("backup.importJson")}</Body>
-          <select className="ct-field w-full" value={mode} onChange={(e) => setMode(e.target.value)}>
+          <select className="ed-input w-full" value={mode} onChange={(e) => setMode(e.target.value)}>
             <option value="merge">{t("backup.importMerge")}</option>
             <option value="replace">{t("backup.importReplace")}</option>
           </select>
-          <input type="file" accept="application/json,.json" onChange={onFile} className="ct-field w-full !text-xs" />
+          <input type="file" accept="application/json,.json" onChange={onFile} className="ed-input w-full !text-xs" />
           {preview && (
             <Caption className="block">
               {t("backup.preview", {
@@ -245,8 +245,8 @@ export default function ProfileBackupSection({
               {t("backup.confirmImport")}
             </Button>
           )}
-          {error && <Caption className="block text-[var(--ct-danger)]">{error}</Caption>}
-          {result && <Caption className="block text-[var(--ct-success)]">{result}</Caption>}
+          {error && <Caption className="block text-[var(--ed-red)]">{error}</Caption>}
+          {result && <Caption className="block text-[var(--ed-green)]">{result}</Caption>}
         </SettingsGroupContent>
       </SettingsGroup>
 
@@ -260,14 +260,14 @@ export default function ProfileBackupSection({
 
       {confirmDelete && (
         <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && setConfirmDelete(false)}>
-          <div className="ct-stack-sm">
+          <div className="ed-stack-sm">
             <Body className="!text-sm">
               {t("backup.deleteModalBody", {
                 cloud: user?.id ? t("backup.deleteCloudModal") : t("backup.deleteSignout"),
               })}
             </Body>
-            {deleteError && <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption>}
-            <div className="ct-row">
+            {deleteError && <Caption className="block text-[var(--ed-red)]">{deleteError}</Caption>}
+            <div className="ed-row">
               <Button
                 type="button"
                 variant="outline"
@@ -293,9 +293,9 @@ export default function ProfileBackupSection({
 
       <SettingsGroup title={t("backup.annualReport")} icon="chart-bar" description={tierHasFeature("health_report", settings, ctx.effectiveSubscriptionTier) ? t("backup.annualReportHintPro") : t("backup.annualReportHintFree")}>
         <SettingsGroupContent>
-          <div className="ct-row-between gap-2">
+          <div className="ed-row-between gap-2">
             <div className="min-w-0 flex-1">
-              <span className="ct-icon-tile ct-icon-tile-sm amber inline-flex mr-2 align-middle">
+              <span className="ed-icon-tile ed-icon-tile-sm amber inline-flex mr-2 align-middle">
                 <CtIcon name="chart-line-up" size={18} weight="duotone" />
               </span>
               <Caption className="inline align-middle">

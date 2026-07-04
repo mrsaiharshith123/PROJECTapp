@@ -92,47 +92,47 @@ export default function NativePermissionGate({ children }) {
   if (ready) return children;
 
   return (
-    <Screen className="ct-perm-gate">
-      <div className="ct-perm-gate-panel">
-        <Body className="ct-perm-gate-title">{t("permissions.introTitle")}</Body>
-        <Caption className="ct-perm-gate-body">{t("permissions.introBody")}</Caption>
+    <Screen className="ed-perm-gate">
+      <div className="ed-perm-gate-panel">
+        <Body className="ed-perm-gate-title">{t("permissions.introTitle")}</Body>
+        <Caption className="ed-perm-gate-body">{t("permissions.introBody")}</Caption>
 
-        <ul className="ct-perm-gate-list">
+        <ul className="ed-perm-gate-list">
           <li>
             <strong>{t("permissions.itemNotificationsTitle")}</strong>
             <span>{t("permissions.itemNotificationsBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.notifications}`)}</Caption>
+              <Caption className="ed-perm-gate-state">{t(`permissions.state.${status.notifications}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemCameraTitle")}</strong>
             <span>{t("permissions.itemCameraBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.camera}`)}</Caption>
+              <Caption className="ed-perm-gate-state">{t(`permissions.state.${status.camera}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemPhotosTitle")}</strong>
             <span>{t("permissions.itemPhotosBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.photos}`)}</Caption>
+              <Caption className="ed-perm-gate-state">{t(`permissions.state.${status.photos}`)}</Caption>
             ) : null}
           </li>
           <li>
             <strong>{t("permissions.itemLocationTitle")}</strong>
             <span>{t("permissions.itemLocationBody")}</span>
             {status ? (
-              <Caption className="ct-perm-gate-state">{t(`permissions.state.${status.location}`)}</Caption>
+              <Caption className="ed-perm-gate-state">{t(`permissions.state.${status.location}`)}</Caption>
             ) : null}
           </li>
         </ul>
 
         {showSettings ? (
-          <Caption className="ct-perm-gate-denied">{t("permissions.deniedHint")}</Caption>
+          <Caption className="ed-perm-gate-denied">{t("permissions.deniedHint")}</Caption>
         ) : null}
 
-        <div className="ct-perm-gate-actions">
+        <div className="ed-perm-gate-actions">
           <Button type="button" variant="primary" size="md" disabled={busy} onClick={onAllow}>
             {busy ? t("permissions.requesting") : t("permissions.allowAccess")}
           </Button>

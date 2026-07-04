@@ -40,18 +40,17 @@ describe("DATA INTEGRITY: subscription pricing math", () => {
     expect(effectiveAnnualMonthlyInr(null)).toBe(0);
   });
 
-  it("[P2] PLAN_PRESENTATION has exactly 3 plans (free, pro, power)", () => {
+  it("[P2] PLAN_PRESENTATION has exactly 2 plans (free, pro)", () => {
     const tiers = PLAN_PRESENTATION.map((p) => p.tier);
     expect(tiers).toContain("free");
     expect(tiers).toContain("pro");
-    expect(tiers).toContain("power");
-    expect(tiers).toHaveLength(3);
+    expect(tiers).toHaveLength(2);
   });
 
-  it("[P2] Power plan annual price is less than monthly × 12", () => {
-    const power = PLAN_PRESENTATION.find((p) => p.tier === "power");
-    if (power?.monthlyInr && power?.annualInr) {
-      expect(power.annualInr).toBeLessThan(power.monthlyInr * 12);
+  it("[P2] Pro plan annual price is less than monthly × 12", () => {
+    const pro = PLAN_PRESENTATION.find((p) => p.tier === "pro");
+    if (pro?.monthlyInr && pro?.annualInr) {
+      expect(pro.annualInr).toBeLessThan(pro.monthlyInr * 12);
     }
   });
 

@@ -47,37 +47,25 @@ export default function AddTypePicker({ onSelect }) {
   const { t } = useTranslation();
 
   return (
-    <div className="ct-stack">
-      <p className="ct-add-pick-question">{t("add.category.question")}</p>
-      <div className="ct-stack-sm">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={`pos-tile ${c.colorClass} ct-pressable`}
-            onClick={() => onSelect(c.id)}
-            style={{
-              width: "100%",
-              padding: "14px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              cursor: "pointer",
-              border: "none",
-              textAlign: "left",
-            }}
-          >
-            <span className={`ct-icon-tile pos-icon ${c.colorClass}`} style={{ flexShrink: 0 }}>
-              <CtIcon name={c.icon} size={20} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">{t(c.labelKey)}</span>
-              <span className="block text-xs text-[var(--pos-text-muted)] mt-0.5">{t(c.subKey)}</span>
-            </span>
-            <CtIcon name="caret-right" size={14} className="shrink-0 opacity-60" />
-          </button>
-        ))}
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <p className="ed-add-pick-title">{t("add.category.question")}</p>
+      {CATEGORIES.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          className="ed-row ed-row-press ed-add-pick-row"
+          onClick={() => onSelect(c.id)}
+        >
+          <span className={`ed-icon-tile ed-icon-tile-lg pos-icon ${c.colorClass}`} aria-hidden>
+            <CtIcon name={c.icon} size={20} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="ed-add-pick-label">{t(c.labelKey)}</span>
+            <span className="ed-add-pick-sub">{t(c.subKey)}</span>
+          </span>
+          <CtIcon name="caret-right" size={14} className="shrink-0" style={{ color: "var(--ed-ink-zero)" }} />
+        </button>
+      ))}
     </div>
   );
 }

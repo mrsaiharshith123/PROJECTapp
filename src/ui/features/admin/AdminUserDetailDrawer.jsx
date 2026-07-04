@@ -1,6 +1,18 @@
-import { Button, Caption, Heading } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
+
+function formatWhen(iso) {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  } catch {
+    return "—";
+  }
+}
+
+function isUserBanned(user) {
+  if (!user?.banned_until) return false;
+  return new Date(String(user.banned_until)).getTime() > Date.now();
+}
 
 /**
  * @param {{ user: Record<string, unknown> | null, onClose: () => void }} props
@@ -8,52 +20,72 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 export default function AdminUserDetailDrawer({ user, onClose }) {
   const { t } = useTranslation();
   if (!user) return null;
-  const name = String(user.display_name || user.username || "User");
-  const email = String(user.email || "—");
-  const tier = String(user.subscription_tier || "free");
+
+  const isBanned = isUserBanned(user);
+  const emailVerified = Boolean(user.email_confirmed_at);
+  const initials = String(user.display_name || user.email || "U")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const rows = [
+    [t("admin.drawer.id"), String(user.id || "—")],
+    [t("admin.drawer.phone"), user.phone ? String(user.phone) : "—"],
+    [
+      t("admin.drawer.monthlyIncome"),
+      user.monthly_income != null ? `₹${Number(user.monthly_income).toLocaleString("en-IN")}` : "—",
+    ],
+    [t("admin.drawer.userMode"), user.user_mode ? String(user.user_mode) : "—"],
+    [
+      t("admin.drawer.onboarding"),
+      user.onboarding_complete ? t("admin.onboarding.done") : t("admin.onboarding.pending"),
+    ],
+    [t("admin.drawer.joined"), formatWhen(user.created_at)],
+    [t("admin.drawer.lastActive"), formatWhen(user.last_active_at)],
+    [t("admin.drawer.subUpdated"), formatWhen(user.subscription_updated_at)],
+    [t("admin.drawer.paymentId"), user.razorpay_payment_id ? String(user.razorpay_payment_id) : "—"],
+    [
+      t("admin.drawer.bannedUntil"),
+      user.banned_until ? formatWhen(user.banned_until) : t("admin.drawer.notBanned"),
+    ],
+  ];
 
   return (
-    <div className="ct-admin-drawer-backdrop" role="presentation" onClick={onClose}>
-      <aside className="ct-admin-drawer" onClick={(e) => e.stopPropagation()} aria-labelledby="admin-drawer-title">
-        <div className="ct-hero-card lending ct-stack-sm mb-3">
-          <div className="ct-row-between gap-2 items-start">
-            <div className="min-w-0">
-              <Heading level={4} id="admin-drawer-title">
-                {name}
-              </Heading>
-              <Caption className="block mt-1">{email}</Caption>
-            </div>
-            <Button type="button" variant="ghost" size="sm" className="!w-auto shrink-0" onClick={onClose}>
-              ×
-            </Button>
+    <div className="ed-backdrop" onClick={onClose} role="presentation">
+      <aside className="ed-admin-drawer" onClick={(e) => e.stopPropagation()} aria-label={t("admin.drawer.aria")}>
+        <div className="ed-admin-drawer-head">
+          <div className="ed-admin-drawer-avatar">{initials}</div>
+          <div className="min-w-0 flex-1">
+            <p className="ed-admin-drawer-name">{String(user.display_name || "—")}</p>
+            <p className="ed-admin-drawer-email">{String(user.email || "—")}</p>
           </div>
+          <button type="button" className="ed-subpage-back" onClick={onClose} aria-label={t("common.close")}>
+            ✕
+          </button>
         </div>
 
-        <div className="ct-stack-sm">
-          <div className="ct-stat-tile indigo ct-row-between gap-2 items-center">
-            <span className="ct-icon-tile-sm indigo shrink-0" aria-hidden>
-              <CtIcon name="crown" size={16} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="ct-stat-tile-label">{t("admin.users.fieldTier")}</p>
-              <p className="ct-stat-tile-value text-sm capitalize">{tier}</p>
+        <div className="ed-admin-drawer-chips">
+          <span className={`ed-admin-badge ${isBanned ? "ed-admin-badge-danger" : "ed-admin-badge-ok"}`}>
+            {isBanned ? t("admin.users.banned") : t("admin.drawer.active")}
+          </span>
+          <span className={`ed-admin-badge ${emailVerified ? "ed-admin-badge-ok" : "ed-admin-badge-warn"}`}>
+            {emailVerified ? t("admin.drawer.emailVerified") : t("admin.users.emailUnverified")}
+          </span>
+          <span className="ed-admin-badge">{String(user.subscription_tier || "free")}</span>
+          {user.is_admin ? (
+            <span className="ed-admin-badge ed-admin-badge-admin">{t("admin.users.adminBadge")}</span>
+          ) : null}
+          {user.pan_verified ? (
+            <span className="ed-admin-badge ed-admin-badge-ok">{t("admin.users.verified")}</span>
+          ) : null}
+        </div>
+
+        <div className="ed-admin-drawer-rows">
+          {rows.map(([label, value]) => (
+            <div key={label} className="ed-admin-drawer-row">
+              <span className="ed-admin-drawer-row-label">{label}</span>
+              <span className="ed-admin-drawer-row-value">{value}</span>
             </div>
-          </div>
-          <div className="ct-stat-tile ct-row-between gap-2 items-center">
-            <span className="ct-icon-tile-sm teal shrink-0" aria-hidden>
-              <CtIcon name="device-mobile" size={16} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="ct-stat-tile-label">{t("admin.users.fieldPhone")}</p>
-              <p className="ct-stat-tile-value text-sm">{user.phone ? String(user.phone) : "—"}</p>
-            </div>
-          </div>
-          <div className="ct-stat-tile teal">
-            <p className="ct-stat-tile-label">{t("admin.users.fieldOnboarding")}</p>
-            <p className="ct-stat-tile-value text-sm">
-              {user.onboarding_complete ? t("admin.onboarding.done") : t("admin.onboarding.pending")}
-            </p>
-          </div>
+          ))}
         </div>
       </aside>
     </div>

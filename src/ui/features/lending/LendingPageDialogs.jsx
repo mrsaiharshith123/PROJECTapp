@@ -6,7 +6,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { translateRepaymentMode } from "../../../i18n/domainLabels.js";
 import { formatInr } from "../../../constants/symbols.js";
 
-const payFieldClass = `${inputClassName()} ct-input-tint`;
+const payFieldClass = `${inputClassName()} `;
 
 export default function LendingPageDialogs({
   showAdd,
@@ -42,7 +42,7 @@ export default function LendingPageDialogs({
           title={t("lending.addEntry")}
           onClose={onCloseAdd}
           footer={
-            <div className="ct-row gap-2 w-full">
+            <div className="flex gap-2 w-full">
               <Button type="button" variant="outline" className="flex-1" onClick={onCloseAdd}>
                 {t("common.cancel")}
               </Button>
@@ -67,7 +67,7 @@ export default function LendingPageDialogs({
           title={t("lending.editEntry")}
           onClose={onCloseEdit}
           footer={
-            <div className="ct-row gap-2 w-full">
+            <div className="flex gap-2 w-full">
               <Button type="button" variant="outline" className="flex-1" onClick={onCloseEdit}>
                 {t("common.cancel")}
               </Button>
@@ -96,7 +96,7 @@ export default function LendingPageDialogs({
           title={t("lending.recordRepayment")}
           onClose={onClosePayment}
           footer={
-            <div className="ct-row flex-col sm:flex-row gap-2 w-full">
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
               <Button type="button" variant="primary" className="flex-1" onClick={onSubmitPayment}>
                 {t("lending.payment.addAmount")}
               </Button>
@@ -114,8 +114,8 @@ export default function LendingPageDialogs({
             </div>
           }
         >
-          <div className="ct-stack">
-            <div className="ct-hero-card lending ct-stack-sm">
+          <div className="ed-stack">
+            <div className="ed-inset ed-stack-sm">
               <Caption className="block">
                 {t("lending.payment.remainingLine", {
                   name: paymentFor.personName,
@@ -129,17 +129,17 @@ export default function LendingPageDialogs({
               </Caption>
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.payment.amountLabel")}</label>
+              <label className="ed-field-label">{t("lending.payment.amountLabel")}</label>
               <input
                 type="number"
                 min="0"
-                className={`${payFieldClass} ct-numeral`}
+                className={`${payFieldClass} ed-numeral`}
                 value={payAmount}
                 onChange={(e) => onPayAmountChange(e.target.value)}
               />
             </div>
             <div>
-              <label className="ct-field-label">{t("lending.payment.dateLabel")}</label>
+              <label className="ed-field-label">{t("lending.payment.dateLabel")}</label>
               <input
                 type="date"
                 className={payFieldClass}

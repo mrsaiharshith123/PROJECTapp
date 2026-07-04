@@ -75,10 +75,16 @@ html[data-ui="ct"] {
   --ed-space-12:    48px;
 
   /* ── Page layout ── */
-  --ed-page-top:    16px;
-  --ed-page-x:      18px;
+  --ed-page-top:    12px;
+  --ed-page-x:      16px;
+  --ed-section-gap: 16px;
   --ed-page-bottom: 84px;
   --ed-status-bar-h: env(safe-area-inset-top, 24px);
+  --ed-masthead-band-h: 68px;
+  --ed-masthead-rule-h: 3px;
+  --ed-masthead-rule-gap: 4px;
+  --ed-mast-chrome-pt: 8px;
+  --ed-mast-chrome-pb: 6px;
 
   /* ── Border radius ── */
   --ed-r-sm:   6px;

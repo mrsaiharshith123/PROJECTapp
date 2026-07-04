@@ -21,7 +21,7 @@ import {
 } from "../../index.js";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 const SUGGESTED_CHIP_KEYS = [
   "tools.advisor.chip.emi",
@@ -144,15 +144,15 @@ export default function FinancialAdvisorTool() {
   };
 
   return (
-    <Card className="ct-stack ct-advisor-tool">
+    <Card className="ed-stack ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.advisor.heroLabel")}
         value={t("tools.advisor.heroScore", { score: Math.round(intel.health?.score ?? 0) })}
         subtitle={intel.health?.label}
       />
-      <div className="ct-settings-row ct-settings-row-static">
-        <span className="ct-icon-tile ct-icon-tile-sm violet shrink-0" aria-hidden>
+      <div className="ed-settings-row ed-settings-row ed-settings-row-static">
+        <span className="ed-row-icon ed-row-icon violet shrink-0" aria-hidden>
           <CtIcon name="chat-dots" size={18} weight="duotone" />
         </span>
         <Heading level={3} className="!text-base min-w-0">
@@ -160,21 +160,21 @@ export default function FinancialAdvisorTool() {
         </Heading>
       </div>
 
-      <div className="ct-advisor-messages">
+      <div className="ed-stack-sm">
         {(needsCity || awaitingCity) && (
-          <div className="ct-stat-tile indigo ct-stack-sm">
+          <div className="ed-inset ed-stack-sm">
             <Caption className="block font-semibold">{t("tools.advisor.yourCity")}</Caption>
             <CitySelect value={settings.userCity || ""} onChange={saveCityFromPicker} />
           </div>
         )}
 
         {messages.length === 0 && !awaitingCity && !needsCity && (
-          <div className="ct-advisor-chips">
+          <div className="ed-row-wrap">
             {SUGGESTED_CHIP_KEYS.map((key) => (
               <button
                 key={key}
                 type="button"
-                className="ct-chip"
+                className="ed-chip"
                 onClick={() => handleSend(t(key))}
                 disabled={loading}
               >
@@ -184,23 +184,23 @@ export default function FinancialAdvisorTool() {
           </div>
         )}
 
-        <Stack className="ct-advisor-thread">
+        <Stack className="ed-stack-sm">
           {messages.map((msg, i) => (
             <div
               key={`${msg.role}-${i}`}
               className={
-                msg.role === "user" ? "ct-advisor-msg ct-advisor-msg-user" : "ct-advisor-msg ct-advisor-msg-advisor"
+                msg.role === "user" ? "ed-inset ed-inset" : "ed-inset ed-inset-green"
               }
             >
               <Body className="!text-sm">{msg.text}</Body>
               {msg.role === "advisor" && msg.source === "local" && (
-                <Caption className="block ct-advisor-offline">{t("tools.advisor.offlineTag")}</Caption>
+                <Caption className="block ed-caption">{t("tools.advisor.offlineTag")}</Caption>
               )}
             </div>
           ))}
           {loading && (
-            <div className="ct-advisor-msg ct-advisor-msg-advisor">
-              <span className="ct-advisor-dots" aria-hidden>
+            <div className="ed-inset ed-inset-green">
+              <span className="ed-caption" aria-hidden>
                 <span />
                 <span />
                 <span />
@@ -211,9 +211,9 @@ export default function FinancialAdvisorTool() {
         </Stack>
       </div>
 
-      <div className="ct-advisor-input-row ct-stack-sm">
+      <div className="ed-stack-sm ed-stack-sm">
         <input
-          className={`${fieldClass} ct-advisor-input`}
+          className={`${fieldClass} ed-textarea`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -226,7 +226,7 @@ export default function FinancialAdvisorTool() {
         />
         <button
           type="button"
-          className="ct-btn ct-btn-primary w-full"
+          className="ed-btn ed-btn-primary w-full"
           onClick={() => handleSend()}
           disabled={loading || !input.trim()}
         >

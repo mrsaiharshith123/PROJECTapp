@@ -36,18 +36,17 @@ export default function PhysicalAssetsSection() {
   };
 
   return (
-    <section className="ct-nw-panel ct-animate-fade-up" aria-labelledby="physical-assets-heading">
-      <div className="ct-hero-card wealth ct-tool-answer-hero">
-        <div className="ct-hero-glow teal" aria-hidden />
-        <p className="ct-hero-label">{t("netWorth.physical.title")}</p>
-        <p className="ct-hero-number">{privacyMode ? "••••" : formatInr(totalValue)}</p>
+    <section className="ed-inset" aria-labelledby="physical-assets-heading">
+      <div className="ed-inset">
+<p className="ed-kicker">{t("netWorth.physical.title")}</p>
+        <p className="ed-hero-number">{privacyMode ? "••••" : formatInr(totalValue)}</p>
         <Caption className="block mt-1 relative opacity-90">{t("netWorth.physical.subtitle")}</Caption>
       </div>
 
       {physicalAssets.length === 0 ? (
         <EmptyState icon="house" title={t("netWorth.physical.empty")} hint={t("netWorth.physical.emptyHint")} />
       ) : (
-        <div className="ct-stack mt-3">
+        <div className="ed-stack mt-3">
           {physicalAssets.map((entry) => (
             <WealthEntryCard
               key={entry.id}
@@ -60,7 +59,7 @@ export default function PhysicalAssetsSection() {
         </div>
       )}
 
-      <button type="button" className="ct-btn ct-btn-primary w-full mt-3" onClick={openAdd}>
+      <button type="button" className="ed-btn ed-btn-primary w-full mt-3" onClick={openAdd}>
         {t("netWorth.physical.addCta")}
       </button>
 

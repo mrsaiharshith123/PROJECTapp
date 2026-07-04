@@ -11,16 +11,16 @@ export default function PlanToolSheet({ open, onClose, icon, title, accent = "in
 
   return (
     <Modal onClose={onClose} sheet>
-      <div className="ct-plan-tool-sheet">
-        <div className="ct-plan-tool-sheet-head">
+      <div className="ed-inset">
+        <div className="ed-plan-tool-sheet-head">
           {icon ? (
-            <span className={cn("ct-icon-tile ct-icon-tile-sm", accent)} aria-hidden>
+            <span className={cn("ed-icon-tile ed-icon-tile", accent)} aria-hidden>
               <CtIcon name={icon} size={20} />
             </span>
           ) : null}
-          <h2 className="ct-body-strong">{title}</h2>
+          <h2 className="ed-body-strong">{title}</h2>
         </div>
-        <div className="ct-plan-tool-sheet-body">{children}</div>
+        <div className="ed-plan-tool-sheet-body">{children}</div>
       </div>
     </Modal>
   );

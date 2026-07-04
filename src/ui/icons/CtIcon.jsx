@@ -23,6 +23,7 @@ import {
   ClockCounterClockwise,
   Crown,
   Info,
+  Moon,
   MapPin,
   Backpack,
   Bank,
@@ -75,6 +76,7 @@ import {
   ShareNetwork,
   Shield,
   SignOut,
+  Sun,
   ShoppingCart,
   Target,
   Television,
@@ -138,6 +140,7 @@ const ICON_REGISTRY = {
   laptop: Laptop,
   lightning: Lightning,
   lock: Lock,
+  moon: Moon,
   "magnifying-glass": MagnifyingGlass,
   "note-pencil": NotePencil,
   package: Package,
@@ -152,6 +155,7 @@ const ICON_REGISTRY = {
   "share-network": ShareNetwork,
   shield: Shield,
   "sign-out": SignOut,
+  sun: Sun,
   "shopping-cart": ShoppingCart,
   target: Target,
   television: Television,
@@ -183,11 +187,12 @@ const CONTEXT_WEIGHTS = {
  *   weight?: import('@phosphor-icons/react').IconWeight,
  *   context?: keyof typeof CONTEXT_WEIGHTS | string,
  *   className?: string,
+ *   style?: import('react').CSSProperties,
  * }} props
  */
-export function CtIcon({ name, size = 20, weight, context, className = "" }) {
+export function CtIcon({ name, size = 20, weight, context, className = "", style }) {
   const Icon = ICON_REGISTRY[name];
   if (!Icon) return null;
   const resolvedWeight = weight ?? (context ? CONTEXT_WEIGHTS[context] : undefined) ?? "regular";
-  return <Icon size={size} weight={resolvedWeight} className={cn("ct-icon", className)} aria-hidden />;
+  return <Icon size={size} weight={resolvedWeight} className={cn("ed-icon", className)} style={style} aria-hidden />;
 }

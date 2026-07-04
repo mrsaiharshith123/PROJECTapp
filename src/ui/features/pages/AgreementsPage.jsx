@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { EmptyState, fieldInputClass } from "../../index.js";
+import { EmptyState } from "../../index.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { todayYmd } from "../../../utils/dates.js";
@@ -141,7 +141,7 @@ export default function AgreementsPage() {
     setPaymentFor(null);
   };
 
-  const fieldClass = (field) => `${fieldInputClass(Boolean(formErrors[field]))} ct-input-tint`;
+  const fieldClass = (field) => `ed-input${formErrors[field] ? " error" : ""}`;
 
   const closeEdit = () => {
     setEditing(null);
@@ -171,7 +171,7 @@ export default function AgreementsPage() {
 
       {!canAddLendingRecord(settings, lendings, effectiveSubscriptionTier).ok && (
         <TierLimitBanner
-          className="ct-tier-banner-warm"
+          className="ed-tier-banner"
           title={t("tier.limit.lendingTitle")}
           message={t("tier.limit.lendingMessage", { limit: 5 })}
         />
@@ -184,7 +184,7 @@ export default function AgreementsPage() {
       />
 
       {isEmpty ? (
-        <div className="ed-ins-story" style={{ textAlign: "center", padding: "24px 18px" }}>
+        <div className="ed-ins-story ed-agreements-empty">
           <div className="ed-agreements-empty-icon">
             <CtIcon name="handshake" size={24} />
           </div>
@@ -236,7 +236,7 @@ export default function AgreementsPage() {
               <LendingOverduePanel />
 
               {overflowItems.length > 0 && (
-                <section className="ct-stack-sm ct-list-animate" style={{ padding: "0 18px" }}>
+                <section className="ed-stack-sm" style={{ padding: "0 18px" }}>
                   {overflowItems.map((item) => (
                     <AgreementCard
                       key={item.id}

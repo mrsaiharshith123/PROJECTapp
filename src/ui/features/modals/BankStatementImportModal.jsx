@@ -12,7 +12,7 @@ import { CtIcon } from "../../icons/CtIcon.jsx";
 import { inputClassName } from "../../primitives/Input.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function BankStatementImportModal({ onClose }) {
   const { t } = useTranslation();
@@ -61,21 +61,20 @@ export default function BankStatementImportModal({ onClose }) {
   return (
     <Modal title={t("bills.importBankStatement")} onClose={onClose}>
       <Stack>
-        <div className="ct-row gap-3 items-start">
-          <span className="ct-icon-tile teal" aria-hidden>
+        <div className="flex items-start gap-3">
+          <span className="ed-icon-tile" style={{ background: "var(--ed-green-soft)", color: "var(--ed-green)" }} aria-hidden>
             <CtIcon name="bank" size={22} />
           </span>
           <Caption>{t("bills.import.subtitle")}</Caption>
         </div>
 
         <input type="file" accept=".pdf,.csv,.txt" className={fieldClass} onChange={onFile} />
-        {status ? <Caption className="ct-text-warning">{status}</Caption> : null}
+        {status ? <Caption className="ed-field-note">{status}</Caption> : null}
 
         {preview ? (
-          <div className="ct-hero-card wealth ct-stack-sm">
-            <div className="ct-hero-glow teal" aria-hidden />
-            <p className="ct-hero-label relative">{t("bills.importBankStatement")}</p>
-            <p className="ct-hero-number ct-numeral relative">{preview.billDrafts?.length || 0}</p>
+          <div className="ed-inset ed-stack-sm">
+<p className="ed-kicker relative">{t("bills.importBankStatement")}</p>
+            <p className="ed-hero-number ed-numeral relative">{preview.billDrafts?.length || 0}</p>
             {preview.confidence ? (
               <Caption className="block relative">
                 {preview.confidence === "high"
@@ -86,7 +85,7 @@ export default function BankStatementImportModal({ onClose }) {
               </Caption>
             ) : null}
             {preview.confidence === "low" ? (
-              <Caption className="ct-text-warning block relative">{t("bills.importLowConfidence")}</Caption>
+              <Caption className="ed-field-note block relative">{t("bills.importLowConfidence")}</Caption>
             ) : null}
             {preview.warnings?.map((w) => (
               <Caption key={w} className="block relative">
@@ -111,7 +110,7 @@ export default function BankStatementImportModal({ onClose }) {
           </div>
         ) : null}
 
-        <div className="ct-row gap-2 flex-wrap">
+        <div className="ed-row-wrap">
           <Button type="button" variant="outline" onClick={onClose}>
             {t("common.cancel")}
           </Button>

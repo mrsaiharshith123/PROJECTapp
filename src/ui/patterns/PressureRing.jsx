@@ -39,17 +39,17 @@ export function PressureRing({
 
     return (
       <div
-        className="ct-conic-ring"
+        className="ed-conic-ring"
         style={{ width: outer, height: outer, background: conic }}
         role="img"
         aria-label={ariaLabel}
       >
         <div
-          className="ct-conic-ring-inner"
+          className="ed-conic-ring-inner"
           style={{ width: inner, height: inner }}
         >
           <span
-            className="ct-hero-number"
+            className="ed-hero-number"
             style={{ fontSize: size * 0.28, color: tone, marginTop: 0 }}
           >
             {animated}
@@ -69,7 +69,7 @@ export function PressureRing({
               {tierLabel}
             </span>
           ) : (
-            <span style={{ fontSize: 9, color: "var(--ct-text-muted)", fontWeight: 500, marginTop: 2 }}>
+            <span style={{ fontSize: 9, color: "var(--ed-muted-text)", fontWeight: 500, marginTop: 2 }}>
               /100
             </span>
           )}
@@ -118,7 +118,7 @@ export function PressureRing({
       >
         <span
           style={{
-            fontFamily: "var(--ct-font-display)",
+            fontFamily: "var(--ed-font-serif)",
             fontSize: `${size * 0.22}px`,
             fontWeight: 600,
             letterSpacing: "-0.03em",
@@ -132,7 +132,7 @@ export function PressureRing({
         <span
           style={{
             fontSize: `${size * 0.115}px`,
-            color: "var(--ct-text-muted)",
+            color: "var(--ed-muted-text)",
             fontWeight: 500,
           }}
         >

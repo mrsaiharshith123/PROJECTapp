@@ -8,7 +8,7 @@ import { translateBondRecommendation } from "../../../i18n/toolLabels.js";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function BondAdvisor({ monthlyIncome = 0 }) {
   const { t } = useTranslation();
@@ -54,11 +54,11 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
 
   return (
     <ProGate featureId="bond_advisor">
-      <div className="ct-stack">
+      <div className="ed-stack">
         <Caption className="block">{t("bond.intro")}</Caption>
-        <div className="ct-grid-2">
+        <div className="ed-grid-2">
           <div>
-            <label className="ct-field-label">{t("bond.bondType")}</label>
+            <label className="ed-field-label">{t("bond.bondType")}</label>
             <select className={fieldClass} value={form.bondType} onChange={(e) => setField("bondType", e.target.value)}>
               <option value="government">{t("bond.type.government")}</option>
               <option value="corporate">{t("bond.type.corporate")}</option>
@@ -67,7 +67,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             </select>
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.creditRating")}</label>
+            <label className="ed-field-label">{t("bond.creditRating")}</label>
             <select
               className={fieldClass}
               value={form.creditRating}
@@ -81,15 +81,15 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             </select>
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.investmentAmount")}</label>
+            <label className="ed-field-label">{t("bond.investmentAmount")}</label>
             <input className={fieldClass} value={form.amount} onChange={(e) => setField("amount", e.target.value)} />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.faceValue")}</label>
+            <label className="ed-field-label">{t("bond.faceValue")}</label>
             <input className={fieldClass} value={form.faceValue} onChange={(e) => setField("faceValue", e.target.value)} />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.purchasePrice")}</label>
+            <label className="ed-field-label">{t("bond.purchasePrice")}</label>
             <input
               className={fieldClass}
               value={form.purchasePrice}
@@ -97,7 +97,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.couponRate")}</label>
+            <label className="ed-field-label">{t("bond.couponRate")}</label>
             <input
               className={fieldClass}
               value={form.couponRatePct}
@@ -105,7 +105,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.payoutFrequency")}</label>
+            <label className="ed-field-label">{t("bond.payoutFrequency")}</label>
             <select
               className={fieldClass}
               value={form.payoutFrequency}
@@ -119,7 +119,7 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             </select>
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.yearsToMaturity")}</label>
+            <label className="ed-field-label">{t("bond.yearsToMaturity")}</label>
             <input
               className={fieldClass}
               value={form.yearsToMaturity}
@@ -127,11 +127,11 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.taxSlab")}</label>
+            <label className="ed-field-label">{t("bond.taxSlab")}</label>
             <input className={fieldClass} value={form.taxRatePct} onChange={(e) => setField("taxRatePct", e.target.value)} />
           </div>
           <div>
-            <label className="ct-field-label">{t("bond.inflation")}</label>
+            <label className="ed-field-label">{t("bond.inflation")}</label>
             <input
               className={fieldClass}
               value={form.inflationPct}
@@ -147,22 +147,22 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
           subtitle={t(result.detailKey || "bond.detail.borderline")}
         />
 
-        <div className="ct-grid-2 text-sm">
-          <div className="ct-stat-tile">
-            <p className="ct-stat-label">{t("bond.annualYield")}</p>
-            <p className="ct-stat-value text-sm">{result.annualYieldPct.toFixed(2)}%</p>
+        <div className="ed-grid-2 text-sm">
+          <div className="ed-inset">
+            <p className="ed-stat-label">{t("bond.annualYield")}</p>
+            <p className="ed-stat-value text-sm">{result.annualYieldPct.toFixed(2)}%</p>
           </div>
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-label">{t("bond.postTaxYield")}</p>
-            <p className="ct-stat-value text-sm">{result.postTaxYieldPct.toFixed(2)}%</p>
+          <div className="ed-inset">
+            <p className="ed-stat-label">{t("bond.postTaxYield")}</p>
+            <p className="ed-stat-value text-sm">{result.postTaxYieldPct.toFixed(2)}%</p>
           </div>
-          <div className="ct-stat-tile teal">
-            <p className="ct-stat-label">{t("bond.realReturn")}</p>
-            <p className="ct-stat-value text-sm">{result.realReturnPct.toFixed(2)}%</p>
+          <div className="ed-inset-green">
+            <p className="ed-stat-label">{t("bond.realReturn")}</p>
+            <p className="ed-stat-value text-sm">{result.realReturnPct.toFixed(2)}%</p>
           </div>
-          <div className="ct-stat-tile amber">
-            <p className="ct-stat-label">{t("bond.monthlySetAside")}</p>
-            <p className="ct-stat-value text-sm">{formatInr(Math.round(result.monthlySetAside))}</p>
+          <div className="ed-inset-amber">
+            <p className="ed-stat-label">{t("bond.monthlySetAside")}</p>
+            <p className="ed-stat-value text-sm">{formatInr(Math.round(result.monthlySetAside))}</p>
           </div>
         </div>
         {result.affordabilityPct != null && (
@@ -170,11 +170,11 @@ export default function BondAdvisor({ monthlyIncome = 0 }) {
             {t("bond.salaryLoad", { percent: result.affordabilityPct.toFixed(1) })}
           </Caption>
         )}
-        <div className="pt-2 border-t border-[var(--ct-border-subtle)] ct-stack-sm">
+        <div className="pt-2 border-t border-[var(--ed-rule-soft)] ed-stack-sm">
           <Caption className="block font-semibold">{t("bond.compareTitle")}</Caption>
-          <ul className="ct-stack-sm text-xs">
+          <ul className="ed-stack-sm text-xs">
             {compare.map((row) => (
-              <li key={row.id} className="ct-row-between gap-2">
+              <li key={row.id} className="ed-row-between gap-2">
                 <span>{t(row.labelKey)}</span>
                 <span>
                   {row.postTaxYieldPct.toFixed(1)}% · {translateBondRecommendation(t, row.recommendation)}

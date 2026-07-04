@@ -10,13 +10,13 @@ export function MetricTile({
   className = "",
 }) {
   return (
-    <div className={`ct-metric ${className}`.trim()}>
-      <span className={`ct-metric-value ct-amount-lg ct-numeral ${valueClassName}`.trim()}>{value}</span>
-      <span className="ct-metric-label">
+    <div className={`ed-metric ${className}`.trim()}>
+      <span className={`ed-metric-value ed-numeral ed-numeral ${valueClassName}`.trim()}>{value}</span>
+      <span className="ed-metric-label">
         {label}
         {conceptId ? <ConceptHelp conceptId={conceptId} /> : null}
       </span>
-      {caption ? <span className="ct-metric-caption">{caption}</span> : null}
+      {caption ? <span className="ed-caption">{caption}</span> : null}
     </div>
   );
 }

@@ -4,13 +4,13 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { getTier } from "../../../utils/tierAccess.js";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import HomeEditorialHeader from "../home/HomeEditorialHeader.jsx";
+import HomeFinancialPulse from "../home/HomeFinancialPulse.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
 import HomeNeedsAttention from "../home/HomeNeedsAttention.jsx";
 import HomeUpcomingSection from "../home/HomeUpcomingSection.jsx";
 import HomeSavingGoal from "../home/HomeSavingGoal.jsx";
-import HomeFinancialPulse from "../home/HomeFinancialPulse.jsx";
 import HomeToolsSection from "../home/HomeToolsSection.jsx";
 
 /** @route / — Home dashboard (Direction H · Editorial Ledger) */
@@ -41,28 +41,16 @@ const Home = () => {
       />
 
       <HomeEditorialHeader tier={tier} />
+      <HomeFinancialPulse />
 
-      <div className="ed-home-enter">
-        <div className="ed-home-enter-item" style={{ animationDelay: "0ms" }}>
-          <HomeNetPositionHero />
-        </div>
-        <div className="ed-home-enter-item" style={{ animationDelay: "30ms" }}>
-          <HomeCategoryTiles />
-        </div>
-        <div className="ed-home-enter-item" style={{ animationDelay: "50ms" }}>
-          <HomeQuickActions />
-        </div>
-        <div className="ed-home-enter-item" style={{ animationDelay: "70ms" }}>
-          <HomeNeedsAttention />
-        </div>
-        <div className="ed-home-enter-item" style={{ animationDelay: "90ms" }}>
-          <HomeUpcomingSection />
-        </div>
+      <div className="ed-home-body">
+        <HomeNetPositionHero />
+        <HomeCategoryTiles />
+        <HomeQuickActions />
+        <HomeNeedsAttention />
+        <HomeUpcomingSection />
         <HomeSavingGoal />
-        <HomeFinancialPulse />
-        <div className="ed-home-enter-item" style={{ animationDelay: "130ms" }}>
-          <HomeToolsSection />
-        </div>
+        <HomeToolsSection />
       </div>
       <div className="ed-safe-bottom" />
     </div>

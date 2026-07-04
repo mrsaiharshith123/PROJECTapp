@@ -14,7 +14,7 @@ export function PageHeaderWithNotifications({ greeting = null, headerActions, sh
         greeting={greeting}
         showBrand={showBrand}
         actions={
-          <div className="ct-row gap-2 shrink-0">
+          <div className="ed-row gap-2 shrink-0">
             {headerActions}
             <NotificationBell unread={notificationUnread} onClick={() => setShowNotifications((v) => !v)} />
           </div>

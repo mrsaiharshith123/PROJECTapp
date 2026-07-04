@@ -54,32 +54,32 @@ export function NotificationPanel({ onClose }) {
 
   return createPortal(
     <>
-      <div className="ct-notif-overlay" onClick={onClose} aria-hidden />
+      <div className="ed-notif-overlay" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}
-        className="ct-notif-panel"
+        className="ed-notif-panel"
         role="dialog"
         aria-modal="true"
         aria-label={t("notifications.panel.title")}
       >
-        <div className="ct-nw-panel !p-0 overflow-hidden">
-          <div className="ct-row-between px-4 py-3 border-b border-[var(--ct-border)]">
+        <div className="ed-inset !p-0 overflow-hidden">
+          <div className="ed-row-between px-4 py-3 border-b border-[var(--ed-rule)]">
             <Heading level={2}>{t("notifications.panel.title")}</Heading>
-            <div className="ct-row">
+            <div className="ed-row">
               {unread > 0 ? (
                 <Badge tone="danger">{t("notifications.panel.new", { count: unread })}</Badge>
               ) : null}
               <button
                 type="button"
                 onClick={onClose}
-                className="ct-btn ct-btn-ghost ct-btn-sm"
+                className="ed-btn ed-btn-ghost ed-btn-sm"
                 aria-label={t("notifications.panel.close")}
               >
                 ×
               </button>
             </div>
           </div>
-          <div className="ct-notif-list">
+          <div className="ed-notif-list">
             {notifications.length === 0 ? (
               <Caption className="block py-6 text-center">{t("notifications.panel.empty")}</Caption>
             ) : (
@@ -91,20 +91,20 @@ export function NotificationPanel({ onClose }) {
                   return (
                     <li
                       key={n.id}
-                      className={cn("ct-notif-item", !n.read && "ct-notif-item-unread")}
+                      className={cn("ed-notif-item", !n.read && "ed-notif-item-unread")}
                     >
-                      <div className="ct-notif-item-row">
-                        <span className={cn("ct-notif-icon-tile ct-icon-tile ct-icon-tile-sm", meta.tone)} aria-hidden>
+                      <div className="ed-notif-item-row">
+                        <span className={cn("ed-row-icon ed-row-icon ed-row-icon", meta.tone)} aria-hidden>
                           <CtIcon name={meta.icon} size={18} />
                         </span>
-                        <div className="ct-notif-item-body">
-                          <p className="ct-notif-item-title">{copy.title || copy.message}</p>
+                        <div className="ed-notif-item-body">
+                          <p className="ed-notif-item-title">{copy.title || copy.message}</p>
                           {copy.title && copy.message ? (
                             <Caption className="block mt-0.5 leading-snug">{copy.message}</Caption>
                           ) : null}
-                          {timeAgo ? <p className="ct-notif-item-time">{timeAgo}</p> : null}
+                          {timeAgo ? <p className="ed-notif-item-time">{timeAgo}</p> : null}
                         </div>
-                        <div className="ct-row gap-1 shrink-0">
+                        <div className="ed-row gap-1 shrink-0">
                           {"href" in n && n.href ? (
                             <Button
                               type="button"
@@ -135,7 +135,7 @@ export function NotificationPanel({ onClose }) {
             )}
           </div>
           {notifications.length > 0 && unread > 0 ? (
-            <div className="px-4 py-3 border-t border-[var(--ct-border)]">
+            <div className="px-4 py-3 border-t border-[var(--ed-rule)]">
               <Button
                 type="button"
                 variant="ghost"

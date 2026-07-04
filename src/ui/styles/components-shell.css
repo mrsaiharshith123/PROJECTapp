@@ -1,23 +1,48 @@
 /* Minimal app shell — ct-* layout hooks until full Direction H migration */
 
-html[data-ui="ct"] .ct-screen {
+html[data-ui="ct"] .ct-screen,
+html[data-ui="ct"] .ed-screen {
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--ed-bg);
+  color: var(--ed-ink);
   overflow-x: hidden;
 }
 
-html[data-ui="ct"] .ct-main {
+html[data-ui="ct"] .ed-screen-narrow {
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+html[data-ui="ct"] .ct-main,
+html[data-ui="ct"] .ed-main {
   padding-top: env(safe-area-inset-top, 0px);
   padding-left: max(var(--ed-page-x), env(safe-area-inset-left, 0px));
   padding-right: max(var(--ed-page-x), env(safe-area-inset-right, 0px));
   padding-bottom: calc(var(--ed-nav-h) + env(safe-area-inset-bottom, 0px));
   background: var(--ed-bg);
   isolation: isolate;
+  max-width: 32rem;
+  margin-inline: auto;
+  width: 100%;
 }
 
-html[data-ui="ct"] .ct-screen-narrow .ct-main {
+html[data-ui="ct"] .ct-screen-narrow .ct-main,
+html[data-ui="ct"] .ed-screen-narrow .ed-main {
   max-width: 28rem;
+}
+
+html[data-ui="ct"] .ed-section {
+  padding: var(--ed-space-4, 1rem) var(--ed-page-x);
+  margin-top: 0.25rem;
+}
+
+html[data-ui="ct"] .ed-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ed-ink-soft);
 }
 
 html[data-ui="ct"] .ct-page {
@@ -33,18 +58,28 @@ html[data-ui="ct"] .ct-page {
 html[data-ui="ct"] .ct-stack,
 html[data-ui="ct"] .ct-stack-sm,
 html[data-ui="ct"] .ct-stack-lg,
-html[data-ui="ct"] .ct-stack-tight {
+html[data-ui="ct"] .ct-stack-tight,
+html[data-ui="ct"] .ed-stack,
+html[data-ui="ct"] .ed-stack-sm,
+html[data-ui="ct"] .ed-stack-lg,
+html[data-ui="ct"] .ed-stack-tight {
   display: flex;
   flex-direction: column;
 }
 
-html[data-ui="ct"] .ct-stack { gap: 1rem; }
-html[data-ui="ct"] .ct-stack-sm { gap: 0.5rem; }
-html[data-ui="ct"] .ct-stack-lg { gap: 1.5rem; }
-html[data-ui="ct"] .ct-stack-tight { gap: 0.25rem; }
+html[data-ui="ct"] .ct-stack,
+html[data-ui="ct"] .ed-stack { gap: 1rem; }
+html[data-ui="ct"] .ct-stack-sm,
+html[data-ui="ct"] .ed-stack-sm { gap: 0.5rem; }
+html[data-ui="ct"] .ct-stack-lg,
+html[data-ui="ct"] .ed-stack-lg { gap: 1.5rem; }
+html[data-ui="ct"] .ct-stack-tight,
+html[data-ui="ct"] .ed-stack-tight { gap: 0.25rem; }
 
-html[data-ui="ct"] .ct-row { display: flex; align-items: center; gap: 0.5rem; }
-html[data-ui="ct"] .ct-row-between {
+html[data-ui="ct"] .ct-row,
+html[data-ui="ct"] .ed-row { display: flex; align-items: center; gap: 0.5rem; }
+html[data-ui="ct"] .ct-row-between,
+html[data-ui="ct"] .ed-row-between {
   display: flex;
   align-items: center;
   justify-content: space-between;

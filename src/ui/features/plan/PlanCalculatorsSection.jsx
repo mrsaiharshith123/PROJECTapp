@@ -38,11 +38,11 @@ export default function PlanCalculatorsSection({ initialTool = null }) {
   };
 
   return (
-    <section className="ct-plan-section">
-      <h2 className="ct-plan-section-title">{t("plan.section.calculators")}</h2>
-      <p className="ct-plan-section-sub">{t("plan.section.calculatorsSub")}</p>
+    <section className="ed-section">
+      <h2 className="ed-kicker">{t("plan.section.calculators")}</h2>
+      <p className="ed-caption">{t("plan.section.calculatorsSub")}</p>
 
-      <div className="ct-plan-grid-2 ct-tool-tile-grid">
+      <div className="ed-grid-2 ed-tool-grid">
         {CALCULATOR_TOOLS.map((tool) => (
           <ToolTile
             key={tool.id}

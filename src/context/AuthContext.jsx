@@ -142,7 +142,7 @@ export function AuthProvider({ children }) {
         return;
       }
       const supabase = getSupabaseClient();
-      if (supabase && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+      if (supabase && event === "SIGNED_IN") {
         const { data, error } = await supabase.auth.getUser();
         if (error || !data?.user) {
           await hardSignOut(u.id, "Your session ended — sign in again.");
@@ -165,7 +165,7 @@ export function AuthProvider({ children }) {
         }
       } catch (e) {
         log.auth.error("Profile refresh failed", { message: formatAuthError(e) });
-        if (!isProfilesTableMissingError(e)) {
+        if (!isProfilesTableMissingError(e) && event !== "TOKEN_REFRESHED") {
           await hardSignOut(u.id, "Could not load your account. Sign in again.");
         }
       }

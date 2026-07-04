@@ -87,26 +87,18 @@ export default function BillScannerTool() {
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <Heading level={3}>{t("tools.billScanner.title")}</Heading>
       <Caption>{t("tools.billScanner.intro")}</Caption>
 
       {stage === "idle" && (
         <>
           {nativeShell ? (
-            <div className="ct-row gap-2">
-              <button
-                type="button"
-                className="ct-btn ct-btn-primary flex-1"
-                onClick={() => pickNative("camera")}
-              >
+            <div className="ed-row gap-2">
+              <button type="button" className="ed-btn ed-btn-primary flex-1" onClick={() => pickNative("camera")}>
                 {t("tools.billScanner.useCamera")}
               </button>
-              <button
-                type="button"
-                className="ct-btn ct-btn-outline flex-1"
-                onClick={() => pickNative("gallery")}
-              >
+              <button type="button" className="ed-btn ed-btn-outline flex-1" onClick={() => pickNative("gallery")}>
                 {t("tools.billScanner.useGallery")}
               </button>
             </div>
@@ -114,13 +106,13 @@ export default function BillScannerTool() {
             <>
               <button
                 type="button"
-                className="ct-scan-drop-zone ct-stat-tile !p-6 text-center w-full"
+                className="ed-scan-drop-zone w-full"
                 onClick={() => fileRef.current?.click()}
               >
-                <span className="ct-icon-tile indigo mx-auto mb-2 inline-flex" aria-hidden>
+                <span className="ed-icon-tile indigo mx-auto mb-2 inline-flex" aria-hidden>
                   <CtIcon name="receipt" size={28} />
                 </span>
-                <Body className="ct-numeral">{t("tools.billScanner.tapPhoto")}</Body>
+                <Body>{t("tools.billScanner.tapPhoto")}</Body>
                 <Caption>{t("tools.billScanner.orGallery")}</Caption>
               </button>
               <input
@@ -133,17 +125,17 @@ export default function BillScannerTool() {
               />
             </>
           )}
-          {permError ? <Caption className="text-[var(--ct-warning)]">{permError}</Caption> : null}
+          {permError ? <Caption style={{ color: "var(--ed-amber)" }}>{permError}</Caption> : null}
         </>
       )}
 
       {stage === "scanning" && (
-        <div className="ct-inset ct-stack-sm !p-3">
+        <div className="ed-inset ed-stack-sm !p-3">
           <Caption>{t("tools.billScanner.reading", { pct: progress })}</Caption>
-          <div className="ct-progress">
-            <div className="ct-progress-bar ct-bar-animated" style={{ width: `${progress}%` }} />
+          <div className="ed-progress-track">
+            <div className="ed-progress-fill ed-bar-animated" style={{ width: `${progress}%` }} />
           </div>
-          <Caption className="block mt-2 text-[var(--ct-text-muted)]">
+          <Caption className="block mt-2" style={{ color: "var(--ed-ink-faint)" }}>
             {progress < 30
               ? t("tools.billScanner.stageLoad")
               : progress < 70
@@ -154,7 +146,7 @@ export default function BillScannerTool() {
       )}
 
       {stage === "result" && extracted && (
-        <div className="ct-stack">
+        <div className="ed-stack">
           <ToolAnswerHero
             tone="pressure"
             label={t("tools.billScanner.amount")}
@@ -169,11 +161,11 @@ export default function BillScannerTool() {
               </Caption>
             ) : null}
             <Caption>{t("tools.billScanner.found")}</Caption>
-            <div className="ct-scan-result-grid">
+            <div className="ed-grid-2">
               <div>
                 <Caption>{t("tools.billScanner.billName")}</Caption>
                 <input
-                  className="ct-input"
+                  className="ed-input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("tools.billScanner.namePlaceholder")}
@@ -189,7 +181,7 @@ export default function BillScannerTool() {
               </div>
             </div>
             <Caption>{t("tools.billScanner.reviewHint")}</Caption>
-            <div className="ct-row gap-2">
+            <div className="ed-row gap-2">
               <Button type="button" variant="primary" onClick={handleAdd} className="flex-1">
                 {t("tools.billScanner.addToBills")}
               </Button>
@@ -209,8 +201,8 @@ export default function BillScannerTool() {
       )}
 
       {success && (
-        <div className="ct-inset !p-3">
-          <Body className="text-[var(--ct-teal-text)]">{t("tools.billScanner.added")}</Body>
+        <div className="ed-inset !p-3">
+          <Body style={{ color: "var(--ed-green)" }}>{t("tools.billScanner.added")}</Body>
         </div>
       )}
     </div>

@@ -27,7 +27,7 @@ export function PlansButton({ className = "" }) {
     <>
       <button
         type="button"
-        className={cn("ct-chip ct-plan-chip", tier !== "free" && "ct-chip-active", className)}
+        className={cn("ed-chip ", tier !== "free" && "active", className)}
         onClick={() => setOpen(true)}
         aria-label={`Current plan: ${TIER_LABEL[tier] || "Free"}. Change plan.`}
       >

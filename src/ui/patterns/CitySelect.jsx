@@ -30,7 +30,7 @@ export function CitySelect({ value = "", onChange, className = "", required = fa
   }, [query]);
 
   return (
-    <div className="ct-stack-sm">
+    <div className="ed-stack-sm">
       <input
         type="search"
         className={fieldClass}
@@ -59,7 +59,7 @@ export function CitySelect({ value = "", onChange, className = "", required = fa
         ))}
       </select>
       {!value && (
-        <span className="ct-caption">Default benchmark: {INDIAN_CITIES.find((c) => c.id === DEFAULT_CITY_ID)?.label}</span>
+        <span className="ed-caption">Default benchmark: {INDIAN_CITIES.find((c) => c.id === DEFAULT_CITY_ID)?.label}</span>
       )}
     </div>
   );

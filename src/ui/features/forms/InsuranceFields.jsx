@@ -10,11 +10,11 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
   const preview = buildInsuranceBillName(values);
 
   return (
-    <div className="ct-stat-tile indigo ct-form-panel ct-form-panel-info ct-stack">
+    <div className="ed-inset-indigo ed-stack-sm">
       <Caption className="block leading-relaxed">{t("insurance.form.trackNote")}</Caption>
       <div>
-        <label className="ct-field-label">
-          {t("insurance.form.policyId")} <span className="ct-text-danger">*</span>
+        <label className="ed-field-label">
+          {t("insurance.form.policyId")} <span style={{ color: "var(--ed-red)" }}>*</span>
         </label>
         <input
           type="text"
@@ -23,10 +23,10 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
           onChange={(e) => onChange("insurancePolicyId", e.target.value)}
           placeholder={t("insurance.form.phPolicyId")}
         />
-        {errors.insurancePolicyId && <p className="ct-field-hint ct-text-danger">{errors.insurancePolicyId}</p>}
+        {errors.insurancePolicyId && <p className="ed-field-error">{errors.insurancePolicyId}</p>}
       </div>
       <div>
-        <label className="ct-field-label">{t("insurance.form.company")}</label>
+        <label className="ed-field-label">{t("insurance.form.company")}</label>
         <input
           type="text"
           className={fieldClass("insuranceCompany")}
@@ -36,7 +36,7 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
         />
       </div>
       <div>
-        <label className="ct-field-label">{t("insurance.form.insuredPerson")}</label>
+        <label className="ed-field-label">{t("insurance.form.insuredPerson")}</label>
         <input
           type="text"
           className={fieldClass("insuredPersonName")}
@@ -46,7 +46,7 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
         />
       </div>
       {preview && (
-        <div className="ct-preview-box">
+        <div className="ed-inset">
           {t("insurance.form.willShowAs")} <Body className="inline font-semibold">{preview}</Body>
         </div>
       )}

@@ -125,7 +125,6 @@ export const FEATURES = [
     ui: [
       "ui/features/pages/AdminPage.jsx",
       "ui/features/admin/",
-      "ui/admin/AdminFloatingButton.jsx",
     ],
     engines: [],
     hooks: ["hooks/useAdminOverview.js"],

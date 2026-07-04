@@ -32,12 +32,12 @@ export default function ToolSourcePicker({
   const tileTone = ACCENT_TILE[accent] || "indigo";
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <p className="text-sm leading-relaxed">{resolvedTitle}</p>
       {hint ? <p className="text-xs opacity-75">{hint}</p> : null}
 
       {items.length > 0 ? (
-        <ul className="ct-stack-sm max-h-52 overflow-y-auto">
+        <ul className="ed-stack-sm max-h-52 overflow-y-auto">
           {items.map((item) => {
             const selected = selectedId != null && String(selectedId) === String(item.id);
             return (
@@ -45,12 +45,10 @@ export default function ToolSourcePicker({
                 <button
                   type="button"
                   onClick={() => onPick(item)}
-                  className={`ct-stat-tile w-full text-left !p-3 transition ${
-                    selected ? "ring-2 ring-[var(--ct-accent)]" : ""
-                  }`}
+                  className={`ed-inset w-full text-left !p-3 transition ${ selected ? "ring-2 ring-[var(--ed-gold)]" : "" }`}
                 >
-                  <div className="ct-row gap-3 items-start">
-                    <span className={`ct-icon-tile ${tileTone} shrink-0`} aria-hidden>
+                  <div className="ed-row gap-3 items-start">
+                    <span className={`ed-row-icon ${tileTone} shrink-0`} aria-hidden>
                       <CtIcon name="receipt" size={18} />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -63,7 +61,7 @@ export default function ToolSourcePicker({
                       ) : null}
                     </span>
                     {selected ? (
-                      <CtIcon name="check" size={18} className="shrink-0 text-[var(--ct-accent)]" />
+                      <CtIcon name="check" size={18} className="shrink-0 text-[var(--ed-gold)]" />
                     ) : null}
                   </div>
                 </button>
@@ -72,11 +70,11 @@ export default function ToolSourcePicker({
           })}
         </ul>
       ) : (
-        <p className="text-sm opacity-75 ct-inset !p-3">{resolvedEmpty}</p>
+        <p className="text-sm opacity-75 ed-inset !p-3">{resolvedEmpty}</p>
       )}
 
-      <div className="ct-stack-sm">
-        <button type="button" onClick={onManual} className="ct-btn ct-btn-ghost w-full !text-sm">
+      <div className="ed-stack-sm">
+        <button type="button" onClick={onManual} className="ed-btn ed-btn-ghost w-full !text-sm">
           {resolvedManual}
         </button>
         {addLabel && onAdd ? (

@@ -1,12 +1,12 @@
 const TONE_CLASS = {
-  neutral: "ct-inset",
-  info: "ct-insight ct-insight-info rounded-xl",
-  warning: "ct-insight ct-insight-warning rounded-xl",
-  critical: "ct-insight ct-insight-warning rounded-xl",
-  positive: "ct-insight rounded-xl",
-  success: "ct-insight rounded-xl",
-  teal: "ct-tone-teal px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
-  coral: "ct-tone-coral px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
+  neutral: "ed-inset",
+  info: "ed-inset rounded-xl",
+  warning: "ed-inset-amber rounded-xl",
+  critical: "ed-inset-amber rounded-xl",
+  positive: "ed-inset rounded-xl",
+  success: "ed-inset-green rounded-xl",
+  teal: "ed-inset-green px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
+  coral: "ed-inset px-3 py-2.5 text-sm leading-relaxed border rounded-xl",
 };
 
 export function insightToneClass(tone = "neutral") {

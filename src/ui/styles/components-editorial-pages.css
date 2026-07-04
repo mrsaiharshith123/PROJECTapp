@@ -7,6 +7,8 @@ html[data-ui="ct"] .ed-masthead-top {
   align-items: flex-end;
   gap: 12px;
   width: 100%;
+  flex: 0 0 auto;
+  padding: 0 var(--ed-page-x);
 }
 
 html[data-ui="ct"] .ed-masthead-brand {
@@ -40,16 +42,88 @@ html[data-ui="ct"] .ed-glimpse-backdrop {
 
 html[data-ui="ct"] .ed-glimpse {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  top: calc(env(safe-area-inset-top, 0px) + 58px);
   right: max(var(--ed-page-x), env(safe-area-inset-right, 0px));
   z-index: 101;
-  width: min(300px, calc(100vw - 2 * var(--ed-page-x)));
+  width: min(320px, calc(100vw - 2 * var(--ed-page-x)));
   border-radius: var(--ed-r-lg);
-  border: 0.5px solid var(--ed-rule);
+  border: 1px solid var(--ed-rule);
   background: var(--ed-surface);
   color: var(--ed-ink);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 20px 56px rgba(0, 0, 0, 0.38);
   overflow: hidden;
+  transform-origin: top right;
+}
+
+html[data-ui="ct"] .ed-glimpse--open {
+  animation: ed-glimpse-in 0.24s var(--ed-ease-spring) both;
+}
+
+html[data-ui="ct"] .ed-glimpse-backdrop {
+  animation: ed-backdrop-in 0.2s var(--ed-ease) both;
+}
+
+@keyframes ed-glimpse-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes ed-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+html[data-ui="ct"] .ed-glimpse-head--avatar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px var(--ed-page-x) 12px;
+}
+
+html[data-ui="ct"] .ed-glimpse-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+html[data-ui="ct"] .ed-glimpse-gear {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--ed-ink-faint);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-ui="ct"] .ed-glimpse-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--ed-page-x);
+  border-top: 1px solid var(--ed-rule);
+}
+
+html[data-ui="ct"] .ed-glimpse-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  color: var(--ed-ink-soft);
+  font-family: var(--ed-font);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
 }
 
 html[data-ui="ct"] .ed-glimpse-head {
@@ -79,9 +153,9 @@ html[data-ui="ct"] .ed-glimpse-balance {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px var(--ed-page-x);
   border: none;
-  border-bottom: 0.5px solid var(--ed-rule);
+  border-top: 1px solid var(--ed-rule);
   background: var(--ed-surface-2);
   text-align: left;
   cursor: pointer;
@@ -136,9 +210,9 @@ html[data-ui="ct"] .ed-glimpse-row {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 11px 16px;
+  padding: 12px var(--ed-page-x);
   border: none;
-  border-bottom: 0.5px solid var(--ed-rule-soft);
+  border-top: 1px solid var(--ed-rule);
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -211,16 +285,17 @@ html[data-ui="ct"] .ed-glimpse-logout {
 }
 
 /* ── Ledger group lists ── */
-html[data-ui="ct"] .ed-paper .pos-group-header {
+html[data-ui="ct"] .ed-paper .pos-group-header,
+html[data-ui="ct"] .ed-page-full .pos-group-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
-  padding: 10px 18px 6px;
+  padding: 8px var(--ed-page-x) 6px;
   font-family: var(--ed-font);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ed-ink-faint);
 }
@@ -235,14 +310,15 @@ html[data-ui="ct"] .ed-paper .pos-group-header .ct-numeral {
   font-variant-numeric: tabular-nums;
 }
 
-html[data-ui="ct"] .ed-paper .pos-group-card {
-  margin: 0 18px 12px;
-  border: 0.5px solid var(--ed-rule);
+html[data-ui="ct"] .ed-paper .pos-group-card,
+html[data-ui="ct"] .ed-page-full .pos-group-card {
+  margin: 0 var(--ed-page-x) var(--ed-space-3);
+  border: 1px solid var(--ed-rule);
   border-radius: var(--ed-r-lg);
-  padding: 8px;
+  padding: var(--ed-space-2);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--ed-space-2);
   background: var(--ed-surface);
 }
 
@@ -382,20 +458,6 @@ html[data-ui="ct"] .ed-paper .ct-page-shell-head {
 
 html[data-ui="ct"] .ed-paper .ct-page-shell-body {
   gap: 0;
-}
-
-/* ── Ledger tabs row ── */
-html[data-ui="ct"] .ed-mast-tabs {
-  display: flex;
-  gap: 8px;
-  padding: 12px 18px 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  border-bottom: 1px solid var(--ed-rule);
-}
-
-html[data-ui="ct"] .ed-mast-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 /* ── Section padding inside ed-paper pages ── */

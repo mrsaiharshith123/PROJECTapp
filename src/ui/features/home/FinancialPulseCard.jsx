@@ -15,7 +15,6 @@ import { PressureRing } from "../../patterns/PressureRing.jsx";
 import { MetricOwnerLink } from "../../patterns/MetricOwnerLink.jsx";
 import { insightToneClass } from "../../tokens/severity.js";
 import { Heading, Caption } from "../../primitives/Text.jsx";
-import { Surface } from "../../primitives/Surface.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
 import { pickMicroTip } from "../../../guidance/index.js";
@@ -116,11 +115,14 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
   const visibleTabs = tabDefs.filter((t) => t.id !== "pressure" || showPressure);
 
   return (
-    <section className={embedded ? "ct-stack" : "ct-stack pos-hero liability ct-pulse-modern"}>
-      {!embedded ? <div className="pos-hero-glow liability" aria-hidden /> : null}
+    <section className="ed-pulse-card">
       <div
-        className={embedded ? "ct-row justify-end relative" : "ct-row-between relative"}
-        style={{ flexWrap: "wrap", alignItems: "flex-start" }}
+        className={embedded ? undefined : "ed-pulse-row-between"}
+        style={
+          embedded
+            ? { display: "flex", justifyContent: "flex-end", flexWrap: "wrap", alignItems: "flex-start" }
+            : undefined
+        }
       >
         {!embedded ? (
           <Heading level={2}>
@@ -128,43 +130,43 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
             <ConceptHelp conceptId="stability" />
           </Heading>
         ) : null}
-        <div className="ct-row gap-2 items-center flex-wrap shrink-0">
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
           <SegmentedControl options={visibleTabs} value={tab} onChange={setTab} />
         </div>
       </div>
 
       <TabContent tabId="snapshot" activeTab={tab}>
-        <div className="ct-stack text-sm">
-          <Caption className="block ct-guidance-micro">{t(microTipKey)}</Caption>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 13 }}>
+          <Caption className="block ed-guidance-micro">{t(microTipKey)}</Caption>
 
           {narrative && (narrative.strengths.length > 0 || narrative.weaknesses.length > 0) && (
-            <div className="ct-insight-accent ct-stack-sm">
+            <div className="ed-insight-accent" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {narrative.strengths.length > 0 && (
                 <Caption className="block">
-                  <span className="ct-text-success font-semibold">{t("pulse.strengths")} </span>
+                  <span className="ed-text-success" style={{ fontWeight: 600 }}>{t("pulse.strengths")} </span>
                   {joinEngineMessages(t, narrative.strengths)}
                 </Caption>
               )}
               {narrative.weaknesses.length > 0 && (
                 <Caption className="block">
-                  <span className="ct-text-warning font-semibold">{t("pulse.watch")} </span>
+                  <span className="ed-text-warning" style={{ fontWeight: 600 }}>{t("pulse.watch")} </span>
                   {joinEngineMessages(t, narrative.weaknesses)}
                 </Caption>
               )}
             </div>
           )}
 
-          <div className="ct-row-between gap-2" style={{ flexWrap: "wrap", alignItems: "flex-start" }} data-guide="pressure-score">
+          <div className="ed-pulse-row-between" data-guide="pressure-score">
             <div>
               <Caption className="inline-flex items-center">
                 {t("pulse.pressure")}
                 <InfoTip text={CALC_HELP.pressureScore} />
               </Caption>
             </div>
-            <div className="ct-stack-sm items-end shrink-0">
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
               <button
                 type="button"
-                className="ct-link !text-xs"
+                className="ed-link ed-link--xs"
                 onClick={async () => {
                   const data = {
                     healthScore: intel.health?.score,
@@ -196,7 +198,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           )}
 
           {stable.survival?.scenarios ? (
-            <div className="ct-inset ct-stack-sm">
+            <div className="ed-inset" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <MetricOwnerLink label={t("tier.survival.title")} to="/insights" />
               {[
                 { key: "baseline", label: t("tier.survival.baseline"), data: stable.survival.scenarios.baseline, fill: "" },
@@ -206,12 +208,12 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
                 const months = row.data?.runwayMonths ?? 0;
                 const pct = Math.min(100, (months / 12) * 100);
                 return (
-                  <div key={row.key} className="ct-survival-scenario-row">
-                    <span className="ct-survival-scenario-label">{row.label}</span>
-                    <div className="ct-survival-scenario-bar">
-                      <div className={`ct-survival-scenario-fill ${row.fill}`} style={{ width: `${pct}%` }} />
+                  <div key={row.key} className="ed-survival-row">
+                    <span className="ed-survival-label">{row.label}</span>
+                    <div className="ed-survival-bar">
+                      <div className={`ed-survival-fill ${row.fill}`} style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="ct-survival-scenario-months">
+                    <span className="ed-survival-months">
                       {t("netWorth.liquidity.months", { count: months })}
                     </span>
                   </div>
@@ -221,19 +223,19 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           ) : null}
 
           {emergency && emergency.recommended > 0 && (
-            <Surface className="ct-stack-sm">
-              <p className="text-xs font-semibold text-[var(--ct-text)] inline-flex items-center">
+            <div className="ed-inset" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ed-ink)", display: "inline-flex", alignItems: "center" }}>
                 {t("pulse.emergencyReserve")}
                 <InfoTip text={CALC_HELP.emergencyReserve} />
               </p>
               <Caption className="block">{t(emergency.messageKey)}</Caption>
-              <div className="ct-progress-track">
+              <div className="ed-progress-track">
                 <div
-                  className="ct-progress-fill ct-bar-animated"
+                  className="ed-progress-fill ed-bar-animated"
                   style={{ width: `${Math.min(100, emergency.progressPercent)}%` }}
                 />
               </div>
-            </Surface>
+            </div>
           )}
 
         </div>
@@ -241,16 +243,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
 
       {ahead ? (
         <TabContent tabId="ahead" activeTab={tab}>
-        <div className="ct-stack text-sm">
-          <div className="ct-row-between" style={{ flexWrap: "wrap" }}>
-            <Caption className="block">
-              {t("pulse.aheadIntro")}
-            </Caption>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 13 }}>
+          <div className="ed-pulse-row-between">
+            <Caption className="block">{t("pulse.aheadIntro")}</Caption>
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                className="ct-link !text-xs"
-                onClick={async () => {
+              <button type="button" className="ed-link ed-link--xs" onClick={async () => {
                   const text = ahead.shareSummary || "";
                   const r = await shareOrCopyPlainText(text, { title: t("pulse.shareTitle") });
                   if (r.method === "share") setShareHint(t("pulse.shared"));
@@ -262,7 +259,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
                 {t("pulse.shareSummary")}
               </button>
               {shareHint ? (
-                <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">{shareHint}</span>
+                <span className="ed-text-success" style={{ fontSize: 11, fontWeight: 500 }}>{shareHint}</span>
               ) : null}
             </div>
           </div>
@@ -270,16 +267,17 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           {ahead.dueWeeks?.length > 0 && (
             <div>
               <Caption className="block font-semibold mb-2">{t("pulse.dueNextWeeks")}</Caption>
-              <div className="ct-grid-4">
+              <div className="ed-grid-4">
                 {ahead.dueWeeks.map((w) => (
                   <div
                     key={w.week ?? w.label}
-                    className="ct-inset p-2 text-xs"
+                    className="ed-inset"
+                    style={{ fontSize: 12 }}
                   >
                     <p className="font-semibold">{w.label || t("pulse.weekN", { n: (w.week ?? 0) + 1 })}</p>
                     <Caption className="block mt-0.5">{formatAmount(w.amount || 0)}</Caption>
                     {w.items?.length > 0 && (
-                      <ul className="mt-1 ct-stack-sm text-[11px] truncate opacity-80">
+                      <ul style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 11, opacity: 0.8, overflow: "hidden", marginTop: 4, listStyle: "none", padding: 0 }}>
                         {w.items.slice(0, 3).map((it) => (
                           <li key={`${it.name}-${it.dueDate}`} className="truncate" title={it.name}>
                             {it.name}
@@ -296,7 +294,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           {ahead.forecastMonths?.length > 0 && (
             <div>
               <Caption className="block font-semibold mb-1">{t("pulse.nextMonths")}</Caption>
-              <ul className="ct-stack-sm text-xs">
+              <ul style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, listStyle: "none", padding: 0, margin: 0 }}>
                 {ahead.forecastMonths.slice(0, aheadForecastLimit).map((m) => (
                   <li key={m.monthKey || m.month} className="flex justify-between gap-2">
                     <span>{m.month}</span>
@@ -310,7 +308,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           )}
 
           {ahead.heavyMonths?.length > 0 && (
-            <p className="ct-insight-violet">
+            <p className="ed-insight-violet">
               {t("pulse.highestObligations", {
                 month: ahead.heavyMonths[0].month,
                 due: formatAmount(ahead.heavyMonths[0].due),
@@ -321,11 +319,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           {ahead.goalCapacity?.length > 0 && (
             <div>
               <Caption className="block font-semibold mb-1">{t("pulse.goalsVsFreeCash")}</Caption>
-              <ul className="ct-stack-sm text-xs">
+              <ul style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, listStyle: "none", padding: 0, margin: 0 }}>
                 {ahead.goalCapacity.slice(0, 5).map((g) => (
                   <li key={g.id} className="flex justify-between gap-2">
                     <span className="truncate">{g.name}</span>
-                    <span className={`shrink-0 ${g.feasible ? "ct-text-success" : "ct-text-warning"}`}>
+                    <span className={`shrink-0 ${g.feasible ? "ed-text-success" : "ed-text-warning"}`}>
                       {formatAmount(g.neededPerMonth)}/mo
                     </span>
                   </li>
@@ -341,11 +339,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
                   ? t("pulse.suggestedPayOrder")
                   : t("pulse.suggestedPayOrderShort", { amount: formatAmount(ahead.billPriority.shortfall) })}
               </Caption>
-              <ol className="ct-stack-sm text-xs list-decimal list-inside">
+              <ol style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, listStyle: "decimal", paddingLeft: 20, margin: 0 }}>
                 {ahead.billPriority.plan.map((row) => (
                   <li key={row.id}>
                     {row.name}{" "}
-                    <span className={row.canPay ? "ct-text-success" : "ct-text-warning"}>
+                    <span className={row.canPay ? "ed-text-success" : "ed-text-warning"}>
                       ({formatAmount(row.amount)}
                       {row.canPay ? ` — ${t("pulse.withinFreeCash")}` : ` — ${t("pulse.exceedsFreeCash")}`})
                     </span>
@@ -356,10 +354,10 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           )}
 
           {ahead.creditCard?.insights?.length > 0 && (
-            <div className="ct-insight-danger ct-stack-sm">
-              <p className="text-xs font-semibold text-rose-900 dark:text-rose-100">{t("pulse.creditCards")}</p>
+            <div className="ed-insight-danger" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ed-red)" }}>{t("pulse.creditCards")}</p>
               {ahead.creditCard.insights.map((line, i) => (
-                <p key={i} className="text-xs text-rose-900/90 dark:text-rose-100/90">
+                <p key={i} style={{ fontSize: 12, color: "var(--ed-ink-soft)" }}>
                   {line}
                 </p>
               ))}
@@ -371,7 +369,7 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
 
       <TabContent tabId="pressure" activeTab={tab}>
         {showPressure ? (
-        <div className="ct-stack">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Caption className="block">
             {t("pulse.mainPressure")}
             <InfoTip text={CALC_HELP.pressureWeight} />
@@ -380,12 +378,12 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           {stress?.top?.length ? (
             <>
               <Caption className="block font-medium">{t("pulse.mainPressureList")}</Caption>
-              <ol className="ct-stack-sm">
+              <ol style={{ display: "flex", flexDirection: "column", gap: 6, listStyle: "decimal", paddingLeft: 20, margin: 0 }}>
                 {stress.top.map((r, i) => (
                   <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
                     <span className="truncate">
                       {i + 1}. {r.name}
-                      <span className="ct-caption opacity-75 text-xs ml-1">({r.category})</span>
+                      <span className="ed-caption" style={{ opacity: 0.75, marginLeft: 4, fontSize: 12 }}>({r.category})</span>
                     </span>
                     <span className="font-semibold shrink-0">{formatAmount(Math.round(r.weight))}/mo</span>
                   </li>
@@ -397,17 +395,17 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
           )}
 
           {advancedPressure && pressureIntel?.forecastMessageKey && (
-            <p className="ct-insight-violet">
+            <p className="ed-insight-violet">
               {t(pressureIntel.forecastMessageKey, pressureIntel.forecastMessageParams || {})}
             </p>
           )}
 
           {intel.transactionRhythmNote && (
-            <p className="ct-insight-violet">{translateInsight(t, intel.transactionRhythmNote)}</p>
+            <p className="ed-insight-violet">{translateInsight(t, intel.transactionRhythmNote)}</p>
           )}
 
           {payoffRec && (
-            <p className="ct-insight-accent">
+            <p className="ed-insight-accent">
               <span className="font-semibold">{t("pulse.focusFirst")}</span> {payoffRec.name}
             </p>
           )}
@@ -416,11 +414,11 @@ export default function FinancialPulseCard({ microTipSeed = 0, embedded = false 
       </TabContent>
 
       <TabContent tabId="tips" activeTab={tab}>
-        <div className="ct-stack-sm">
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {tips.length === 0 ? (
             <Caption className="block">{t("pulse.noTips")}</Caption>
           ) : (
-            <ul className="ct-stack-sm">
+            <ul style={{ display: "flex", flexDirection: "column", gap: 6, listStyle: "none", padding: 0, margin: 0 }}>
               {tips.slice(0, 10).map((ins) => (
                 <li key={ins.id} className={`text-sm rounded-lg px-3 py-2 border ${insightToneClass(ins.tone)}`}>
                   <p>{translateInsight(t, ins)}</p>

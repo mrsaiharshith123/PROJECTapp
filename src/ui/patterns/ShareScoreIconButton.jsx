@@ -13,7 +13,7 @@ export function ShareScoreIconButton({ className = "", size = 18 }) {
   return (
     <button
       type="button"
-      className={`ct-ghost-icon-btn ${className}`.trim()}
+      className={`ed-btn ed-btn-ghost ${className}`.trim()}
       onClick={(e) => {
         e.stopPropagation();
         shareScore();

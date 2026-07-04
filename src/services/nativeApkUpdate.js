@@ -179,8 +179,6 @@ export async function downloadNativeApk(manifest, onProgress) {
   });
 
   markApkDownloaded(version);
-  const { invalidateUpdateCheckCache } = await import("./appUpdate.js");
-  invalidateUpdateCheckCache();
   onProgress?.({ phase: "installing", percent: 100 });
 }
 

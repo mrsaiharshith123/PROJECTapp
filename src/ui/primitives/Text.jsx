@@ -2,12 +2,12 @@ import { createElement } from "react";
 import { cn } from "../utils/cn.js";
 
 const MAP = {
-  h1: "ct-h1 ct-display",
-  h2: "ct-h2",
-  eyebrow: "ct-eyebrow",
-  body: "ct-body",
-  caption: "ct-caption",
-  greeting: "ct-greeting",
+  h1: "ed-display",
+  h2: "ed-display-sm",
+  eyebrow: "ed-kicker",
+  body: "ed-body",
+  caption: "ed-caption",
+  greeting: "ed-greeting",
 };
 
 /**

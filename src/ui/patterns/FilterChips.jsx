@@ -1,6 +1,6 @@
 export function FilterChips({ options, value, onChange }) {
   return (
-    <div className="ct-filter-chips-row">
+    <div className="ed-row-wrap">
       {options.map((opt) => {
         const id = opt.id ?? opt;
         const label = opt.label ?? opt;
@@ -10,7 +10,7 @@ export function FilterChips({ options, value, onChange }) {
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className={active ? "ct-chip ct-chip-active ct-chip-filter-active" : "ct-chip"}
+            className={active ? "ed-chip active active" : "ed-chip"}
           >
             {label}
           </button>

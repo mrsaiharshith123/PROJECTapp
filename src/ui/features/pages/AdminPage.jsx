@@ -4,10 +4,14 @@ import { useAdminOverview } from "../../../hooks/useAdminOverview.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { exportAdminOverviewCsv, adminTimeAgo, moduleAdoptionPct } from "../../../utils/adminExport.js";
 import { isRazorpayConfigured } from "../../../services/razorpayConfig.js";
-import { Button, Caption, Heading, Body, AdminSkeleton } from "../../index.js";
+import { Body, AdminSkeleton } from "../../index.js";
 import AdminMetricCard from "../admin/AdminMetricCard.jsx";
 import AdminGrowthChart from "../admin/AdminGrowthChart.jsx";
+import AdminMrrChart from "../admin/AdminMrrChart.jsx";
+import AdminRetentionChart from "../admin/AdminRetentionChart.jsx";
+import AdminAdoptionChart from "../admin/AdminAdoptionChart.jsx";
 import AdminUsersPanel from "../admin/AdminUsersPanel.jsx";
+import AdminBroadcastComposer from "../admin/AdminBroadcastComposer.jsx";
 
 function pct(value) {
   const n = Number(value);
@@ -24,21 +28,12 @@ function inr(value) {
   return Number.isFinite(n) ? `₹${n.toLocaleString("en-IN")}` : "—";
 }
 
-function formatWhen(iso) {
-  if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-  } catch {
-    return "—";
-  }
-}
-
 function churnTone(score) {
   const n = Number(score);
   if (!Number.isFinite(n)) return "default";
-  if (n < 30) return "positive";
-  if (n < 60) return "caution";
-  return "caution";
+  if (n < 30) return "green";
+  if (n < 60) return "amber";
+  return "red";
 }
 
 export default function AdminPage() {
@@ -61,7 +56,6 @@ export default function AdminPage() {
   const growth = useMemo(() => (Array.isArray(data?.growth) ? data.growth : []), [data]);
   const modules = useMemo(() => (Array.isArray(data?.modules) ? data.modules : []), [data]);
   const onboarding = useMemo(() => (Array.isArray(data?.onboarding) ? data.onboarding : []), [data]);
-  const recent = useMemo(() => (Array.isArray(data?.recent_signups) ? data.recent_signups : []), [data]);
   const totalUsers = Number(totals.users) || 0;
 
   const moduleRows = useMemo(
@@ -77,13 +71,21 @@ export default function AdminPage() {
   const mrrSpark = useMemo(() => growth.map((g) => Number(g.mrr_inr) || 0), [growth]);
 
   const integrations = [
-    { label: "Razorpay", ok: isRazorpayConfigured(), note: isRazorpayConfigured() ? t("admin.system.connected") : t("admin.system.notConfigured") },
-    { label: "Sentry", ok: Boolean(import.meta.env.VITE_SENTRY_DSN), note: import.meta.env.VITE_SENTRY_DSN ? t("admin.system.connected") : t("admin.system.notConfigured") },
+    {
+      label: "Razorpay",
+      ok: isRazorpayConfigured(),
+      note: isRazorpayConfigured() ? t("admin.system.connected") : t("admin.system.notConfigured"),
+    },
+    {
+      label: "Sentry",
+      ok: Boolean(import.meta.env.VITE_SENTRY_DSN),
+      note: import.meta.env.VITE_SENTRY_DSN ? t("admin.system.connected") : t("admin.system.notConfigured"),
+    },
   ];
 
   if (loading && !data) {
     return (
-      <div className="ct-page ct-admin-page">
+      <div className="ed-admin-page">
         <AdminSkeleton />
       </div>
     );
@@ -91,197 +93,150 @@ export default function AdminPage() {
 
   if (error === "NOT_ADMIN") {
     return (
-      <div className="ct-page ct-admin-page">
+      <div className="ed-admin-page" style={{ padding: "var(--ed-page-x)" }}>
         <Body>{t("admin.denied")}</Body>
-        <Button type="button" variant="outline" className="mt-4" onClick={() => navigate("/")}>
+        <button type="button" className="ed-btn ed-btn-secondary mt-4" onClick={() => navigate("/")}>
           {t("admin.backHome")}
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="ct-page ct-admin-page">
-      <div className="ct-hero-card pressure relative">
-        <div className="ct-hero-glow" aria-hidden />
-        <div className="ct-admin-command-bar relative">
-        <div className="ct-admin-brand">
-          <span className="ct-admin-title">{t("admin.commandTitle")}</span>
-          <span className="ct-admin-env-badge">{isProd ? "PROD" : "DEV"}</span>
+    <div className="ed-admin-page">
+      <div className="ed-admin-command-bar">
+        <div className="ed-admin-command-left">
+          <span className="ed-admin-title">{t("admin.commandTitle")}</span>
+          <span className={`ed-admin-env-badge${isProd ? " prod" : ""}`}>{isProd ? "PROD" : "DEV"}</span>
         </div>
-        <span className="ct-admin-refresh-time">
+        <span className="ed-admin-updated">
           {t("admin.commandUpdated", { time: adminTimeAgo(String(data?.fetched_at || "")) })}
         </span>
-        <div className="ct-admin-bar-actions">
-          <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => exportAdminOverviewCsv(data)}>
+        <div className="ed-admin-command-actions">
+          <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={() => exportAdminOverviewCsv(data)}>
             {t("admin.exportCsv")}
-          </Button>
-          <Button type="button" variant="outline" size="sm" className="!w-auto" onClick={refresh} disabled={loading}>
+          </button>
+          <button type="button" className="ed-btn ed-btn-secondary ed-btn-sm" onClick={refresh} disabled={loading}>
             {loading ? t("admin.refreshing") : t("admin.refresh")}
-          </Button>
-          <Button type="button" variant="ghost" size="sm" className="!w-auto" onClick={() => navigate("/profile")}>
+          </button>
+          <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={() => navigate("/profile")}>
             {t("admin.backApp")}
-          </Button>
-        </div>
+          </button>
         </div>
       </div>
 
-      <div className="ct-admin-kpi-strip">
+      <div className="ed-admin-kpi-strip">
         <AdminMetricCard label={t("admin.metric.users")} value={loading ? "…" : num(totals.users)} sparkline={growthSpark} />
         <AdminMetricCard label={t("admin.metric.dau")} value={loading ? "…" : num(totals.dau)} />
-        <AdminMetricCard label={t("admin.section.revenue")} value={loading ? "…" : inr(totals.mrr_inr)} tone="positive" sparkline={mrrSpark} />
+        <AdminMetricCard
+          label={t("admin.metric.mrr")}
+          value={loading ? "…" : inr(totals.mrr_inr)}
+          sparkline={mrrSpark}
+          tone="green"
+        />
         <AdminMetricCard label={t("admin.metric.active30")} value={loading ? "…" : num(totals.active_30d)} />
       </div>
 
-      {error && error !== "NOT_ADMIN" ? <Body className="ct-admin-error">{error}</Body> : null}
+      {error && error !== "NOT_ADMIN" ? (
+        <p className="ed-admin-error" style={{ padding: "12px var(--ed-page-x)" }}>
+          {error}
+        </p>
+      ) : null}
 
-      <section className="ct-admin-section">
-        <div className="ct-analytics-section-head">
-          <p className="ct-analytics-section-title">{t("admin.section.revenue")}</p>
-        </div>
-        <div className="ct-admin-metrics-grid">
-          <AdminMetricCard label={t("admin.metric.mrr")} value={loading ? "…" : inr(totals.mrr_inr)} sparkline={mrrSpark} />
+      <section className="ed-admin-section">
+        <p className="ed-admin-section-title">{t("admin.section.revenue")}</p>
+        <div className="ed-admin-kpi-strip">
+          <AdminMetricCard
+            label={t("admin.metric.mrr")}
+            value={loading ? "…" : inr(totals.mrr_inr)}
+            sparkline={mrrSpark}
+            tone="green"
+          />
           <AdminMetricCard label={t("admin.metric.arr")} value={loading ? "…" : inr(totals.arr_inr)} />
-          <AdminMetricCard label={t("admin.metric.conversion")} value={loading ? "…" : pct(totals.conversion_rate)} tone="positive" />
-          <AdminMetricCard label={t("admin.metric.arpu")} value={loading ? "…" : inr(totals.arpu_inr)} />
+          <AdminMetricCard
+            label={t("admin.metric.conversion")}
+            value={loading ? "…" : pct(totals.conversion_rate)}
+            tone="green"
+          />
+          <AdminMetricCard label={t("admin.metric.arpu")} value={loading ? "…" : inr(totals.arpu_inr)} wide />
         </div>
       </section>
 
-      <section className="ct-admin-section ct-admin-two-col">
-        <AdminGrowthChart points={growth} />
-        <div className="ct-admin-panel">
-          <Heading level={4}>{t("admin.section.retention")}</Heading>
-          <div className="ct-admin-metrics-grid ct-admin-metrics-compact">
-            <AdminMetricCard label={t("admin.retention.d1")} value={loading ? "…" : pct(retention.d1_pct)} />
-            <AdminMetricCard label={t("admin.retention.d7")} value={loading ? "…" : pct(retention.d7_pct)} />
-            <AdminMetricCard label={t("admin.retention.d30")} value={loading ? "…" : pct(retention.d30_pct)} />
+      <section className="ed-admin-section">
+        <div className="ed-admin-charts-row">
+          <AdminGrowthChart points={growth} />
+          <AdminMrrChart points={growth} />
+        </div>
+      </section>
+
+      <section className="ed-admin-section">
+        <AdminRetentionChart retention={retention} />
+      </section>
+
+      <section className="ed-admin-section">
+        <AdminAdoptionChart moduleRows={moduleRows} />
+      </section>
+
+      <section className="ed-admin-section">
+        <div className="ed-admin-two-col">
+          <div className="ed-admin-panel">
+            <p className="ed-admin-panel-title">{t("admin.section.health")}</p>
+            <AdminMetricCard
+              label={t("admin.metric.churnRisk")}
+              value={loading ? "…" : num(retention.churn_risk_score)}
+              tone={churnTone(retention.churn_risk_score)}
+            />
+            <AdminMetricCard
+              label={t("admin.metric.inactive14")}
+              value={loading ? "…" : num(totals.inactive_14d)}
+              tone="amber"
+            />
+            <AdminMetricCard label={t("admin.metric.premium")} value={loading ? "…" : num(totals.premium_users)} />
+            <AdminMetricCard label={t("admin.metric.sync")} value={loading ? "…" : num(totals.sync_users)} />
+          </div>
+          <div className="ed-admin-panel">
+            <p className="ed-admin-panel-title">{t("admin.section.onboarding")}</p>
+            {onboarding.length === 0 ? (
+              <p className="ed-admin-chart-hint">{t("admin.empty.onboarding")}</p>
+            ) : (
+              onboarding.map((o) => (
+                <div key={String(o.step)} className="ed-admin-funnel-row">
+                  <span className="ed-admin-funnel-label">{t("admin.onboarding.step", { step: o.step })}</span>
+                  <span className="ed-admin-funnel-value" style={{ color: "var(--ed-gold)" }}>
+                    {num(o.count)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
 
-      <section className="ct-admin-section">
-        <Heading level={3}>{t("admin.section.adoption")}</Heading>
-        <div className="ct-admin-panel">
-          {moduleRows.length === 0 ? (
-            <Caption>{t("admin.empty.modules")}</Caption>
-          ) : (
-            <table className="ct-admin-table">
-              <thead>
-                <tr>
-                  <th>{t("admin.adoption.feature")}</th>
-                  <th>{t("admin.adoption.users")}</th>
-                  <th>%</th>
-                  <th aria-hidden />
-                </tr>
-              </thead>
-              <tbody>
-                {moduleRows
-                  .slice()
-                  .sort((a, b) => (b.adoption_pct || 0) - (a.adoption_pct || 0))
-                  .map((m) => (
-                    <tr key={String(m.module)}>
-                      <td>{String(m.module)}</td>
-                      <td>{num(m.unique_users)}</td>
-                      <td>{pct(m.adoption_pct)}</td>
-                      <td style={{ width: 120 }}>
-                        <div className="ct-admin-adoption-bar">
-                          <div className="ct-admin-adoption-fill" style={{ width: `${m.adoption_pct || 0}%` }} />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+      <section className="ed-admin-section">
+        <p className="ed-admin-section-title">{t("admin.broadcasts.title")}</p>
+        <AdminBroadcastComposer />
       </section>
 
-      <section className="ct-admin-section ct-admin-two-col">
-        <div className="ct-admin-panel">
-          <Heading level={4}>{t("admin.section.health")}</Heading>
-          <AdminMetricCard
-            label={t("admin.metric.churnRisk")}
-            value={loading ? "…" : num(retention.churn_risk_score)}
-            tone={churnTone(retention.churn_risk_score)}
-          />
-          <AdminMetricCard label={t("admin.metric.inactive14")} value={loading ? "…" : num(totals.inactive_14d)} tone="caution" />
-        </div>
-        <div className="ct-admin-panel">
-          <Heading level={4}>{t("admin.section.atRisk")}</Heading>
-          {recent.filter((u) => Number(u.days_inactive) >= 14).length === 0 ? (
-            <Caption>{t("admin.empty.atRisk")}</Caption>
-          ) : (
-            recent
-              .filter((u) => Number(u.days_inactive) >= 14)
-              .slice(0, 5)
-              .map((u) => (
-                <div key={String(u.id)} className="ct-admin-user-row">
-                  <span>{String(u.display_name || "User")}</span>
-                  <span className="ct-admin-muted">{t("admin.atRisk.inactive", { days: u.days_inactive })}</span>
-                  <span className="ct-admin-tier">{String(u.subscription_tier || "free")}</span>
-                </div>
-              ))
-          )}
-        </div>
-      </section>
-
-      <section className="ct-admin-section ct-admin-two-col">
-        <div className="ct-admin-panel">
-          <Heading level={4}>{t("admin.section.distribution")}</Heading>
-          <Caption className="block">{t("admin.metric.premium")}: {num(totals.premium_users)}</Caption>
-          <Caption className="block mt-1">{t("admin.metric.sync")}: {num(totals.sync_users)}</Caption>
-        </div>
-        <div className="ct-admin-panel">
-          <Heading level={4}>{t("admin.section.onboarding")}</Heading>
-          {onboarding.length === 0 ? (
-            <Caption>{t("admin.empty.onboarding")}</Caption>
-          ) : (
-            <ul className="ct-admin-list">
-              {onboarding.map((o) => (
-                <li key={String(o.step)} className="ct-admin-list-row">
-                  <span className="ct-admin-list-label">{t("admin.onboarding.step", { step: o.step })}</span>
-                  <span className="ct-admin-list-value">{num(o.count)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </section>
-
-      <section className="ct-admin-section">
-        <Heading level={3}>{t("admin.section.system")}</Heading>
-        <div className="ct-admin-metrics-grid">
+      <section className="ed-admin-section">
+        <p className="ed-admin-section-title">{t("admin.section.system")}</p>
+        <div className="ed-admin-system-grid">
           {integrations.map((row) => (
-            <div key={row.label} className="ct-stat-tile indigo ct-admin-panel ct-admin-system-row">
-              <span className={`ct-admin-status-dot${row.ok ? " ok" : ""}`} aria-hidden />
-              <Body className="!text-sm">{row.label}</Body>
-              <Caption className="block opacity-80">{row.note}</Caption>
+            <div key={row.label} className="ed-admin-system-row">
+              <span className={`ed-admin-status-dot${row.ok ? " ok" : ""}`} aria-hidden />
+              <span className="ed-admin-system-label">{row.label}</span>
+              <span className="ed-admin-system-note">{row.note}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="ct-admin-section">
+      <section className="ed-admin-section">
         <AdminUsersPanel />
       </section>
 
-      <section className="ct-admin-section">
-        <Heading level={4}>{t("admin.section.recent")}</Heading>
-        {recent.length === 0 ? (
-          <Caption>{t("admin.empty.recent")}</Caption>
-        ) : (
-          <ul className="ct-admin-list">
-            {recent.map((u) => (
-              <li key={String(u.id)} className="ct-admin-list-row">
-                <span className="ct-admin-list-label">{String(u.display_name || "User")}</span>
-                <span className="ct-admin-list-value">{formatWhen(u.created_at)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <Caption className="block text-center pb-4">{t("admin.footer")}</Caption>
+      <p className="ed-admin-footer">
+        {t("admin.footer")} · {isProd ? t("admin.envProd") : t("admin.envDev")}
+      </p>
     </div>
   );
 }

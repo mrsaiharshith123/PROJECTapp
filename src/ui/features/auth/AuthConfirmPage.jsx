@@ -95,22 +95,36 @@ export default function AuthConfirmPage() {
           {phase === "processing" && (
             <>
               <LoadingSpinner size="md" showLogo />
-              <Heading level={2} className="ct-auth-confirm-title">
+              <Heading level={2} style={{ textAlign: "center", fontSize: "1.125rem", fontWeight: 600 }}>
                 {t("auth.confirmProcessingTitle")}
               </Heading>
-              <Body className="ct-auth-confirm-body">{t("auth.confirmProcessingBody")}</Body>
+              <Body style={{ textAlign: "center", color: "var(--ed-ink-soft)" }}>{t("auth.confirmProcessingBody")}</Body>
             </>
           )}
 
           {phase === "success" && (
             <>
-              <span className="ct-auth-confirm-icon ct-auth-confirm-icon-success" aria-hidden>
+              <span
+                className="ed-auth-confirm-icon ed-auth-confirm-icon-success"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 56,
+                  height: 56,
+                  margin: "0 auto",
+                  borderRadius: "50%",
+                  background: "var(--ed-green-soft)",
+                  color: "var(--ed-green)",
+                }}
+                aria-hidden
+              >
                 <CtIcon name="check" size={32} weight="bold" />
               </span>
-              <Heading level={2} className="ct-auth-confirm-title">
+              <Heading level={2} style={{ textAlign: "center", fontSize: "1.125rem", fontWeight: 600 }}>
                 {t("auth.confirmSuccessTitle")}
               </Heading>
-              <Body className="ct-auth-confirm-body">{t("auth.confirmSuccessBody")}</Body>
+              <Body style={{ textAlign: "center", color: "var(--ed-ink-soft)" }}>{t("auth.confirmSuccessBody")}</Body>
               <Link to="/" className="ed-btn ed-btn-primary ed-btn-block">
                 {t("auth.confirmContinueApp")}
               </Link>
@@ -119,13 +133,27 @@ export default function AuthConfirmPage() {
 
           {phase === "error" && (
             <>
-              <span className="ct-auth-confirm-icon ct-auth-confirm-icon-error" aria-hidden>
+              <span
+                className="ed-auth-confirm-icon ed-auth-confirm-icon-error"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 56,
+                  height: 56,
+                  margin: "0 auto",
+                  borderRadius: "50%",
+                  background: "var(--ed-red-soft)",
+                  color: "var(--ed-red)",
+                }}
+                aria-hidden
+              >
                 <CtIcon name="warning" size={32} weight="duotone" />
               </span>
-              <Heading level={2} className="ct-auth-confirm-title">
+              <Heading level={2} style={{ textAlign: "center", fontSize: "1.125rem", fontWeight: 600 }}>
                 {t("auth.confirmErrorTitle")}
               </Heading>
-              <Body className="ct-auth-confirm-body">{detail || t("auth.confirmErrorBody")}</Body>
+              <Body style={{ textAlign: "center", color: "var(--ed-ink-soft)" }}>{detail || t("auth.confirmErrorBody")}</Body>
               <Link to="/" className="ed-btn ed-btn-secondary ed-btn-block">
                 {t("auth.confirmBackHome")}
               </Link>

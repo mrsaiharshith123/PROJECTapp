@@ -7,7 +7,7 @@ import { Caption } from "../primitives/Text.jsx";
 export function FormField({ label, hint, children }) {
   return (
     <Stack gap="sm">
-      {label && <Caption className="font-semibold text-[var(--ct-text-secondary)]">{label}</Caption>}
+      {label && <Caption className="font-semibold" style={{ color: "var(--ed-ink-faint)" }}>{label}</Caption>}
       {children}
       {hint && <Caption>{hint}</Caption>}
     </Stack>

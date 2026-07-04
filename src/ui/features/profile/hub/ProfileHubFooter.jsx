@@ -40,7 +40,7 @@ export default function ProfileHubFooter({
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   return (
-    <footer className="ct-profile-hub-footer ct-reveal ct-reveal-delay-4">
+    <footer className="ed-profile-hub-footer">
       {showAuthActions && isLoggedIn ? (
         <>
           <Button
@@ -57,9 +57,9 @@ export default function ProfileHubFooter({
 
           {confirmSignOut ? (
             <Modal title={t("profileHub.signOutTitle")} onClose={() => !signingOut && setConfirmSignOut(false)}>
-              <div className="ct-stack-sm">
+              <div className="ed-stack-sm">
                 <Body className="!text-sm">{t("profileHub.signOutBody")}</Body>
-                <div className="ct-row">
+                <div className="ed-row">
                   <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmSignOut(false)} disabled={signingOut}>
                     {t("common.cancel")}
                   </Button>
@@ -82,14 +82,14 @@ export default function ProfileHubFooter({
       ) : null}
 
       {showAuthActions ? (
-        <button type="button" className="ct-danger-text-link" onClick={onDeleteData}>
+        <button type="button" className="ed-danger-link" onClick={onDeleteData}>
           {t("profileHub.deleteDataLink")}
         </button>
       ) : null}
 
       {showAuthActions && confirmDeleteOpen ? (
         <Modal title={t("backup.deleteModalTitle")} onClose={() => !deleting && onCloseDelete?.()}>
-          <div className="ct-stack-sm">
+          <div className="ed-stack-sm">
             <Body className="!text-sm">
               {t("backup.deleteModalBody", {
                 cloud: userHasCloud ? t("backup.deleteCloudModal") : t("backup.deleteSignout"),
@@ -97,14 +97,14 @@ export default function ProfileHubFooter({
             </Body>
             <Caption className="block">{t("profileHub.deleteTypePrompt")}</Caption>
             <input
-              className={`${inputClassName()} ct-input-tint`}
+              className={`${inputClassName()} ed-input-tint`}
               value={deleteConfirmValue}
               onChange={(e) => onDeleteConfirmChange?.(e.target.value)}
               placeholder={t("profileHub.deleteConfirmWord")}
               autoComplete="off"
             />
-            {deleteError ? <Caption className="block text-[var(--ct-danger)]">{deleteError}</Caption> : null}
-            <div className="ct-row">
+            {deleteError ? <Caption className="block text-[var(--ed-red)]">{deleteError}</Caption> : null}
+            <div className="ed-row">
               <Button type="button" variant="outline" className="flex-1" onClick={onCloseDelete} disabled={deleting}>
                 {t("common.cancel")}
               </Button>
@@ -122,9 +122,7 @@ export default function ProfileHubFooter({
         </Modal>
       ) : null}
 
-      <div className="ct-stat-tile !bg-transparent !border-0 !shadow-none">
-        <Caption className="text-center block pb-1 opacity-75">{t("profile.savedLocally")}</Caption>
-      </div>
+      <Caption className="text-center block pb-1 opacity-75">{t("profile.savedLocally")}</Caption>
       <ProfileBrandFooter />
     </footer>
   );

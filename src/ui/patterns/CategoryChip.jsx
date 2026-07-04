@@ -9,8 +9,8 @@ export function CategoryChip({ categoryId, className = "" }) {
   const { t } = useTranslation();
   const c = getCategoryById(categoryId);
   return (
-    <span className={cn("ct-chip", categoryChipClass(categoryId), className)}>
-      <span aria-hidden className="ct-chip-icon">
+    <span className={cn("ed-chip", categoryChipClass(categoryId), className)}>
+      <span aria-hidden className="ed-chip">
         <CtIcon name={c.icon} size={14} context="category" />
       </span>
       {translateCategory(t, categoryId)}

@@ -28,21 +28,21 @@ export default function MoneyPlannerPanel() {
   const safeSpend = Math.max(0, Math.round(intel.stability?.freeMoney ?? 0));
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="pressure"
         label={t("tools.planner.safeSpendLabel")}
         value={formatInr(safeSpend)}
       />
-      <div className="ct-stat-tile teal">
-        <p className="ct-stat-tile-label">{t("tools.advisor.plannerHint")}</p>
+      <div className="ed-inset-green">
+        <p className="ed-stat-label">{t("tools.advisor.plannerHint")}</p>
         <Caption className="block mt-1">{t("tools.planner.intro")}</Caption>
       </div>
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "afford" && <ExpenseSimulatorForm />}
       {tab === "whatif" && (
         <ProGate featureId="survival_scenarios">
-          <div className="ct-stat-tile">
+          <div className="ed-inset">
             <Caption>{t("dedup.survivalOnInsights")}</Caption>
             <MetricOwnerLink label={t("money.tab.insights")} to="/insights" />
           </div>

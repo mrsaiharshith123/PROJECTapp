@@ -27,8 +27,8 @@ export default function ProfileGuidanceSection({ onStartGuide }) {
       />
       {settings.appGuideComplete ? (
         <SettingsGroupContent>
-          <div className="ct-stat-tile">
-            <p className="ct-stat-tile-label">{t("guide.completedNote")}</p>
+          <div className="ed-inset">
+            <p style={{ fontSize: 13, color: "var(--ed-ink-soft)" }}>{t("guide.completedNote")}</p>
           </div>
         </SettingsGroupContent>
       ) : null}

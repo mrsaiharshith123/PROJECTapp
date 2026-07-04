@@ -47,6 +47,15 @@ export async function upsertDeviceSession(userId, settings = {}) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId) return null;
   const deviceId = getDeviceId();
+
+  const { data: existing } = await supabase
+    .from(TABLE)
+    .select("id")
+    .eq("user_id", userId)
+    .eq("device_id", deviceId)
+    .maybeSingle();
+
+  const isNewDevice = !existing;
   const info = await refineAndGetDeviceInfo();
   const row = {
     user_id: userId,
@@ -63,6 +72,19 @@ export async function upsertDeviceSession(userId, settings = {}) {
     .select()
     .maybeSingle();
   if (error) throw error;
+
+  if (isNewDevice) {
+    await supabase
+      .from("user_notifications")
+      .insert({
+        user_id: userId,
+        type: "security",
+        title: "New sign-in detected",
+        body: "A new device signed into your Perovo account. If this wasn't you, go to Security settings.",
+        route: "/you/security",
+      })
+      .catch(() => {});
+  }
 
   try {
     const all = await fetchDeviceSessionsRaw(userId);

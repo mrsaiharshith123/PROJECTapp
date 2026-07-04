@@ -3,7 +3,7 @@ import { Body } from "../primitives/Text.jsx";
 
 export function InsightBanner({ children, variant = "success", className = "" }) {
   const v =
-    variant === "warning" ? "ct-insight ct-insight-warning" : variant === "info" ? "ct-insight ct-insight-info" : "ct-insight";
+    variant === "warning" ? "ed-inset ed-inset-amber" : variant === "info" ? "ed-inset ed-inset" : "ed-inset";
   return (
     <div className={cn(v, className)}>
       <Body>{children}</Body>

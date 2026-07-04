@@ -1,31 +1,64 @@
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { SettingsGroupRow, SettingsGroupContent } from "./SettingsGroup.jsx";
+import { SettingsGroupRow } from "./SettingsGroup.jsx";
 import { useAppUpdateAction } from "../../../hooks/useAppUpdateAction.js";
 import UpdateProgressModal from "../UpdateProgressModal.jsx";
 
-/** In-app OTA update — manual check, progress bar, auto restart. */
 export default function ProfileUpdateAppRow() {
   const { t } = useTranslation();
-  const { status, busy, runUpdate, progressOpen, progress } = useAppUpdateAction();
+  const { phase, progress, checkResult, check, installApk } = useAppUpdateAction();
+
+  const busy = phase === "checking" || phase === "downloading";
+  const showProgress = phase === "downloading";
+
+  function statusLabel() {
+    if (phase === "current") return t("support.updateAppCurrent", { version: checkResult?.localVersion || "" });
+    if (phase === "apk_ready") {
+      return t("support.updateAppShellOnly", {
+        local: checkResult?.localNativeVersion || checkResult?.localVersion || "",
+        remote: checkResult?.remoteVersion || "",
+      });
+    }
+    if (phase === "error") return t("support.updateAppError");
+    return "";
+  }
 
   return (
-    <div className="ct-stack-sm">
+    <div>
       <SettingsGroupRow
         icon="arrows-clockwise"
         iconColor="violet"
         label={t("settings.row.updateApp")}
         hint={t("support.updateAppHint")}
-        onClick={runUpdate}
+        onClick={phase === "apk_ready" ? installApk : check}
         disabled={busy}
       />
-      {status ? (
-        <SettingsGroupContent>
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-tile-value text-sm">{status}</p>
-          </div>
-        </SettingsGroupContent>
+
+      {statusLabel() ? (
+        <p
+          style={{
+            fontSize: 12,
+            color: "var(--ed-muted, var(--color-muted))",
+            padding: "4px 20px 8px",
+          }}
+        >
+          {statusLabel()}
+        </p>
       ) : null}
-      <UpdateProgressModal open={progressOpen} progress={progress} />
+
+      {phase === "apk_ready" && checkResult?.remoteVersion ? (
+        <div style={{ padding: "0 20px 12px" }}>
+          <button
+            type="button"
+            className="ed-btn ed-btn-primary"
+            style={{ width: "100%" }}
+            onClick={installApk}
+          >
+            {t("support.updateAppInstallApk", { version: checkResult.remoteVersion })}
+          </button>
+        </div>
+      ) : null}
+
+      <UpdateProgressModal open={showProgress} progress={progress} />
     </div>
   );
 }

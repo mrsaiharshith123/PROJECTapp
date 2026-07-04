@@ -62,12 +62,14 @@ export default function LedgerPage() {
   return (
     <div className="ed-page-full">
       <header className="ed-masthead">
-        <div>
-          <h1 className="ed-masthead-title">{t("nav.ledger")}</h1>
-          <p className="ed-masthead-sub">{t("ledger.ed.tagline")}</p>
-        </div>
-        <div className="ed-masthead-right">
-          <HomeEditorialAvatar tier={tier} />
+        <div className="ed-masthead-top">
+          <div className="ed-masthead-brand">
+            <h1 className="ed-title">{t("nav.ledger")}</h1>
+            <p className="ed-masthead-sub">{t("ledger.ed.tagline")}</p>
+          </div>
+          <div className="ed-masthead-right">
+            <HomeEditorialAvatar tier={tier} />
+          </div>
         </div>
       </header>
 

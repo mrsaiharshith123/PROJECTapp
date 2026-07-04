@@ -31,11 +31,11 @@ export default function FinancialLifeOverviewPanel({ hub, insights }) {
       icon="lightning"
     >
       <SettingsGroupContent className="!pt-2">
-        <ul className="ct-nw-journey-list">
+        <ul className="ed-nw-journey-list">
           {items.map((item) => (
             <li
               key={item.id || item.key}
-              className={`ct-stat-tile ct-nw-insight ct-nw-insight-compact ct-nw-insight-${toneClass(item.tone)}`}
+              className={`ed-inset ed-nw-insight ed-nw-insight-compact ed-nw-insight-${toneClass(item.tone)}`}
             >
               {t(item.key, item.params || {})}
             </li>

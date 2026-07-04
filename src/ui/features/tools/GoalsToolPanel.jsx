@@ -16,7 +16,7 @@ import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { formatInr } from "../../../constants/symbols.js";
 
 const GOAL_TYPE_IDS = ["reduce_open_debt", "income_ratio_cap", "save_amount", "education", "wedding"];
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 /** @param {string} id */
 function goalTypeI18nKey(id) {
@@ -133,7 +133,7 @@ export default function GoalsToolPanel({
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.goals.heroLabel")}
@@ -152,7 +152,7 @@ export default function GoalsToolPanel({
         />
       )}
       <div>
-        <label className="ct-field-label">{t("goals.typeLabel")}</label>
+        <label className="ed-field-label">{t("goals.typeLabel")}</label>
         <select className={fieldClass} value={gType} onChange={(e) => setGType(e.target.value)}>
           {GOAL_TYPE_IDS.map((id) => (
             <option key={id} value={id}>
@@ -162,7 +162,7 @@ export default function GoalsToolPanel({
         </select>
       </div>
       <div>
-        <label className="ct-field-label">{t("goals.nameLabel")}</label>
+        <label className="ed-field-label">{t("goals.nameLabel")}</label>
         <input
           className={fieldClass}
           value={gTitle}
@@ -171,14 +171,14 @@ export default function GoalsToolPanel({
         />
       </div>
       <div>
-        <label className="ct-field-label">
+        <label className="ed-field-label">
           {gType === "income_ratio_cap" ? t("goals.targetRatio") : t("goals.targetAmount", { currency: INR })}
         </label>
         <input className={fieldClass} value={gTarget} onChange={(e) => setGTarget(e.target.value)} inputMode="decimal" />
       </div>
       {(gType === "save_amount" || gType === "education" || gType === "wedding") && (
         <div>
-          <label className="ct-field-label">{t("goals.targetDate")}</label>
+          <label className="ed-field-label">{t("goals.targetDate")}</label>
           <input
             type="date"
             className={fieldClass}
@@ -187,10 +187,10 @@ export default function GoalsToolPanel({
           />
         </div>
       )}
-      <button type="button" className="ct-btn ct-btn-primary w-full" onClick={submitGoal} disabled={!goalGate.ok}>
+      <button type="button" className="ed-btn ed-btn-primary w-full" onClick={submitGoal} disabled={!goalGate.ok}>
         {t("goals.addGoal")}
       </button>
-      <div className="ct-stack-sm pt-2 border-t border-[var(--ct-border)]">
+      <div className="ed-stack-sm pt-2 border-t border-[var(--ed-rule)]">
         {allGoals.length === 0 ? (
           <Caption>{t("goals.empty")}</Caption>
         ) : (
@@ -216,8 +216,8 @@ export default function GoalsToolPanel({
                   })
                 : null;
             return (
-              <div key={g.id} className="ct-card-flat ct-stack-sm !p-3">
-                <div className="ct-row-between gap-2">
+              <div key={g.id} className="ed-inset ed-stack-sm !p-3">
+                <div className="ed-row-between gap-2">
                   <div className="min-w-0">
                     <Body className="font-semibold truncate">{g.title}</Body>
                     <Caption>{t(goalTypeI18nKey(g.type))}</Caption>
@@ -239,29 +239,29 @@ export default function GoalsToolPanel({
                       </Caption>
                     )}
                   </div>
-                  <div className="ct-stack-sm shrink-0">
+                  <div className="ed-stack-sm shrink-0">
                     <button
                       type="button"
                       onClick={() => updateGoal(g.id, { active: !g.active })}
-                      className="ct-link !text-xs"
+                      className="ed-link !text-xs"
                     >
                       {g.active === false ? t("goals.resume") : t("goals.pause")}
                     </button>
                     <button
                       type="button"
                       onClick={() => updateGoal(g.id, { archived: true, active: false })}
-                      className="ct-link !text-xs"
+                      className="ed-link !text-xs"
                     >
                       {t("goals.archive")}
                     </button>
-                    <button type="button" onClick={() => deleteGoal(g.id)} className="ct-link !text-xs">
+                    <button type="button" onClick={() => deleteGoal(g.id)} className="ed-link !text-xs">
                       {t("common.delete")}
                     </button>
                   </div>
                 </div>
                 {(g.type === "save_amount" || g.type === "education" || g.type === "wedding") && (
                   <>
-                    <div className="ct-row gap-2">
+                    <div className="ed-row gap-2">
                       <input
                         type="number"
                         min="0"
@@ -272,7 +272,7 @@ export default function GoalsToolPanel({
                       />
                       <button
                         type="button"
-                        className="ct-btn ct-btn-outline ct-btn-sm shrink-0"
+                        className="ed-btn ed-btn-outline ed-btn-sm shrink-0"
                         onClick={() => {
                           const amt = Number(goalLogAmounts[g.id]) || 0;
                           logSavingsToGoal(g.id, amt);
@@ -313,8 +313,8 @@ export default function GoalsToolPanel({
           })
         )}
       </div>
-      <div className="ct-stat-tile">
-        <p className="ct-stat-tile-label">{t("tools.goals.disclaimer")}</p>
+      <div className="ed-inset">
+        <p className="ed-stat-label">{t("tools.goals.disclaimer")}</p>
       </div>
       {celebration ? (
         <CelebrationOverlay

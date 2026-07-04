@@ -8,16 +8,16 @@ export function TierLimitBanner({ title, message, compact = false, className = "
   const navigate = useNavigate();
   if (compact) {
     return (
-      <Caption className="block text-[var(--ct-warning)]">
+      <Caption className="block" style={{ color: "var(--ed-amber)" }}>
         {message}{" "}
-        <button type="button" className="ct-link !text-xs" onClick={() => navigate("/profile#upgrade")}>
+        <button type="button" className="ed-link ed-link--xs" onClick={() => navigate("/profile#upgrade")}>
           View plans
         </button>
       </Caption>
     );
   }
   return (
-    <Card className={`ct-stack-sm border-[var(--ct-warning)]/30 bg-[var(--ct-warning-soft)] ${className}`.trim()}>
+    <Card className={`ed-stack-sm ed-inset-amber ${className}`.trim()}>
       <Body className="font-semibold">{title}</Body>
       <Caption className="block">{message}</Caption>
       <Button type="button" variant="primary" size="sm" onClick={() => navigate("/profile#upgrade")}>

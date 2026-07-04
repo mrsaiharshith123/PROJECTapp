@@ -12,7 +12,7 @@ import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function LendingOfferReview() {
   const { t } = useTranslation();
@@ -58,14 +58,21 @@ export default function LendingOfferReview() {
 
   if (!offer) {
     return (
-      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
-        <Card className="ct-stack-sm text-center py-10">
-          <span className="ct-icon-tile danger mx-auto" aria-hidden>
+      <div
+        className="ed-page ed-stack max-w-lg mx-auto min-h-screen justify-center"
+        style={{ background: "var(--ed-bg)" }}
+      >
+        <Card className="ed-stack-sm text-center py-10">
+          <span
+            className="ed-icon-tile mx-auto"
+            style={{ color: "var(--ed-red)", background: "var(--ed-red-soft)" }}
+            aria-hidden
+          >
             <CtIcon name="warning" size={24} context="status" />
           </span>
           <Body className="font-semibold">{t("lending.offer.invalidTitle")}</Body>
           <Caption className="block">{t("lending.offer.invalidCode")}</Caption>
-          <Link to="/" className="ct-link text-sm font-semibold mt-2 inline-block">
+          <Link to="/" className="ed-link text-sm font-semibold mt-2 inline-block">
             {t("lending.offer.goHome")}
           </Link>
         </Card>
@@ -78,16 +85,23 @@ export default function LendingOfferReview() {
 
   if (accepted) {
     return (
-      <div className="ct-page ct-stack max-w-lg mx-auto min-h-screen justify-center" style={{ background: "var(--ct-bg)" }}>
-        <Card className="ct-stack-sm text-center py-8">
-          <span className="ct-icon-tile teal mx-auto" aria-hidden>
+      <div
+        className="ed-page ed-stack max-w-lg mx-auto min-h-screen justify-center"
+        style={{ background: "var(--ed-bg)" }}
+      >
+        <Card className="ed-stack-sm text-center py-8">
+          <span
+            className="ed-icon-tile mx-auto"
+            style={{ color: "var(--ed-green)", background: "var(--ed-green-soft)" }}
+            aria-hidden
+          >
             <CtIcon name="check" size={28} context="status" />
           </span>
-          <Body className="font-semibold ct-text-success">{t("lending.offer.acceptedTitle")}</Body>
+          <Body className="font-semibold ed-success-text">{t("lending.offer.acceptedTitle")}</Body>
           <Caption className="block">
             {t("lending.offer.acceptedBody", { name: offer.borrowerName })}
           </Caption>
-          <Link to="/agreements" className="ct-link text-sm font-semibold mt-4 inline-block">
+          <Link to="/agreements" className="ed-link text-sm font-semibold mt-4 inline-block">
             {t("lending.offer.openTracker")}
           </Link>
         </Card>
@@ -96,15 +110,14 @@ export default function LendingOfferReview() {
   }
 
   return (
-    <div className="ct-page ct-stack max-w-lg mx-auto pb-10" style={{ background: "var(--ct-bg)" }}>
-      <div className="ct-hero-card lending relative">
-        <div className="ct-hero-glow" aria-hidden />
-        <Eyebrow>{t("lending.offer.eyebrow")}</Eyebrow>
-        <p className="ct-hero-label mt-2">{t("lending.offer.headline", { name: offer.borrowerName })}</p>
-        <p className="ct-hero-number">{formatInr(offer.amount)}</p>
+    <div className="ed-page ed-stack max-w-lg mx-auto pb-10" style={{ background: "var(--ed-bg)" }}>
+      <div className="ed-inset relative">
+<Eyebrow>{t("lending.offer.eyebrow")}</Eyebrow>
+        <p className="ed-kicker mt-2">{t("lending.offer.headline", { name: offer.borrowerName })}</p>
+        <p className="ed-hero-number">{formatInr(offer.amount)}</p>
       </div>
 
-      <Card className="ct-stack-sm">
+      <Card className="ed-stack-sm">
         <Caption className="block font-semibold uppercase tracking-wide">{t("lending.offer.trustTitle")}</Caption>
         <span className={`inline-flex text-sm font-bold px-3 py-1 rounded-full border ${semanticToneToClass(trustScoreToTone(score))}`}>
           {score}/100 · {label}
@@ -117,21 +130,21 @@ export default function LendingOfferReview() {
         )}
       </Card>
 
-      <div className="ct-grid-2">
-        <div className="ct-stat-tile indigo">
-          <p className="ct-stat-tile-label">{t("lending.offer.interest")}</p>
-          <p className="ct-stat-tile-value ct-numeral mt-1">
+      <div className="ed-grid-2">
+        <div className="ed-inset">
+          <p className="ed-stat-label">{t("lending.offer.interest")}</p>
+          <p className="ed-stat-value ed-numeral mt-1">
             {t("lending.offer.interestPerYear", { rate: offer.interestRate || 0 })}
           </p>
         </div>
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-label">{t("lending.offer.payBackBy")}</p>
-          <p className="ct-stat-tile-value mt-1">{offer.dueDate}</p>
+        <div className="ed-inset-green">
+          <p className="ed-stat-label">{t("lending.offer.payBackBy")}</p>
+          <p className="ed-stat-value mt-1">{offer.dueDate}</p>
         </div>
       </div>
 
       {(offer.purpose || offer.collateral) && (
-        <Card className="ct-stack-sm">
+        <Card className="ed-stack-sm">
           {offer.purpose ? (
             <Caption className="block">
               <span className="font-semibold">{t("lending.offer.for")}</span> {offer.purpose}
@@ -151,24 +164,24 @@ export default function LendingOfferReview() {
         </Card>
       )}
 
-      <Card className="ct-stack-sm">
+      <Card className="ed-stack-sm">
         <Body className="text-xs font-semibold">{t("lending.offer.agreement")}</Body>
-        <pre className="ct-inset text-[11px] whitespace-pre-wrap max-h-40 overflow-y-auto !p-3">{offer.agreementText}</pre>
+        <pre className="ed-inset text-[11px] whitespace-pre-wrap max-h-40 overflow-y-auto !p-3">{offer.agreementText}</pre>
       </Card>
 
-      <Card className="ct-stack">
+      <Card className="ed-stack">
         <ToneSurface tone="warning">
           <Caption className="block">{LEGAL_DISCLAIMER}</Caption>
         </ToneSurface>
         <div>
-          <label className="ct-field-label">{t("lending.offer.lenderName")}</label>
+          <label className="ed-field-label">{t("lending.offer.lenderName")}</label>
           <input className={fieldClass} value={lenderName} onChange={(e) => setLenderName(e.target.value)} />
         </div>
         <div>
-          <label className="ct-field-label">{t("lending.offer.signAccept")}</label>
+          <label className="ed-field-label">{t("lending.offer.signAccept")}</label>
           <input className={fieldClass} value={signName} onChange={(e) => setSignName(e.target.value)} />
         </div>
-        <label className="ct-row gap-2 items-start ct-caption">
+        <label className="ed-caption flex items-start gap-2">
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" />
           {t("lending.offer.agreeLender")}
         </label>

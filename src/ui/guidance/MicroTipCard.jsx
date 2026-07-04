@@ -8,7 +8,7 @@ export function MicroTipCard({ seed = 0 }) {
   const { t } = useTranslation();
   const tipKey = pickMicroTip(seed);
   return (
-    <Card variant="flat" className="ct-guidance-micro">
+    <Card variant="flat" className="ed-inset">
       <Eyebrow>{t("guidance.insight")}</Eyebrow>
       <Caption className="block mt-1">{t(tipKey)}</Caption>
     </Card>

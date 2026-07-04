@@ -11,9 +11,9 @@ export function OnboardingProgress({ step, total = 4 }) {
   const { t } = useTranslation();
   return (
     <div className="mb-4">
-      <div className="ct-onboard-dots" aria-hidden>
+      <div className="ed-onboard-dots" aria-hidden>
         {Array.from({ length: total }, (_, i) => (
-          <span key={i} className={`ct-onboard-dot ${i === step ? "active" : ""}`} />
+          <span key={i} className={`ed-onboard-dot ${i === step ? "active" : ""}`} />
         ))}
       </div>
       <Caption className="block text-center mt-2">{t("onboarding.stepOf", { current: step + 1, total })}</Caption>
@@ -34,24 +34,24 @@ export function OnboardingModeStep({
   const titlePrefix = replay ? t("onboarding.review") : t("onboarding.welcome");
 
   return (
-    <div className="ct-onboard-page ct-onboard-modern">
-      <div className="ct-hero-card lending ct-onboard-step-hero">
-        <p className="ct-hero-label">{titlePrefix}</p>
-        <h1 className="ct-onboard-title !mt-1">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
+    <div className="ed-page-shell">
+      <div className="ed-inset">
+        <p className="ed-field-label">{titlePrefix}</p>
+        <h1 className="ed-page-shell-title !mt-1">{replay ? t("onboarding.modeReplayTitle") : t("onboarding.title")}</h1>
         <Caption className="block mt-2 relative">
           {replay ? t("onboarding.modeReplaySubtitle") : t("onboarding.subtitle")}
         </Caption>
       </div>
-      <div className="ct-stack">
+      <div className="ed-stack">
         {ONBOARDING_EXPERIENCES.filter((m) => !m.hidden).map((m) => (
           <button
             key={m.id}
             type="button"
             onClick={() => onExperienceChange(m.id)}
-            className={`ct-stat-tile indigo ct-pressable w-full !text-left ${experienceId === m.id ? "ct-option-card-active" : ""}`}
+            className={`ed-inset w-full !text-left ${experienceId === m.id ? "ed-inset-active" : ""}`}
           >
-            <span className="ct-row items-start gap-3">
-              <span className="ct-icon-tile ct-icon-tile-sm indigo shrink-0" aria-hidden>
+            <span className="flex items-start gap-3">
+              <span className="ed-row-icon shrink-0" aria-hidden>
                 <CtIcon name={m.icon} size={22} />
               </span>
               <span className="min-w-0">
@@ -67,7 +67,7 @@ export function OnboardingModeStep({
         <Body className="!text-sm mt-1">{t("onboarding.privacyNote")}</Body>
         <button
           type="button"
-          className="ct-link !text-xs mt-2"
+          className="ed-link !text-xs mt-2"
           onClick={() => {
             const base = routerBasename() ? `${routerBasename()}/privacy` : "/privacy";
             window.open(base, "_blank", "noopener,noreferrer");
@@ -76,7 +76,7 @@ export function OnboardingModeStep({
           {t("onboarding.privacyPolicyLink")}
         </button>
       </ToneSurface>
-      <div className="ct-row">
+      <div className="flex gap-2">
         {replay && (
           <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onCancel}>
             {t("common.cancel")}
@@ -102,15 +102,15 @@ export function OnboardingModeStep({
 export function OnboardingFocusStep({ experience, onBack, onContinue }) {
   const { t } = useTranslation();
   return (
-    <div className="ct-onboard-page ct-onboard-modern">
-      <div className="ct-hero-card lending">
+    <div className="ed-page-shell">
+      <div className="ed-inset">
         <Eyebrow>{experience.label}</Eyebrow>
-        <h1 className="ct-onboard-title">{t("onboarding.focusTitle")}</h1>
-        <Card variant="flat" className="ct-guidance-onboard-explain mt-3">
+        <h1 className="ed-page-shell-title">{t("onboarding.focusTitle")}</h1>
+        <Card variant="flat" className="ed-inset mt-3">
           <Body className="!text-sm">{experience.explain}</Body>
         </Card>
       </div>
-      <div className="ct-row">
+      <div className="flex gap-2">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
           {t("common.back")}
         </Button>
@@ -140,21 +140,21 @@ export function OnboardingBasicsStep({
   const { t } = useTranslation();
 
   return (
-    <div className="ct-onboard-page ct-onboard-modern">
-      <div className="ct-hero-card lending">
+    <div className="ed-page-shell">
+      <div className="ed-inset">
         <Eyebrow>{t("onboarding.setupEyebrow")}</Eyebrow>
-        <h1 className="ct-onboard-title">
+        <h1 className="ed-page-shell-title">
           {replay ? t("onboarding.basicsTitleReplay") : t("onboarding.basicsTitle")}
         </h1>
         <Caption className="block mt-2">{t("onboarding.basicsRequired")}</Caption>
       </div>
-      <Card className="ct-stack ct-nw-panel">
+      <Card className="ed-stack ed-inset">
         <div>
-          <label className="ct-field-label">{t("onboarding.nameLabel")}</label>
+          <label className="ed-field-label">{t("onboarding.nameLabel")}</label>
           <input className={fieldClass} value={displayName} onChange={(e) => onDisplayNameChange(e.target.value)} required />
         </div>
         <div>
-          <label className="ct-field-label">{t("onboarding.mobileLabel")}</label>
+          <label className="ed-field-label">{t("onboarding.mobileLabel")}</label>
           <input
             type="tel"
             className={fieldClass}
@@ -166,7 +166,7 @@ export function OnboardingBasicsStep({
           />
         </div>
         <div>
-          <label className="ct-field-label">{t("onboarding.salaryLabel")}</label>
+          <label className="ed-field-label">{t("onboarding.salaryLabel")}</label>
           <input
             type="number"
             min="1"
@@ -177,13 +177,13 @@ export function OnboardingBasicsStep({
           />
         </div>
         <div>
-          <label className="ct-field-label">{t("profile.userCity")} *</label>
+          <label className="ed-field-label">{t("profile.userCity")} *</label>
           <CitySelect value={userCity} onChange={onUserCityChange} required />
           <Caption className="block mt-1">{t("profile.userCityHint")}</Caption>
         </div>
       </Card>
-      {fieldError && <Caption className="block text-[var(--ct-danger)]">{fieldError}</Caption>}
-      <div className="ct-row">
+      {fieldError && <Caption className="block text-[var(--ed-red)]">{fieldError}</Caption>}
+      <div className="flex gap-2">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
           {t("common.back")}
         </Button>
@@ -208,13 +208,13 @@ export function OnboardingBillsStep({
   const { t } = useTranslation();
 
   return (
-    <div className="ct-onboard-page ct-onboard-modern">
-      <div className="ct-hero-card lending">
+    <div className="ed-page-shell">
+      <div className="ed-inset">
         <Eyebrow>{t("onboarding.initialSetupEyebrow")}</Eyebrow>
-        <h1 className="ct-onboard-title">{t("onboarding.billsTitle")}</h1>
+        <h1 className="ed-page-shell-title">{t("onboarding.billsTitle")}</h1>
         <Caption className="block mt-2">{t("onboarding.billsSubtitle")}</Caption>
       </div>
-      <div className="ct-grid-2">
+      <div className="ed-grid-2">
         {QUICK_COMMITMENT_TEMPLATES.map((tpl) => {
           const active = selectedLabels.has(tpl.label);
           return (
@@ -222,9 +222,9 @@ export function OnboardingBillsStep({
               key={tpl.label}
               type="button"
               onClick={() => onToggleTemplate(tpl.label)}
-              className={`ct-stat-tile indigo ct-pressable !text-left ${active ? "ct-option-card-active" : ""}`}
+              className={`ed-inset !text-left ${active ? "ed-inset-active" : ""}`}
             >
-              <span className="ct-row items-center gap-2">
+              <span className="flex items-center gap-2">
                 <CtIcon name={getCategoryById(tpl.category).icon} size={20} />
                 <span className="font-semibold text-sm">{tpl.label}</span>
               </span>
@@ -233,10 +233,10 @@ export function OnboardingBillsStep({
         })}
       </div>
       {selectedLabels.size > 0 && (
-        <Card className="ct-stack-sm ct-nw-panel">
+        <Card className="ed-stack-sm ed-inset">
           {QUICK_COMMITMENT_TEMPLATES.filter((tpl) => selectedLabels.has(tpl.label)).map((tpl) => (
             <div key={tpl.label}>
-              <label className="ct-field-label">{t("onboarding.billsAmountLabel", { label: tpl.label })}</label>
+              <label className="ed-field-label">{t("onboarding.billsAmountLabel", { label: tpl.label })}</label>
               <input
                 type="number"
                 min="0"
@@ -248,7 +248,7 @@ export function OnboardingBillsStep({
           ))}
         </Card>
       )}
-      <div className="ct-row">
+      <div className="flex gap-2">
         <Button type="button" variant="outline" size="lg" className="flex-1" onClick={onBack}>
           {t("common.back")}
         </Button>

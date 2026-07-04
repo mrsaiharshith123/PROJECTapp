@@ -27,7 +27,7 @@ export function PerovoLogo({ size = "md", className = "", alt = "Perovo logo" })
       alt={alt}
       width={px}
       height={px}
-      className={cn("ct-perovo-logo", className)}
+      className={cn("ed-perovo-logo", className)}
       draggable={false}
     />
   );

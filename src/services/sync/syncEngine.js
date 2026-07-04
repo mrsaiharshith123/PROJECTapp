@@ -3,7 +3,7 @@ import { localStateHasUserData, snapshotDataCounts, snapshotHasUserData } from "
 import { getSupabaseClient } from "../supabase/auth.js";
 import { hasPaidBackupTier } from "../../constants/subscriptionTiers.js";
 import { log } from "../../utils/logger.js";
-import { SYNC_TABLE, SYNC_MIN_PUSH_INTERVAL_MS } from "./constants.js";
+import { SYNC_TABLE, SYNC_MIN_PUSH_INTERVAL_MS, BACKUP_HISTORY_TABLE } from "./constants.js";
 import { appendBackupLog, getDeviceLabel, loadSyncMeta, saveSyncMeta } from "./syncMeta.js";
 
 let pushTimer = null;
@@ -52,6 +52,34 @@ export async function fetchRemoteBackupMeta(userId) {
 async function upsertRemoteSnapshot(userId, payload, meta = {}) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId) throw new Error("Cloud sync is not available.");
+
+  const { data: existing } = await supabase
+    .from(SYNC_TABLE)
+    .select("payload, snapshot_version, device_id, updated_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (existing?.payload) {
+    await supabase.from(BACKUP_HISTORY_TABLE).insert({
+      user_id: userId,
+      payload: existing.payload,
+      snapshot_version: existing.snapshot_version ?? 1,
+      device_id: existing.device_id ?? null,
+      backed_up_at: existing.updated_at ?? new Date().toISOString(),
+    });
+
+    const { data: history } = await supabase
+      .from(BACKUP_HISTORY_TABLE)
+      .select("id, backed_up_at")
+      .eq("user_id", userId)
+      .order("backed_up_at", { ascending: false });
+
+    if (history && history.length > 2) {
+      const toDelete = history.slice(2).map((r) => r.id);
+      await supabase.from(BACKUP_HISTORY_TABLE).delete().in("id", toDelete);
+    }
+  }
+
   const row = {
     user_id: userId,
     payload,
@@ -111,7 +139,10 @@ export async function pushLocalSnapshotToCloud(ctx) {
     const meta = loadSyncMeta();
     if (meta.lastPushedAt) {
       const elapsed = Date.now() - new Date(meta.lastPushedAt).getTime();
-      if (elapsed < SYNC_MIN_PUSH_INTERVAL_MS) return { ok: false, reason: "throttled" };
+      if (elapsed < SYNC_MIN_PUSH_INTERVAL_MS) {
+        saveSyncMeta({ pendingPush: true });
+        return { ok: false, reason: "throttled" };
+      }
     }
 
     const payload = buildAppSnapshot(state);
@@ -213,7 +244,7 @@ export async function pullRemoteSnapshotToLocal(ctx) {
   } finally {
     setTimeout(() => {
       skipNextPush = false;
-    }, 500);
+    }, 6000);
   }
 }
 
@@ -292,15 +323,40 @@ export async function syncCloudBackupAtStartup(ctx) {
 
   const meta = loadSyncMeta();
   if (meta.pendingPush) {
-    const pushResult = await pushLocalSnapshotToCloud(ctx);
-    return { ...pushResult, action: pushResult.ok ? "push" : "none" };
+    const localTs = meta.lastPushedAt || "";
+    const remoteTs = remote.updatedAt || "";
+    const localIsNewer = !remoteTs || (localTs && new Date(localTs) >= new Date(remoteTs));
+    if (localIsNewer) {
+      const pushResult = await pushLocalSnapshotToCloud(ctx);
+      return { ...pushResult, action: pushResult.ok ? "push" : "none" };
+    }
+    saveSyncMeta({ pendingPush: false });
   }
 
-  const localTs = meta.lastPushedAt || state.settings?.updatedAt || "";
+  const myDeviceId = meta.deviceId;
+  const remoteDeviceId = remote.deviceId;
+  const localTs = meta.lastPushedAt || "";
   const remoteTs = remote.updatedAt || "";
+
+  if (remoteDeviceId && remoteDeviceId === myDeviceId) {
+    return { ok: true, reason: "up_to_date", action: "none" };
+  }
+
   if (remoteTs && (!localTs || new Date(remoteTs) > new Date(localTs))) {
-    const pullResult = await pullRemoteSnapshotToLocal({ ...ctx, force: false });
-    return { ...pullResult, action: pullResult.ok ? "pull" : "none" };
+    const localCounts = snapshotDataCounts(buildAppSnapshot(state));
+    const remoteCounts = snapshotDataCounts(remote.payload);
+    const localTotal =
+      localCounts.bills + localCounts.lending + localCounts.goals + localCounts.wealth;
+    const remoteTotal =
+      remoteCounts.bills + remoteCounts.lending + remoteCounts.goals + remoteCounts.wealth;
+
+    if (!localHasData || remoteTotal >= localTotal) {
+      const pullResult = await pullRemoteSnapshotToLocal({ ...ctx, force: false });
+      return { ...pullResult, action: pullResult.ok ? "pull" : "none" };
+    }
+
+    const pushResult = await pushLocalSnapshotToCloud(ctx);
+    return { ...pushResult, action: pushResult.ok ? "push" : "none" };
   }
 
   return { ok: true, reason: "up_to_date", action: "none" };

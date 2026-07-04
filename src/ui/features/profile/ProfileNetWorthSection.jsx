@@ -46,11 +46,10 @@ export default function ProfileNetWorthSection() {
   const netWorthDisplay = privacyMode ? "••••••" : formatInr(intel.core.netWorth);
 
   return (
-    <div className="ct-stack ct-nw-embedded ct-profile-settings-panel">
-      <div className="ct-hero-card wealth">
-        <div className="ct-hero-glow teal" aria-hidden />
-        <p className="ct-hero-label">{t("netWorth.hero.eyebrow")}</p>
-        <p className="ct-hero-number">{netWorthDisplay}</p>
+    <div className="ed-stack ed-nw-embedded">
+      <div className="ed-hero-card ed-hero-card-wealth">
+        <p className="ed-hero-label">{t("netWorth.hero.eyebrow")}</p>
+        <p className="ed-hero-number">{netWorthDisplay}</p>
       </div>
 
       <SegmentedControl
@@ -71,7 +70,7 @@ export default function ProfileNetWorthSection() {
       {tab === "milestones" && <ProfileMilestonesPanel />}
 
       {tab === "assets" && (
-        <div className="ct-stack ct-list-animate">
+        <div className="ed-stack">
           {!hasAssets ? (
             <EmptyState icon="bank" title={t("netWorth.empty.assets")} hint="" />
           ) : (
@@ -108,7 +107,7 @@ export default function ProfileNetWorthSection() {
       )}
 
       {tab === "liabilities" && (
-        <div className="ct-stack ct-list-animate">
+        <div className="ed-stack">
           {!hasLiabilities ? (
             <EmptyState icon="credit-card" title={t("netWorth.empty.liabilities")} hint="" />
           ) : (

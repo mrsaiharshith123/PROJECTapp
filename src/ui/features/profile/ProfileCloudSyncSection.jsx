@@ -38,7 +38,7 @@ export default function ProfileCloudSyncSection() {
   if (!isLoggedIn) {
     return (
       <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.signInHint")}>
-        <SettingsGroupContent className="ct-stack-sm">
+        <SettingsGroupContent className="ed-stack-sm">
           <Body className="!text-sm">{t("sync.signInBody", { account: accountLabel })}</Body>
           <Caption className="block opacity-90">{t("sync.signInHint")}</Caption>
         </SettingsGroupContent>
@@ -48,8 +48,8 @@ export default function ProfileCloudSyncSection() {
 
   return (
     <SettingsGroup title={t("sync.title")} icon="cloud" description={t("sync.accountLine", { account: accountLabel })}>
-      <SettingsGroupContent className="ct-stack-sm">
-        <div className="ct-stat-tile indigo ct-stack gap-1 !text-xs">
+      <SettingsGroupContent className="ed-stack-sm">
+        <div className="ed-inset ed-stack gap-1 !text-xs">
           <p>• {t("sync.accountSyncBullet")}</p>
           {paid ? (
             <>
@@ -79,14 +79,14 @@ export default function ProfileCloudSyncSection() {
       ) : (
         <SettingsGroupContent>
           <Body className="!text-sm">{t("sync.freePlanBody")}</Body>
-          <button type="button" className="ct-btn ct-btn-primary w-full mt-2" onClick={() => navigate("/profile#upgrade")}>
+          <button type="button" className="ed-btn ed-btn-primary w-full mt-2" onClick={() => navigate("/profile#upgrade")}>
             {t("common.viewPlans")} →
           </button>
         </SettingsGroupContent>
       )}
 
       {paid && enabled ? (
-        <SettingsGroupContent className="ct-stack-sm !pt-0">
+        <SettingsGroupContent className="ed-stack-sm !pt-0">
           {sync.meta?.lastPushedAt && (
             <Caption className="block">
               {t("sync.lastBackup", {
@@ -105,12 +105,12 @@ export default function ProfileCloudSyncSection() {
 
       {sync.message && (
         <SettingsGroupContent className="!pt-0">
-          <Caption className="block text-[var(--ct-success)]">{sync.message}</Caption>
+          <Caption className="block text-[var(--ed-green)]">{sync.message}</Caption>
         </SettingsGroupContent>
       )}
       {sync.error && (
         <SettingsGroupContent className="!pt-0">
-          <Caption className="block text-[var(--ct-danger)]">{sync.error}</Caption>
+          <Caption className="block text-[var(--ed-red)]">{sync.error}</Caption>
         </SettingsGroupContent>
       )}
     </SettingsGroup>

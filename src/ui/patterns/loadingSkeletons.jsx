@@ -16,25 +16,25 @@ function skeletonKindForPath(pathname) {
 
 function PageHeaderSkeleton() {
   return (
-    <div className="ct-load-header">
-      <Skeleton className="ct-load-sk-eyebrow" />
-      <Skeleton className="ct-load-sk-title" />
-      <Skeleton className="ct-load-sk-sub" />
+    <div className="ed-load-header">
+      <Skeleton className="ed-load-sk-eyebrow" />
+      <Skeleton className="ed-load-sk-title" />
+      <Skeleton className="ed-load-sk-sub" />
     </div>
   );
 }
 
 function ListRowSkeleton({ count = 4 }) {
   return (
-    <div className="ct-load-list">
+    <div className="ed-load-list">
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="ct-load-row">
-          <Skeleton className="ct-load-sk-icon" />
-          <div className="ct-load-row-body">
-            <Skeleton className="ct-load-sk-line" />
-            <Skeleton className="ct-load-sk-line-sm" />
+        <div key={i} className="ed-load-row">
+          <Skeleton className="ed-load-sk-icon" />
+          <div className="ed-load-row-body">
+            <Skeleton className="ed-load-sk-line" />
+            <Skeleton className="ed-load-sk-line-sm" />
           </div>
-          <Skeleton className="ct-load-sk-pill" />
+          <Skeleton className="ed-load-sk-pill" />
         </div>
       ))}
     </div>
@@ -43,18 +43,18 @@ function ListRowSkeleton({ count = 4 }) {
 
 export function DashboardSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <Skeleton className="ct-load-sk-hero" />
-      <div className="ct-load-chip-row">
-        <Skeleton className="ct-load-sk-chip" />
-        <Skeleton className="ct-load-sk-chip" />
-        <Skeleton className="ct-load-sk-chip" />
+      <Skeleton className="ed-load-sk-hero" />
+      <div className="ed-load-chip-row">
+        <Skeleton className="ed-load-sk-chip" />
+        <Skeleton className="ed-load-sk-chip" />
+        <Skeleton className="ed-load-sk-chip" />
       </div>
       <ListRowSkeleton count={3} />
-      <div className="ct-load-stat-row">
-        <Skeleton className="ct-load-sk-stat" />
-        <Skeleton className="ct-load-sk-stat" />
+      <div className="ed-load-stat-row">
+        <Skeleton className="ed-load-sk-stat" />
+        <Skeleton className="ed-load-sk-stat" />
       </div>
     </div>
   );
@@ -62,11 +62,11 @@ export function DashboardSkeleton() {
 
 export function ListPageSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <div className="ct-load-chip-row">
-        <Skeleton className="ct-load-sk-chip" />
-        <Skeleton className="ct-load-sk-chip-wide" />
+      <div className="ed-load-chip-row">
+        <Skeleton className="ed-load-sk-chip" />
+        <Skeleton className="ed-load-sk-chip-wide" />
       </div>
       <ListRowSkeleton count={5} />
     </div>
@@ -75,16 +75,16 @@ export function ListPageSkeleton() {
 
 export function FormPageSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <div className="ct-load-form">
+      <div className="ed-load-form">
         {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="ct-load-field">
-            <Skeleton className="ct-load-sk-label" />
-            <Skeleton className="ct-load-sk-input" />
+          <div key={i} className="ed-load-field">
+            <Skeleton className="ed-load-sk-label" />
+            <Skeleton className="ed-load-sk-input" />
           </div>
         ))}
-        <Skeleton className="ct-load-sk-btn" />
+        <Skeleton className="ed-load-sk-btn" />
       </div>
     </div>
   );
@@ -92,14 +92,14 @@ export function FormPageSkeleton() {
 
 export function AnalyticsSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <Skeleton className="ct-load-sk-chart" />
-      <div className="ct-load-stat-row">
-        <Skeleton className="ct-load-sk-stat" />
-        <Skeleton className="ct-load-sk-stat" />
-        <Skeleton className="ct-load-sk-stat" />
-        <Skeleton className="ct-load-sk-stat" />
+      <Skeleton className="ed-load-sk-chart" />
+      <div className="ed-load-stat-row">
+        <Skeleton className="ed-load-sk-stat" />
+        <Skeleton className="ed-load-sk-stat" />
+        <Skeleton className="ed-load-sk-stat" />
+        <Skeleton className="ed-load-sk-stat" />
       </div>
       <ListRowSkeleton count={3} />
     </div>
@@ -108,15 +108,15 @@ export function AnalyticsSkeleton() {
 
 export function ProfileSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
-      <Skeleton className="ct-load-sk-profile-hero" />
-      <div className="ct-load-settings">
+    <div className="ed-load-page ed-stack">
+      <Skeleton className="ed-load-sk-profile-hero" />
+      <div className="ed-load-settings">
         {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="ct-load-setting-row">
-            <Skeleton className="ct-load-sk-setting-icon" />
-            <div className="ct-load-row-body">
-              <Skeleton className="ct-load-sk-line" />
-              <Skeleton className="ct-load-sk-line-sm" />
+          <div key={i} className="ed-load-setting-row">
+            <Skeleton className="ed-load-sk-setting-icon" />
+            <div className="ed-load-row-body">
+              <Skeleton className="ed-load-sk-line" />
+              <Skeleton className="ed-load-sk-line-sm" />
             </div>
           </div>
         ))}
@@ -127,25 +127,25 @@ export function ProfileSkeleton() {
 
 export function AdminSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <div className="ct-load-admin-grid">
+      <div className="ed-load-admin-grid">
         {Array.from({ length: 8 }, (_, i) => (
-          <Skeleton key={i} className="ct-load-sk-metric" />
+          <Skeleton key={i} className="ed-load-sk-metric" />
         ))}
       </div>
-      <Skeleton className="ct-load-sk-chart" />
+      <Skeleton className="ed-load-sk-chart" />
     </div>
   );
 }
 
 export function GenericPageSkeleton() {
   return (
-    <div className="ct-load-page ct-stack">
+    <div className="ed-load-page ed-stack">
       <PageHeaderSkeleton />
-      <Skeleton className="ct-load-sk-card" />
-      <Skeleton className="ct-load-sk-card" />
-      <Skeleton className="ct-load-sk-card-short" />
+      <Skeleton className="ed-load-sk-card" />
+      <Skeleton className="ed-load-sk-card" />
+      <Skeleton className="ed-load-sk-card-short" />
     </div>
   );
 }

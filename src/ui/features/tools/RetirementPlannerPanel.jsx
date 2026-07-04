@@ -12,7 +12,7 @@ import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 /** @param {{ onProjectedChange?: (n: number) => void }} props */
 function EpfTrackerTab({ onProjectedChange }) {
@@ -49,7 +49,7 @@ function EpfTrackerTab({ onProjectedChange }) {
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.retirement.tabEpf")}
@@ -58,23 +58,23 @@ function EpfTrackerTab({ onProjectedChange }) {
       />
       <Caption>{t("tools.epf.intro")}</Caption>
       <div>
-        <label className="ct-field-label">{t("tools.epf.basicSalary")}</label>
+        <label className="ed-field-label">{t("tools.epf.basicSalary")}</label>
         <input className={fieldClass} value={basic} onChange={(e) => setBasic(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.epf.corpus")}</label>
+        <label className="ed-field-label">{t("tools.epf.corpus")}</label>
         <input className={fieldClass} value={corpus} onChange={(e) => setCorpus(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.epf.age")}</label>
+        <label className="ed-field-label">{t("tools.epf.age")}</label>
         <input className={fieldClass} value={age} onChange={(e) => setAge(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
-      <button type="button" className="ct-btn ct-btn-primary w-full" onClick={save}>
+      <button type="button" className="ed-btn ed-btn-primary w-full" onClick={save}>
         {t("tools.epf.saveProfile")}
       </button>
-      <div className="ct-grid-2">
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-value text-sm">
+      <div className="ed-grid-2">
+        <div className="ed-inset-green">
+          <p className="ed-stat-value text-sm">
             {t("tools.epf.employeeEmployer", {
               employee: formatInr(projection.monthlyEmployee),
               employer: formatInr(projection.monthlyEmployer),
@@ -82,8 +82,8 @@ function EpfTrackerTab({ onProjectedChange }) {
           </p>
         </div>
         {projection.narrativeLines.map((line) => (
-          <div key={line} className="ct-stat-tile col-span-2">
-            <p className="ct-stat-tile-value text-sm">{line}</p>
+          <div key={line} className="ed-inset col-span-2">
+            <p className="ed-stat-value text-sm">{line}</p>
           </div>
         ))}
       </div>
@@ -113,28 +113,28 @@ function PpfTrackerTab({ onProjectedChange }) {
   }, [projection.projectedCorpus, onProjectedChange]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.retirement.tabPpf")}
         value={formatInr(projection.projectedCorpus)}
       />
       <div>
-        <label className="ct-field-label">{t("tools.ppf.annualDeposit")}</label>
+        <label className="ed-field-label">{t("tools.ppf.annualDeposit")}</label>
         <input className={fieldClass} value={annual} onChange={(e) => setAnnual(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.ppf.corpus")}</label>
+        <label className="ed-field-label">{t("tools.ppf.corpus")}</label>
         <input className={fieldClass} value={corpus} onChange={(e) => setCorpus(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.ppf.years")}</label>
+        <label className="ed-field-label">{t("tools.ppf.years")}</label>
         <input className={fieldClass} value={years} onChange={(e) => setYears(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
-      <div className="ct-stack-sm">
+      <div className="ed-stack-sm">
         {projection.narrativeLines.map((line) => (
-          <div key={line} className="ct-stat-tile">
-            <p className="ct-stat-tile-value text-sm">{line}</p>
+          <div key={line} className="ed-inset">
+            <p className="ed-stat-value text-sm">{line}</p>
           </div>
         ))}
       </div>
@@ -171,32 +171,32 @@ function NpsTrackerTab({ onProjectedChange }) {
   }, [projection.projectedCorpusAtRetirement, onProjectedChange]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.retirement.tabNps")}
         value={formatInr(projection.projectedCorpusAtRetirement)}
       />
       <div>
-        <label className="ct-field-label">{t("tools.nps.employeeMonthly")}</label>
+        <label className="ed-field-label">{t("tools.nps.employeeMonthly")}</label>
         <input className={fieldClass} value={employee} onChange={(e) => setEmployee(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.nps.employerMonthly")}</label>
+        <label className="ed-field-label">{t("tools.nps.employerMonthly")}</label>
         <input className={fieldClass} value={employer} onChange={(e) => setEmployer(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.nps.corpus")}</label>
+        <label className="ed-field-label">{t("tools.nps.corpus")}</label>
         <input className={fieldClass} value={corpus} onChange={(e) => setCorpus(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.nps.age")}</label>
+        <label className="ed-field-label">{t("tools.nps.age")}</label>
         <input className={fieldClass} value={age} onChange={(e) => setAge(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
-      <div className="ct-stack-sm">
+      <div className="ed-stack-sm">
         {projection.narrativeLines.map((line) => (
-          <div key={line} className="ct-stat-tile">
-            <p className="ct-stat-tile-value text-sm">{line}</p>
+          <div key={line} className="ed-inset">
+            <p className="ed-stat-value text-sm">{line}</p>
           </div>
         ))}
       </div>
@@ -222,7 +222,7 @@ function GratuityTab() {
   );
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="sim"
         label={t("tools.retirement.tabGratuity")}
@@ -231,17 +231,17 @@ function GratuityTab() {
       />
       <Caption>{t("tools.gratuity.intro")}</Caption>
       <div>
-        <label className="ct-field-label">{t("tools.gratuity.lastSalary")}</label>
+        <label className="ed-field-label">{t("tools.gratuity.lastSalary")}</label>
         <input className={fieldClass} value={salary} onChange={(e) => setSalary(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.gratuity.years")}</label>
+        <label className="ed-field-label">{t("tools.gratuity.years")}</label>
         <input className={fieldClass} value={years} onChange={(e) => setYears(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
-      <div className="ct-stack-sm">
+      <div className="ed-stack-sm">
         {result.narrativeLines.map((line) => (
-          <div key={line} className="ct-stat-tile">
-            <p className="ct-stat-tile-value text-sm">{line}</p>
+          <div key={line} className="ed-inset">
+            <p className="ed-stat-value text-sm">{line}</p>
           </div>
         ))}
       </div>
@@ -268,7 +268,7 @@ export default function RetirementPlannerPanel() {
   const mix = useMemo(() => computeRetirementMix({ epf: mixEpf, ppf: mixPpf, nps: mixNps }), [mixEpf, mixPpf, mixNps]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       {mix.total > 0 && tab !== "gratuity" && (
         <ToolAnswerHero
           tone="sim"

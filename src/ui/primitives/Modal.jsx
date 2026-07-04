@@ -20,35 +20,35 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
   const panel = (
     <div
       className={cn(
-        "ct-modal-overlay",
-        fullScreen && "ct-modal-overlay--fullscreen",
-        sheet && "ct-modal-overlay--sheet",
+        "ed-modal-overlay",
+        fullScreen && "ed-modal-overlay--fullscreen",
+        sheet && "ed-modal-overlay--sheet",
       )}
       role="dialog"
       aria-modal="true"
     >
-      <button type="button" className="ct-modal-backdrop" aria-label={t("common.close")} onClick={onClose} />
+      <button type="button" className="ed-modal-backdrop" aria-label={t("common.close")} onClick={onClose} />
       <div
         className={cn(
-          "ct-modal-panel",
-          sheet ? "ct-modal-panel--sheet ct-animate-sheet-up" : "ct-animate-scale-in",
-          sheet && darkSheet && "ct-modal-panel--sheet-dark",
-          fullScreen && "ct-modal-panel--fullscreen",
+          "ed-modal-panel",
+          sheet ? "ed-modal-panel--sheet ed-animate-sheet-up" : "ed-animate-scale-in",
+          sheet && darkSheet && "ed-modal-panel--sheet-dark",
+          fullScreen && "ed-modal-panel--fullscreen",
         )}
       >
-        {sheet ? <div className="ct-sheet-handle" aria-hidden /> : null}
+        {sheet ? <div className="ed-sheet-handle" aria-hidden /> : null}
         {title && (
-          <div className="ct-row-between px-5 py-4 ct-modal-header shrink-0">
+          <div className="ed-modal-header">
             <Heading level={2}>{title}</Heading>
-            <button type="button" onClick={onClose} className="ct-btn ct-btn-ghost ct-btn-sm" aria-label={t("common.close")}>
+            <button type="button" onClick={onClose} className="ed-btn ed-btn-ghost ed-btn-sm" aria-label={t("common.close")}>
               ×
             </button>
           </div>
         )}
-        <div className={cn("overflow-y-auto flex-1", fullScreen ? "ct-modal-body--fullscreen" : "px-5 py-4")}>
+        <div className={cn("overflow-y-auto flex-1", fullScreen ? "ed-modal-body--fullscreen" : "px-5 py-4")}>
           {children}
         </div>
-        {footer && <div className="px-5 py-4 ct-modal-footer shrink-0">{footer}</div>}
+        {footer && <div className="ed-modal-footer">{footer}</div>}
       </div>
     </div>
   );

@@ -6,10 +6,10 @@ import { Link } from "react-router-dom";
  */
 export function MetricOwnerLink({ label, value, to, className = "" }) {
   return (
-    <Link to={to} className={`ct-metric-owner-link ${className}`.trim()}>
-      <span className="ct-metric-owner-link-label">{label}</span>
-      {value ? <span className="ct-metric-owner-link-value">{value}</span> : null}
-      <span className="ct-metric-owner-link-arrow" aria-hidden>
+    <Link to={to} className={`ed-link ${className}`.trim()}>
+      <span className="ed-field-label">{label}</span>
+      {value ? <span className="ed-numeral">{value}</span> : null}
+      <span className="ed-link" aria-hidden>
         →
       </span>
     </Link>

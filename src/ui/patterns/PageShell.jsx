@@ -19,14 +19,14 @@ export function PageShell({
   const showHead = Boolean(title || subtitle || action || !hidePrivacyToggle || headerAux);
 
   return (
-    <div className={cn("ct-page-shell", className)}>
+    <div className={cn("ed-page-shell", className)}>
       {showHead && (
-        <header className="ct-page-shell-head">
-          <div className="ct-page-shell-titles">
-            {title ? <h1 className="ct-page-shell-title">{title}</h1> : null}
-            {subtitle ? <p className="ct-page-shell-subtitle">{subtitle}</p> : null}
+        <header className="ed-page-shell-head">
+          <div className="ed-page-shell-titles">
+            {title ? <h1 className="ed-page-shell-title">{title}</h1> : null}
+            {subtitle ? <p className="ed-page-shell-subtitle">{subtitle}</p> : null}
           </div>
-          <div className="ct-page-shell-action">
+          <div className="ed-page-shell-action">
             <AppHeaderActions
               hidePrivacyToggle={hidePrivacyToggle}
               headerAux={headerAux}
@@ -36,7 +36,7 @@ export function PageShell({
           </div>
         </header>
       )}
-      <div className={cn("ct-page-shell-body", scroll && "ct-page-shell-scroll")}>{children}</div>
+      <div className={cn("ed-page-shell-body", scroll && "ed-page-shell-scroll")}>{children}</div>
     </div>
   );
 }

@@ -38,7 +38,7 @@ export default function BillsCategorySheet({
 
   return (
     <Modal title={t("money.bills.filterCategory")} onClose={onClose} sheet darkSheet>
-      <div className="ct-stack ct-nw-panel">
+      <div className="ed-stack ed-inset">
         <FilterChips
           options={categoryChips}
           value={value}
@@ -47,9 +47,9 @@ export default function BillsCategorySheet({
             onClose();
           }}
         />
-        <label className="ct-settings-row ct-pressable w-full mt-2 cursor-pointer">
+        <label className="ed-settings-row" style={{ marginTop: 8 }}>
           <input type="checkbox" checked={showHistory} onChange={onToggleHistory} />
-          <span className="ct-settings-row-label">{t("money.bills.showPaidHistory")}</span>
+          <span className="ed-settings-row-label">{t("money.bills.showPaidHistory")}</span>
         </label>
         <Caption>{t("money.bills.filterCategoryHint")}</Caption>
       </div>

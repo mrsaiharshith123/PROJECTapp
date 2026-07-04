@@ -84,15 +84,15 @@ export default function LendingDetailDashboard({
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
   const termsLocked = !canEditLending(lending);
-  const fieldClass = `${inputClassName()} ct-input-tint`;
+  const fieldClass = `${inputClassName()} `;
   const trustStatusClass =
     dash.trustScore >= 80
-      ? "ct-status-success"
+      ? "ed-status-success"
       : dash.trustScore >= 60
-        ? "ct-status-neutral"
+        ? "ed-status-neutral"
         : dash.trustScore >= 40
-          ? "ct-status-warning"
-          : "ct-status-danger";
+          ? "ed-status-warning"
+          : "ed-status-danger";
 
   const interestTypeLabel =
     lending.interestType === "simple" ? t("lending.detail.interestSimple") : lending.interestType || "";
@@ -144,7 +144,7 @@ export default function LendingDetailDashboard({
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       {showConfetti && typeof window !== "undefined" ? (
         <ReactConfetti
           width={window.innerWidth}
@@ -156,7 +156,7 @@ export default function LendingDetailDashboard({
         />
       ) : null}
       {Number(lending.remainingAmount) === 0 ? (
-        <div className="ct-debt-free-banner">{t("lending.fullySettled")}</div>
+        <div className="ed-inset-green">{t("lending.fullySettled")}</div>
       ) : null}
       {showShareMoment && Number(lending.remainingAmount) === 0 ? (
         <Button
@@ -172,10 +172,9 @@ export default function LendingDetailDashboard({
           {t("lending.shareClearedMoment")}
         </Button>
       ) : null}
-      <div className={`ct-hero-card lending ${isOverdue ? "survival" : ""} relative`}>
-        {isOverdue ? <div className="ct-hero-glow amber" aria-hidden /> : <div className="ct-hero-glow" aria-hidden />}
-        <p className="ct-hero-label">{lending.personName}</p>
-        <p className="ct-hero-number">{formatInr(Number(lending.remainingAmount) || 0)}</p>
+      <div className={`ed-inset ${isOverdue ? "survival" : ""} relative`}>
+        <p className="ed-field-label">{lending.personName}</p>
+        <p className="ed-hero-number">{formatInr(Number(lending.remainingAmount) || 0)}</p>
         <Caption className="block relative mt-1 opacity-90">
           {t("lending.left", { amount: formatInr(lending.remainingAmount) })}
         </Caption>
@@ -186,12 +185,12 @@ export default function LendingDetailDashboard({
         onScrollToEsign={() => document.getElementById("lending-esign-section")?.scrollIntoView({ behavior: "smooth" })}
       />
 
-      <div className="ct-row-wrap">
-        <span className={`ct-status ${trustStatusClass}`}>
+      <div className="ed-row-wrap">
+        <span className={`ed-status ${trustStatusClass}`}>
           {t("lending.detail.trust", { score: dash.trustScore })}
         </span>
         {lending.relationshipTag && (
-          <span className="ct-status ct-status-neutral">{lending.relationshipTag}</span>
+          <span className="ed-status ed-status-neutral">{lending.relationshipTag}</span>
         )}
       </div>
 
@@ -220,14 +219,14 @@ export default function LendingDetailDashboard({
       )}
 
       {trustRow && (
-        <Caption className="ct-inset block px-3 py-2 rounded-lg">{trustSummaryLine(trustRow)}</Caption>
+        <Caption className="ed-inset block px-3 py-2 rounded-lg">{trustSummaryLine(trustRow)}</Caption>
       )}
 
       <section>
         <Body className="text-xs font-semibold mb-2">{t("lending.detail.timeline")}</Body>
-        <ol className="ct-timeline">
+        <ol className="ed-timeline">
           {timeline.map((ev) => (
-            <li key={ev.id} className="ct-caption">
+            <li key={ev.id} className="ed-timeline-item">
               <span className="block">{new Date(ev.createdAt).toLocaleDateString("en-IN")}</span>
               {ev.message}
             </li>
@@ -235,7 +234,7 @@ export default function LendingDetailDashboard({
         </ol>
       </section>
 
-      <div className="ct-row-wrap">
+      <div className="ed-row-wrap">
         <Button
           type="button"
           variant="primary"
@@ -300,7 +299,7 @@ export default function LendingDetailDashboard({
         </ToneSurface>
       ) : null}
 
-      <section id="lending-esign-section" className="ct-stack-sm">
+      <section id="lending-esign-section" className="ed-stack-sm">
         <Body className="text-xs font-semibold">{t("lending.esign.title")}</Body>
         {lending.esignStatus === "completed" ? (
           <ToneSurface tone="success">
@@ -310,7 +309,7 @@ export default function LendingDetailDashboard({
             </Caption>
           </ToneSurface>
         ) : isESignConfigured() ? (
-          <Card className="ct-stack-sm">
+          <Card className="ed-stack-sm">
             <Caption className="block">{t("lending.esign.explainer")}</Caption>
             <Button
               type="button"
@@ -349,23 +348,23 @@ export default function LendingDetailDashboard({
         <button
           type="button"
           onClick={() => updateLending(lending.id, { agreementText: agreementDraft })}
-          className="ct-btn ct-btn-ghost ct-btn-sm"
+          className="ed-btn ed-btn-ghost ed-btn-sm"
         >
           {t("lending.detail.saveAgreement")}
         </button>
       )}
 
-      <div className="ct-stack-sm">
-        <button type="button" className="ct-link text-left" onClick={() => setStampOpen((v) => !v)}>
+      <div className="ed-stack-sm">
+        <button type="button" className="ed-link text-left" onClick={() => setStampOpen((v) => !v)}>
           {t("lending.stamp.courtReady")}
         </button>
         {stampOpen ? (
-          <Card className="ct-stack-sm">
+          <Card className="ed-stack-sm">
             <Caption className="font-semibold block">{t("lending.stamp.courtReady")}</Caption>
             <ToneSurface tone="warning">
               <Body className="!text-sm">{t("lending.stamp.courtWarn")}</Body>
             </ToneSurface>
-            <div className="ct-stack-sm !gap-1">
+            <div className="ed-stack-sm !gap-1">
               {[
                 ["Maharashtra", "₹1"],
                 ["Karnataka", "₹2"],
@@ -381,7 +380,7 @@ export default function LendingDetailDashboard({
               ))}
             </div>
             <Body className="!text-sm">{stampNote}</Body>
-            <div className="ct-row-wrap gap-2">
+            <div className="ed-row-wrap gap-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -425,9 +424,9 @@ export default function LendingDetailDashboard({
 function ProofSection({ fileRef, proofs, onAddProof, t }) {
   return (
     <div>
-      <div className="ct-row-between">
+      <div className="ed-row-between">
         <Body className="text-xs font-semibold">{t("lending.detail.proofVault")}</Body>
-        <button type="button" onClick={() => fileRef.current?.click()} className="ct-btn ct-btn-ghost ct-btn-sm">
+        <button type="button" onClick={() => fileRef.current?.click()} className="ed-btn ed-btn-ghost ed-btn-sm">
           {t("lending.detail.upload")}
         </button>
         <input
@@ -445,9 +444,9 @@ function ProofSection({ fileRef, proofs, onAddProof, t }) {
       {(proofs || []).length === 0 ? (
         <Caption className="block mt-1">{t("lending.detail.noProofs")}</Caption>
       ) : (
-        <ul className="ct-stack-sm mt-1">
+        <ul className="ed-stack-sm mt-1">
           {(proofs || []).map((p, i) => (
-            <li key={i} className="ct-caption">
+            <li key={i} className="ed-caption">
               {p.label || t("lending.detail.proofLabel")} · {p.date}
             </li>
           ))}

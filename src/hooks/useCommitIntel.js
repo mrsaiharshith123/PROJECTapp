@@ -33,6 +33,7 @@ import { totalPaidOnPayments } from "../utils/commitmentPayments.js";
 import { memoIntel, buildIntelCacheKey } from "../utils/intelMemo.js";
 import { applyDevOverrideToCommitIntel, useDevOverrideTick } from "../utils/devOverride.js";
 import { useCommitIntelFromContext } from "./intelContext.js";
+import { useBroadcasts } from "./useBroadcasts.js";
 
 export function useCommitIntelInternal() {
   const {
@@ -46,6 +47,7 @@ export function useCommitIntelInternal() {
   } = usePerovo();
 
   const devTick = useDevOverrideTick();
+  const { broadcasts, userNotifications } = useBroadcasts();
 
   const rawIntel = useMemo(() => {
     const openSum = commitments.reduce((s, c) => s + (Number(c.remainingAmount) || 0), 0);
@@ -163,7 +165,43 @@ export function useCommitIntelInternal() {
       monthlySnapshots,
       previousPressureScore,
     });
-    const notifications = [...(supplementalNotifications || []), ...feed].sort((a, b) => {
+    const broadcastNotifs = broadcasts.map((b) => ({
+      id: `broadcast-${b.id}`,
+      broadcastId: b.id,
+      title: b.title,
+      message: b.body,
+      urgency:
+        b.type === "security"
+          ? "critical"
+          : b.type === "app_update" || b.type === "sale"
+            ? "high"
+            : "normal",
+      tone:
+        b.type === "security"
+          ? "danger"
+          : b.type === "app_update"
+            ? "info"
+            : b.type === "sale"
+              ? "success"
+              : "info",
+      route: b.route || null,
+      read: false,
+      createdAt: new Date(b.active_from).getTime(),
+      source: "broadcast",
+    }));
+    const serverNotifs = userNotifications.map((n) => ({
+      id: `user-notif-${n.id}`,
+      notificationId: n.id,
+      title: n.title,
+      message: n.body,
+      urgency: n.type === "security" ? "critical" : "normal",
+      tone: n.type === "security" ? "danger" : "info",
+      route: n.route || null,
+      read: false,
+      createdAt: new Date(n.created_at).getTime(),
+      source: "server",
+    }));
+    const notifications = [...(supplementalNotifications || []), ...serverNotifs, ...broadcastNotifs, ...feed].sort((a, b) => {
       const order = { critical: 0, high: 1, normal: 2, low: 3 };
       const d = (order[a.urgency] ?? 9) - (order[b.urgency] ?? 9);
       if (d !== 0) return d;
@@ -211,6 +249,8 @@ export function useCommitIntelInternal() {
     lendings,
     settings,
     supplementalNotifications,
+    broadcasts,
+    userNotifications,
     monthlySnapshots,
     todayStr,
     getEffectiveStatus,

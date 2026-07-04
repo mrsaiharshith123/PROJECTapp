@@ -27,16 +27,16 @@ export function ToolTile({ icon, label, title, subtitle, accent = "indigo", onCl
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "ct-stat-tile ct-tool-tile-modern !p-3 text-center ct-pressable",
+        "ed-inset  !p-3 text-center ",
         tileTone,
         disabled && "opacity-60 cursor-default",
         className,
       )}
     >
-      <span className={cn("ct-icon-tile mx-auto mb-2", tileTone)} aria-hidden>
+      <span className={cn("ed-row-icon mx-auto mb-2", tileTone)} aria-hidden>
         {icon ? <CtIcon name={icon} size={22} /> : null}
       </span>
-      <span className="ct-stat-tile-label block font-semibold">{primary}</span>
+      <span className="ed-stat-label block font-semibold">{primary}</span>
       {subtitle ? <span className="block text-[10px] opacity-70 mt-0.5 leading-tight">{subtitle}</span> : null}
     </button>
   );

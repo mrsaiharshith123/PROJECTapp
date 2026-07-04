@@ -138,7 +138,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                 return (
                   <div
                     key={bill.id}
-                    className="ct-stack-sm"
+                    className="ed-stack-sm"
                     style={{ borderLeft: `3px solid ${stripe}`, paddingLeft: 10, cursor: "pointer" }}
                     onClick={() => navigate("/ledger/bills", { state: { openBillId: bill.id } })}
                     onKeyDown={(e) => {
@@ -147,27 +147,27 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                     role="button"
                     tabIndex={0}
                   >
-                    <div className="ct-row-between gap-2 min-w-0">
-                      <div className="ct-row gap-2 min-w-0">
-                        <span className="ct-icon-tile pos-icon liability shrink-0">
+                    <div className="ed-row-between gap-2 min-w-0">
+                      <div className="ed-row gap-2 min-w-0">
+                        <span className="ed-icon-tile pos-icon liability shrink-0">
                           <CtIcon name="credit-card" size={18} />
                         </span>
                         <div className="min-w-0">
-                          <p className="ct-body-strong truncate">{getBillDisplayName(bill)}</p>
-                          <p className="ct-caption">
+                          <p className="ed-body-strong truncate">{getBillDisplayName(bill)}</p>
+                          <p className="ed-caption">
                             {t("ledger.emiPerMonth", { amount: formatAmount(Number(bill.amount) || 0) })}
                             {progress.label ? ` · ${progress.label}` : ""}
                           </p>
                         </div>
                       </div>
-                      <span className="ct-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
+                      <span className="ed-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
                         {formatAmount(Number(bill.amount) || 0)}
                       </span>
                     </div>
                     {progress.totalCycles > 0 && (
-                      <div className="ct-progress">
+                      <div className="ed-progress-track">
                         <div
-                          className="ct-progress-bar ct-bar-animated"
+                          className="ed-progress-fill ed-bar-animated"
                           style={{
                             width: `${Math.min(100, Math.round((progress.doneCycles / progress.totalCycles) * 100))}%`,
                           }}
@@ -224,14 +224,12 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
 
       <button
         type="button"
-        className="ct-settings-row ct-pressable"
+        className="ed-nav-row"
         onClick={() => navigate("/insights/cashflow")}
         style={{ marginTop: 4 }}
       >
-        <span className="ct-settings-row-label" style={{ color: "var(--pos-text-muted)" }}>
-          {t("ledger.viewCashFlow")}
-        </span>
-        <CtIcon name="arrow-right" size={14} className="text-[var(--pos-text-muted)]" />
+        <span className="ed-nav-row-label">{t("ledger.viewCashFlow")}</span>
+        <CtIcon name="arrow-right" size={14} style={{ color: "var(--ed-ink-faint)" }} />
       </button>
     </div>
   );

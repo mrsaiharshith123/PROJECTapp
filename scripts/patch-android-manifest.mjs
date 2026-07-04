@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Ensure AndroidManifest.xml declares runtime permissions for camera, gallery, location, notifications.
+ * Sync android/app/build.gradle versionName with package.json.
  * android/ is gitignored — run after every `cap sync` in APK build scripts.
  */
 import fs from "fs";
@@ -12,6 +13,7 @@ const manifestPath = path.join(ROOT, "android/app/src/main/AndroidManifest.xml")
 
 const PERMISSION_LINES = [
   '<uses-permission android:name="android.permission.INTERNET" />',
+  '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />',
   '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
   '<uses-permission android:name="android.permission.CAMERA" />',
   '<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
@@ -25,31 +27,57 @@ const PERMISSION_LINES = [
   '<uses-permission android:name="android.permission.USE_EXACT_ALARM" />',
 ];
 
-if (!fs.existsSync(manifestPath)) {
-  console.log("patch-android-manifest: android/ not present — skip");
-  process.exit(0);
+function patchManifestPermissions() {
+  if (!fs.existsSync(manifestPath)) {
+    console.log("patch-android-manifest: android/ not present — skip permissions");
+    return;
+  }
+
+  let xml = fs.readFileSync(manifestPath, "utf8");
+  const missing = PERMISSION_LINES.filter((line) => {
+    const permName = line.match(/android:name="([^"]+)"/)?.[1];
+    return permName && !xml.includes(permName);
+  });
+
+  if (!missing.length) {
+    console.log("patch-android-manifest: permissions already present");
+    return;
+  }
+
+  const block = missing.map((line) => `    ${line}`).join("\n");
+  if (xml.includes("<!-- Permissions -->")) {
+    xml = xml.replace("<!-- Permissions -->", `<!-- Permissions -->\n${block}`);
+  } else if (/<application[\s>]/.test(xml)) {
+    xml = xml.replace(/(\s*)<application/, `\n${block}\n$1<application`);
+  } else {
+    console.warn("patch-android-manifest: could not find insertion point");
+    process.exit(1);
+  }
+
+  fs.writeFileSync(manifestPath, xml);
+  console.log("patch-android-manifest: added missing Android permissions");
 }
 
-let xml = fs.readFileSync(manifestPath, "utf8");
-const missing = PERMISSION_LINES.filter((line) => {
-  const permName = line.match(/android:name="([^"]+)"/)?.[1];
-  return permName && !xml.includes(permName);
-});
+function patchGradleVersion() {
+  const gradlePath = path.join(ROOT, "android/app/build.gradle");
+  if (!fs.existsSync(gradlePath)) {
+    console.log("patch-android-manifest: build.gradle not present — skip version sync");
+    return;
+  }
 
-if (!missing.length) {
-  console.log("patch-android-manifest: permissions already present");
-  process.exit(0);
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  const version = process.env.VITE_APP_VERSION || pkg.version;
+  let gradle = fs.readFileSync(gradlePath, "utf8");
+
+  if (!/versionName\s+"[^"]*"/.test(gradle)) {
+    console.warn("patch-android-manifest: versionName not found in build.gradle");
+    return;
+  }
+
+  gradle = gradle.replace(/versionName\s+"[^"]*"/, `versionName "${version}"`);
+  fs.writeFileSync(gradlePath, gradle);
+  console.log(`patch-android-manifest: versionName set to ${version}`);
 }
 
-const block = missing.map((line) => `    ${line}`).join("\n");
-if (xml.includes("<!-- Permissions -->")) {
-  xml = xml.replace("<!-- Permissions -->", `<!-- Permissions -->\n${block}`);
-} else if (/<application[\s>]/.test(xml)) {
-  xml = xml.replace(/(\s*)<application/, `\n${block}\n$1<application`);
-} else {
-  console.warn("patch-android-manifest: could not find insertion point");
-  process.exit(1);
-}
-
-fs.writeFileSync(manifestPath, xml);
-console.log("patch-android-manifest: added camera / gallery / location / notification permissions");
+patchManifestPermissions();
+patchGradleVersion();

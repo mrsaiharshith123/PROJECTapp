@@ -33,20 +33,25 @@ export function SettingsRow({
       <button
         type="button"
         onClick={onClick}
-        className={`ct-list-row w-full text-left ${active ? "ct-settings-tile-active" : ""}`}
+        className={cn("ed-nav-row w-full text-left", active && "border-l-2 border-[var(--ed-gold)]")}
       >
-        <div className="ct-row min-w-0 flex-1 gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {icon ? (
-            <span className="ct-icon-box">
+            <span className="ed-row-icon">
               <CtIcon name={icon} size={20} />
             </span>
           ) : null}
           <div className="min-w-0">
-            <span className={`font-semibold block truncate ${active ? "ct-text-accent" : ""}`}>{label}</span>
-            <span className="ct-caption block truncate mt-0.5">{hint}</span>
+            <span
+              className="font-semibold block truncate"
+              style={active ? { color: "var(--ed-gold)" } : undefined}
+            >
+              {label}
+            </span>
+            <span className="ed-caption block truncate mt-0.5">{hint}</span>
           </div>
         </div>
-        <span className="ct-settings-chevron" aria-hidden>
+        <span className="ed-settings-row-caret" aria-hidden>
           ›
         </span>
       </button>
@@ -56,20 +61,20 @@ export function SettingsRow({
   return (
     <button
       type="button"
-      className={cn("ct-settings-row", danger && "ct-settings-row-danger")}
+      className={cn("ed-settings-row", danger && "ed-settings-row-danger")}
       onClick={onClick}
       disabled={disabled}
     >
       {icon ? (
-        <span className={cn("ct-settings-row-icon", `ct-settings-icon-${iconColor}`)}>
+        <span className={cn("ed-settings-row-icon", `ed-settings-icon-${iconColor}`)}>
           <CtIcon name={icon} size={18} weight="duotone" />
         </span>
       ) : null}
-      <span className="ct-settings-row-label">{label}</span>
-      {value ? <span className="ct-settings-row-value">{value}</span> : null}
-      {rightElement ? <span className="ct-settings-row-value">{rightElement}</span> : null}
+      <span className="ed-settings-row-label">{label}</span>
+      {value ? <span className="ed-settings-row-value">{value}</span> : null}
+      {rightElement ? <span className="ed-settings-row-value">{rightElement}</span> : null}
       {!rightElement ? (
-        <CtIcon name="caret-right" size={14} className="ct-settings-row-caret" />
+        <CtIcon name="caret-right" size={14} className="ed-settings-row-caret" />
       ) : null}
     </button>
   );
@@ -80,9 +85,9 @@ export function SettingsRow({
  */
 export function SettingsSection({ label, children }) {
   return (
-    <div className="ct-settings-section">
-      {label ? <div className="ct-settings-section-label">{label}</div> : null}
-      <div className="ct-settings-list">{children}</div>
+    <div className="ed-settings-section">
+      {label ? <div className="ed-settings-section-label">{label}</div> : null}
+      <div className="ed-settings-list">{children}</div>
     </div>
   );
 }

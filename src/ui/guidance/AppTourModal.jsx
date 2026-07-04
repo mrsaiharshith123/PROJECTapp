@@ -24,11 +24,11 @@ function AppTourSteps({ settings, onComplete, onDismiss }) {
       title={t("tour.title")}
       onClose={close}
       footer={
-        <div className="ct-row-between ct-gap-sm">
+        <div className="ed-row-between gap-2">
           <Caption>
             {t("tour.stepOf", { current: index + 1, total: steps.length })}
           </Caption>
-          <div className="ct-row ct-gap-sm">
+          <div className="ed-row gap-2">
             {!last && (
               <Button type="button" variant="ghost" size="sm" onClick={finish}>
                 {t("tour.skip")}
@@ -41,11 +41,11 @@ function AppTourSteps({ settings, onComplete, onDismiss }) {
         </div>
       }
     >
-      <div className="ct-stack">
+      <div className="ed-stack">
         <Eyebrow>{step.id.replace(/-/g, " ")}</Eyebrow>
         <Body className="font-semibold !text-base">{step.title}</Body>
         <Body className="!text-sm opacity-90">{step.body}</Body>
-        {step.tip && <Caption className="block ct-guidance-tour-tip">{step.tip}</Caption>}
+        {step.tip && <Caption className="block ed-caption">{step.tip}</Caption>}
       </div>
     </Modal>
   );

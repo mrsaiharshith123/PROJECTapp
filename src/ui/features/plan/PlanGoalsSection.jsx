@@ -19,9 +19,9 @@ const SUGGESTED_GOALS = [
 ];
 
 function ringColor(tone) {
-  if (tone === "danger") return "var(--ct-danger)";
-  if (tone === "amber") return "var(--ct-warning)";
-  return "var(--ct-success)";
+  if (tone === "danger") return "var(--ed-red)";
+  if (tone === "amber") return "var(--ed-amber)";
+  return "var(--ed-green)";
 }
 
 function GoalProgressRing({ percent, tone = "teal", size = 40, className = "" }) {
@@ -32,7 +32,7 @@ function GoalProgressRing({ percent, tone = "teal", size = 40, className = "" })
 
   return (
     <div
-      className={cn("ct-conic-ring shrink-0", className)}
+      className={cn("ed-conic-ring shrink-0", className)}
       style={{
         width: size,
         height: size,
@@ -40,7 +40,7 @@ function GoalProgressRing({ percent, tone = "teal", size = 40, className = "" })
       }}
       aria-hidden
     >
-      <div className="ct-conic-ring-inner" style={{ width: inner, height: inner }}>
+      <div className="ed-conic-ring-inner" style={{ width: inner, height: inner }}>
         <span className="text-[10px] font-semibold tabular-nums" style={{ color }}>
           {Math.round(pct)}
         </span>
@@ -167,12 +167,12 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
         <>
           <div className="mt-2">
             <Caption className="block mb-2">{t("plan.goals.emptyQuestion")}</Caption>
-            <div className="ct-row-wrap gap-1">
+            <div className="ed-row-wrap gap-1">
               {SUGGESTED_GOALS.map((s) => (
                 <button
                   key={s.titleKey}
                   type="button"
-                  className="ct-chip"
+                  className="ed-chip"
                   onClick={() => openGoals({ type: s.type, title: t(s.titleKey) })}
                 >
                   {t(s.titleKey)}
@@ -193,11 +193,11 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
       <>
         <button
           type="button"
-          className="ct-plan-goal-glimpse ct-pressable mt-2 w-full text-left"
+          className="ed-plan-goal-card mt-2"
           onClick={() => openGoals()}
           aria-label={t("plan.goals.cardAria", { title: goal.title, pct: intel.progressPercent })}
         >
-          <div className="ct-row gap-3 items-center">
+          <div className="flex items-center gap-3">
             <GoalProgressRing percent={intel.progressPercent} tone={ringTone(intel.status)} size={36} />
             <div className="min-w-0 flex-1">
               <Body className="font-semibold truncate block">{goal.title}</Body>
@@ -223,15 +223,15 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
 
   if (activeGoals.length === 0) {
     return (
-      <section className="ct-plan-section">
-        <div className="ct-stat-tile teal ct-plan-goals-empty">
+      <section className="ed-section">
+        <div className="ed-inset-green">
           <Body className="font-semibold">{t("plan.goals.emptyQuestion")}</Body>
-          <div className="ct-row-wrap gap-2 mt-3">
+          <div className="ed-row-wrap gap-2 mt-3">
             {SUGGESTED_GOALS.map((s) => (
               <button
                 key={s.titleKey}
                 type="button"
-                className="ct-chip"
+                className="ed-chip"
                 onClick={() => openGoals({ type: s.type, title: t(s.titleKey) })}
               >
                 {t(s.titleKey)}
@@ -248,11 +248,10 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
   }
 
   return (
-    <section className="ct-plan-section">
-      <div className="ct-hero-card wealth ct-plan-goals-hero">
-        <div className="ct-hero-glow teal" aria-hidden />
-        <p className="ct-hero-label">{t("plan.goals.heroLabel")}</p>
-        <p className="ct-hero-number" style={{ color: heroColor, fontSize: "20px" }}>
+    <section className="ed-section">
+      <div className="ed-inset">
+<p className="ed-field-label">{t("plan.goals.heroLabel")}</p>
+        <p className="ed-hero-number" style={{ color: heroColor, fontSize: "20px" }}>
           {t("plan.goals.onTrackSummary", { onTrack: onTrackCount, total: activeGoals.length })}
         </p>
         {nearest ? (
@@ -266,19 +265,19 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
         ) : null}
       </div>
 
-      <div className="ct-stack-sm">
+      <div className="ed-stack-sm">
         {sorted.slice(0, 3).map(({ goal, intel, cap, monthsLeft }) => (
           <button
             key={goal.id}
             type="button"
-            className="ct-stat-tile ct-plan-goal-card ct-pressable"
+            className="ed-inset ed-plan-goal-card"
             onClick={() => openGoals()}
             aria-label={t("plan.goals.cardAria", {
               title: goal.title,
               pct: intel.progressPercent,
             })}
           >
-            <div className="ct-row gap-3 items-center">
+            <div className="flex items-center gap-3">
               <GoalProgressRing percent={intel.progressPercent} tone={ringTone(intel.status)} />
               <div className="min-w-0 flex-1 text-left">
                 <Body className="font-semibold truncate block">{goal.title}</Body>
@@ -301,7 +300,7 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
       </div>
 
       {activeGoals.length > 3 ? (
-        <button type="button" className="ct-plan-see-all" onClick={() => openGoals()}>
+        <button type="button" className="ed-plan-see-all" onClick={() => openGoals()}>
           {t("plan.goals.seeAll", { count: activeGoals.length })} {CHEVRON}
         </button>
       ) : null}

@@ -1,6 +1,6 @@
 export function SegmentedControl({ options, value, onChange, className = "" }) {
   return (
-    <div className={className ? `ct-segmented ${className}` : "ct-segmented"}>
+    <div className={`ed-segmented${className ? ` ${className}` : ""}`}>
       {options.map((opt) => {
         const id = typeof opt === "string" ? opt : opt.id;
         const label = typeof opt === "string" ? opt : opt.label;
@@ -9,7 +9,7 @@ export function SegmentedControl({ options, value, onChange, className = "" }) {
             key={id}
             type="button"
             onClick={() => onChange(id)}
-            className={value === id ? "ct-segmented-tab ct-segmented-tab-active" : "ct-segmented-tab"}
+            className={`ed-segmented-tab${value === id ? " active" : ""}`}
           >
             {label}
           </button>

@@ -112,32 +112,32 @@ export default function MathCalculatorModal({ onClose }) {
 
   return (
     <Modal onClose={onClose} title={t("tools.mathCalc.title")}>
-      <div className="ct-math-calc">
-        <div className="ct-hero-card sim ct-math-calc-display-wrap">
-        <div className="ct-math-calc-display ct-hero-number ct-numeral" aria-live="polite">
+      <div className="ed-math-calc">
+        <div className="ed-inset ed-math-calc-display-wrap">
+        <div className="ed-math-calc-display ed-hero-number ed-numeral" aria-live="polite">
           {display}
         </div>
         </div>
-        <div className="ct-math-calc-grid">
+        <div className="ed-math-calc-grid">
           {rows.flatMap((row, ri) =>
             row.map((key) => (
               <button
                 key={`${ri}-${key}`}
                 type="button"
-                className={`ct-math-calc-key${key === "=" ? " ct-math-calc-key-equals" : ""}${["C", "⌫"].includes(key) ? " ct-math-calc-key-fn" : ""}${["+", "-", "×", "÷"].includes(key) ? " ct-math-calc-key-op" : ""}`}
+                className={`ed-math-calc-key${key === "=" ? " ed-math-calc-key-equals" : ""}${["C", "⌫"].includes(key) ? " ed-math-calc-key-fn" : ""}${["+", "-", "×", "÷"].includes(key) ? " ed-math-calc-key-op" : ""}`}
                 onClick={() => onKey(key)}
               >
                 {key}
               </button>
             )),
           )}
-          <button type="button" className="ct-math-calc-key ct-math-calc-key-zero" onClick={() => onKey("0")}>
+          <button type="button" className="ed-math-calc-key ed-math-calc-key-zero" onClick={() => onKey("0")}>
             0
           </button>
-          <button type="button" className="ct-math-calc-key" onClick={() => onKey(".")}>
+          <button type="button" className="ed-math-calc-key" onClick={() => onKey(".")}>
             .
           </button>
-          <span className="ct-math-calc-spacer" aria-hidden />
+          <span className="ed-math-calc-spacer" aria-hidden />
         </div>
         <Button type="button" variant="ghost" size="sm" onClick={onClose} className="mt-3 !w-full">
           {t("common.close")}

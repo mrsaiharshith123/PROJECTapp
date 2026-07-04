@@ -7,7 +7,7 @@ import { cn } from "../utils/cn.js";
 export function TabContent({ tabId, activeTab, children, className = "" }) {
   if (activeTab !== tabId) return null;
   return (
-    <div key={activeTab} className={cn("ct-tab-content", className)}>
+    <div key={activeTab} className={cn("ed-tab-content", className)}>
       {children}
     </div>
   );

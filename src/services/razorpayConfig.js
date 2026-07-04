@@ -14,13 +14,11 @@ export function getTierPaise(tier, billing = "yearly") {
 /** Annual plan prices in paise (INR × 100) — synced from PLAN_PRESENTATION. */
 export const TIER_ANNUAL_PAISE = {
   [SUBSCRIPTION_TIERS.pro]: getTierPaise(SUBSCRIPTION_TIERS.pro, "yearly"),
-  [SUBSCRIPTION_TIERS.power]: getTierPaise(SUBSCRIPTION_TIERS.power, "yearly"),
 };
 
 /** Monthly plan prices in paise (INR × 100). */
 export const TIER_MONTHLY_PAISE = {
   [SUBSCRIPTION_TIERS.pro]: getTierPaise(SUBSCRIPTION_TIERS.pro, "monthly"),
-  [SUBSCRIPTION_TIERS.power]: getTierPaise(SUBSCRIPTION_TIERS.power, "monthly"),
 };
 
 export function getTierAnnualPaise(tier) {

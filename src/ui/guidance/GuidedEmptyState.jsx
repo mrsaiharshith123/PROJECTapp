@@ -14,7 +14,7 @@ export function GuidedEmptyState({ guidanceKey, settings }) {
   const g = getEmptyStateGuidance(guidanceKey, settings);
 
   return (
-    <div className="ct-stack ct-stack-center">
+    <div className="ed-stack ed-stack-center">
       <EmptyState icon={g.icon} title={t(g.titleKey)} hint={t(g.hintKey)} />
       {g.actionPath && g.actionLabelKey && (
         <Button type="button" variant="primary" size="md" onClick={() => navigate(g.actionPath)}>

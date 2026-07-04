@@ -10,17 +10,17 @@ export function PasswordInput({ className = "", value, onChange, ...props }) {
   const { t } = useTranslation();
   const [show, setShow] = useState(false);
   return (
-    <div className="ct-password-wrap">
+    <div className="ed-input-prefix">
       <input
         type={show ? "text" : "password"}
-        className={cn("ct-input ct-input-password", className)}
+        className={cn("ed-input", className)}
         value={value}
         onChange={onChange}
         {...props}
       />
       <button
         type="button"
-        className="ct-password-toggle"
+        className="ed-password-toggle"
         onClick={() => setShow((s) => !s)}
         aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
         tabIndex={-1}

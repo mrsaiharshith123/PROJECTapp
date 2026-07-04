@@ -56,7 +56,7 @@ export default function ProfileMilestonesPanel() {
             hint={t("profileHub.milestonesEmptyHint")}
           />
         ) : (
-          <ul className="ct-stack-sm">
+          <ul className="ed-stack-sm">
             {achievements.map((item) => {
               const label = item.labelIsKey
                 ? t(item.label, item.labelParams || {})
@@ -64,8 +64,8 @@ export default function ProfileMilestonesPanel() {
                   ? `${item.label} — ${t(item.labelSuffixKey)}`
                   : item.label;
               return (
-                <li key={item.id} className="ct-stat-tile teal ct-nw-milestone-row">
-                  <div className="ct-row-between gap-2">
+                <li key={item.id} className="ed-stat-tile teal">
+                  <div className="ed-row-between gap-2">
                     <span>{label}</span>
                     {item.achievedAt > 0 && (
                       <Caption className="shrink-0">

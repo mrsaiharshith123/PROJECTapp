@@ -19,12 +19,12 @@ export function Skeleton({ className = "", style, width, height = "1rem", rounde
     borderRadius: rounded || style?.borderRadius,
     ...style,
   };
-  return <div className={`ct-skeleton ${className}`.trim()} style={merged} aria-hidden />;
+  return <div className={`ed-skeleton ${className}`.trim()} style={merged} aria-hidden />;
 }
 
 export function SkeletonCard() {
   return (
-    <div className="ct-card ct-stack" style={{ gap: "0.75rem" }}>
+    <div className="ed-inset ed-stack" style={{ gap: "0.75rem" }}>
       <Skeleton width="40%" height="0.875rem" />
       <Skeleton width="70%" height="1.75rem" />
       <Skeleton width="100%" height="0.75rem" />
@@ -37,10 +37,10 @@ export function SkeletonCard() {
  */
 export function LoadingSpinner({ size = "md", showLogo = false }) {
   return (
-    <div className={`ct-spin ct-spin-${size}`} role="presentation" aria-hidden>
-      <span className="ct-spin-ring" />
+    <div className={`ed-spin ed-spin-${size}`} role="presentation" aria-hidden>
+      <span className="ed-spin-ring" />
       {showLogo ? (
-        <span className="ct-spin-core">
+        <span className="ed-spin-core">
           <PerovoLogo size={size === "lg" ? 36 : size === "sm" ? 16 : 24} />
         </span>
       ) : null}
@@ -74,25 +74,25 @@ export function PageLoader({ message, hint = true }) {
   const sub = hint ? rotatingHint : null;
 
   return (
-    <div className="ct-load-scene ct-load-scene-full" role="status" aria-live="polite" aria-busy="true">
-      <div className="ct-load-center">
-        <div className="ct-load-message-row">
+    <div className="ed-load-scene ed-load-scene-full" role="status" aria-live="polite" aria-busy="true">
+      <div className="ed-load-center">
+        <div className="ed-load-message-row">
           {message ? (
-            <p className="ct-load-message ct-load-message-editorial">{message}</p>
+            <p className="ed-load-message ed-load-message-editorial">{message}</p>
           ) : (
-            <>
-              <span className="ct-load-brand-title">{t("brand.appName")}</span>
-              <span className="ct-load-brand-tagline">{t("home.ed.tagline")}</span>
-            </>
+            <div className="ed-load-brand-lockup">
+              <p className="ed-load-brand-title">{t("brand.appName")}</p>
+              <p className="ed-load-brand-tagline">{t("home.ed.tagline")}</p>
+            </div>
           )}
         </div>
         {sub ? (
-          <p key={sub} className="ct-load-hint">
+          <p key={sub} className="ed-load-hint">
             {sub}
           </p>
         ) : null}
-        <div className="ct-load-progress" aria-hidden>
-          <span className="ct-load-progress-bar" />
+        <div className="ed-load-progress" aria-hidden>
+          <span className="ed-load-progress-bar" />
         </div>
       </div>
     </div>
@@ -113,13 +113,13 @@ export function RouteFallback() {
 export function SectionLoader({ message }) {
   const { t } = useTranslationOptional();
   return (
-    <div className="ct-section-load" role="status" aria-live="polite" aria-busy="true">
+    <div className="ed-section-load" role="status" aria-live="polite" aria-busy="true">
       <LoadingSpinner size="md" />
-      <p className="ct-section-load-text">{message || t("common.loading")}</p>
-      <div className="ct-section-load-sk">
-        <Skeleton className="ct-load-sk-line" />
-        <Skeleton className="ct-load-sk-line-sm" />
-        <Skeleton className="ct-load-sk-line" />
+      <p className="ed-section-load-text">{message || t("common.loading")}</p>
+      <div className="ed-section-load-sk">
+        <Skeleton className="ed-load-sk-line" />
+        <Skeleton className="ed-load-sk-line-sm" />
+        <Skeleton className="ed-load-sk-line" />
       </div>
     </div>
   );
@@ -132,7 +132,7 @@ export function SectionLoader({ message }) {
 export function InlineLoader({ label }) {
   const { t } = useTranslationOptional();
   return (
-    <span className="ct-inline-load" role="status" aria-live="polite">
+    <span className="ed-inline-load" role="status" aria-live="polite">
       <LoadingSpinner size="sm" />
       <span>{label || t("common.loading")}</span>
     </span>

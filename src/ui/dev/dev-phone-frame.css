@@ -143,7 +143,8 @@ html[data-dev-phone-frame="1"] .ct-bottom-nav {
   display: block !important;
 }
 
-html[data-dev-phone-frame="1"] .ct-main {
+html[data-dev-phone-frame="1"] .ct-main,
+html[data-dev-phone-frame="1"] .ed-main {
   padding-top: calc(env(safe-area-inset-top, 0px) + var(--ct-page-inset-top)) !important;
   padding-bottom: calc(var(--ed-nav-h, 60px) + env(safe-area-inset-bottom, 0px) + 16px) !important;
 }
@@ -158,7 +159,8 @@ html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen {
   overflow-y: auto;
 }
 
-html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen .ct-screen {
+html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen .ct-screen,
+html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen .ed-screen {
   min-height: 0 !important;
   max-height: none !important;
   height: auto !important;
@@ -167,19 +169,22 @@ html[data-dev-phone-frame="1"]:has(.ed-paper) .dev-phone-screen .ct-screen {
 }
 
 html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-screen,
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ed-screen,
 html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-auth-shell {
   min-height: 0 !important;
 }
 
-html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-main {
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ct-main,
+html[data-dev-phone-frame="1"]:has(.ed-paper) .ed-main {
   display: block !important;
   min-height: 0;
-  padding-top: env(safe-area-inset-top, 0px) !important;
+  padding-top: 0 !important;
   padding-bottom: calc(var(--ed-nav-h, 60px) + env(safe-area-inset-bottom, 0px) + 16px) !important;
   background: var(--ed-bg);
 }
 
-html[data-dev-phone-frame="1"] .ct-tools-toast {
+html[data-dev-phone-frame="1"] .ct-tools-toast,
+html[data-dev-phone-frame="1"] .ed-tools-toast {
   top: auto !important;
   bottom: calc(var(--ct-nav-h, 52px) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;
 }
@@ -194,15 +199,21 @@ html[data-dev-phone-frame="1"] .ct-modal-panel:not(.ct-modal-panel--fullscreen) 
 }
 
 html[data-dev-phone-frame="1"] .ct-screen,
+html[data-dev-phone-frame="1"] .ed-screen,
 html[data-dev-phone-frame="1"] .ct-auth-shell {
   min-height: var(--dev-phone-h) !important;
 }
 
-html[data-dev-phone-frame="1"] .ct-load-scene-full {
+html[data-dev-phone-frame="1"] .dev-phone-screen .ct-load-scene-full {
   min-height: var(--dev-phone-h) !important;
+  height: var(--dev-phone-h) !important;
+  max-height: var(--dev-phone-h) !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-html[data-dev-phone-frame="1"] .dev-phone-screen .ct-screen {
+html[data-dev-phone-frame="1"] .dev-phone-screen .ct-screen,
+html[data-dev-phone-frame="1"] .dev-phone-screen .ed-screen {
   min-height: var(--dev-phone-h) !important;
   max-height: var(--dev-phone-h) !important;
   overflow-y: auto;
@@ -227,12 +238,21 @@ html[data-dev-phone-frame="1"] .dev-phone-screen {
 html[data-dev-phone-frame="1"] {
   --sat: 36px;
   --sab: 20px;
+  --ed-masthead-band-h: 72px;
 }
 
-/* ed-page gets simulated status bar padding */
+/* Masthead absorbs simulated status bar — page shell stays flush */
 html[data-dev-phone-frame="1"] .ed-page,
-html[data-dev-phone-frame="1"] .ed-page-full {
-  padding-top: calc(var(--ed-page-top, 16px) + 36px) !important;
+html[data-dev-phone-frame="1"] .ed-page-full,
+html[data-dev-phone-frame="1"] .ed-paper {
+  padding-top: 0 !important;
+}
+
+html[data-dev-phone-frame="1"] .ct-main:has(.ed-page-full),
+html[data-dev-phone-frame="1"] .ct-main:has(.ed-paper),
+html[data-dev-phone-frame="1"] .ed-main:has(.ed-page-full),
+html[data-dev-phone-frame="1"] .ed-main:has(.ed-paper) {
+  padding-top: 0 !important;
 }
 
 /* ed-nav gets bottom gesture bar clearance */

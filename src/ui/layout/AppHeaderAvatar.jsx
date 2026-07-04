@@ -17,7 +17,7 @@ export function AppHeaderAvatar() {
         aria-label={t("nav.you")}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`ct-app-header-avatar${open ? " open" : ""}`}
+        className={`ed-app-header-avatar${open ? " open" : ""}`}
         style={{
           width: 34,
           height: 34,

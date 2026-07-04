@@ -36,10 +36,9 @@ export default function LendingOverduePanel() {
   if (!rows.length) return null;
 
   return (
-    <div className="ct-hero-card lending survival ct-stack-sm">
-      <div className="ct-hero-glow amber" aria-hidden />
-      <div className="ct-row gap-2 items-center relative">
-        <span className="ct-icon-tile danger" aria-hidden>
+    <div className="ed-inset-amber ed-stack-sm">
+      <div className="flex items-center gap-2 relative">
+        <span style={{ color: "var(--ed-red)", flexShrink: 0 }} aria-hidden>
           <CtIcon name="warning" size={20} context="status" />
         </span>
         <div>
@@ -47,10 +46,10 @@ export default function LendingOverduePanel() {
           <Caption className="block">{t("lending.overdueHint")}</Caption>
         </div>
       </div>
-      <div className="ct-stack-sm relative">
+      <div className="ed-stack-sm relative">
         {rows.map((row) => (
-          <Card key={row.lending.id} className="ct-stack-sm !p-3">
-            <div className="ct-row-between gap-2 flex-wrap">
+          <Card key={row.lending.id} className="ed-stack-sm !p-3">
+            <div className="ed-row-between gap-2 flex-wrap">
               <div className="min-w-0">
                 <Body className="font-semibold">{row.lending.personName}</Body>
                 <Caption className="block">
@@ -58,20 +57,20 @@ export default function LendingOverduePanel() {
                   {row.days > 0 ? ` · ${t("lending.overdueDays", { days: row.days })}` : ""}
                 </Caption>
               </div>
-              <div className="ct-stat-tile danger shrink-0 text-right min-w-[5.5rem]">
-                <p className="ct-stat-tile-value ct-numeral">{formatAmount(row.total)}</p>
-                <p className="ct-stat-tile-label">{t("lending.overdueTitle")}</p>
+              <div className="ed-inset shrink-0 text-right min-w-[5.5rem]">
+                <p className="ed-numeral ed-numeral">{formatAmount(row.total)}</p>
+                <p className="ed-field-label">{t("lending.overdueTitle")}</p>
               </div>
             </div>
-            <ul className="ct-caption space-y-0.5">
+            <ul className="ed-caption space-y-0.5">
               {row.overdue.slice(0, 4).map((inst) => (
-                <li key={`${inst.dueDate}-${inst.installmentNumber ?? ""}`} className="ct-row-between gap-2">
+                <li key={`${inst.dueDate}-${inst.installmentNumber ?? ""}`} className="ed-row-between gap-2">
                   <span>{inst.dueDate}</span>
-                  <span className="ct-numeral font-semibold">{formatAmount(Number(inst.totalPayment) || 0)}</span>
+                  <span className="ed-numeral font-semibold">{formatAmount(Number(inst.totalPayment) || 0)}</span>
                 </li>
               ))}
             </ul>
-            <div className="ct-row-wrap gap-2 pt-1">
+            <div className="ed-row-wrap gap-2 pt-1">
               <Button
                 type="button"
                 size="sm"

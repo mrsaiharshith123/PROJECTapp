@@ -6,14 +6,14 @@ import { useTranslationOptional } from "../../i18n/I18nProvider.js";
 function ErrorFallback({ error, onReload }) {
   const { t } = useTranslationOptional();
   return (
-    <div className="ct-page ct-stack-center min-h-screen justify-center">
-      <div className="ct-card max-w-md w-full ct-stack">
-        <h1 className="ct-onboard-title">{t("error.boundary.title")}</h1>
-        <p className="ct-caption">{t("error.boundary.body")}</p>
-        <pre className="ct-hero-inset text-xs overflow-auto max-h-40 text-[var(--ct-danger)]">
+    <div className="ed-page ed-stack-center min-h-screen justify-center">
+      <div className="ed-inset max-w-md w-full ed-stack">
+        <h1 className="ed-page-shell-title">{t("error.boundary.title")}</h1>
+        <p className="ed-caption">{t("error.boundary.body")}</p>
+        <pre className="ed-inset text-xs overflow-auto max-h-40 text-[var(--ed-red)]">
           {String(error?.message || error)}
         </pre>
-        <button type="button" onClick={onReload} className="ct-btn ct-btn-primary">
+        <button type="button" onClick={onReload} className="ed-btn ed-btn-primary">
           {t("error.boundary.reload")}
         </button>
       </div>

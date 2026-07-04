@@ -40,7 +40,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
       <div className="ed-ins-story ed-ledger-hero">
         <div className="ed-ins-kicker">{t("ledger.totalAssets")}</div>
         <div className="ed-ledger-hero-row">

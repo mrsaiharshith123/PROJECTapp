@@ -1,14 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
+import EditorialSubMasthead from "../../../patterns/EditorialSubMasthead.jsx";
 
 /**
- * @param {{ titleKey?: string, title?: string, children: import('react').ReactNode, action?: import('react').ReactNode, backTo?: string }} props
+ * @param {{ titleKey?: string, titleParams?: Record<string, unknown>, title?: string, children: import('react').ReactNode, action?: import('react').ReactNode, backTo?: string }} props
  */
-export default function YouSubPageShell({ titleKey, title, children, action, backTo }) {
+export default function YouSubPageShell({ titleKey, titleParams, title, children, action, backTo }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const pageTitle = titleKey ? t(titleKey) : title || "";
+  const pageTitle = titleKey
+    ? t(titleKey, { appName: t("brand.appName"), ...titleParams })
+    : title || "";
 
   useEffect(() => {
     document.title = `${pageTitle} — ${t("brand.appName")}`;
@@ -20,20 +23,14 @@ export default function YouSubPageShell({ titleKey, title, children, action, bac
   const handleBack = backTo ? () => navigate(backTo) : () => navigate("/you");
 
   return (
-    <div className="ct-page ed-you-subpage">
-      <div className="ed-you-subpage-header">
-        <button
-          type="button"
-          className="ed-you-back"
-          onClick={handleBack}
-          aria-label={t("common.back")}
-        >
-          {t("common.backArrow")}
-        </button>
-        <h1 className="ed-you-subpage-title">{pageTitle}</h1>
-        {action ? <div style={{ flexShrink: 0 }}>{action}</div> : null}
-      </div>
-      <div style={{ paddingBottom: 8 }}>{children}</div>
+    <div className="ed-page-full ed-you-subpage">
+      <EditorialSubMasthead
+        title={pageTitle}
+        onBack={handleBack}
+        backLabel={t("common.backArrow")}
+        right={action}
+      />
+      <div className="ed-you-subpage-body">{children}</div>
     </div>
   );
 }

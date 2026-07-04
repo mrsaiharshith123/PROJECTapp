@@ -18,36 +18,36 @@ export function LiquidityPanel({ liquidity, privacyMode, totalAssets = 0 }) {
   const lockedPct = (locked / sum) * 100;
 
   return (
-    <Card className="ct-nw-panel ct-animate-fade-up">
-      <div className="ct-row-between">
+    <Card className="ed-inset">
+      <div className="ed-row-between">
         <Heading level={3}>{t("netWorth.liquidity.title")}</Heading>
         <InfoTip text={t("netWorth.liquidity.tip")} />
       </div>
-      <div className="ct-nw-stat mt-3">
+      <div className="ed-inset mt-3">
         <Caption>{t("netWorth.liquidity.survival")}</Caption>
-        <Body className="ct-numeral font-bold">
+        <Body className="ed-numeral font-bold">
           {t("netWorth.liquidity.months", { count: liquidity.survivalMonths })}
         </Body>
       </div>
       {!privacyMode && totalAssets > 0 ? (
         <>
-          <div className="ct-liquidity-tier-bar" aria-hidden>
-            <span className="ct-liquidity-tier-seg-cash" style={{ width: `${cashPct}%` }} />
-            <span className="ct-liquidity-tier-seg-invest" style={{ width: `${investPct}%` }} />
-            <span className="ct-liquidity-tier-seg-locked" style={{ width: `${lockedPct}%` }} />
+          <div className="ed-liquidity-bar" aria-hidden>
+            <span className="ed-liquidity-cash" style={{ width: `${cashPct}%` }} />
+            <span className="ed-liquidity-invest" style={{ width: `${investPct}%` }} />
+            <span className="ed-liquidity-locked" style={{ width: `${lockedPct}%` }} />
           </div>
-          <div className="ct-grid-3 gap-2 mt-2">
-            <div className="ct-stat-tile teal">
-              <p className="ct-stat-label">{t("netWorth.liquidity.cash")}</p>
-              <p className="ct-stat-value text-sm">{formatInr(cash)}</p>
+          <div className="ed-grid-3 gap-2 mt-2">
+            <div className="ed-inset-green">
+              <p className="ed-stat-label">{t("netWorth.liquidity.cash")}</p>
+              <p className="ed-stat-value text-sm">{formatInr(cash)}</p>
             </div>
-            <div className="ct-stat-tile indigo">
-              <p className="ct-stat-label">{t("netWorth.liquidity.investments")}</p>
-              <p className="ct-stat-value text-sm">{formatInr(invest)}</p>
+            <div className="ed-inset">
+              <p className="ed-stat-label">{t("netWorth.liquidity.investments")}</p>
+              <p className="ed-stat-value text-sm">{formatInr(invest)}</p>
             </div>
-            <div className="ct-stat-tile amber">
-              <p className="ct-stat-label">{t("netWorth.liquidity.locked")}</p>
-              <p className="ct-stat-value text-sm">{formatInr(locked)}</p>
+            <div className="ed-inset-amber">
+              <p className="ed-stat-label">{t("netWorth.liquidity.locked")}</p>
+              <p className="ed-stat-value text-sm">{formatInr(locked)}</p>
             </div>
           </div>
         </>
@@ -56,7 +56,7 @@ export function LiquidityPanel({ liquidity, privacyMode, totalAssets = 0 }) {
         {t(`netWorth.liquidity.strength.${liquidity.emergencyLiquidityStrength}`)}
       </Caption>
       {!privacyMode && liquidity.lockedWealthPct > 40 && (
-        <Caption className="mt-2 block text-[var(--ct-warning)]">
+        <Caption className="mt-2 block text-[var(--ed-amber)]">
           {t("netWorth.insight.lockedWealth", { pct: liquidity.lockedWealthPct })}
         </Caption>
       )}
@@ -68,17 +68,17 @@ export function HealthScorePanel({ lifeScore }) {
   const { t } = useTranslation();
   const pct = lifeScore.score;
   return (
-    <Card className="ct-nw-panel ct-animate-fade-up">
+    <Card className="ed-inset">
       <Heading level={3}>{t("netWorth.lifeScore.title")}</Heading>
       <div
-        className="ct-nw-score-ring mt-3"
+        className="ed-conic-ring mt-3"
         style={/** @type {import('react').CSSProperties} */ ({ "--nw-score": pct })}
       >
-        <span className="ct-nw-score-value ct-numeral">{pct}</span>
+        <span className="ed-numeral ed-numeral">{pct}</span>
       </div>
       <Body className="text-center mt-2 font-semibold">{t(lifeScore.labelKey)}</Body>
       {lifeScore.actionKeys?.length > 0 && (
-        <ul className="ct-stack-sm mt-4 text-sm">
+        <ul className="ed-stack-sm mt-4 text-sm">
           {lifeScore.actionKeys.map((key) => (
             <li key={key}>→ {t(key)}</li>
           ))}
@@ -91,12 +91,12 @@ export function HealthScorePanel({ lifeScore }) {
 export function PressureWealthPanel({ pressure, cashFlow, privacyMode }) {
   const { t } = useTranslation();
   return (
-    <Card className="ct-nw-panel ct-animate-fade-up">
+    <Card className="ed-inset">
       <Heading level={3}>{t("netWorth.pressure.title")}</Heading>
       <Body className="mt-2">{t(pressure.postureKey)}</Body>
-      <div className="ct-nw-stat mt-3">
+      <div className="ed-inset mt-3">
         <Caption>{t("netWorth.cashFlow.breathing")}</Caption>
-        <Body className="ct-numeral font-bold">
+        <Body className="ed-numeral font-bold">
           {privacyMode ? "••••" : formatInr(cashFlow.leftoverCash)}
         </Body>
       </div>
@@ -127,9 +127,9 @@ export function AllocationCharts({ intel, privacyMode, variant = "all" }) {
   const showDebt = variant === "all" || variant === "liabilities";
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       {showAssets && assetData.length > 0 && (
-        <Card className="ct-nw-panel">
+        <Card className="ed-inset">
           <Heading level={3}>{t("netWorth.chart.allocation")}</Heading>
           <FlexibleDataChart
             data={assetData}
@@ -140,7 +140,7 @@ export function AllocationCharts({ intel, privacyMode, variant = "all" }) {
         </Card>
       )}
       {showDebt && (
-      <Card className="ct-nw-panel">
+      <Card className="ed-inset">
         <Heading level={3}>{t("netWorth.chart.debtRatio")}</Heading>
         <FlexibleDataChart
           data={debtData}
@@ -170,7 +170,7 @@ export function SimulationPanel({ simulationBase }) {
 
   if (!scenarios.length) {
     return (
-      <Card className="ct-nw-panel">
+      <Card className="ed-inset">
         <Caption>{t("tools.planner.scenariosEmpty")}</Caption>
       </Card>
     );
@@ -179,11 +179,10 @@ export function SimulationPanel({ simulationBase }) {
   const projected = result?.projectedNetWorth ?? 0;
 
   return (
-    <div className="ct-stack">
-      <div className="ct-hero-card sim">
-        <div className="ct-hero-glow" aria-hidden />
-        <p className="ct-hero-label">{t("netWorth.sim.title")}</p>
-        <p className="ct-hero-number">{formatInr(projected)}</p>
+    <div className="ed-stack">
+      <div className="ed-math-calc-display-wrap">
+<p className="ed-kicker">{t("netWorth.sim.title")}</p>
+        <p className="ed-hero-number">{formatInr(projected)}</p>
         <Caption className="block relative mt-1">{t("netWorth.sim.subtitle")}</Caption>
       </div>
       {scenarios.map((s) => {
@@ -195,18 +194,18 @@ export function SimulationPanel({ simulationBase }) {
           <button
             key={s.id}
             type="button"
-            className={`ct-sim-scenario-row w-full text-left ${active ? "active" : ""}`}
+            className={`ed-plan-goal-card w-full text-left ${active ? "active" : ""}`}
             onClick={() => setActiveId(s.id)}
           >
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-[var(--ct-text)]">{t(s.labelKey)}</p>
-              <p className={`text-xs ct-numeral mt-0.5 ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              <p className="text-sm font-semibold text-[var(--ed-ink)]">{t(s.labelKey)}</p>
+              <p className={`text-xs ed-numeral mt-0.5 ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {delta >= 0 ? "+" : ""}
                 {formatInr(delta)}
               </p>
-              <div className="ct-sim-impact-bar">
+              <div className="ed-progress-track">
                 <div
-                  className={`ct-sim-impact-fill ${delta >= 0 ? "positive" : "negative"}`}
+                  className={`ed-progress-bar ${delta >= 0 ? "positive" : "negative"}`}
                   style={{ width: `${impactPct}%` }}
                 />
               </div>
@@ -214,7 +213,7 @@ export function SimulationPanel({ simulationBase }) {
             {active && result ? (
               <div className="text-right shrink-0">
                 <Caption>{t("netWorth.sim.projectedNw")}</Caption>
-                <Body className="ct-numeral font-bold text-sm">{formatInr(result.projectedNetWorth)}</Body>
+                <Body className="ed-numeral font-bold text-sm">{formatInr(result.projectedNetWorth)}</Body>
               </div>
             ) : null}
           </button>

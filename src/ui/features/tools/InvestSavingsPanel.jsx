@@ -13,7 +13,7 @@ import { inputClassName } from "../../primitives/Input.jsx";
 import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 function SipAdvisorTab() {
   const { t } = useTranslation();
@@ -92,7 +92,7 @@ function SipAdvisorTab() {
   }, []);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tools.sip.projectedLabel")}
@@ -104,7 +104,7 @@ function SipAdvisorTab() {
         <Caption className="block">{t("tools.sip.fromBills", { amount: formatInr(sipFromBills) })}</Caption>
       )}
       <div>
-        <label className="ct-field-label">{t("tools.sip.monthly")}</label>
+        <label className="ed-field-label">{t("tools.sip.monthly")}</label>
         <input
           className={fieldClass}
           value={sip}
@@ -114,19 +114,19 @@ function SipAdvisorTab() {
         />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.sip.years")}</label>
+        <label className="ed-field-label">{t("tools.sip.years")}</label>
         <input className={fieldClass} value={years} onChange={(e) => setYears(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.sip.target")}</label>
+        <label className="ed-field-label">{t("tools.sip.target")}</label>
         <input className={fieldClass} value={target} onChange={(e) => setTarget(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.sip.return")}</label>
+        <label className="ed-field-label">{t("tools.sip.return")}</label>
         <input className={fieldClass} value={rate} onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.sip.boostLabel")}</label>
+        <label className="ed-field-label">{t("tools.sip.boostLabel")}</label>
         <input
           className={fieldClass}
           value={sipBoost}
@@ -136,14 +136,14 @@ function SipAdvisorTab() {
         />
       </div>
       {sipCurrentValue > 0 ? (
-        <div className="ct-stat-tile teal">
-          <p className="ct-stat-tile-label">{t("tools.sip.liveValue", { amount: formatInr(sipCurrentValue) })}</p>
-          <p className="ct-stat-tile-value text-sm">{t("tools.sip.liveValueHint")}</p>
+        <div className="ed-inset-green">
+          <p className="ed-stat-label">{t("tools.sip.liveValue", { amount: formatInr(sipCurrentValue) })}</p>
+          <p className="ed-stat-value text-sm">{t("tools.sip.liveValueHint")}</p>
         </div>
       ) : null}
       {plan.narrativeLines.slice(1).map((line) => (
-        <div key={line} className="ct-stat-tile">
-          <p className="ct-stat-tile-value text-sm">{line}</p>
+        <div key={line} className="ed-inset">
+          <p className="ed-stat-value text-sm">{line}</p>
         </div>
       ))}
       {monthlySip > 0 && (
@@ -184,7 +184,7 @@ function FdRdTab() {
   );
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <ToolAnswerHero
         tone="wealth"
         label={t("tier.fdrd.title")}
@@ -202,7 +202,7 @@ function FdRdTab() {
       />
       {kind === "fd" ? (
         <div>
-          <label className="ct-field-label">{t("tier.fdrd.principal")}</label>
+          <label className="ed-field-label">{t("tier.fdrd.principal")}</label>
           <input
             className={fieldClass}
             value={principal}
@@ -212,7 +212,7 @@ function FdRdTab() {
         </div>
       ) : (
         <div>
-          <label className="ct-field-label">{t("tier.fdrd.monthlyDeposit")}</label>
+          <label className="ed-field-label">{t("tier.fdrd.monthlyDeposit")}</label>
           <input
             className={fieldClass}
             value={monthlyDeposit}
@@ -221,9 +221,9 @@ function FdRdTab() {
           />
         </div>
       )}
-      <div className="ct-row gap-3 flex-wrap">
+      <div className="ed-row gap-3 flex-wrap">
         <div className="flex-1 min-w-[120px]">
-          <label className="ct-field-label">{t("tier.fdrd.rate")}</label>
+          <label className="ed-field-label">{t("tier.fdrd.rate")}</label>
           <input
             className={fieldClass}
             value={rate}
@@ -232,7 +232,7 @@ function FdRdTab() {
           />
         </div>
         <div className="flex-1 min-w-[120px]">
-          <label className="ct-field-label">{t("tier.fdrd.tenure")}</label>
+          <label className="ed-field-label">{t("tier.fdrd.tenure")}</label>
           <input
             className={fieldClass}
             value={tenure}
@@ -242,11 +242,11 @@ function FdRdTab() {
         </div>
       </div>
       <div>
-        <label className="ct-field-label">{t("tier.fdrd.bankName")}</label>
+        <label className="ed-field-label">{t("tier.fdrd.bankName")}</label>
         <input className={fieldClass} value={bankName} onChange={(e) => setBankName(e.target.value)} />
       </div>
       <div>
-        <label className="ct-field-label">{t("tier.fdrd.ifsc")}</label>
+        <label className="ed-field-label">{t("tier.fdrd.ifsc")}</label>
         <input
           className={fieldClass}
           placeholder={t("tier.fdrd.ifscPlaceholder")}
@@ -271,13 +271,13 @@ function FdRdTab() {
           </Caption>
         ) : null}
       </div>
-      <div className="ct-grid-2">
-        <div className="ct-stat-tile indigo">
-          <p className="ct-stat-tile-value text-sm">{t("tier.fdrd.interest", { amount: formatInr(projection.interestEarned) })}</p>
+      <div className="ed-grid-2">
+        <div className="ed-inset">
+          <p className="ed-stat-value text-sm">{t("tier.fdrd.interest", { amount: formatInr(projection.interestEarned) })}</p>
         </div>
         {projection.narrativeLines.map((line) => (
-          <div key={line} className="ct-stat-tile col-span-2">
-            <p className="ct-stat-tile-value text-sm">{line}</p>
+          <div key={line} className="ed-inset col-span-2">
+            <p className="ed-stat-value text-sm">{line}</p>
           </div>
         ))}
       </div>
@@ -301,7 +301,7 @@ export default function InvestSavingsPanel() {
   const [tab, setTab] = useState("sip");
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <Caption>{t("tools.invest.intro")}</Caption>
       <SegmentedControl options={tabs} value={tab} onChange={setTab} />
       {tab === "sip" && (

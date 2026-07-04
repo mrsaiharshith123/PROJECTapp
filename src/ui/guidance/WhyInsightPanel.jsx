@@ -15,14 +15,14 @@ export function WhyInsightPanel({ insight, context = {} }) {
   const explained = explainInsightI18n(t, insight, context);
 
   return (
-    <div className="ct-guidance-why">
-      <button type="button" className="ct-guidance-why-toggle" onClick={() => setOpen((v) => !v)}>
+    <div className="ed-inset">
+      <button type="button" className="ed-link" onClick={() => setOpen((v) => !v)}>
         {open ? t("guidance.explain.hide") : t("guidance.explain.show")}
       </button>
       {open && (
-        <div className="ct-guidance-why-body">
+        <div className="ed-stack-sm">
           <Body className="!text-xs !font-medium">{explained.headline}</Body>
-          <ul className="ct-guidance-why-list">
+          <ul className="ed-stack-sm">
             {explained.reasons.map((r) => (
               <li key={r}>
                 <Caption className="block">{r}</Caption>

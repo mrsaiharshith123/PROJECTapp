@@ -88,7 +88,7 @@ export default function CloudRestoreGate({ children }) {
           userId: user.id,
           getState: loadFullAppStateForSync,
           applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
-          force: true,
+          force: false,
         });
         if (cancelled) return;
         if (result.ok) {
@@ -127,7 +127,7 @@ export default function CloudRestoreGate({ children }) {
         userId: user.id,
         getState: loadFullAppStateForSync,
         applySnapshot: (payload, options) => importAppDataRef.current(payload, options),
-        force: true,
+        force: false,
       });
       if (result.ok) {
         sessionStorage.removeItem(DISMISS_KEY);
@@ -146,8 +146,8 @@ export default function CloudRestoreGate({ children }) {
     <>
       {children}
       {autoRestoring ? (
-        <div className="ct-update-progress-overlay" role="status" aria-live="polite" aria-busy="true">
-          <div className="ct-update-progress-panel">
+        <div className="ed-update-progress-overlay" role="status" aria-live="polite" aria-busy="true">
+          <div className="ed-update-progress-panel">
             <Body className="mb-2">{t("sync.restoreAutoInProgress")}</Body>
             <Caption className="block">{t("sync.working")}</Caption>
           </div>
@@ -155,7 +155,7 @@ export default function CloudRestoreGate({ children }) {
       ) : null}
       {offerOpen && remoteMeta ? (
         <Modal onClose={dismiss} title={t("sync.restoreOfferTitle")}>
-          <div className="ct-stack-sm">
+          <div className="ed-stack-sm">
             <Body className="!text-sm">{t("sync.restoreOfferBody")}</Body>
             <Caption className="block">
               {t("sync.restoreOfferMeta", {
@@ -166,8 +166,8 @@ export default function CloudRestoreGate({ children }) {
                 wealth: remoteMeta.counts.wealth ?? 0,
               })}
             </Caption>
-            {error ? <Caption className="block ct-text-danger">{error}</Caption> : null}
-            <div className="ct-grid-2">
+            {error ? <Caption className="block ed-text-danger">{error}</Caption> : null}
+            <div className="ed-grid-2">
               <Button type="button" variant="primary" size="sm" disabled={busy} onClick={restore}>
                 {busy ? t("sync.working") : t("sync.restoreOfferRestore")}
               </Button>

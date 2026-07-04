@@ -8,7 +8,7 @@ import { ChartTypeSelect } from "../features/analytics/charts/ChartTypeSelect.js
 import { Caption, Body } from "../primitives/Text.jsx";
 import { cn } from "../utils/cn.js";
 
-const BREAKDOWN_SEGMENT_COLORS = ["var(--ct-teal-text)", "var(--ct-warning-text)"];
+const BREAKDOWN_SEGMENT_COLORS = ["var(--ed-green)", "var(--ed-amber)"];
 
 /**
  * Shared chart block for bill / lending detail — one graph + one summary list (no duplicate stat grid).
@@ -60,9 +60,9 @@ export function DetailPaymentCharts({
   }
 
   return (
-    <div className={cn("ct-hero-card", heroVariant, "ct-stack-sm")}>
-      <div className="ct-row-between gap-2 flex-wrap items-center relative">
-        <Body className="ct-body-strong text-sm">{t(titleKey)}</Body>
+    <div className={cn("ed-inset", heroVariant, "ed-stack-sm")}>
+      <div className="ed-row-between gap-2 flex-wrap items-center relative">
+        <Body className="ed-body-strong text-sm">{t(titleKey)}</Body>
         <ChartTypeSelect value={chartType} onChange={setChartType} />
       </div>
 
@@ -84,35 +84,35 @@ export function DetailPaymentCharts({
         />
       </ChartShell>
 
-      <ul className="ct-stack-sm">
+      <ul className="ed-stack-sm">
         {breakdown.map((row, index) => (
-          <li key={row.name} className={cn("ct-stat-tile ct-row-between gap-2 items-center", index === 0 ? "teal" : "amber")}>
-            <Caption className="block ct-stat-tile-label !text-xs">{row.name}</Caption>
-            <Caption className="block font-semibold ct-numeral ct-stat-tile-value !text-sm">{formatInr(row.value)}</Caption>
+          <li key={row.name} className={cn("ed-inset ed-row-between gap-2 items-center", index === 0 ? "teal" : "amber")}>
+            <Caption className="block ed-stat-label !text-xs">{row.name}</Caption>
+            <Caption className="block font-semibold ed-numeral ed-stat-value !text-sm">{formatInr(row.value)}</Caption>
           </li>
         ))}
         {extraRows.map((row) => (
-          <li key={row.name} className="ct-stat-tile indigo ct-row-between gap-2 items-center">
-            <Caption className="block ct-stat-tile-label !text-xs">{row.name}</Caption>
-            <Caption className="block font-semibold ct-stat-tile-value !text-sm">{row.value}</Caption>
+          <li key={row.name} className="ed-inset ed-row-between gap-2 items-center">
+            <Caption className="block ed-stat-label !text-xs">{row.name}</Caption>
+            <Caption className="block font-semibold ed-stat-value !text-sm">{row.value}</Caption>
           </li>
         ))}
         {total > 0 ? (
-          <li className="ct-stat-tile ct-row-between gap-2 items-center border-t border-[var(--ct-border)] pt-2">
-            <Caption className="block font-semibold ct-stat-tile-label !text-xs">{t(totalLabelKey)}</Caption>
-            <Caption className="block font-semibold ct-numeral ct-stat-tile-value !text-sm">{formatInr(total)}</Caption>
+          <li className="ed-inset ed-row-between gap-2 items-center border-t border-[var(--ed-rule)] pt-2">
+            <Caption className="block font-semibold ed-stat-label !text-xs">{t(totalLabelKey)}</Caption>
+            <Caption className="block font-semibold ed-numeral ed-stat-value !text-sm">{formatInr(total)}</Caption>
           </li>
         ) : null}
       </ul>
 
       {paymentList.length > 0 ? (
-        <div className="ct-stack-sm">
+        <div className="ed-stack-sm">
           <Body className="text-xs font-semibold">{t(paymentListTitleKey)}</Body>
-          <ul className="ct-stack-sm max-h-40 overflow-y-auto">
+          <ul className="ed-stack-sm max-h-40 overflow-y-auto">
             {paymentList.slice(0, 12).map((row) => (
-              <li key={`${row.date}-${row.amount}-${row.index ?? ""}`} className="ct-settings-row ct-settings-row-static">
-                <span className="ct-settings-row-label">{row.date}</span>
-                <span className="ct-settings-row-value ct-numeral font-semibold">{formatInr(row.amount)}</span>
+              <li key={`${row.date}-${row.amount}-${row.index ?? ""}`} className="ed-settings-row ed-settings-row ed-settings-row-static">
+                <span className="ed-settings-row-label">{row.date}</span>
+                <span className="ed-settings-row-value ed-numeral font-semibold">{formatInr(row.amount)}</span>
               </li>
             ))}
           </ul>

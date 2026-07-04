@@ -15,7 +15,7 @@ export default function ScrollToTop() {
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
-    document.querySelector(".ct-main")?.scrollTo?.(0, 0);
+    document.querySelector(".ed-main")?.scrollTo?.(0, 0);
 
     // Re-apply current theme — changes root.style.colorScheme which is a real
     // CSS property change that forces Chrome to repaint the entire frame.

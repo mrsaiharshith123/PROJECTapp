@@ -1,41 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
-import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { pressureScoreLabel } from "../../../engines/pressureScore.js";
-import { freeCashflowTrend } from "../../../engines/analyticsSeries.js";
 
-function buildSparklinePath(points, width, height) {
-  if (!points || points.length < 2) return "";
-  const values = points.map((p) => p.freeMoney ?? 0);
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values.filter((v) => v > 0), 0);
-  const range = max - min || 1;
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * width;
-    const y = height - ((v - min) / range) * (height * 0.65);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  return `M ${pts.join(" L ")}`;
-}
-
-/** Net position hero — sparkline, score ring once, daily cash-flow stats. */
+/** Net position hero — score ring, daily cash-flow stats. */
 export default function HomeNetPositionHero() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { core } = useNetWorth();
-  const { monthlySnapshots } = usePerovo();
   const { formatAmount, formatScore, privacyMode } = usePrivacyAmount();
   const { stability, pressureAnalysis, freeMoneyAfterBurden } = useCommitIntel();
   const stable = useStabilityIntel();
   const score = stability?.score ?? pressureAnalysis?.score ?? 0;
   const freeCash = freeMoneyAfterBurden ?? stability?.freeMoney ?? 0;
-
-  const trendData = freeCashflowTrend(monthlySnapshots, 8);
-  const hasGraph = trendData.some((d) => d.freeMoney !== null && d.freeMoney > 0);
 
   const netPosition = core.totalAssets - core.totalLiabilities;
   const positive = netPosition >= 0;
@@ -59,45 +39,8 @@ export default function HomeNetPositionHero() {
     ? formatAmount(Math.abs(netPosition))
     : Math.abs(netPosition).toLocaleString("en-IN");
 
-  const sparkPath = buildSparklinePath(trendData, 260, 80);
-  const lastTrend = trendData[trendData.length - 1];
-  const trendValues = trendData.map((d) => d.freeMoney ?? 0);
-  const trendMax = Math.max(...trendValues, 1);
-  const endpointY =
-    lastTrend?.freeMoney != null ? 80 - (lastTrend.freeMoney / trendMax) * 80 * 0.65 : null;
-
   return (
     <div className="ed-lead">
-      <svg
-        aria-hidden
-        className={`ed-lead-spark${hasGraph ? "" : " ed-lead-spark--hidden"}`}
-        viewBox="0 0 260 80"
-        width="260"
-        height="80"
-        preserveAspectRatio="none"
-      >
-        {hasGraph ? (
-          <>
-            <defs>
-              <linearGradient id="ed-spark-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--ed-green)" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="var(--ed-green)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path d={`${sparkPath} L 260,80 L 0,80 Z`} fill="url(#ed-spark-grad)" />
-            <path
-              d={sparkPath}
-              fill="none"
-              stroke="var(--ed-green)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {endpointY != null ? <circle cx={260} cy={endpointY} r="3" fill="var(--ed-green)" /> : null}
-          </>
-        ) : null}
-      </svg>
-
       <div className="ed-kicker">{t("home.ed.leadKicker")}</div>
       {isEmpty ? <p className="ed-lead-hint">{t("home.ed.headlineEmpty")}</p> : null}
 

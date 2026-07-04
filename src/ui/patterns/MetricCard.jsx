@@ -8,10 +8,10 @@ const TREND_ICON = {
   flat: "hourglass",
 };
 
-const TREND_CLASS = {
-  up: "text-[var(--ct-success)]",
-  down: "text-[var(--ct-danger)]",
-  flat: "opacity-60",
+const TREND_STYLE = {
+  up: { color: "var(--ed-green)" },
+  down: { color: "var(--ed-red)" },
+  flat: { opacity: 0.6 },
 };
 
 function MetricCardValue({ value, animateValue }) {
@@ -43,7 +43,7 @@ export function MetricCard({
   context,
   trend = null,
   icon,
-  tone = "indigo",
+  tone: _tone = "indigo",
   animateValue = false,
   className = "",
   onClick,
@@ -55,27 +55,25 @@ export function MetricCard({
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={cn(
-        "ct-stat-tile ct-metric-card text-left w-full",
-        tone,
-        onClick && "ct-pressable cursor-pointer",
-        className,
-      )}
+      className={cn("ed-inset text-left w-full", onClick && "cursor-pointer", className)}
     >
-      <div className="ct-row-between gap-2 items-start">
-        <p className="ct-stat-label">{label}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="ed-field-label">{label}</p>
         {icon ? (
-          <span className={cn("ct-icon-tile-sm shrink-0", tone)} aria-hidden>
+          <span className="shrink-0" aria-hidden>
             <CtIcon name={icon} size={16} />
           </span>
         ) : null}
       </div>
-      <p className="ct-stat-value ct-numeral mt-1">
+      <p className="ed-numeral mt-1">
         <MetricCardValue value={value} animateValue={animateValue} />
       </p>
       {context ? <p className="text-[10px] opacity-75 mt-0.5 leading-snug">{context}</p> : null}
       {trend ? (
-        <span className={cn("inline-flex items-center gap-1 text-[10px] mt-1 font-medium", TREND_CLASS[trend])}>
+        <span
+          className="inline-flex items-center gap-1 text-[10px] mt-1 font-medium"
+          style={TREND_STYLE[trend]}
+        >
           <CtIcon name={TREND_ICON[trend]} size={12} />
         </span>
       ) : null}

@@ -55,9 +55,9 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
 
   if (overdue) {
     return (
-      <div className="ct-next-action-card danger">
-        <div className="ct-row gap-2 items-start">
-          <span className="ct-icon-tile danger shrink-0" aria-hidden>
+      <div className="ed-next-action ed-next-action-danger">
+        <div className="flex items-start gap-2">
+          <span style={{ color: "var(--ed-red)", flexShrink: 0 }} aria-hidden>
             <CtIcon name="warning" size={18} context="status" />
           </span>
           <div>
@@ -65,7 +65,7 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
             <Body className="!text-sm mt-1">{t("lending.flow.overdueTitle", { days: overdueDays })}</Body>
           </div>
         </div>
-        <div className="ct-stack-sm mt-3">
+        <div className="ed-stack-sm mt-3">
           {overdueDays <= 30 && lastLevel < 1 ? (
             <Button type="button" variant="outline" size="sm" onClick={() => openWhatsApp(1)}>
               {t("lending.flow.reminderFriendly")}
@@ -77,7 +77,7 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
             </Button>
           ) : null}
           {overdueDays > 30 ? (
-            <Button type="button" size="sm" className="ct-btn-escalation" onClick={() => openWhatsApp(3)}>
+            <Button type="button" size="sm" className="ed-btn-escalation" onClick={() => openWhatsApp(3)}>
               {t("lending.flow.reminderFinal")}
             </Button>
           ) : null}
@@ -88,7 +88,7 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
 
   if (confirmed) {
     return (
-      <div className="ct-next-action-card success">
+      <div className="ed-next-action ed-next-action-success">
         <Body className="!text-sm font-semibold">{t("lending.detail.nextAction")}</Body>
         <Body className="!text-sm mt-1">{t("lending.flow.confirmed")}</Body>
         <Button
@@ -111,10 +111,10 @@ export default function LendingActionFlow({ lending, settings, onScrollToEsign }
 
   return (
     <>
-      <div className="ct-next-action-card">
+      <div className="ed-next-action">
         <Body className="!text-sm font-semibold">{t("lending.detail.nextAction")}</Body>
         <Body className="!text-sm mt-1">{t("lending.flow.readyToShare")}</Body>
-        <div className="ct-row-wrap gap-2 mt-2">
+        <div className="ed-row-wrap gap-2 mt-2">
           <Button
             type="button"
             variant="outline"

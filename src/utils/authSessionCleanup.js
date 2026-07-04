@@ -47,7 +47,7 @@ export function clearAccountSeedKeys(userId) {
   }
 }
 
-/** Clear account fields so a wiped server row cannot unlock the app from local cache. */
+/** Clear account fields on sign-out — keep bills/ledger local data intact. */
 export function resetLocalAccountFlags() {
   try {
     const defaults = loadSettingsFromStorage();
@@ -55,9 +55,6 @@ export function resetLocalAccountFlags() {
     const prev = raw ? JSON.parse(raw) : {};
     const next = {
       ...prev,
-      displayName: "",
-      phoneNumber: "",
-      monthlyIncome: 0,
       onboardingComplete: false,
       cloudSyncEnabled: false,
       appGuideComplete: defaults.appGuideComplete ?? false,

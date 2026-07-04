@@ -31,24 +31,24 @@ export function useDragReorder(orderedIds, onReorder) {
           dragIdRef.current = id;
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", id);
-          e.currentTarget.classList.add("ct-drag-source");
+          e.currentTarget.classList.add("ed-drag-source");
         },
         onDragEnd: (e) => {
           dragIdRef.current = null;
-          e.currentTarget.classList.remove("ct-drag-source");
-          document.querySelectorAll(".ct-drag-over").forEach((el) => el.classList.remove("ct-drag-over"));
+          e.currentTarget.classList.remove("ed-drag-source");
+          document.querySelectorAll(".ed-drag-over").forEach((el) => el.classList.remove("ed-drag-over"));
         },
         onDragOver: (e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = "move";
-          if (dragIdRef.current !== id) e.currentTarget.classList.add("ct-drag-over");
+          if (dragIdRef.current !== id) e.currentTarget.classList.add("ed-drag-over");
         },
         onDragLeave: (e) => {
-          e.currentTarget.classList.remove("ct-drag-over");
+          e.currentTarget.classList.remove("ed-drag-over");
         },
         onDrop: (e) => {
           e.preventDefault();
-          e.currentTarget.classList.remove("ct-drag-over");
+          e.currentTarget.classList.remove("ed-drag-over");
           const fromId = dragIdRef.current || e.dataTransfer.getData("text/plain");
           reorder(fromId, id);
         },

@@ -28,7 +28,7 @@ export default function ProfileSettingsGroups({
   const native = isNativeCapacitorShell();
 
   return (
-    <div id="profile-settings" className="ct-profile-settings-groups ct-stack ct-reveal ct-reveal-delay-3">
+    <div id="profile-settings">
       <SettingsGroup title={t("settings.group.account")} icon="user-circle">
         <SettingsGroupRow
           iconColor="indigo"

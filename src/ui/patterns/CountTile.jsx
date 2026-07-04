@@ -3,10 +3,10 @@ import { insightToneClass } from "../tokens/severity.js";
 import { Caption } from "../primitives/Text.jsx";
 
 const VALUE = {
-  neutral: "text-[var(--ct-text)]",
-  success: "text-[var(--ct-success)]",
-  warning: "text-[var(--ct-warning)]",
-  danger: "text-[var(--ct-danger)]",
+  neutral: "text-[var(--ed-ink)]",
+  success: "text-[var(--ed-green)]",
+  warning: "text-[var(--ed-amber)]",
+  danger: "text-[var(--ed-red)]",
 };
 
 /**
@@ -24,14 +24,14 @@ export function CountTile({ label, value, tone = "neutral", className = "", onCl
       <button
         type="button"
         onClick={onClick}
-        className={cn("ct-metric text-left w-full", insightToneClass(tone === "neutral" ? "neutral" : tone), className)}
+        className={cn("ed-metric text-left w-full", insightToneClass(tone === "neutral" ? "neutral" : tone), className)}
       >
         {body}
       </button>
     );
   }
   return (
-    <div className={cn("ct-metric text-left", insightToneClass(tone === "neutral" ? "neutral" : tone), className)}>
+    <div className={cn("ed-metric text-left", insightToneClass(tone === "neutral" ? "neutral" : tone), className)}>
       {body}
     </div>
   );

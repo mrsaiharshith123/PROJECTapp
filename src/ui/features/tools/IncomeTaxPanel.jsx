@@ -19,7 +19,7 @@ import { ToolAnswerHero } from "../../patterns/ToolAnswerHero.jsx";
 import { exportAnnualReportToExcel } from "../../../utils/excelExport.js";
 import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 function HraCalculatorTab() {
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ function HraCalculatorTab() {
   }, [salary, hraReceived, rentPaid, isMetro]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <Caption>{t("tools.hra.intro")}</Caption>
       {result.annualSalary > 0 && Number(rentPaid) > 0 && (
         <ToolAnswerHero
@@ -59,33 +59,33 @@ function HraCalculatorTab() {
         />
       )}
       <div>
-        <label className="ct-field-label">{t("tools.hra.annualSalary", { currency: INR })}</label>
+        <label className="ed-field-label">{t("tools.hra.annualSalary", { currency: INR })}</label>
         <input className={fieldClass} value={salary} onChange={(e) => setSalary(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.hra.hraReceived", { currency: INR })}</label>
+        <label className="ed-field-label">{t("tools.hra.hraReceived", { currency: INR })}</label>
         <input className={fieldClass} value={hraReceived} onChange={(e) => setHraReceived(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
       <div>
-        <label className="ct-field-label">{t("tools.hra.rentPaid", { currency: INR })}</label>
+        <label className="ed-field-label">{t("tools.hra.rentPaid", { currency: INR })}</label>
         <input className={fieldClass} value={rentPaid} onChange={(e) => setRentPaid(e.target.value.replace(/[^\d]/g, ""))} inputMode="numeric" />
       </div>
-      <label className="ct-row gap-2 items-center">
+      <label className="ed-row gap-2 items-center">
         <input type="checkbox" checked={isMetro} onChange={(e) => setIsMetro(e.target.checked)} />
         <Caption>{t("tools.hra.metro")}</Caption>
       </label>
       {result.annualSalary > 0 && Number(rentPaid) > 0 && (
-        <div className="ct-grid-2">
-          <div className="ct-stat-tile teal">
-            <p className="ct-stat-tile-value text-sm">{t("tools.hra.rentMinusTen", { amount: formatInr(Math.round(result.rentMinusTen)) })}</p>
+        <div className="ed-grid-2">
+          <div className="ed-inset-green">
+            <p className="ed-stat-value text-sm">{t("tools.hra.rentMinusTen", { amount: formatInr(Math.round(result.rentMinusTen)) })}</p>
           </div>
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-tile-value text-sm">{t("tools.hra.salaryCap", { amount: formatInr(Math.round(result.salaryCap)) })}</p>
+          <div className="ed-inset">
+            <p className="ed-stat-value text-sm">{t("tools.hra.salaryCap", { amount: formatInr(Math.round(result.salaryCap)) })}</p>
           </div>
         </div>
       )}
-      <div className="ct-stat-tile">
-        <p className="ct-stat-tile-label">{t("tools.hra.disclaimer")}</p>
+      <div className="ed-inset">
+        <p className="ed-stat-label">{t("tools.hra.disclaimer")}</p>
       </div>
     </div>
   );
@@ -144,7 +144,7 @@ export default function IncomeTaxPanel() {
   const advanceTaxDrafts = useMemo(() => advanceTaxCommitmentDrafts(taxInput, todayStr), [taxInput, todayStr]);
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <SegmentedControl
         options={[
           { id: "tax", label: t("tools.incomeTax.tabTax") },
@@ -177,16 +177,16 @@ export default function IncomeTaxPanel() {
           </Caption>
           <Caption className="block opacity-90">{t("tax.disclaimer")}</Caption>
           {result.optimizationInsights?.map((line) => (
-            <Caption key={line} className="block ct-text-accent">
+            <Caption key={line} className="block ed-link">
               {line}
             </Caption>
           ))}
         </ToolAnswerHero>
       )}
 
-      <div className="ct-row-between flex-wrap gap-2">
+      <div className="ed-row-between flex-wrap gap-2">
         <Badge tone="info">{t("tax.badge")}</Badge>
-        <div className="ct-row gap-2 items-center flex-wrap">
+        <div className="ed-row gap-2 items-center flex-wrap">
           {profileIncome > 0 && <Caption>{t("tax.profileSalaryHint")}</Caption>}
           <Button
             type="button"
@@ -223,7 +223,7 @@ export default function IncomeTaxPanel() {
       />
 
       <div>
-        <label className="ct-field-label">
+        <label className="ed-field-label">
           {inputMode === "monthly" ? t("tax.salaryPerMonth", { currency: INR }) : t("tax.salaryPerYear", { currency: INR })}
         </label>
         <input
@@ -236,7 +236,7 @@ export default function IncomeTaxPanel() {
       </div>
 
       <div>
-        <label className="ct-field-label">{t("tax.regimeLabel")}</label>
+        <label className="ed-field-label">{t("tax.regimeLabel")}</label>
         <SegmentedControl
           options={[
             { id: "new", label: t("tax.regime.new") },
@@ -250,14 +250,14 @@ export default function IncomeTaxPanel() {
         </Caption>
       </div>
 
-      <button type="button" className="ct-link !text-xs self-start" onClick={() => setShowMore((v) => !v)}>
+      <button type="button" className="ed-link !text-xs self-start" onClick={() => setShowMore((v) => !v)}>
         {showMore ? t("tax.hideExtra") : t("tax.moreOptions")}
       </button>
 
       {showMore && regime === "old" && (
-        <div className="ct-grid-2">
+        <div className="ed-grid-2">
           <div>
-            <label className="ct-field-label">{t("tax.deduction80c", { currency: INR })}</label>
+            <label className="ed-field-label">{t("tax.deduction80c", { currency: INR })}</label>
             <input
               className={fieldClass}
               value={deduction80c}
@@ -267,7 +267,7 @@ export default function IncomeTaxPanel() {
             />
           </div>
           <div>
-            <label className="ct-field-label">{t("tax.deduction80d", { currency: INR })}</label>
+            <label className="ed-field-label">{t("tax.deduction80d", { currency: INR })}</label>
             <input
               className={fieldClass}
               value={deduction80d}
@@ -279,15 +279,15 @@ export default function IncomeTaxPanel() {
       )}
 
       {annualGross > 0 && (
-        <div className="ct-stack-sm">
-          <div className="ct-stat-tile amber">
-            <p className="ct-stat-tile-label">{t("tax.advanceTitle")}</p>
-            <p className="ct-stat-tile-value text-sm">{advanceTax.message}</p>
+        <div className="ed-stack-sm">
+          <div className="ed-inset-amber">
+            <p className="ed-stat-label">{t("tax.advanceTitle")}</p>
+            <p className="ed-stat-value text-sm">{advanceTax.message}</p>
           </div>
           {advanceTax.required &&
             advanceTax.quarters.map((q) => (
-              <div key={q.quarter} className="ct-stat-tile indigo">
-                <p className="ct-stat-tile-value text-sm">
+              <div key={q.quarter} className="ed-inset">
+                <p className="ed-stat-value text-sm">
                   Q{q.quarter} — {q.dueLabel}: ₹{q.installmentAmount.toLocaleString("en-IN")}
                 </p>
               </div>
@@ -295,7 +295,7 @@ export default function IncomeTaxPanel() {
           {advanceTax.required && advanceTaxDrafts.length > 0 && (
             <button
               type="button"
-              className="ct-btn ct-btn-primary w-full"
+              className="ed-btn ed-btn-primary w-full"
               onClick={() => advanceTaxDrafts.forEach((d) => addCommitment(d))}
             >
               {t("tax.advanceAddBills")}

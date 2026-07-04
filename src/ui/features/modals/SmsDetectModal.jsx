@@ -8,7 +8,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { formatInr } from "../../../constants/symbols.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 export default function SmsDetectModal({ open, onClose }) {
   const { t } = useTranslation();
@@ -56,9 +56,9 @@ export default function SmsDetectModal({ open, onClose }) {
 
   return (
     <Modal onClose={onClose} title={t("bills.detectSms")}>
-      <div className="ct-stack">
-        <div className="ct-row gap-3 items-start">
-          <span className="ct-icon-tile primary" aria-hidden>
+      <div className="ed-stack">
+        <div className="flex items-start gap-3">
+          <span className="ed-icon-tile" style={{ background: "var(--ed-gold-soft)", color: "var(--ed-gold)" }} aria-hidden>
             <CtIcon name="device-mobile" size={22} />
           </span>
           <Caption>{t("sms.pastePlaceholder")}</Caption>
@@ -73,19 +73,18 @@ export default function SmsDetectModal({ open, onClose }) {
           }}
           placeholder={t("sms.pastePlaceholder")}
         />
-        {error ? <Caption className="block text-[var(--ct-danger)]">{error}</Caption> : null}
+        {error ? <Caption className="block text-[var(--ed-red)]">{error}</Caption> : null}
 
         {match && debit ? (
-          <Card variant="flat" className="ct-hero-card lending ct-stack-sm">
-            <div className="ct-hero-glow" aria-hidden />
-            <Body className="font-semibold relative">
+          <Card variant="flat" className="ed-inset ed-stack-sm">
+<Body className="font-semibold relative">
               {t("sms.detect.confirm", {
                 name: match.name,
                 amount: formatInr(debit.amount),
                 date: debit.date,
               })}
             </Body>
-            <div className="ct-row relative">
+            <div className="flex gap-2 relative">
               <Button type="button" variant="primary" className="flex-1" onClick={handleConfirm}>
                 {t("sms.detect.yesMarkPaid")}
               </Button>

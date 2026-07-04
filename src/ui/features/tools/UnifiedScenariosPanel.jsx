@@ -58,15 +58,15 @@ export default function UnifiedScenariosPanel() {
 
   if (tiles.length === 0) {
     return (
-      <div className="ct-stack text-sm">
+      <div className="ed-stack text-sm">
         <Caption>{t("tools.planner.scenariosEmpty")}</Caption>
-        <Caption className="ct-text-warning block">{t("tools.planner.setIncomeUnlock")}</Caption>
+        <Caption className="ed-field-note block">{t("tools.planner.setIncomeUnlock")}</Caption>
       </div>
     );
   }
 
   return (
-    <div className="ct-stack text-sm">
+    <div className="ed-stack text-sm">
       <ToolAnswerHero
         tone="survival"
         label={t("tools.planner.runwayLabel")}
@@ -85,12 +85,12 @@ export default function UnifiedScenariosPanel() {
           : ""}
       </Caption>
 
-      <div className="ct-row flex-wrap gap-2">
+      <div className="ed-row flex-wrap gap-2">
         {tiles.map((tile) => (
           <button
             key={tile.id}
             type="button"
-            className={`ct-chip ${activeId === tile.id ? "ct-chip-active" : ""}`}
+            className={`ed-chip ${activeId === tile.id ? "active" : ""}`}
             onClick={() => setPickedId(tile.id)}
           >
             {tile.label}
@@ -99,42 +99,42 @@ export default function UnifiedScenariosPanel() {
       </div>
 
       {active?.kind === "cashflow" && (
-        <div className="ct-stat-tile teal ct-stack-sm">
-          <p className="ct-stat-tile-label">{active.row.label}</p>
-          <p className="ct-stat-tile-value text-sm ct-text-accent">{active.row.headline}</p>
-          <p className="ct-stat-tile-value text-sm">{active.row.detail}</p>
+        <div className="ed-inset-green ed-stack-sm">
+          <p className="ed-stat-label">{active.row.label}</p>
+          <p className="ed-stat-value text-sm ed-link">{active.row.headline}</p>
+          <p className="ed-stat-value text-sm">{active.row.detail}</p>
         </div>
       )}
 
       {active?.kind === "wealth" && wealthResult && (
-        <div className="ct-grid-2 gap-3">
-          <div className="ct-stat-tile teal">
-            <p className="ct-stat-tile-label">{t("netWorth.sim.projectedNw")}</p>
-            <p className="ct-stat-tile-value ct-numeral">{formatInr(wealthResult.projectedNetWorth)}</p>
+        <div className="ed-grid-2 gap-3">
+          <div className="ed-inset-green">
+            <p className="ed-stat-label">{t("netWorth.sim.projectedNw")}</p>
+            <p className="ed-stat-value ed-numeral">{formatInr(wealthResult.projectedNetWorth)}</p>
           </div>
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-tile-label">{t("netWorth.sim.delta")}</p>
-            <p className={`ct-stat-tile-value ct-numeral ${wealthResult.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}>
+          <div className="ed-inset">
+            <p className="ed-stat-label">{t("netWorth.sim.delta")}</p>
+            <p className={`ed-stat-value ed-numeral ${wealthResult.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}>
               {wealthResult.deltaNetWorth >= 0 ? "+" : ""}
               {formatInr(wealthResult.deltaNetWorth)}
             </p>
           </div>
-          <div className="ct-stat-tile amber">
-            <p className="ct-stat-tile-label">{t("netWorth.sim.survival")}</p>
-            <p className="ct-stat-tile-value text-sm">
+          <div className="ed-inset-amber">
+            <p className="ed-stat-label">{t("netWorth.sim.survival")}</p>
+            <p className="ed-stat-value text-sm">
               {t("netWorth.liquidity.months", {
                 count: Math.min(99, wealthResult.survivabilityMonths),
               })}
             </p>
           </div>
-          <div className="ct-stat-tile">
-            <p className="ct-stat-tile-label">{t("netWorth.sim.stability")}</p>
-            <p className="ct-stat-tile-value text-sm">{t(wealthResult.stabilityKey)}</p>
+          <div className="ed-inset">
+            <p className="ed-stat-label">{t("netWorth.sim.stability")}</p>
+            <p className="ed-stat-value text-sm">{t(wealthResult.stabilityKey)}</p>
           </div>
         </div>
       )}
 
-      {income <= 0 && <Caption className="ct-text-warning block">{t("tools.planner.setIncomeUnlock")}</Caption>}
+      {income <= 0 && <Caption className="ed-field-note block">{t("tools.planner.setIncomeUnlock")}</Caption>}
     </div>
   );
 }

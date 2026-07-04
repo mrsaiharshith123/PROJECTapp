@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isFeatureUnlocked, PRO_FEATURES, POWER_FEATURES } from "../../src/constants/subscriptionTiers.js";
+import { isFeatureUnlocked, PRO_FEATURES } from "../../src/constants/subscriptionTiers.js";
 import { canAddLendingRecord, canAddChitRecord, canAddGoal, tierHasFeature } from "../../src/utils/tierAccess.js";
 import { SETTINGS, STATUS, makeLendings, makeChits, makeGoals } from "../fixtures.mjs";
 
@@ -10,8 +10,8 @@ describe("SECURITY: tier gate integrity", () => {
     }
   });
 
-  it("[P0] unknown tier 'admin' does NOT unlock Power features", () => {
-    for (const feat of POWER_FEATURES) {
+  it("[P0] unknown tier 'admin' does NOT unlock Pro features", () => {
+    for (const feat of PRO_FEATURES) {
       expect(isFeatureUnlocked(feat, "admin")).toBe(false);
     }
   });
@@ -34,9 +34,9 @@ describe("SECURITY: tier gate integrity", () => {
     }
   });
 
-  it("[P0] power-only features are NOT unlocked by Pro tier", () => {
-    for (const feat of POWER_FEATURES) {
-      expect(isFeatureUnlocked(feat, "pro")).toBe(false);
+  it("[P0] Pro tier unlocks all Pro-gated features", () => {
+    for (const feat of PRO_FEATURES) {
+      expect(isFeatureUnlocked(feat, "pro")).toBe(true);
     }
   });
 
@@ -81,9 +81,9 @@ describe("SECURITY: tier gate integrity", () => {
     expect(isFeatureUnlocked("legal_agreement", "pro")).toBe(true);
   });
 
-  it("[P1] bond_advisor is Power-only", () => {
+  it("[P1] bond_advisor is Pro-only", () => {
     expect(isFeatureUnlocked("bond_advisor", "free")).toBe(false);
-    expect(isFeatureUnlocked("bond_advisor", "pro")).toBe(false);
+    expect(isFeatureUnlocked("bond_advisor", "pro")).toBe(true);
     expect(isFeatureUnlocked("bond_advisor", "power")).toBe(true);
   });
 

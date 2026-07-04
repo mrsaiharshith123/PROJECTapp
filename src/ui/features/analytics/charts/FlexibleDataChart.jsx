@@ -91,7 +91,7 @@ export function FlexibleDataChart({
 
   if (!data?.length) return <ChartEmpty message={emptyMessage} />;
 
-  const shell = (chart) => <div className="ct-chart-shell">{chart}</div>;
+  const shell = (chart) => <div className="ed-chart-shell">{chart}</div>;
 
   const isRound = chartType === "pie" || chartType === "donut";
   if (isRound) {

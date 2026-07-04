@@ -105,7 +105,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
   const isSubscription = form.category === "Subscription";
   const isOther = form.category === "Other";
 
-  const fieldClass = (field) => `${fieldInputClass(Boolean(errors[field]))} ct-input-tint`;
+  const fieldClass = (field) => `${fieldInputClass(Boolean(errors[field]))} `;
+  const selectClass = fieldClass;
 
   const validate = () => {
     const errs = {};
@@ -197,7 +198,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
       title={copy.editBill}
       onClose={onClose}
       footer={
-        <div className="ct-row gap-2 w-full">
+        <div className="flex gap-2 w-full">
           <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
             {t("common.cancel")}
           </Button>
@@ -207,24 +208,24 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         </div>
       }
     >
-      <div className="ct-stack ct-nw-panel">
+      <div className="ed-stack ed-inset">
         {form.category ? (
-          <div className="ct-stat-tile indigo">
-            <p className="ct-stat-tile-label">{t("add.categoryLabel")}</p>
-            <p className="ct-stat-tile-value text-sm">{form.category}</p>
+          <div className="ed-inset">
+            <p className="ed-field-label">{t("add.categoryLabel")}</p>
+            <p className="ed-numeral text-sm">{form.category}</p>
           </div>
         ) : null}
         <div>
-          <label className="ct-field-label">{t("commitment.edit.name")}</label>
+          <label className="ed-field-label">{t("commitment.edit.name")}</label>
           <input
             className={fieldClass("name")}
             value={form.name}
             onChange={(e) => patchForm({ name: e.target.value })}
           />
-          {errors.name && <p className="ct-field-hint ct-text-danger">{errors.name}</p>}
+          {errors.name && <p className="ed-field-error">{errors.name}</p>}
         </div>
         <div>
-          <label className="ct-field-label">
+          <label className="ed-field-label">
             {showChit ? t("commitment.edit.installment") : t("commitment.edit.amount")}
           </label>
           <input
@@ -235,27 +236,27 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             value={form.amount}
             onChange={(e) => patchForm({ amount: e.target.value })}
           />
-          {errors.amount && <p className="ct-field-hint ct-text-danger">{errors.amount}</p>}
+          {errors.amount && <p className="ed-field-error">{errors.amount}</p>}
           {showChit && form.chitInstallmentMode !== "custom" && (
-            <p className="ct-field-hint ct-text-warning mt-1">
+            <p className="ed-field-note mt-1" style={{ color: "var(--ed-amber)" }}>
               {t("commitment.edit.chitInstallmentHint")}
             </p>
           )}
         </div>
-        <div className="ct-grid-2">
+        <div className="ed-grid-2">
           <div>
-            <label className="ct-field-label">{t("commitment.edit.startDate")}</label>
+            <label className="ed-field-label">{t("commitment.edit.startDate")}</label>
             <input
               type="date"
               className={fieldClass("startDate")}
               value={form.startDate}
               onChange={(e) => patchForm({ startDate: e.target.value })}
             />
-            {errors.startDate && <p className="ct-field-hint ct-text-danger">{errors.startDate}</p>}
+            {errors.startDate && <p className="ed-field-error">{errors.startDate}</p>}
           </div>
           <div>
-            <label className="ct-field-label">
-              {t("commitment.edit.endDate")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
+            <label className="ed-field-label">
+              {t("commitment.edit.endDate")} <span className="ed-muted-text font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="date"
@@ -264,21 +265,21 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               onChange={(e) => patchForm({ endDate: e.target.value })}
               onFocus={fillEndDateIfEmpty}
             />
-            {errors.endDate && <p className="ct-field-hint ct-text-danger">{errors.endDate}</p>}
+            {errors.endDate && <p className="ed-field-error">{errors.endDate}</p>}
           </div>
         </div>
         <div>
-          <label className="ct-field-label">{t("commitment.edit.nextDue")}</label>
+          <label className="ed-field-label">{t("commitment.edit.nextDue")}</label>
           <input
             type="date"
             className={fieldClass("dueDate")}
             value={form.dueDate}
             onChange={(e) => patchForm({ dueDate: e.target.value })}
           />
-          {errors.dueDate && <p className="ct-field-hint ct-text-danger">{errors.dueDate}</p>}
+          {errors.dueDate && <p className="ed-field-error">{errors.dueDate}</p>}
         </div>
         <div>
-          <label className="ct-field-label">{t("commitment.edit.category")}</label>
+          <label className="ed-field-label">{t("commitment.edit.category")}</label>
           <select
             className={fieldClass("category")}
             value={form.category}
@@ -299,7 +300,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         </div>
         {form.category === "SIP" ? (
           <div>
-            <label className="ct-field-label">
+            <label className="ed-field-label">
               {t("commitment.sip.fundSearch")}
             </label>
             <input
@@ -308,12 +309,12 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               onChange={(e) => setFundQuery(e.target.value)}
             />
             {visibleFundHits.length > 0 ? (
-              <ul className="ct-stack-sm mt-1 max-h-32 overflow-y-auto">
+              <ul className="ed-stack-sm mt-1 max-h-32 overflow-y-auto">
                 {visibleFundHits.map((hit) => (
                   <li key={hit.schemeCode}>
                     <button
                       type="button"
-                      className="ct-link text-left text-sm"
+                      className="ed-link text-left text-sm"
                       onClick={() => {
                         patchForm({ schemeCode: hit.schemeCode, schemeName: hit.schemeName });
                         setFundQuery(hit.schemeName);
@@ -333,7 +334,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         ) : null}
         {!showChit && (
           <div>
-            <label className="ct-field-label">{t("commitment.edit.repeat")}</label>
+            <label className="ed-field-label">{t("commitment.edit.repeat")}</label>
             <select
               className={fieldClass("repeat")}
               value={form.repeatType}
@@ -349,7 +350,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         )}
         {isOther && (
           <div>
-            <label className="ct-field-label">{t("commitment.edit.priority")}</label>
+            <label className="ed-field-label">{t("commitment.edit.priority")}</label>
             <select
               className={fieldClass("priority")}
               value={form.priority}
@@ -369,6 +370,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
             values={form}
             errors={errors}
             fieldClass={fieldClass}
+            selectClass={selectClass}
             todayStr={todayStr}
             onChange={(name, value) => patchForm({ [name]: value })}
           />
@@ -385,8 +387,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
 
         {showInterest && (
           <div>
-            <label className="ct-field-label">
-              {t("commitment.edit.interestOptional")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
+            <label className="ed-field-label">
+              {t("commitment.edit.interestOptional")} <span className="ed-muted-text font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="number"
@@ -402,8 +404,8 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
         )}
         {isSubscription && (
           <div>
-            <label className="ct-field-label">
-              {t("commitment.edit.trialEnds")} <span className="ct-text-muted font-normal">{t("commitment.edit.endDateOptional")}</span>
+            <label className="ed-field-label">
+              {t("commitment.edit.trialEnds")} <span className="ed-muted-text font-normal">{t("commitment.edit.endDateOptional")}</span>
             </label>
             <input
               type="date"
@@ -414,7 +416,7 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           </div>
         )}
         <div>
-          <label className="ct-field-label">{t("commitment.edit.notes")}</label>
+          <label className="ed-field-label">{t("commitment.edit.notes")}</label>
           <textarea
             className={`${fieldClass("notes")} min-h-[80px] resize-y`}
             value={form.notes}

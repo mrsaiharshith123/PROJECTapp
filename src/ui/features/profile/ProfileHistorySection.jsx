@@ -42,26 +42,26 @@ export default function ProfileHistorySection({
   return (
     <>
       <SettingsGroup title={t("profile.history")} icon="arrows-clockwise" description={t("profile.sectionHistoryHint")}>
-        <SettingsGroupContent className="ct-stack-sm">
+        <SettingsGroupContent className="ed-stack-sm">
           <button
             type="button"
             onClick={() => setShowPayments((v) => !v)}
-            className="ct-settings-row ct-settings-row-static"
+            className="ed-settings-row ed-settings-row-static"
           >
-            <span className="ct-icon-tile ct-icon-tile-sm teal">
+            <span className="ed-icon-tile ed-icon-tile-sm teal">
               <CtIcon name="receipt" size={18} weight="duotone" />
             </span>
-            <span className="ct-settings-row-label flex-1">
+            <span className="ed-settings-row-label flex-1">
               {t("profile.history.recordedPayments", { count: payments.length })}
             </span>
-            <CtIcon name={showPayments ? "eye" : "eye-slash"} size={14} className="ct-settings-row-caret" />
+            <CtIcon name={showPayments ? "eye" : "eye-slash"} size={14} className="ed-settings-chevron" />
           </button>
 
           {showPayments && (
-            <ul className="ct-stack-sm">
+            <ul className="ed-stack-sm">
               {payments.length === 0 && <Caption>{t("profile.history.noPayments")}</Caption>}
               {payments.map((row) => (
-                <li key={row.id} className="ct-hero-inset ct-row-between gap-2">
+                <li key={row.id} className="ed-inset ed-row-between gap-2">
                   <div className="min-w-0 flex-1">
                     <Body className="font-semibold truncate !text-sm">{row.name}</Body>
                     <Caption>{formatDate(row.date, locale)}</Caption>
@@ -84,28 +84,28 @@ export default function ProfileHistorySection({
           <button
             type="button"
             onClick={() => setShowBills((v) => !v)}
-            className="ct-settings-row ct-settings-row-static"
+            className="ed-settings-row ed-settings-row-static"
           >
-            <span className="ct-icon-tile ct-icon-tile-sm violet">
+            <span className="ed-icon-tile ed-icon-tile-sm violet">
               <CtIcon name="package" size={18} weight="duotone" />
             </span>
-            <span className="ct-settings-row-label flex-1">
+            <span className="ed-settings-row-label flex-1">
               {t("profile.history.endedBills", { bills: t("nav.bills"), count: endedBills.length })}
             </span>
-            <CtIcon name={showBills ? "eye" : "eye-slash"} size={14} className="ct-settings-row-caret" />
+            <CtIcon name={showBills ? "eye" : "eye-slash"} size={14} className="ed-settings-chevron" />
           </button>
 
           {showBills && (
-            <ul className="ct-stack-sm">
+            <ul className="ed-stack-sm">
               {endedBills.length === 0 && <Caption>{t("profile.history.noEndedBills")}</Caption>}
               {endedBills.map((bill) => (
-                <li key={bill.id} className="ct-hero-inset ct-stack-sm">
+                <li key={bill.id} className="ed-inset ed-stack-sm">
                   <Body className="font-semibold truncate !text-sm">{getBillDisplayName(bill)}</Body>
                   <Caption>
                     {t("profile.history.paymentRecords", { count: (bill.payments || []).length })}
                     {bill.endDate ? t("profile.history.endedOn", { date: formatDate(bill.endDate, locale) }) : ""}
                   </Caption>
-                  <div className="ct-row gap-2">
+                  <div className="ed-row gap-2">
                     <Button type="button" variant="outline" size="sm" className="!w-auto" onClick={() => setEditing(bill)}>
                       {t("common.edit")}
                     </Button>

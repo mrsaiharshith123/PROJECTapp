@@ -115,35 +115,35 @@ export default function ProfileSecuritySection() {
   };
 
   return (
-    <div className="ct-stack">
+    <div className="ed-stack">
       <SettingsGroup title={t("security.title")} icon="shield" description={t("security.subtitle")}>
-        <SettingsGroupContent className="ct-stack-sm text-sm">
-          <div className="ct-row-between gap-2">
+        <SettingsGroupContent className="ed-stack-sm text-sm">
+          <div className="ed-row-between gap-2">
             <Caption>{t("security.email")}</Caption>
             <Body className="!text-sm truncate">{user?.email || "—"}</Body>
           </div>
-          <div className="ct-row-between gap-2">
+          <div className="ed-row-between gap-2">
             <Caption>{t("security.lastSignIn")}</Caption>
             <Body className="!text-sm">{formatWhen(lastSignIn)}</Body>
           </div>
-          <div className="ct-row-between gap-2">
+          <div className="ed-row-between gap-2">
             <Caption>{t("security.accountSince")}</Caption>
             <Body className="!text-sm">{formatWhen(user?.created_at)}</Body>
           </div>
           {profile?.username && (
-            <div className="ct-row-between gap-2">
+            <div className="ed-row-between gap-2">
               <Caption>{t("account.username")}</Caption>
               <Body className="!text-sm">{profile.username}</Body>
             </div>
           )}
           {meta.lastPushedAt && (
-            <div className="ct-row-between gap-2">
+            <div className="ed-row-between gap-2">
               <Caption>{t("security.lastBackup")}</Caption>
               <Body className="!text-sm">{formatWhen(meta.lastPushedAt)}</Body>
             </div>
           )}
           {meta.lastPulledAt && (
-            <div className="ct-row-between gap-2">
+            <div className="ed-row-between gap-2">
               <Caption>{t("security.lastRestore")}</Caption>
               <Body className="!text-sm">{formatWhen(meta.lastPulledAt)}</Body>
             </div>
@@ -152,8 +152,8 @@ export default function ProfileSecuritySection() {
       </SettingsGroup>
 
       <SettingsGroup title={t("security.devicesTitle")} icon="device-mobile" description={t("security.devicesHint")}>
-        <SettingsGroupContent className="ct-stack-sm">
-          <div className="ct-row-between gap-2 flex-wrap">
+        <SettingsGroupContent className="ed-stack-sm">
+          <div className="ed-row-between gap-2 flex-wrap">
             {sessions.length > 1 && (
               <Button type="button" variant="outline" size="sm" onClick={handleRevokeAll} className="!w-auto ml-auto">
                 {t("security.signOutOthers")}
@@ -161,16 +161,16 @@ export default function ProfileSecuritySection() {
             )}
           </div>
           {loading && <Caption>{t("security.loadingDevices")}</Caption>}
-          <div className="ct-stack-sm">
+          <div className="ed-stack-sm">
             {sessions.map((row) => {
               const isCurrent = row.device_id === currentId;
               const location = row.city || row.region || t("security.locationUnknown");
               const deviceIcon = sessionIconName(row.device_label);
               return (
-                <div key={row.device_id} className={`ct-hero-inset ct-stack-sm${isCurrent ? " ct-option-card-active" : ""}`}>
-                  <div className="ct-row-between gap-2">
-                    <div className="ct-row gap-2 min-w-0">
-                      <span className="ct-icon-tile ct-icon-tile-sm teal shrink-0">
+                <div key={row.device_id} className={`ed-inset ed-stack-sm${isCurrent ? " ed-option-active" : ""}`}>
+                  <div className="ed-row-between gap-2">
+                    <div className="ed-row gap-2 min-w-0">
+                      <span className="ed-icon-tile ed-icon-tile-sm teal shrink-0">
                         <CtIcon name={deviceIcon} size={18} weight="duotone" />
                       </span>
                       <Body className="!text-sm font-semibold truncate">
@@ -194,13 +194,13 @@ export default function ProfileSecuritySection() {
               );
             })}
             {!loading && sessions.length === 0 && (
-              <div className="ct-hero-inset ct-stack-sm">
+              <div className="ed-inset ed-stack-sm">
                 <Body className="!text-sm">{getDeviceLabel()} ({t("security.thisDevice")})</Body>
                 <Caption className="block">{t("security.devicesEmpty")}</Caption>
               </div>
             )}
           </div>
-          {note && <Caption className="block text-[var(--ct-success)]">{note}</Caption>}
+          {note && <Caption className="block text-[var(--ed-green)]">{note}</Caption>}
         </SettingsGroupContent>
       </SettingsGroup>
     </div>

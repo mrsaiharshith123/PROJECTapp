@@ -27,7 +27,7 @@ export function AppHeader({ greeting, actions, showBrand = true }) {
     <Row between>
       <div>
         {showBrand ? <PerovoLogo size="sm" alt={t("brand.appName")} /> : null}
-        <p className={`ct-greeting ${showBrand ? "mt-0.5" : ""}`}>{greeting}</p>
+        <p className={`ed-greeting ${showBrand ? "mt-0.5" : ""}`}>{greeting}</p>
       </div>
       {actions}
     </Row>

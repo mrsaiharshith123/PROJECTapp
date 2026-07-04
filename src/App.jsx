@@ -30,7 +30,6 @@ import {
   shouldBrowserUseMarketingLanding,
 } from "./utils/marketingLanding.js";
 import Onboarding from "./ui/features/pages/OnboardingPage.jsx";
-import { AdminFloatingButton } from "./ui/admin/AdminFloatingButton.jsx";
 import { ADMIN_UI_ENABLED } from "./constants/featureFlags.js";
 import { STORAGE_KEYS } from "./utils/storage/keys.js";
 
@@ -171,7 +170,7 @@ function AppRoutes() {
 
 function AuthGateShell() {
   return (
-    <div className="ct-screen ct-auth-shell">
+    <div className="ed-screen ed-auth-shell">
       <ThemeSync />
       <Routes>
         <Route path="/auth" element={<AuthGatePage />} />
@@ -210,7 +209,6 @@ function MainShell() {
       <MainContent>
         <AppRoutes />
       </MainContent>
-      <AdminFloatingButton />
     </Screen>
   );
 }

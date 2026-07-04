@@ -8,14 +8,14 @@ export function getChartTheme(mode) {
     colors: isLight
       ? ["#6366f1", "#4f46e5", "#2dd4bf", "#fcd34d", "#38bdf8", "#f87171", "#818cf8", "#94a3b8"]
       : ["#6366f1", "#818cf8", "#2dd4bf", "#fcd34d", "#6ecbff", "#f87171", "#a5b4fc", "#9a97b0"],
-    tick: { fontSize: 10, fill: isLight ? "#64748b" : "var(--ct-text-muted, #9a97b0)" },
+    tick: { fontSize: 10, fill: isLight ? "#64748b" : "var(--ed-ink-faint, #9a97b0)" },
     grid: {
       stroke: isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(255, 255, 255, 0.04)",
       strokeDasharray: "3 6",
     },
     tooltip: {
       contentStyle: {
-        backgroundColor: isLight ? "#ffffff" : "var(--ct-surface-raised, rgba(13, 14, 24, 0.94))",
+        backgroundColor: isLight ? "#ffffff" : "var(--ed-surface-2, rgba(13, 14, 24, 0.94))",
         border: isLight ? "1px solid rgba(15, 23, 42, 0.1)" : "1px solid rgba(99, 102, 241, 0.35)",
         borderRadius: "14px",
         boxShadow: isLight

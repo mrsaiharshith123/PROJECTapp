@@ -42,12 +42,12 @@ export function FilterChipsWithSearch({
   };
 
   return (
-    <div className="ct-filter-row-search">
-      <div className="ct-filter-row-search-chips">
+    <div className="ed-stack-sm">
+      <div className="ed-row-wrap">
         <FilterChips options={options} value={value} onChange={onChange} />
         <button
           type="button"
-          className={`ct-chip ct-chip-icon ${showInput ? "ct-chip-active" : ""}`}
+          className={`ed-chip ed-chip ${showInput ? "active" : ""}`}
           onClick={toggle}
           aria-label={searchAriaLabel || searchPlaceholder}
           aria-expanded={showInput}
@@ -56,15 +56,15 @@ export function FilterChipsWithSearch({
         </button>
       </div>
       {showInput && (
-        <div className="ct-search-field ct-search-field-compact">
-          <CtIcon name="magnifying-glass" size={16} className="ct-search-field-icon" />
+        <div className="ed-search-field ed-search-field">
+          <CtIcon name="magnifying-glass" size={16} className="ed-search-icon" />
           <input
             ref={inputRef}
             type="search"
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className={inputClassName("ct-search-field-input")}
+            className={inputClassName("ed-input")}
             aria-label={searchAriaLabel || searchPlaceholder}
           />
         </div>

@@ -18,37 +18,43 @@ export function ListRow({
   onClick,
   as: Tag = "div",
 }) {
-  const amountClass =
+  const amountStyle =
     amountTone === "positive"
-      ? "ct-amount-positive"
+      ? { color: "var(--ed-green)" }
       : amountTone === "negative"
-        ? "ct-amount-negative"
-        : "text-[var(--ct-text)] font-bold";
+        ? { color: "var(--ed-red)" }
+        : { color: "var(--ed-ink)", fontWeight: 700 };
   const inner = (
     <>
       <Row className="min-w-0 flex-1">
         {icon && (
-          <span className="ct-icon-box">
+          <span className="ed-row-icon">
             <CtIcon name={icon} size={20} />
           </span>
         )}
         <div className="min-w-0">
-          <Body className="font-semibold text-[var(--ct-text)] truncate block">{title}</Body>
+          <Body className="font-semibold truncate block" style={{ color: "var(--ed-ink)" }}>
+            {title}
+          </Body>
           {subtitle && <Caption className="block truncate">{subtitle}</Caption>}
         </div>
       </Row>
       <div className="text-right shrink-0">
-        {amount && <Body className={`block ${amountClass}`}>{amount}</Body>}
+        {amount && (
+          <Body className="block" style={amountStyle}>
+            {amount}
+          </Body>
+        )}
         {status && <Badge tone={statusTone} className="mt-1">{status}</Badge>}
       </div>
     </>
   );
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className="ct-list-row w-full text-left">
+      <button type="button" onClick={onClick} className="ed-nav-row w-full text-left">
         {inner}
       </button>
     );
   }
-  return createElement(Tag, { className: "ct-list-row w-full text-left" }, inner);
+  return createElement(Tag, { className: "ed-nav-row w-full text-left" }, inner);
 }

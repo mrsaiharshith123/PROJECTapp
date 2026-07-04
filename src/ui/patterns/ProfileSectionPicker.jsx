@@ -16,7 +16,7 @@ const SECTIONS = [
 export function ProfileSectionPicker({ openId, onSelect }) {
   const { t } = useTranslation();
   return (
-    <div className="ct-stack-sm">
+    <div className="ed-stack-sm">
       {SECTIONS.map((s) => (
         <SettingsRow
           key={s.id}

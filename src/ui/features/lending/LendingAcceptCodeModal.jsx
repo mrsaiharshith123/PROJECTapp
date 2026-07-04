@@ -6,7 +6,7 @@ import { isValidInviteCode, normalizeInviteCode } from "../../../utils/inviteCod
 import { decodeOfferPayload } from "../../../engines/lendingAgreement.js";
 import { loadLendingOffer } from "../../../services/lending/offerRegistry.js";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const fieldClass = `${inputClassName()} `;
 
 /** Lender enters a 6-character offer code from the borrower. */
 export default function LendingAcceptCodeModal({ onClose }) {
@@ -48,15 +48,15 @@ export default function LendingAcceptCodeModal({ onClose }) {
         </Button>
       }
     >
-      <div className="ct-stack">
+      <div className="ed-stack">
         <Caption className="block">{t("lending.acceptCode.intro")}</Caption>
         <div>
-          <label className="ct-field-label" htmlFor="lend-offer-code">
+          <label className="ed-field-label" htmlFor="lend-offer-code">
             {t("lending.acceptCode.label")}
           </label>
           <input
             id="lend-offer-code"
-            className={`${fieldClass} ct-numeral uppercase tracking-widest text-center text-lg`}
+            className={`${fieldClass} ed-numeral uppercase tracking-widest text-center text-lg`}
             value={code}
             onChange={(e) => {
               setCode(normalizeInviteCode(e.target.value));
@@ -68,7 +68,7 @@ export default function LendingAcceptCodeModal({ onClose }) {
             placeholder="ABC234"
           />
         </div>
-        {error ? <p className="ct-caption text-[var(--ct-danger)]">{error}</p> : null}
+        {error ? <p className="ed-caption text-[var(--ed-red)]">{error}</p> : null}
       </div>
     </Modal>
   );

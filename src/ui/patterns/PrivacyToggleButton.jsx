@@ -11,7 +11,7 @@ export function PrivacyToggleButton({ className = "" }) {
   return (
     <button
       type="button"
-      className={cn("ct-privacy-toggle", className)}
+      className={cn("ed-privacy-toggle", className)}
       onClick={togglePrivacyMode}
       aria-pressed={privacyMode}
       aria-label={privacyMode ? t("netWorth.privacy.show") : t("netWorth.privacy.hide")}

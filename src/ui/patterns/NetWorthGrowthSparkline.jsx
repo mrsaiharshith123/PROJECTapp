@@ -16,12 +16,12 @@ function WealthTooltip({ active, payload }) {
   const label = row.label ?? "";
 
   return (
-    <div className="ct-chart-tooltip">
-      <p className="ct-chart-tooltip-label">{label}</p>
-      <p className="ct-chart-tooltip-row ct-chart-tooltip-assets">
+    <div className="ed-inset">
+      <p className="ed-field-label">{label}</p>
+      <p className="ed-caption">
         {t("profile.wealthChartAssets")}: {formatInr(row.assets ?? 0)}
       </p>
-      <p className="ct-chart-tooltip-row ct-chart-tooltip-liabilities">
+      <p className="ed-caption">
         {t("profile.wealthChartLiabilities")}: {formatInr(row.liabilities ?? 0)}
       </p>
     </div>
@@ -56,7 +56,7 @@ export function NetWorthGrowthSparkline({ data }) {
   const showDots = chartData.length <= 16;
 
   return (
-    <div className="ct-wealth-sparkline" aria-hidden>
+    <div className="ed-chart-area" aria-hidden>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 22, right: 6, left: 2, bottom: 4 }}>
           <defs>
@@ -68,7 +68,7 @@ export function NetWorthGrowthSparkline({ data }) {
           <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 10, fill: "var(--ct-text-muted)" }}
+            tick={{ fontSize: 10, fill: "var(--ed-muted-text)" }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
