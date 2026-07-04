@@ -90,6 +90,7 @@ export default function LedgerPage() {
       {tab === "assets" ? <LedgerAssetsView openAddOnMount={openAddOnMount} /> : null}
       {tab === "liabilities" ? <LedgerLiabilitiesView openAddOnMount={openAddOnMount} /> : null}
       {tab === "instruments" ? <LedgerInstrumentsView openAddOnMount={openAddOnMount} /> : null}
+      <div className="ed-safe-bottom" />
     </div>
   );
 }

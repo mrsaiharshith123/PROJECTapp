@@ -160,7 +160,7 @@ function AppRoutes() {
         <Route path="/you/plans" element={<LazyRoute name="Plans"><YouPlansPage /></LazyRoute>} />
         <Route path="/admin" element={<RequireAdmin><LazyRoute name="Admin"><Admin /></LazyRoute></RequireAdmin>} />
         <Route path="/privacy" element={<LazyRoute name="Privacy"><Privacy /></LazyRoute>} />
-        <Route path="/auth" element={<Navigate to="/you" replace />} />
+        <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

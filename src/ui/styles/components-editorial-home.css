@@ -893,7 +893,7 @@ html[data-ui="ct"] .ed-tools {
   border-top: 1px solid var(--ed-rule);
 }
 html[data-ui="ct"] .ed-tools-compact {
-  padding: 12px 18px 14px;
+  padding: 12px 18px 18px;
 }
 html[data-ui="ct"] .ed-tools-btn {
   display: flex;

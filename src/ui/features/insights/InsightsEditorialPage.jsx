@@ -127,14 +127,18 @@ export default function InsightsEditorialPage({ data }) {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ed-paper ed-ins-page">
-      <div className="ed-ins-mast">
-        <div>
-          <h1 className="ed-ins-mast-title">{t("nav.insights")}</h1>
-          <p className="ed-ins-mast-sub">{t("analytics.hub.subtitle")}</p>
+    <div className="ed-page-full">
+      <header className="ed-masthead">
+        <div className="ed-masthead-top">
+          <div className="ed-masthead-brand">
+            <h1 className="ed-title">{t("nav.insights")}</h1>
+            <div className="ed-tagline">{t("analytics.hub.subtitle")}</div>
+          </div>
+          <div className="ed-masthead-right">
+            <HomeEditorialAvatar tier={tier} />
+          </div>
         </div>
-        <HomeEditorialAvatar tier={tier} />
-      </div>
+      </header>
 
       <div className="ed-ins-story">
         <div className="ed-ins-kicker">{t("insights.editorial.cashflowKicker")}</div>
@@ -392,6 +396,7 @@ export default function InsightsEditorialPage({ data }) {
           {t("insights.editorial.networthBreakdown")}
         </button>
       </div>
+      <div className="ed-safe-bottom" />
     </div>
   );
 }

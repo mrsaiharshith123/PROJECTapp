@@ -78,6 +78,7 @@ html[data-ui="ct"] {
   --ed-page-top:    16px;
   --ed-page-x:      18px;
   --ed-page-bottom: 84px;
+  --ed-status-bar-h: env(safe-area-inset-top, 24px);
 
   /* ── Border radius ── */
   --ed-r-sm:   6px;

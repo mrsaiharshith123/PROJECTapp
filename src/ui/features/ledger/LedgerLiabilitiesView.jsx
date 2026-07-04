@@ -81,7 +81,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
   };
 
   return (
-    <div className="ct-stack">
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div className="ed-ins-story ed-ledger-hero">
         <div className="ed-ins-kicker">{t("ledger.totalLiabilities")}</div>
         <div className="ed-ledger-hero-row">
@@ -104,30 +104,31 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
           <section key={key}>
             <div className="pos-group-header">
               <span>{t(groupLabels[key])}</span>
-              <span className="ct-numeral">{formatAmount(subtotal)}</span>
+              <span className="ed-display-sm">{formatAmount(subtotal)}</span>
             </div>
-            <div className="pos-group-card ct-stack-sm">
+            <div className="pos-group-card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {group.wealth.map((entry) => (
                 <button
                   key={entry.id}
                   type="button"
-                  className="ct-row-between gap-2 min-w-0 w-full text-left"
+                  className="ed-row ed-row-press"
+                  style={{ width: "100%", textAlign: "left" }}
                   onClick={() => navigate(`/insights/entry/${entry.id}`)}
                 >
-                  <div className="ct-row gap-2 min-w-0">
-                    <span className="ct-icon-tile pos-icon liability shrink-0">
-                      <CtIcon name="bank" size={18} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="ct-body-strong truncate">{entry.name}</p>
-                      <p className="ct-caption">
-                        {entry.emi ? t("ledger.emiPerMonth", { amount: formatAmount(entry.emi) }) : t("ledger.outstanding")}
-                      </p>
+                  <div className="ed-row-icon">
+                    <CtIcon name="bank" size={16} />
+                  </div>
+                  <div className="ed-row-left">
+                    <div className="ed-row-title">{entry.name}</div>
+                    <div className="ed-row-sub">
+                      {entry.emi ? t("ledger.emiPerMonth", { amount: formatAmount(entry.emi) }) : t("ledger.outstanding")}
                     </div>
                   </div>
-                  <span className="ct-numeral shrink-0" style={{ color: "var(--pos-liab)" }}>
-                    {formatAmount(entry.value)}
-                  </span>
+                  <div className="ed-row-right">
+                    <div className="ed-row-value" style={{ color: "var(--pos-liab)" }}>
+                      {formatAmount(entry.value)}
+                    </div>
+                  </div>
                 </button>
               ))}
               {group.bills.map((bill) => {
@@ -176,7 +177,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
                     {showPay && (
                       <button
                         type="button"
-                        className="ct-btn ct-btn-sm ct-btn-primary w-fit"
+                        className="ed-btn ed-btn-primary ed-btn-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate("/ledger/bills", { state: { openBillId: bill.id } });
@@ -195,7 +196,7 @@ export default function LedgerLiabilitiesView({ onAdd, openAddOnMount = false })
 
       <button
         type="button"
-        className="ct-btn ct-btn-ghost w-full"
+        className="ed-btn ed-btn-ghost ed-btn-block"
         onClick={() => {
           onAdd?.();
           setEditEntry(null);

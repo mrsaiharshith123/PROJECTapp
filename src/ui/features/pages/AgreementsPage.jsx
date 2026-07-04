@@ -156,7 +156,7 @@ export default function AgreementsPage() {
   const tier = getTier(settings, effectiveSubscriptionTier);
 
   return (
-    <div className="ed-paper">
+    <div className="ed-page-full">
       <header className="ed-masthead">
         <div className="ed-masthead-top">
           <div className="ed-masthead-brand">
@@ -286,6 +286,7 @@ export default function AgreementsPage() {
         />
       ) : null}
       {showAcceptCode ? <LendingAcceptCodeModal onClose={() => setShowAcceptCode(false)} /> : null}
+      <div className="ed-safe-bottom" />
     </div>
   );
 }

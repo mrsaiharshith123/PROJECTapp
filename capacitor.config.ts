@@ -19,6 +19,11 @@ const config: CapacitorConfig = {
       appReadyTimeout: 120000,
       autoDeleteFailed: true,
     },
+    StatusBar: {
+      overlaysWebView: false,
+      backgroundColor: "#16140f",
+      style: "LIGHT",
+    },
   },
 };
 

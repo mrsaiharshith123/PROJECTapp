@@ -12,7 +12,7 @@ export const BRAND_WORDMARK = {
 export function brandIconForTheme(theme) {
   return theme === "dark" ? BRAND_ICON.dark : BRAND_ICON.light;
 }
-
 export function brandWordmarkForTheme(theme) {
   return theme === "dark" ? BRAND_WORDMARK.dark : BRAND_WORDMARK.light;
 }
+

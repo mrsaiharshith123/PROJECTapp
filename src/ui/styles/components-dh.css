@@ -12,6 +12,7 @@ html[data-ui="ct"] .ed-page {
   color:      var(--ed-ink);
   min-height: 100dvh;
   padding:    var(--ed-page-top) var(--ed-page-x) var(--ed-page-bottom);
+  padding-top: calc(var(--ed-page-top) + env(safe-area-inset-top, 0px));
 }
 
 html[data-ui="ct"] .ed-page-full {
@@ -19,6 +20,7 @@ html[data-ui="ct"] .ed-page-full {
   color:      var(--ed-ink);
   min-height: 100dvh;
   padding-bottom: var(--ed-page-bottom);
+  padding-top: calc(var(--ed-page-top) + env(safe-area-inset-top, 0px));
 }
 
 /* Page header / masthead */
@@ -1046,7 +1048,8 @@ html[data-ui="ct"] .ed-spacer-md  { height: var(--ed-space-4); }
 html[data-ui="ct"] .ed-spacer-lg  { height: var(--ed-space-6); }
 
 html[data-ui="ct"] .ed-safe-bottom {
-  height: max(var(--ed-space-6), env(safe-area-inset-bottom));
+  min-height: calc(var(--ed-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+  flex-shrink: 0;
 }
 
 /* Loading skeleton pulse */

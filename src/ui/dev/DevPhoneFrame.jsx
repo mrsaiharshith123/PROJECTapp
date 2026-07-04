@@ -153,6 +153,22 @@ export default function DevPhoneFrame({ children }) {
           }}
           aria-label={`${device.label} preview`}
         >
+          {/* S23 FE camera punch hole */}
+          <div
+            style={{
+              position: "absolute",
+              top: 12,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: 12,
+              height: 12,
+              borderRadius: "50%",
+              background: "#0a0a0a",
+              zIndex: 10000,
+              pointerEvents: "none",
+            }}
+            aria-hidden="true"
+          />
           <div className="dev-phone-screen">{children}</div>
         </div>
       </div>

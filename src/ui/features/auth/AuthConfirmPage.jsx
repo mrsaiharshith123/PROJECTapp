@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import { LoadingSpinner } from "../../patterns/Loading.jsx";
 import { Body, Heading } from "../../primitives/Text.jsx";
-import { Card } from "../../primitives/Card.jsx";
 import { getSupabaseClient } from "../../../services/supabase/auth.js";
 import { formatAuthError } from "../../../utils/authErrors.js";
 
@@ -67,11 +65,33 @@ export default function AuthConfirmPage() {
   }, [t]);
 
   return (
-    <div className="ct-screen ct-auth-shell">
-      <div className="ct-auth-shell-inner ct-stack">
-        <PerovoBrand />
+    <div
+      className="ed-page-full"
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        paddingTop: "calc(24px + env(safe-area-inset-top, 0px))",
+      }}
+    >
+      <div style={{ marginBottom: 24, textAlign: "center" }}>
+        <div
+          style={{
+            fontFamily: "var(--ed-font-serif)",
+            fontStyle: "italic",
+            fontSize: 32,
+            fontWeight: 700,
+            color: "var(--ed-gold)",
+          }}
+        >
+          {t("brand.appName")}
+        </div>
+      </div>
 
-        <Card className="ct-auth-confirm-card ct-stack">
+      <div className="ed-card" style={{ width: "100%", maxWidth: 400, display: "flex", flexDirection: "column", gap: 12 }}>
           {phase === "processing" && (
             <>
               <LoadingSpinner size="md" showLogo />
@@ -91,7 +111,7 @@ export default function AuthConfirmPage() {
                 {t("auth.confirmSuccessTitle")}
               </Heading>
               <Body className="ct-auth-confirm-body">{t("auth.confirmSuccessBody")}</Body>
-              <Link to="/" className="ct-btn ct-btn-primary ct-btn-lg">
+              <Link to="/" className="ed-btn ed-btn-primary ed-btn-block">
                 {t("auth.confirmContinueApp")}
               </Link>
             </>
@@ -106,12 +126,11 @@ export default function AuthConfirmPage() {
                 {t("auth.confirmErrorTitle")}
               </Heading>
               <Body className="ct-auth-confirm-body">{detail || t("auth.confirmErrorBody")}</Body>
-              <Link to="/" className="ct-btn ct-btn-outline">
+              <Link to="/" className="ed-btn ed-btn-secondary ed-btn-block">
                 {t("auth.confirmBackHome")}
               </Link>
             </>
           )}
-        </Card>
       </div>
     </div>
   );

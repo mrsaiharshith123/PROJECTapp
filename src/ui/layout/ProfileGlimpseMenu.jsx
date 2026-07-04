@@ -63,7 +63,8 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
   return (
     <>
       <div className="ed-backdrop" aria-hidden onClick={onClose} />
-      <div ref={panelRef} className="ed-profile-sheet" role="dialog" aria-label={t("profileGlimpse.title")}>
+      <div ref={panelRef} className="ed-sheet" role="dialog" aria-label={t("profileGlimpse.title")}>
+        <div className="ed-sheet-handle" />
         <div className="ed-sheet-header">
           <div>
             <div className="ed-value">{name}</div>

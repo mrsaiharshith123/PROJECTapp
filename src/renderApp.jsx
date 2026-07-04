@@ -25,6 +25,13 @@ if (isNativeCapacitorShell()) {
   document.documentElement.style.userSelect = "none";
   document.addEventListener("contextmenu", (e) => e.preventDefault(), true);
   document.addEventListener("dragstart", (e) => e.preventDefault(), true);
+  import("@capacitor/status-bar")
+    .then(({ StatusBar, Style }) => {
+      StatusBar.setOverlaysWebView({ overlay: false });
+      StatusBar.setBackgroundColor({ color: "#16140f" });
+      StatusBar.setStyle({ style: Style.Light });
+    })
+    .catch(() => {});
 }
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;

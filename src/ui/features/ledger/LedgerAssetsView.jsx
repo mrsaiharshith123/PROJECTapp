@@ -40,7 +40,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
   };
 
   return (
-    <div className="ct-stack">
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div className="ed-ins-story ed-ledger-hero">
         <div className="ed-ins-kicker">{t("ledger.totalAssets")}</div>
         <div className="ed-ledger-hero-row">
@@ -71,7 +71,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
           <section key={group.id}>
             <div className="pos-group-header">
               <span>{t(group.labelKey)}</span>
-              <span className="ct-numeral">{formatAmount(subtotal)}</span>
+              <span className="ed-display-sm">{formatAmount(subtotal)}</span>
             </div>
             <div className="pos-group-card">
               {groupEntries.map((entry) => (
@@ -92,7 +92,7 @@ export default function LedgerAssetsView({ onAdd, openAddOnMount = false }) {
         );
       })}
 
-      <button type="button" className="ct-btn ct-btn-ghost w-full" onClick={openAdd}>
+      <button type="button" className="ed-btn ed-btn-ghost ed-btn-block" onClick={openAdd}>
         + {t("ledger.addAsset")}
       </button>
 

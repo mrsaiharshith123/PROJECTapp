@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Card, Button, inputClassName, FormField, Caption, Heading, Body, PasswordInput } from "../../index.js";
-import { PerovoBrand } from "../../brand/PerovoBrand.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatAuthError } from "../../../utils/authErrors.js";
@@ -10,8 +8,14 @@ import { saveUserProfile } from "../../../services/supabase/auth.js";
 import { markSignupPending } from "../../../utils/authSessionCleanup.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
+import { CtIcon } from "../../icons/CtIcon.jsx";
 
-const fieldClass = `${inputClassName()} ct-input-tint`;
+const AUTH_FEATURES = [
+  "auth.ed.featureBills",
+  "auth.ed.featureAssets",
+  "auth.ed.featureLending",
+  "auth.ed.featureAi",
+];
 
 function isRecoverySession() {
   if (typeof window === "undefined") return false;
@@ -20,25 +24,54 @@ function isRecoverySession() {
   return hash.includes("type=recovery") || search.includes("type=recovery");
 }
 
-function AuthAmbient() {
+/**
+ * @param {{
+ *   label: string,
+ *   value: string,
+ *   onChange: (v: string) => void,
+ *   show: boolean,
+ *   onToggle: () => void,
+ *   autoComplete?: string,
+ *   placeholder?: string,
+ *   t: (key: string) => string,
+ * }} props
+ */
+function AuthPasswordField({ label, value, onChange, show, onToggle, autoComplete, placeholder, t }) {
   return (
-    <div className="ct-auth-ambient" aria-hidden>
-      <div className="ct-auth-grid" />
-      <div className="ct-auth-orb ct-auth-orb-a" />
-      <div className="ct-auth-orb ct-auth-orb-b" />
-      <div className="ct-auth-orb ct-auth-orb-c" />
-      <div className="ct-auth-shine" />
-    </div>
-  );
-}
-
-function AuthBrandHero() {
-  return (
-    <header className="ct-auth-hero">
-      <div className="ct-auth-logo-tile" aria-hidden>
-        <PerovoBrand layout="column" iconSize="lg" wordmarkSize="lg" className="ct-auth-brand-lockup" />
+    <div className="ed-field">
+      <label className="ed-field-label">{label}</label>
+      <div style={{ position: "relative" }}>
+        <input
+          className="ed-input"
+          type={show ? "text" : "password"}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          value={value}
+          style={{ paddingRight: 44 }}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: "none",
+            border: "none",
+            color: "var(--ed-ink-faint)",
+            cursor: "pointer",
+            padding: 4,
+            display: "flex",
+            alignItems: "center",
+          }}
+          aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
+        >
+          <CtIcon name={show ? "eye-slash" : "eye"} size={18} />
+        </button>
       </div>
-    </header>
+    </div>
   );
 }
 
@@ -58,8 +91,21 @@ export default function AuthGatePage() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [noteTone, setNoteTone] = useState("neutral");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const configured = isCloudSyncConfigured();
+  const isLogin = mode === "signin";
+  const isSignup = mode === "signup";
+
+  const clearFeedback = () => {
+    if (note) {
+      setNote("");
+      setNoteTone("neutral");
+    }
+    clearAuthNotice();
+  };
 
   const switchMode = (next) => {
     setMode(next);
@@ -67,8 +113,11 @@ export default function AuthGatePage() {
     setNoteTone("neutral");
     clearAuthNotice();
     setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     if (next !== "reset") {
       setNewPassword("");
+      setShowNewPassword(false);
     }
   };
 
@@ -175,7 +224,12 @@ export default function AuthGatePage() {
       setNoteTone("danger");
       return;
     }
-    if (!email.trim() || !password) {
+    if (!email.trim()) {
+      setNote(t("auth.errEmailPassword"));
+      setNoteTone("danger");
+      return;
+    }
+    if (!password.trim()) {
       setNote(t("auth.errEmailPassword"));
       setNoteTone("danger");
       return;
@@ -239,196 +293,444 @@ export default function AuthGatePage() {
     }
   };
 
-  const title =
+  const headline =
     mode === "forgot"
       ? t("auth.forgotTitle")
       : mode === "reset"
         ? t("auth.resetPasswordTitle")
-        : mode === "signin"
-          ? t("auth.signInTitle")
-          : t("auth.signUpTitle");
+        : isLogin
+          ? t("auth.ed.welcomeBack")
+          : t("auth.ed.startFree");
 
-  const subtitle =
+  const hint =
     mode === "forgot"
       ? t("auth.forgotIntro")
       : mode === "reset"
         ? t("auth.resetPasswordIntro")
-        : t("auth.intro");
+        : isLogin
+          ? t("auth.ed.signInHint")
+          : t("auth.ed.signUpHint");
+
+  const noteColor =
+    noteTone === "success" ? "var(--ed-green)" : noteTone === "danger" ? "var(--ed-red)" : undefined;
+
+  const feedback = note || authNotice;
+  const showLoginInlineError = isLogin && Boolean(feedback);
 
   return (
-    <div className="ct-auth-scene">
-      <AuthAmbient />
-      <div className="ct-auth-content">
-        <AuthBrandHero />
+    <div
+      style={{
+        minHeight: "100dvh",
+        background: "var(--ed-bg)",
+        display: "flex",
+        flexDirection: "column",
+        padding: "0 24px",
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
+    >
+      <div style={{ paddingTop: 48, paddingBottom: 32, textAlign: "center" }}>
+        <div
+          style={{
+            fontFamily: "var(--ed-font-serif)",
+            fontStyle: "italic",
+            fontWeight: 700,
+            fontSize: 42,
+            color: "var(--ed-gold)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            marginBottom: 6,
+          }}
+        >
+          {t("brand.appName")}
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--ed-font-news)",
+            fontStyle: "italic",
+            fontSize: 14,
+            color: "var(--ed-ink-faint)",
+            lineHeight: 1.4,
+          }}
+        >
+          {t("auth.ed.heroSub")}
+        </div>
+      </div>
 
-        <Card className="ct-auth-card ct-stack">
-          <div>
-            <Heading level={2} className="ct-auth-card-title">
-              {title}
-            </Heading>
-            <Body className="!text-sm mt-1.5 opacity-90">{subtitle}</Body>
+      {mode !== "forgot" && mode !== "reset" ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+            marginBottom: 32,
+            flexWrap: "wrap",
+          }}
+        >
+          {AUTH_FEATURES.map((key) => (
+            <span
+              key={key}
+              style={{
+                fontFamily: "var(--ed-font)",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: "var(--ed-ink-faint)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <span
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: "50%",
+                  background: "var(--ed-gold)",
+                  display: "inline-block",
+                }}
+              />
+              {t(key)}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          background: "var(--ed-surface)",
+          border: "0.5px solid var(--ed-rule)",
+          borderRadius: "var(--ed-r-xl)",
+          padding: "24px 20px",
+          flex: 1,
+          maxHeight: mode === "signup" ? 560 : 480,
+          overflowY: "auto",
+        }}
+      >
+        {mode !== "forgot" && mode !== "reset" && (
+          <div
+            style={{
+              display: "flex",
+              background: "var(--ed-surface-3)",
+              borderRadius: "var(--ed-r-md)",
+              padding: 3,
+              marginBottom: 22,
+              gap: 3,
+            }}
+          >
+            {[["signin", t("auth.login")], ["signup", t("auth.createAccount")]].map(([id, label]) => {
+              const active = mode === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => switchMode(id)}
+                  style={{
+                    flex: 1,
+                    padding: "8px 0",
+                    borderRadius: "var(--ed-r-sm)",
+                    border: "none",
+                    background: active ? "var(--ed-gold)" : "transparent",
+                    color: active ? "#16140f" : "var(--ed-ink-faint)",
+                    fontFamily: "var(--ed-font)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 150ms ease",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
+        )}
 
-          {mode !== "forgot" && mode !== "reset" && (
-            <div className="ct-row gap-2">
+        <div
+          style={{
+            fontFamily: "var(--ed-font-serif)",
+            fontStyle: "italic",
+            fontWeight: 700,
+            fontSize: 20,
+            color: "var(--ed-ink)",
+            marginBottom: 4,
+          }}
+        >
+          {headline}
+        </div>
+        <div
+          style={{
+            fontFamily: "var(--ed-font-news)",
+            fontStyle: "italic",
+            fontSize: 12,
+            color: "var(--ed-ink-faint)",
+            marginBottom: 20,
+            lineHeight: 1.45,
+          }}
+        >
+          {hint}
+        </div>
+
+        {mode !== "reset" && (
+          <div className="ed-field">
+            <label className="ed-field-label">{t("auth.email")}</label>
+            <input
+              className="ed-input"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder={t("auth.ed.emailPlaceholder")}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFeedback();
+              }}
+            />
+          </div>
+        )}
+
+        {isLogin && (
+          <>
+            <AuthPasswordField
+              label={t("auth.password")}
+              value={password}
+              onChange={(v) => {
+                setPassword(v);
+                clearFeedback();
+              }}
+              show={showPassword}
+              onToggle={() => setShowPassword((p) => !p)}
+              autoComplete="current-password"
+              placeholder={t("auth.ed.passwordPlaceholder")}
+              t={t}
+            />
+            <div
+              className="ed-row"
+              style={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginTop: -4,
+                marginBottom: 8,
+                minHeight: 20,
+              }}
+            >
+              {showLoginInlineError ? (
+                <span
+                  className="ed-field-error"
+                  style={{
+                    margin: 0,
+                    flex: 1,
+                    minWidth: 0,
+                    fontSize: 11,
+                    lineHeight: 1.35,
+                    color: noteColor || "var(--ed-red)",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 4,
+                  }}
+                >
+                  <CtIcon name="warning" size={12} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden />
+                  <span>{feedback}</span>
+                </span>
+              ) : (
+                <span aria-hidden />
+              )}
               <button
                 type="button"
-                onClick={() => switchMode("signin")}
-                className={`ct-chip flex-1 ${mode === "signin" ? "ct-chip-active" : ""}`}
+                className="ed-btn-link"
+                style={{
+                  flexShrink: 0,
+                  fontSize: 12,
+                  color: "var(--ed-gold)",
+                  whiteSpace: "nowrap",
+                }}
+                onClick={() => switchMode("forgot")}
               >
-                {t("auth.login")}
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode("signup")}
-                className={`ct-chip flex-1 ${mode === "signup" ? "ct-chip-active" : ""}`}
-              >
-                {t("auth.createAccount")}
+                {t("auth.forgotPassword")}
               </button>
             </div>
-          )}
+          </>
+        )}
 
-          {mode !== "reset" && (
-            <FormField label={t("auth.email")}>
+        {isSignup && (
+          <>
+            <AuthPasswordField
+              label={t("auth.password")}
+              value={password}
+              onChange={(v) => {
+                setPassword(v);
+                clearFeedback();
+              }}
+              show={showPassword}
+              onToggle={() => setShowPassword((p) => !p)}
+              autoComplete="new-password"
+              placeholder={t("auth.ed.passwordCreatePlaceholder")}
+              t={t}
+            />
+            <AuthPasswordField
+              label={t("auth.confirmPassword")}
+              value={confirmPassword}
+              onChange={(v) => {
+                setConfirmPassword(v);
+                clearFeedback();
+              }}
+              show={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((p) => !p)}
+              autoComplete="new-password"
+              placeholder={t("auth.ed.passwordCreatePlaceholder")}
+              t={t}
+            />
+            <div className="ed-field">
+              <label className="ed-field-label">{t("auth.yourName")}</label>
               <input
-                type="email"
-                className={fieldClass}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
+                className="ed-input"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  clearFeedback();
+                }}
               />
-            </FormField>
-          )}
+            </div>
+            <div className="ed-field">
+              <label className="ed-field-label">{t("auth.mobile")}</label>
+              <input
+                type="tel"
+                className="ed-input"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  clearFeedback();
+                }}
+                placeholder={t("auth.mobilePlaceholder")}
+                inputMode="numeric"
+              />
+            </div>
+            <div className="ed-field">
+              <label className="ed-field-label">{t("auth.monthlySalary")}</label>
+              <input
+                type="number"
+                min="1"
+                className="ed-input"
+                value={income}
+                onChange={(e) => {
+                  setIncome(e.target.value);
+                  clearFeedback();
+                }}
+              />
+            </div>
+            <div className="ed-field">
+              <label className="ed-field-label">{t("profile.userCity")}</label>
+              <CitySelect
+                value={userCity}
+                onChange={(v) => {
+                  setUserCity(v);
+                  clearFeedback();
+                }}
+              />
+            </div>
+          </>
+        )}
 
-          {mode === "signin" && (
-            <>
-              <FormField label={t("auth.password")}>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                  minLength={6}
-                  className={fieldClass}
-                />
-              </FormField>
-              <div className="ct-row-between -mt-1">
-                <span />
-                <button type="button" className="ct-link !text-xs" onClick={() => switchMode("forgot")}>
-                  {t("auth.forgotPassword")}
-                </button>
-              </div>
-            </>
-          )}
+        {mode === "reset" && (
+          <>
+            <AuthPasswordField
+              label={t("auth.newPassword")}
+              value={newPassword}
+              onChange={(v) => {
+                setNewPassword(v);
+                clearFeedback();
+              }}
+              show={showNewPassword}
+              onToggle={() => setShowNewPassword((p) => !p)}
+              autoComplete="new-password"
+              placeholder={t("auth.ed.passwordCreatePlaceholder")}
+              t={t}
+            />
+            <AuthPasswordField
+              label={t("auth.confirmPassword")}
+              value={confirmPassword}
+              onChange={(v) => {
+                setConfirmPassword(v);
+                clearFeedback();
+              }}
+              show={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword((p) => !p)}
+              autoComplete="new-password"
+              placeholder={t("auth.ed.passwordCreatePlaceholder")}
+              t={t}
+            />
+          </>
+        )}
 
-          {mode === "signup" && (
-            <>
-              <FormField label={t("auth.password")}>
-                <PasswordInput
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className={fieldClass}
-                />
-              </FormField>
-              <FormField label={t("auth.confirmPassword")}>
-                <PasswordInput
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className={fieldClass}
-                />
-              </FormField>
-              <FormField label={t("auth.yourName")}>
-                <input className={fieldClass} value={name} onChange={(e) => setName(e.target.value)} required />
-              </FormField>
-              <FormField label={t("auth.mobile")}>
-                <input
-                  type="tel"
-                  className={fieldClass}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t("auth.mobilePlaceholder")}
-                  inputMode="numeric"
-                  required
-                />
-              </FormField>
-              <FormField label={t("auth.monthlySalary")}>
-                <input
-                  type="number"
-                  min="1"
-                  className={fieldClass}
-                  value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                  required
-                />
-              </FormField>
-              <FormField label={t("profile.userCity")}>
-                <CitySelect value={userCity} onChange={setUserCity} required />
-              </FormField>
-            </>
-          )}
+        {feedback && !showLoginInlineError && (
+          <div className="ed-field-error" style={{ marginBottom: 14, color: noteColor }}>
+            {feedback}
+          </div>
+        )}
 
-          {mode === "reset" && (
-            <>
-              <FormField label={t("auth.newPassword")}>
-                <PasswordInput
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className={fieldClass}
-                />
-              </FormField>
-              <FormField label={t("auth.confirmPassword")}>
-                <PasswordInput
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className={fieldClass}
-                />
-              </FormField>
-            </>
-          )}
+        {mode === "forgot" ? (
+          <button type="button" className="ed-btn ed-btn-primary ed-btn-block" disabled={busy} onClick={handleForgot}>
+            {busy ? t("auth.pleaseWait") : t("auth.sendResetLink")}
+          </button>
+        ) : mode === "reset" ? (
+          <button
+            type="button"
+            className="ed-btn ed-btn-primary ed-btn-block"
+            disabled={busy}
+            onClick={handleResetPassword}
+          >
+            {busy ? t("auth.pleaseWait") : t("auth.updatePassword")}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="ed-btn ed-btn-primary ed-btn-block"
+            disabled={busy}
+            onClick={handleSubmit}
+            style={{ marginTop: 4 }}
+          >
+            {busy ? t("auth.pleaseWait") : isLogin ? t("auth.login") : t("auth.createAccount")}
+          </button>
+        )}
 
-          {mode === "forgot" ? (
-            <Button type="button" disabled={busy} onClick={handleForgot} size="lg" variant="primary">
-              {busy ? t("auth.pleaseWait") : t("auth.sendResetLink")}
-            </Button>
-          ) : mode === "reset" ? (
-            <Button type="button" disabled={busy} onClick={handleResetPassword} size="lg" variant="primary">
-              {busy ? t("auth.pleaseWait") : t("auth.updatePassword")}
-            </Button>
-          ) : (
-            <Button type="button" disabled={busy} onClick={handleSubmit} size="lg" variant="primary">
-              {busy ? t("auth.pleaseWait") : mode === "signin" ? t("auth.login") : t("auth.createAndContinue")}
-            </Button>
-          )}
+        {(mode === "forgot" || mode === "reset") && (
+          <button
+            type="button"
+            className="ed-btn-link"
+            style={{
+              display: "block",
+              textAlign: "center",
+              width: "100%",
+              marginTop: 14,
+              fontSize: 12,
+              color: "var(--ed-gold)",
+            }}
+            onClick={() => switchMode("signin")}
+          >
+            {t("auth.backToSignIn")}
+          </button>
+        )}
+      </div>
 
-          {(mode === "forgot" || mode === "reset") && (
-            <button type="button" className="ct-link !text-sm text-center" onClick={() => switchMode("signin")}>
-              {t("auth.backToSignIn")}
-            </button>
-          )}
-
-          {authNotice && <Caption className="block text-[var(--ct-warning)]">{authNotice}</Caption>}
-          {note && (
-            <Caption
-              className={`block ${noteTone === "success" ? "text-[var(--ct-success)]" : noteTone === "danger" ? "text-[var(--ct-danger)]" : ""}`}
-            >
-              {note}
-            </Caption>
-          )}
-        </Card>
-
+      <div
+        style={{
+          textAlign: "center",
+          padding: "20px 0",
+          paddingBottom: "max(20px, env(safe-area-inset-bottom))",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "var(--ed-font-news)",
+            fontStyle: "italic",
+            fontSize: 11,
+            color: "var(--ed-ink-faint)",
+            lineHeight: 1.5,
+          }}
+        >
+          {t("auth.ed.footerNote")}
+        </div>
       </div>
     </div>
   );

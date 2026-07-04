@@ -64,6 +64,7 @@ const Home = () => {
           <HomeToolsSection />
         </div>
       </div>
+      <div className="ed-safe-bottom" />
     </div>
   );
 };
