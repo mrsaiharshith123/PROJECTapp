@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import { isEmbeddedApp } from "../../../../utils/embeddedApp.js";
+import { isNativeCapacitorShell } from "../../../../utils/nativePermissions.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
 import ProfileUpdateAppRow from "../ProfileUpdateAppRow.jsx";
 
@@ -24,6 +25,7 @@ export default function ProfileSettingsGroups({
   const privacyValue = privacyMode ? t("settings.value.on") : t("settings.value.off");
   const remindersOn = settings.remindersEnabled !== false;
   const embedded = isEmbeddedApp();
+  const native = isNativeCapacitorShell();
 
   return (
     <div id="profile-settings" className="ct-profile-settings-groups ct-stack ct-reveal ct-reveal-delay-3">
@@ -55,6 +57,15 @@ export default function ProfileSettingsGroups({
           onClick={() => onTogglePrivacyMode?.()}
         />
         <SettingsGroupRow iconColor="teal" icon="device-mobile" label={t("settings.row.sessions")} onClick={() => navigate("/you/security")} />
+        {native ? (
+          <SettingsGroupRow
+            iconColor="amber"
+            icon="shield"
+            label={t("settings.row.appPermissions")}
+            hint={t("settings.row.appPermissionsHint")}
+            onClick={() => navigate("/you/permissions")}
+          />
+        ) : null}
         {embedded ? (
           <SettingsGroupRow
             iconColor="teal"

@@ -97,6 +97,7 @@ const YouHistoryPage = lazy(() => import("./ui/features/profile/pages/YouHistory
 const YouSupportPage = lazy(() => import("./ui/features/profile/pages/YouSupportPage.jsx"));
 const YouAboutPage = lazy(() => import("./ui/features/profile/pages/YouAboutPage.jsx"));
 const YouPlansPage = lazy(() => import("./ui/features/profile/pages/YouPlansPage.jsx"));
+const YouPermissionsPage = lazy(() => import("./ui/features/profile/pages/YouPermissionsPage.jsx"));
 
 function LazyRoute({ name, children }) {
   return <RouteErrorBoundary routeName={name}>{children}</RouteErrorBoundary>;
@@ -153,6 +154,7 @@ function AppRoutes() {
         <Route path="/you/security" element={<LazyRoute name="Security"><YouSecurityPage /></LazyRoute>} />
         <Route path="/you/backup" element={<LazyRoute name="Backup"><YouBackupPage /></LazyRoute>} />
         <Route path="/you/notifications" element={<LazyRoute name="Notifications"><YouNotificationsPage /></LazyRoute>} />
+        <Route path="/you/permissions" element={<LazyRoute name="Permissions"><YouPermissionsPage /></LazyRoute>} />
         <Route path="/you/history" element={<LazyRoute name="History"><YouHistoryPage /></LazyRoute>} />
         <Route path="/you/support" element={<LazyRoute name="Support"><YouSupportPage /></LazyRoute>} />
         <Route path="/you/about" element={<LazyRoute name="About"><YouAboutPage /></LazyRoute>} />

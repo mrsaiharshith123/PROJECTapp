@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Body, Button, Caption, Screen } from "../ui/index.js";
-import { useTranslation } from "../i18n/I18nProvider.js";
+import { Body, Button, Caption } from "../../../index.js";
+import { useTranslation } from "../../../../i18n/I18nProvider.js";
 import {
   allEssentialPermissionsGranted,
   anyEssentialPermissionDenied,
@@ -8,17 +8,13 @@ import {
   isNativeCapacitorShell,
   openAndroidAppSettings,
   requestEssentialPermissions,
-} from "../utils/nativePermissions.js";
+} from "../../../../utils/nativePermissions.js";
+import YouSubPageShell from "./YouSubPageShell.jsx";
 
-const SKIP_KEY = "perovo_native_perms_skipped_v2";
-
-/**
- * On native Android, explain and request runtime permissions before the main app.
- * Triggers system Allow/Deny dialogs — not manual Settings unless user denied.
- */
-export default function NativePermissionGate({ children }) {
+/** Manage notifications, camera, photos, and location on native Android. */
+export default function YouPermissionsPage() {
   const { t } = useTranslation();
-  const [ready, setReady] = useState(!isNativeCapacitorShell());
+  const native = isNativeCapacitorShell();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -27,48 +23,14 @@ export default function NativePermissionGate({ children }) {
     const next = await checkEssentialPermissions();
     setStatus(next);
     setShowSettings(anyEssentialPermissionDenied(next));
-    if (allEssentialPermissionsGranted(next)) {
-      try {
-        localStorage.removeItem(SKIP_KEY);
-      } catch {
-        /* ignore */
-      }
-      setReady(true);
-    }
     return next;
   }, []);
 
   useEffect(() => {
-    if (!isNativeCapacitorShell()) return undefined;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        if (localStorage.getItem(SKIP_KEY) === "1") {
-          if (!cancelled) setReady(true);
-          return;
-        }
-      } catch {
-        /* ignore */
-      }
-
-      const next = await checkEssentialPermissions();
-      if (cancelled) return;
-
-      if (allEssentialPermissionsGranted(next)) {
-        setReady(true);
-        return;
-      }
-
-      setStatus(next);
-      setShowSettings(anyEssentialPermissionDenied(next));
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (!native) return undefined;
+    refreshStatus();
+    return undefined;
+  }, [native, refreshStatus]);
 
   const onAllow = async () => {
     setBusy(true);
@@ -80,21 +42,19 @@ export default function NativePermissionGate({ children }) {
     }
   };
 
-  const onContinue = () => {
-    try {
-      localStorage.setItem(SKIP_KEY, "1");
-    } catch {
-      /* ignore */
-    }
-    setReady(true);
-  };
+  if (!native) {
+    return (
+      <YouSubPageShell titleKey="settings.row.appPermissions">
+        <Caption>{t("permissions.settingsWebOnly")}</Caption>
+      </YouSubPageShell>
+    );
+  }
 
-  if (ready) return children;
+  const allGranted = status ? allEssentialPermissionsGranted(status) : false;
 
   return (
-    <Screen className="ct-perm-gate">
-      <div className="ct-perm-gate-panel">
-        <Body className="ct-perm-gate-title">{t("permissions.introTitle")}</Body>
+    <YouSubPageShell titleKey="settings.row.appPermissions">
+      <div className="ct-perm-gate-panel" style={{ maxWidth: "none" }}>
         <Caption className="ct-perm-gate-body">{t("permissions.introBody")}</Caption>
 
         <ul className="ct-perm-gate-list">
@@ -132,6 +92,10 @@ export default function NativePermissionGate({ children }) {
           <Caption className="ct-perm-gate-denied">{t("permissions.deniedHint")}</Caption>
         ) : null}
 
+        {allGranted ? (
+          <Body style={{ textAlign: "center", color: "var(--ed-teal)" }}>{t("permissions.allGranted")}</Body>
+        ) : null}
+
         <div className="ct-perm-gate-actions">
           <Button type="button" variant="primary" size="md" disabled={busy} onClick={onAllow}>
             {busy ? t("permissions.requesting") : t("permissions.allowAccess")}
@@ -141,11 +105,8 @@ export default function NativePermissionGate({ children }) {
               {t("permissions.openSettings")}
             </Button>
           ) : null}
-          <Button type="button" variant="ghost" size="md" disabled={busy} onClick={onContinue}>
-            {t("permissions.continueWithout")}
-          </Button>
         </div>
       </div>
-    </Screen>
+    </YouSubPageShell>
   );
 }
