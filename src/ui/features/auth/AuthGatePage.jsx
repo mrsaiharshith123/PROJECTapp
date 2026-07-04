@@ -530,7 +530,9 @@ export default function AuthGatePage() {
                     gap: 4,
                   }}
                 >
-                  <CtIcon name="warning" size={12} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden />
+                  <span style={{ flexShrink: 0, marginTop: 1 }} aria-hidden>
+                    <CtIcon name="warning" size={12} />
+                  </span>
                   <span>{feedback}</span>
                 </span>
               ) : (
