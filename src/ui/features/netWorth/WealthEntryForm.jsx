@@ -25,6 +25,7 @@ import { inputClassName } from "../../index.js";
 import { LocationMapPicker } from "../../patterns/LocationMapPicker.jsx";
 import { useFormValidation } from "../../../hooks/useFormValidation.js";
 import { AREA_UNITS, entryToForm, isPhysicalCategory, MONTH_OPTIONS, resolveEntryName } from "./wealthEntryFormState.js";
+import WealthEntryExtendedFields from "./WealthEntryExtendedFields.jsx";
 
 export default function WealthEntryForm({ kind, entry, defaultCategoryId, restrictedCategories, onClose, onSave }) {
   const { t } = useTranslation();
@@ -53,8 +54,12 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
   const isVehicle = storedCategoryId === "vehicle";
   const isGold = storedCategoryId === "gold";
   const isBusiness = storedCategoryId === "business";
+  const isStock = storedCategoryId === "stocks";
+  const isMutualFund = storedCategoryId === "mutual_fund" || storedCategoryId === "sip";
+  const isCrypto = storedCategoryId === "crypto";
+  const isFdInstrument = ["fd", "rd"].includes(storedCategoryId);
   const showGrowthHistory = !isProperty && physical;
-  const includePurchaseHistory = isProperty || form.trackGrowth;
+  const includePurchaseHistory = isProperty || form.trackGrowth || isStock || isMutualFund || isCrypto;
 
   const propertyPurchaseTotal = useMemo(() => {
     if (!isProperty) return null;
@@ -231,6 +236,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
     savingRef.current = true;
     setSaving(true);
 
+    /** @type {Record<string, unknown>} */
     const payload = {
       kind: form.kind,
       categoryId: storedCategoryId,
@@ -286,6 +292,61 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       Object.assign(payload, {
         vehicleMake: form.vehicleMake.trim() || undefined,
         vehicleYear: form.vehicleYear !== "" ? Number(form.vehicleYear) : undefined,
+      });
+    }
+
+    if (isStock) {
+      Object.assign(payload, {
+        ticker: form.ticker.trim() || undefined,
+        exchange: form.exchange || "NSE",
+        quantity: form.quantity !== "" ? Number(form.quantity) : undefined,
+        buyPrice: form.buyPrice !== "" ? Number(form.buyPrice) : undefined,
+        corporateActions:
+          form.corporateActions?.length > 0
+            ? form.corporateActions.filter((a) => a.type)
+            : undefined,
+        purchaseYear: form.purchaseYear !== "" ? Number(form.purchaseYear) : undefined,
+        purchasePrice:
+          form.buyPrice !== "" && form.quantity !== ""
+            ? Number(form.buyPrice) * Number(form.quantity)
+            : form.purchasePrice !== ""
+              ? Number(form.purchasePrice)
+              : undefined,
+      });
+    }
+
+    if (isMutualFund) {
+      Object.assign(payload, {
+        fundSubType: form.fundSubType || "equity",
+        monthlySip: form.monthlySip !== "" ? Number(form.monthlySip) : undefined,
+        folio: form.folio.trim() || undefined,
+        purchaseYear: form.purchaseYear !== "" ? Number(form.purchaseYear) : undefined,
+        purchasePrice: form.purchasePrice !== "" ? Number(form.purchasePrice) : undefined,
+      });
+    }
+
+    if (isCrypto) {
+      Object.assign(payload, {
+        purchaseYear: form.purchaseYear !== "" ? Number(form.purchaseYear) : undefined,
+        purchasePrice: form.purchasePrice !== "" ? Number(form.purchasePrice) : undefined,
+      });
+    }
+
+    if (isFdInstrument) {
+      Object.assign(payload, {
+        interestRate: form.interestRate !== "" ? Number(form.interestRate) : undefined,
+        maturityDate: form.maturityDate || undefined,
+        purchasePrice: form.purchasePrice !== "" ? Number(form.purchasePrice) : undefined,
+        purchaseYear: form.purchaseYear !== "" ? Number(form.purchaseYear) : undefined,
+      });
+    }
+
+    if (form.kind === "liability") {
+      Object.assign(payload, {
+        originalLoanAmount:
+          form.originalLoanAmount !== "" ? Number(form.originalLoanAmount) : undefined,
+        purchasePrice:
+          form.originalLoanAmount !== "" ? Number(form.originalLoanAmount) : payload.purchasePrice,
       });
     }
 
@@ -709,31 +770,16 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         </>
       )}
 
-      {form.kind === "liability" && (
-        <>
-          <div>
-            <label className="ed-field-label">{t("netWorth.form.interest")}</label>
-            <input
-              type="number"
-              min="0"
-              max="60"
-              className={fieldClass}
-              value={form.interestRate}
-              onChange={(e) => setForm((f) => ({ ...f, interestRate: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="ed-field-label">{t("netWorth.form.emi")}</label>
-            <input
-              type="number"
-              min="0"
-              className={fieldClass}
-              value={form.emi}
-              onChange={(e) => setForm((f) => ({ ...f, emi: e.target.value }))}
-            />
-          </div>
-        </>
-      )}
+      <WealthEntryExtendedFields
+        form={form}
+        setForm={setForm}
+        fieldClass={fieldClass}
+        t={t}
+        isStock={isStock}
+        isMutualFund={isMutualFund}
+        isCrypto={isCrypto}
+        isFdInstrument={isFdInstrument}
+      />
       <div>
         <label className="ed-field-label">{t("netWorth.form.notes")}</label>
         <textarea

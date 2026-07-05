@@ -5,10 +5,15 @@ const STRING_KEYS = new Set([
   "vehicleMake",
   "areaUnit",
   "notes",
+  "ticker",
+  "exchange",
+  "fundSubType",
+  "folio",
 ]);
 
 const NUMERIC_KEYS = new Set([
   "value",
+  "currentValue",
   "areaMeasure",
   "weightGrams",
   "purityKarat",
@@ -17,6 +22,9 @@ const NUMERIC_KEYS = new Set([
   "longitude",
   "purchaseYear",
   "purchasePrice",
+  "quantity",
+  "buyPrice",
+  "monthlySip",
 ]);
 
 /** Whitelist asset-insight body fields; strip injection from free text. */

@@ -1,7 +1,9 @@
 {
   "version": "1.5.1",
-  "builtAt": "2026-07-05T12:49:33.083Z",
+  "builtAt": "2026-07-05T13:57:22.129Z",
   "appUrl": "https://mrsaiharshith123.github.io/PROJECTapp/",
   "apkUrl": "https://mrsaiharshith123.github.io/PROJECTapp/apk/Perovo-dev-latest.apk",
-  "apkSize": 20369697
+  "apkSize": 28687676,
+  "bundleUrl": "https://mrsaiharshith123.github.io/PROJECTapp/app-bundle.zip",
+  "bundleSize": 7176460
 }

@@ -256,6 +256,39 @@ Respond ONLY with valid JSON:
 }`;
 }
 
+function buildStockPrompt(b: Record<string, unknown>): string {
+  const ticker = String(b.ticker || b.name || "").trim();
+  const exchange = String(b.exchange || "NSE");
+  return `Search Google for ${ticker} current stock price on ${exchange} India today 2026.
+
+Holding: ${b.quantity || "?"} shares, avg buy ₹${Number(b.buyPrice || 0).toLocaleString("en-IN")}, current value ₹${Number(b.currentValue || 0).toLocaleString("en-IN")}
+
+Return ONLY compact JSON (no markdown):
+{"currentPrice":<N>,"52wHigh":<N>,"52wLow":<N>,"pe":<N>,"outlook":"bullish|neutral|bearish","holdVerdict":"hold|sell|wait","reason":"<2 sentences>","summary":"<1 sentence>","holdRecommendation":{"verdict":"hold|sell|wait","reason":"<same as reason>"}}`;
+}
+
+function buildMutualFundPrompt(b: Record<string, unknown>): string {
+  const fundType = String(b.fundSubType || "equity");
+  return `Search Google for outlook on ${fundType} mutual funds in India 2026.
+
+Fund: ${b.name || fundType} (${fundType})
+Invested: ₹${Number(b.purchasePrice || 0).toLocaleString("en-IN")}, current value ₹${Number(b.currentValue || 0).toLocaleString("en-IN")}
+${b.monthlySip ? `Monthly SIP: ₹${Number(b.monthlySip).toLocaleString("en-IN")}` : ""}
+
+Return ONLY compact JSON:
+{"categoryOutlook":"bullish|neutral|bearish","expectedReturn":<N>,"riskLevel":"low|moderate|high","recommendation":"<1 sentence>","summary":"<1 sentence>","holdRecommendation":{"verdict":"hold|sell|review","reason":"<recommendation>"}}`;
+}
+
+function buildCryptoPrompt(b: Record<string, unknown>): string {
+  return `Search Google for ${b.name} cryptocurrency price outlook India 2026 in INR.
+
+Current value entered: ₹${Number(b.currentValue || 0).toLocaleString("en-IN")}
+Purchase: ₹${Number(b.purchasePrice || 0).toLocaleString("en-IN")} in ${b.purchaseYear || "unknown"}
+
+Return ONLY compact JSON:
+{"currentPriceInr":<N>,"trend":"rising|falling|volatile","riskNote":"<1 sentence>","summary":"<1 sentence>","holdRecommendation":{"verdict":"hold|sell|review","reason":"<riskNote>"}}`;
+}
+
 const AI_DAILY_LIMITS: Record<string, number> = {
   pro: 20,
   power: 60,
@@ -401,6 +434,12 @@ Deno.serve(async (req) => {
       prompt = buildGoldPrompt(body);
     } else if (categoryId === "vehicle") {
       prompt = buildVehiclePrompt(body);
+    } else if (categoryId === "stocks") {
+      prompt = buildStockPrompt(body);
+    } else if (categoryId === "mutual_fund" || categoryId === "sip") {
+      prompt = buildMutualFundPrompt(body);
+    } else if (categoryId === "crypto") {
+      prompt = buildCryptoPrompt(body);
     } else {
       prompt = buildGenericPrompt(body);
     }

@@ -24,7 +24,8 @@ import NativePermissionGate from "./app/NativePermissionGate.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
 import BootShell from "./boot/BootShell.jsx";
-import { OfflineScreen, useOnlineStatus } from "./ui/layout/OfflineScreen.jsx";
+import { OfflineScreen } from "./ui/layout/OfflineScreen.jsx";
+import { useOnlineStatus } from "./hooks/useOnlineStatus.js";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
@@ -223,7 +224,9 @@ function AppShell() {
   const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
   const isOnline = useOnlineStatus();
   const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
-  const [hasBootstrapped, setHasBootstrapped] = useState(false);
+  const hasBootstrapped =
+    isReady ||
+    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("perovo_bootstrapped") === "1");
   const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
   const authSeededRef = useRef(false);
   const settingsRef = useRef(settings);
@@ -282,7 +285,7 @@ function AppShell() {
   }, []);
 
   useEffect(() => {
-    if (isReady) setHasBootstrapped(true);
+    if (isReady) sessionStorage.setItem("perovo_bootstrapped", "1");
   }, [isReady]);
 
   if (!isOnline && !hasBootstrapped) {

@@ -34,6 +34,16 @@ export const emptyForm = (kind, defaultCategoryId) => {
     vehicleMake: "",
     vehicleYear: "",
     trackGrowth: false,
+    ticker: "",
+    exchange: "NSE",
+    quantity: "",
+    buyPrice: "",
+    corporateActions: [],
+    fundSubType: "equity",
+    monthlySip: "",
+    folio: "",
+    originalLoanAmount: "",
+    maturityDate: "",
   };
 };
 
@@ -78,6 +88,21 @@ export function entryToForm(entry, kind, defaultCategoryId) {
     vehicleMake: entry.vehicleMake || "",
     vehicleYear: entry.vehicleYear != null ? String(entry.vehicleYear) : "",
     trackGrowth: Boolean(entry.purchaseYear || entry.purchasePrice),
+    ticker: entry.ticker || "",
+    exchange: entry.exchange || "NSE",
+    quantity: entry.quantity != null ? String(entry.quantity) : "",
+    buyPrice: entry.buyPrice != null ? String(entry.buyPrice) : "",
+    corporateActions: Array.isArray(entry.corporateActions) ? entry.corporateActions : [],
+    fundSubType: entry.fundSubType || "equity",
+    monthlySip: entry.monthlySip != null ? String(entry.monthlySip) : "",
+    folio: entry.folio || "",
+    originalLoanAmount:
+      entry.originalLoanAmount != null
+        ? String(entry.originalLoanAmount)
+        : entry.purchasePrice != null
+          ? String(entry.purchasePrice)
+          : "",
+    maturityDate: entry.maturityDate || "",
   };
 }
 

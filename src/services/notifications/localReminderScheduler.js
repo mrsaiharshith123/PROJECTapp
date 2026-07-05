@@ -33,8 +33,15 @@ function atLocalTime(ymd, hour = REMINDER_HOUR) {
 
 /**
  * Build OS schedule rows from commitments/lending reminders.
- * @param {object} input
- * @param {(key: string, params?: object) => string} t
+ * @param {object} params
+ * @param {object} params.commitments
+ * @param {object} params.lendings
+ * @param {object} params.settings
+ * @param {Function} params.getEffectiveStatus
+ * @param {Function} params.getEffectiveLendingStatus
+ * @param {string} params.todayStr
+ * @param {string[]} [params.readIds]
+ * @param {(key: string, params?: object) => string} params.t
  */
 export function buildLocalReminderSchedule({
   commitments,

@@ -41,6 +41,18 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [purityKarat]
  * @property {string} [vehicleMake]
  * @property {number} [vehicleYear]
+ * @property {number} [quantity]
+ * @property {number} [buyPrice]
+ * @property {string} [exchange]
+ * @property {string} [ticker]
+ * @property {{ date?: string, type?: string, ratio?: string, amount?: number }[]} [corporateActions]
+ * @property {number} [lastLivePrice]
+ * @property {number} [livePriceFetchedAt]
+ * @property {string} [fundSubType]
+ * @property {number} [monthlySip]
+ * @property {string} [folio]
+ * @property {number} [originalLoanAmount]
+ * @property {number} [prepaymentPenaltyPct]
  * @property {string} [aiInsight]
  * @property {string} [aiInsightDate]
  * @property {number} createdAt
@@ -159,6 +171,32 @@ export function normalizeWealthEntry(raw) {
     purityKarat: optNum(r.purityKarat),
     vehicleMake: optStr(r.vehicleMake),
     vehicleYear: optNum(r.vehicleYear),
+    quantity: optNum(r.quantity),
+    buyPrice: optNum(r.buyPrice),
+    exchange: optStr(r.exchange),
+    ticker: optStr(r.ticker),
+    corporateActions: Array.isArray(r.corporateActions)
+      ? r.corporateActions
+          .map((a) => {
+            const row = /** @type {Record<string, unknown>} */ (a || {});
+            if (!row.type) return null;
+            return {
+              date: row.date ? String(row.date) : undefined,
+              type: String(row.type),
+              ratio: row.ratio ? String(row.ratio) : undefined,
+              amount: row.amount != null ? Number(row.amount) || undefined : undefined,
+            };
+          })
+          .filter(Boolean)
+      : undefined,
+    lastLivePrice: optNum(r.lastLivePrice),
+    livePriceFetchedAt:
+      r.livePriceFetchedAt != null ? Number(r.livePriceFetchedAt) || undefined : undefined,
+    fundSubType: optStr(r.fundSubType),
+    monthlySip: optNum(r.monthlySip),
+    folio: optStr(r.folio),
+    originalLoanAmount: optNum(r.originalLoanAmount),
+    prepaymentPenaltyPct: optNum(r.prepaymentPenaltyPct),
     aiInsight: optStr(r.aiInsight),
     aiInsightDate: optStr(r.aiInsightDate),
     createdAt: Number(r.createdAt) || now,

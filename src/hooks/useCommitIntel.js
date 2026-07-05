@@ -209,7 +209,12 @@ export function useCommitIntelInternal() {
       createdAt: new Date(n.created_at).getTime(),
       source: "server",
     }));
-    const notifications = [...supplemental, ...serverNotifs, ...broadcastNotifs, ...feed].sort((a, b) => {
+    const notifications = /** @type {{ urgency?: string, createdAt?: number }[]} */ ([
+      ...supplemental,
+      ...serverNotifs,
+      ...broadcastNotifs,
+      ...feed,
+    ]).sort((a, b) => {
       const order = { critical: 0, high: 1, normal: 2, low: 3 };
       const d = (order[a.urgency] ?? 9) - (order[b.urgency] ?? 9);
       if (d !== 0) return d;
@@ -264,10 +269,11 @@ export function useCommitIntelInternal() {
     getEffectiveStatus,
   ]);
 
-  // devTick intentionally invalidates dev override layer when panel toggles
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- devTick is not read inside memo; it forces recomputation
   return useMemo(
-    () => ({ ...applyDevOverrideToCommitIntel(rawIntel), reloadNotifications }),
+    () => {
+      void devTick;
+      return { ...applyDevOverrideToCommitIntel(rawIntel), reloadNotifications };
+    },
     [rawIntel, devTick, reloadNotifications],
   );
 }

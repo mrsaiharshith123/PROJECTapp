@@ -16,6 +16,15 @@ export const PHYSICAL_ASSET_TYPES = [
   "business",
 ];
 
+/** Categories that support Google AI market / outlook analysis on the detail page. */
+export const ASSET_AI_INSIGHT_TYPES = [
+  ...PHYSICAL_ASSET_TYPES,
+  "stocks",
+  "mutual_fund",
+  "sip",
+  "crypto",
+];
+
 const PROPERTY_IDS = new Set([
   "property",
   "property_residential",
@@ -232,6 +241,26 @@ export function buildAssetInsightPrompt(entry, t, opts = {}) {
     if (entry.purityKarat) lines.push(`Purity: ${entry.purityKarat}K`);
   }
 
+  if (entry.categoryId === "stocks") {
+    if (entry.ticker) lines.push(`Ticker: ${entry.ticker} (${entry.exchange || "NSE"})`);
+    if (entry.quantity) lines.push(`Quantity: ${entry.quantity}`);
+    if (entry.buyPrice) lines.push(`Avg buy price: ₹${Number(entry.buyPrice).toLocaleString("en-IN")}`);
+    lines.push(
+      `Search for ${entry.ticker || entry.name} current price on NSE/BSE. Return structured outlook with hold verdict.`,
+    );
+  }
+
+  if (entry.categoryId === "mutual_fund" || entry.categoryId === "sip") {
+    if (entry.fundSubType) lines.push(`Fund type: ${entry.fundSubType}`);
+    if (entry.monthlySip) lines.push(`Monthly SIP: ₹${Number(entry.monthlySip).toLocaleString("en-IN")}`);
+    lines.push(`Search for outlook on ${entry.fundSubType || "equity"} mutual funds in India 2026.`);
+  }
+
+  if (entry.categoryId === "crypto") {
+    lines.push("Indian crypto tax: flat 30% on gains, no loss offset.");
+    lines.push(`Search for ${entry.name} price outlook India 2026.`);
+  }
+
   const depth = PROPERTY_IDS.has(entry.categoryId)
     ? `Write 4–6 sentences for an Indian property owner. Cover: (1) is it worth holding longer vs selling, (2) liquidity and emergency-access risks, (3) local infra / development outlook for this area (mention realistic project types — highways, industrial parks, RERA residential — not invented names), (4) inflation-adjusted return context, (5) one concrete next step (title check, rent comparison, or diversification). Be specific to the location and numbers given.`
     : `Be concise (2–3 sentences). Cover appreciation outlook, liquidity, and one practical action.`;
@@ -442,6 +471,17 @@ function propertyInsightBody(fields, extra = {}) {
     marketRatePerSqyd: fields.marketRatePerSqyd ?? null,
     areaMeasure: fields.areaMeasure ?? null,
     areaUnit: fields.areaUnit || "sqyd",
+    weightGrams: fields.weightGrams ?? null,
+    purityKarat: fields.purityKarat ?? null,
+    vehicleMake: fields.vehicleMake ?? null,
+    vehicleYear: fields.vehicleYear ?? null,
+    ticker: fields.ticker ?? null,
+    exchange: fields.exchange ?? null,
+    quantity: fields.quantity ?? null,
+    buyPrice: fields.buyPrice ?? null,
+    fundSubType: fields.fundSubType ?? null,
+    monthlySip: fields.monthlySip ?? null,
+    folio: fields.folio ?? null,
     ...extra,
   };
 }

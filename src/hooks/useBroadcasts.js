@@ -32,7 +32,9 @@ export function useBroadcasts() {
     setUserNotifications(userNotifs);
   }, [isLoggedIn, user, effectiveSubscriptionTier]);
 
-  loadRef.current = load;
+  useEffect(() => {
+    loadRef.current = load;
+  }, [load]);
 
   useEffect(() => {
     queueMicrotask(() => {

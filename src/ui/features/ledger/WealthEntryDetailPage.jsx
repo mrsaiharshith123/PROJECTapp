@@ -6,7 +6,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { buildWealthEntryIntel } from "../../../engines/wealthEntryIntel.js";
-import { fetchAssetInsight, fetchPropertyValueHistory, PHYSICAL_ASSET_TYPES, resolveAssetInsightError, clearPropertyAiCache } from "../../../services/ai/assetInsight.js";
+import { fetchAssetInsight, fetchPropertyValueHistory, ASSET_AI_INSIGHT_TYPES, resolveAssetInsightError, clearPropertyAiCache } from "../../../services/ai/assetInsight.js";
 import { expandMilestonesToSeries } from "../../../utils/netWorth/propertyValueHistory.js";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import MarketAnalysis from "./MarketAnalysis.jsx";
@@ -19,6 +19,10 @@ import GoldDetailSections from "./detail/GoldDetailSections.jsx";
 import FdDetailSections from "./detail/FdDetailSections.jsx";
 import VehicleDetailSections from "./detail/VehicleDetailSections.jsx";
 import LiabilityDetailSections from "./detail/LiabilityDetailSections.jsx";
+import StockDetailSections from "./detail/StockDetailSections.jsx";
+import MutualFundDetailSections from "./detail/MutualFundDetailSections.jsx";
+import CryptoDetailSections from "./detail/CryptoDetailSections.jsx";
+import EpfDetailSections from "./detail/EpfDetailSections.jsx";
 
 const HISTORY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -149,8 +153,19 @@ export default function WealthEntryDetailPage() {
           await refreshValueHistory(entryRow, rate != null ? Number(rate) : undefined);
         }
       }
+      if (entryRow?.categoryId === "stocks" && result.source === "ai" && result.marketData?.currentPrice) {
+        const price = Number(result.marketData.currentPrice);
+        const qty = Number(entryRow.quantity) || 0;
+        if (price > 0) {
+          await updateEntry(entryRow.id, {
+            lastLivePrice: price,
+            livePriceFetchedAt: Date.now(),
+            ...(qty > 0 ? { value: Math.round(price * qty) } : {}),
+          });
+        }
+      }
     },
-    [t, refreshValueHistory, saveHistoryFromMilestones],
+    [t, refreshValueHistory, saveHistoryFromMilestones, updateEntry],
   );
 
   useEffect(() => {
@@ -176,7 +191,8 @@ export default function WealthEntryDetailPage() {
 
   const isAsset = entry.kind === "asset";
   const valueColor = isAsset ? "var(--ed-green)" : "var(--ed-red)";
-  const isPhysical = PHYSICAL_ASSET_TYPES.includes(entry.categoryId);
+  const chartColor = intel?.chartColor || (isAsset ? "var(--ed-gold)" : "var(--ed-red)");
+  const hasAiInsight = ASSET_AI_INSIGHT_TYPES.includes(entry.categoryId);
   const isAutoEstimated = Boolean(entry.valueAutoEstimated);
 
   const handleOpenLiveMarket = () => {
@@ -254,7 +270,13 @@ export default function WealthEntryDetailPage() {
       ? "wealthDetail.market.intro.gold"
       : entry.categoryId === "vehicle"
         ? "wealthDetail.market.intro.vehicle"
-        : "wealthDetail.market.intro.generic";
+        : entry.categoryId === "stocks"
+          ? "wealthDetail.market.intro.stock"
+          : entry.categoryId === "mutual_fund" || entry.categoryId === "sip"
+            ? "wealthDetail.market.intro.mf"
+            : entry.categoryId === "crypto"
+              ? "wealthDetail.market.intro.crypto"
+              : "wealthDetail.market.intro.generic";
 
   const tierLabel =
     intel?.propertyIntel?.tier === "metro"
@@ -305,7 +327,8 @@ export default function WealthEntryDetailPage() {
         ) : null}
         <ValueHistoryChart
           series={intel.valueSeries}
-          color={valueColor}
+          milestones={intel.chartMilestones}
+          color={chartColor}
           formatAmount={formatAmount}
           t={t}
           areaUnit={entry.areaUnit || "sqyd"}
@@ -386,6 +409,22 @@ export default function WealthEntryDetailPage() {
         <GoldDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
       ) : null}
 
+      {intel.stockIntel ? (
+        <StockDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
+      ) : null}
+
+      {intel.mfIntel ? (
+        <MutualFundDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
+      ) : null}
+
+      {intel.cryptoIntel ? (
+        <CryptoDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
+      ) : null}
+
+      {intel.epfIntel ? (
+        <EpfDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
+      ) : null}
+
       {intel.fdIntel ? (
         <FdDetailSections entry={entry} intel={intel} formatAmount={formatAmount} t={t} />
       ) : null}
@@ -414,7 +453,7 @@ export default function WealthEntryDetailPage() {
         </div>
       ) : null}
 
-      {isPhysical ? (
+      {hasAiInsight ? (
         <div className="ed-ins-story ed-live-market-wrap" style={{ borderBottom: "none" }}>
           {!liveMarketOpen ? (
             <button type="button" className="ed-live-market-trigger" onClick={handleOpenLiveMarket}>

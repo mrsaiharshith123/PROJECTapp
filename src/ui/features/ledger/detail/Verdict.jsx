@@ -1,5 +1,5 @@
 function verdictPillClass(verdict) {
-  if (verdict === "hold" || verdict === "hold_moderate" || verdict === "hold_mature") return "hold";
+  if (verdict === "hold" || verdict === "hold_moderate" || verdict === "hold_mature" || verdict === "hold_monitor") return "hold";
   if (verdict === "wait") return "wait";
   if (verdict === "review") return "review";
   return "neutral";
@@ -7,6 +7,7 @@ function verdictPillClass(verdict) {
 
 function verdictLabelKey(verdict) {
   if (verdict === "hold_mature") return "wealthDetail.verdict.holdMature";
+  if (verdict === "hold_monitor") return "wealthDetail.verdict.holdMonitor";
   if (verdict === "hold" || verdict === "hold_moderate") return "wealthDetail.verdict.hold";
   if (verdict === "wait") return "wealthDetail.verdict.wait";
   if (verdict === "review") return "wealthDetail.verdict.review";
