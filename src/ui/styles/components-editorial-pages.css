@@ -1,4 +1,7 @@
-/* Direction H — Ledger, bills, profile glimpse, shared page chrome */
+/* Direction H — Ledger,
+ bills,
+ profile glimpse,
+ shared page chrome */
 
 /* ── Masthead: date + avatar pinned top-right (home uses .ed-masthead-top) ── */
 html[data-ui="ct"] .ed-masthead-top {
@@ -286,6 +289,7 @@ html[data-ui="ct"] .ed-glimpse-logout {
 
 /* ── Ledger group lists ── */
 html[data-ui="ct"] .ed-paper .pos-group-header,
+
 html[data-ui="ct"] .ed-page-full .pos-group-header {
   display: flex;
   justify-content: space-between;
@@ -300,7 +304,7 @@ html[data-ui="ct"] .ed-page-full .pos-group-header {
   color: var(--ed-ink-faint);
 }
 
-html[data-ui="ct"] .ed-paper .pos-group-header .ct-numeral {
+html[data-ui="ct"] .ed-paper .pos-group-header .ed-numeral {
   font-family: var(--ed-font-serif);
   font-size: 13px;
   font-weight: 600;
@@ -311,6 +315,7 @@ html[data-ui="ct"] .ed-paper .pos-group-header .ct-numeral {
 }
 
 html[data-ui="ct"] .ed-paper .pos-group-card,
+
 html[data-ui="ct"] .ed-page-full .pos-group-card {
   margin: 0 var(--ed-page-x) var(--ed-space-3);
   border: 1px solid var(--ed-rule);
@@ -322,46 +327,9 @@ html[data-ui="ct"] .ed-page-full .pos-group-card {
   background: var(--ed-surface);
 }
 
-html[data-ui="ct"] .ed-paper .ct-nw-entry-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--ed-r-sm);
-  background: var(--ed-gold-soft);
-  color: var(--ed-gold);
-  flex-shrink: 0;
-}
-
-html[data-ui="ct"] .ed-paper > .ct-stack > .ct-btn-ghost.w-full {
-  display: flex;
-  width: calc(100% - 36px);
-  margin: 4px 18px 16px;
-}
-
 /* ── Bills page (under ledger) ── */
 html[data-ui="ct"] .ed-bills-page {
   padding-bottom: 8px;
-}
-
-html[data-ui="ct"] .ed-bills-page .ct-money-bills-list {
-  padding: 0 18px 16px;
-  gap: 12px;
-}
-
-html[data-ui="ct"] .ed-bills-page .ct-filter-row-search {
-  width: 100%;
-}
-
-html[data-ui="ct"] .ed-bills-page .ct-bill-card {
-  margin-bottom: 0;
-}
-
-html[data-ui="ct"] .ed-bills-page .ct-money-bills-hero {
-  margin: 0 18px 10px;
-  border-radius: var(--ed-r-lg);
-  border: 0.5px solid var(--ed-rule);
 }
 
 html[data-ui="ct"] .ed-bills-actions {
@@ -370,102 +338,4 @@ html[data-ui="ct"] .ed-bills-actions {
   gap: 8px;
   padding: 12px 18px 14px;
   border-bottom: 1px solid var(--ed-rule);
-}
-
-html[data-ui="ct"] .ed-bills-actions .ct-btn {
-  width: 100%;
-  min-width: 0;
-  font-size: 11px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-html[data-ui="ct"] .ed-bills-actions .ct-btn:last-child:nth-child(odd) {
-  grid-column: 1 / -1;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-bills-hero {
-  margin: 0;
-  padding: 16px 18px 14px;
-  border-radius: 0;
-  border: none;
-  border-bottom: 1px solid var(--ed-rule);
-  background: transparent;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-bills-hero .ct-hero-label {
-  font-family: var(--ed-font);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ed-gold);
-  margin: 0 0 6px;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-hero-amount {
-  font-family: var(--ed-font-serif);
-  font-size: clamp(28px, 6vw, 36px);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--ed-red);
-  margin: 0 0 6px;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-commit-bar {
-  display: flex;
-  height: 3px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--ed-rule);
-  margin: 8px 0;
-}
-
-html[data-ui="ct"] .ct-money-commit-seg.paid { background: var(--ed-green); }
-html[data-ui="ct"] .ct-money-commit-seg.pending { background: var(--ed-amber); }
-html[data-ui="ct"] .ct-money-commit-seg.overdue { background: var(--ed-red); }
-
-html[data-ui="ct"] .ed-paper .ct-money-hero-sub {
-  font-family: var(--ed-font-news);
-  font-size: 11px;
-  font-style: italic;
-  color: var(--ed-ink-faint);
-  margin: 0;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-bills-list {
-  padding: 0 18px;
-}
-
-html[data-ui="ct"] .ed-paper .ct-money-import-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--ed-rule);
-}
-
-/* ── Page shell (bills wrapper) ── */
-html[data-ui="ct"] .ed-paper .ct-page-shell {
-  padding: 0;
-  padding-bottom: 0;
-  max-width: none;
-}
-
-html[data-ui="ct"] .ed-paper .ct-page-shell-head {
-  display: none;
-}
-
-html[data-ui="ct"] .ed-paper .ct-page-shell-body {
-  gap: 0;
-}
-
-/* ── Section padding inside ed-paper pages ── */
-html[data-ui="ct"] .ed-paper > .ct-stack {
-  gap: 0;
-}
-
-html[data-ui="ct"] .ed-paper .ct-page {
-  gap: 0;
-  padding-bottom: 0;
 }

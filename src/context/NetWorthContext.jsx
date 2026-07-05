@@ -93,7 +93,7 @@ export function NetWorthProvider({ children }) {
 
   const profileEntries = useMemo(
     () => filterWealthByProfile(state.entries, profileId),
-    [state.entries, profileId, settings],
+    [state.entries, profileId],
   );
 
   const recordDailySnapshot = useCallback(() => {

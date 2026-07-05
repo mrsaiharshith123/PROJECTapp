@@ -1,86 +1,92 @@
-# Design system — Cyber Glass Fintech OS
+# Design System — Direction H
 
 ## Identity
 
-**Cyber Glassmorphism + Neon Fintech Minimalism** — premium futuristic finance OS with dark neon aesthetics, soft glass surfaces, floating depth, and selective violet glow. Not playful, not flat Material, not heavy enterprise dashboards.
+**Direction H — Editorial Financial OS** — warm charcoal editorial aesthetic. Designed for Indian household finance: bills, property, EMIs, lending between family. Not a trading platform. Trust, legibility, and seriousness over spectacle.
 
-## Philosophy
+## Typography
 
-- **One visual home**: `src/ui/` owns all presentation.
-- **Tokens first**: `ui/styles/tokens.css`, `components.css`, `theme-light.css`.
-- **Themes**: `data-theme="light" | "dark"` on `<html>`; Profile → Appearance.
-- **Icons**: Phosphor via `CtIcon` only — no emojis as UI icons.
-- **Typography**: Inter (with regional Noto stacks for Indic scripts).
+| Role | Font | Usage |
+|------|------|-------|
+| Display / headlines | Fraunces (serif, italic) | Page titles, hero numbers, financial figures |
+| Body narrative | Newsreader (serif) | Insights, explanatory text, captions |
+| UI / labels | Inter | Form labels, nav, buttons, metadata |
+| Indic scripts | Noto Sans (23 language stacks) | Regional language support |
 
-## Financial Life palette (app-wide)
+## Colour palette
 
-Home and Profile financial hero cards define the global look. Semantic tokens in `tokens.css`:
+| Token | Dark mode | Light mode | Role |
+|-------|-----------|------------|------|
+| `--ed-bg` | `#16140f` | `#faf8f3` | Page background |
+| `--ed-surface` | `#1c1a13` | `#f2efe8` | Cards, panels |
+| `--ed-ink` | `#f0ebe0` | `#1a1814` | Primary text |
+| `--ed-gold` | `#e3c489` | `#b08642` | Brand accent |
+| `--ed-green` | `#5ec795` | `#147a57` | Positive / on-track |
+| `--ed-red` | `#e89490` | `#b8453f` | Danger / overdue |
+| `--ed-amber` | `#e3b06a` | `#a06020` | Warning / behind |
 
-| Token | Role |
-|-------|------|
-| `--ct-life-grad` | Violet → emerald hero gradient (month card, net worth, profile) |
-| `--ct-life-grad-surface` | Card / modal glass surface |
-| `--ct-life-grad-panel` | Metric panels and inset blocks |
-| `--ct-life-inset-bg` / `--ct-life-inset-border` | Chips, metrics, tool tiles, hero insets |
-| `--ct-life-glow` | Top-right radial violet glow on hero cards |
-| `--ct-life-shadow` | Card depth + soft violet halo |
-| `--ct-life-footer-wash` | Sparkline / chart footer fade |
+## Theme modes
 
-Dark base: violet `#5B4DFF` at ~14–22% opacity over midnight indigo, with emerald `#10B981` at ~4–8% for balance. Light theme mirrors the same structure with softer washes.
+Three modes selectable under Profile → Appearance:
 
-**App-wide propagation:** core tokens (`--ct-accent`, `--ct-text`, `--ct-success`), all `.ct-btn` / `.ct-chip` / `.ct-input` classes, and Tailwind `gray` / `slate` / `indigo` / `violet` / `emerald` utilities (via `tailwind.config.js` → `--ct-tw-*` bridge vars) resolve to the Financial Life palette — including legacy forms, lending, and tools that still use Tailwind color classes.
+| Mode | `data-theme` | Background |
+|------|-------------|------------|
+| Dark (default) | — (omitted) | `#16140f` warm charcoal |
+| Light | `light` | `#faf8f3` warm cream |
+| AMOLED | `amoled` | `#000000` true black |
 
-## Color palette (dark)
+System preference is also available; it resolves to dark or light based on the device.
 
-| Role | Token | Hex |
-|------|-------|-----|
-| Background | `--ct-bg` | `#07070A` Obsidian |
-| Surface / card | `--ct-surface` | `#121225` Midnight Indigo |
-| Primary | `--ct-accent` | `#7C4DFF` Electric Violet |
-| Life violet | `--ct-life-violet` | `#5B4DFF` |
-| Glow accent | `--ct-accent-muted` | `#9B6DFF` Neon Lavender |
-| Success | `--ct-success` | `#10B981` Life emerald |
-| Warning | `--ct-warning` | `#FFB020` Soft Gold |
-| Text primary | `--ct-text` | `#F0EFF8` Life heading |
-| Text secondary | `--ct-text-secondary` | `#A8A5C0` Lavender gray |
+## Token system
 
-## Surface system
+All tokens in `src/ui/styles/tokens.css`. Use `var(--ed-*)` everywhere — never hardcode hex values in JSX or CSS.
 
-| Class / component | Style | Use |
-|-------------------|-------|-----|
-| `.ct-card`, `.ct-card-hero`, `.ct-modal-panel` | **Financial Life glass** — `--ct-life-grad-surface` / `--ct-life-grad-hero` | Dashboards, analytics, modals |
-| `.ct-hero-month-financial`, `.ct-nw-hero` | **Financial Life hero** — `--ct-life-grad` + glow + shadow | Home month card, profile net worth |
-| `.ct-metric`, `.ct-stat-cell`, `.ct-tool-tile`, `.ct-inset` | **Life insets** — `--ct-life-inset-bg` | Metrics, lending, health, dues |
-| `.ct-segmented`, `.ct-chip`, filter rows | **Frost containers** — `--ct-life-glass` | Filters, segmented controls, search |
+## Class system
 
-## Controls
+All component classes use the `ed-` prefix. Class definitions live in:
 
-| Class | Style |
-|-------|-------|
-| `.ct-btn-primary`, `.ct-btn-outline` | **Life gradient pills** — `--ct-life-btn-grad`, glow shadow |
-| `.ct-nav-fab`, `.ct-fab` | **Quantum FAB** — circular, strong neon glow |
-| `.ct-btn-ghost` | **Ghost pills** — transparent outline, secondary actions |
+| File | Purpose |
+|------|---------|
+| `tokens.css` | CSS custom properties |
+| `components-dh.css` | Core layout, rows, sections, navigation |
+| `components-editorial.css` | Screen-specific and feature components |
+| `components-editorial-home.css` | Home screen and navbar |
+| `components-editorial-pages.css` | Page-level layout |
+| `components-charts.css` | Chart and data visualisation |
+| `components-controls.css` | Forms, inputs, buttons |
+| `components-shell.css` | App shell, screen wrappers |
 
-## Navigation
+## Icons
 
-**Floating neon dock** — `.ct-bottom-nav` is a glass pill floating above the safe area with blur, violet border glow, active tab indicator, and elevated center FAB. Desktop uses `.ct-top-nav` (42rem inner max-width).
+Phosphor via `CtIcon` only — no emoji as UI icons.
 
-## Layout shell
+## Spacing
 
-Mobile-first centered column: `MainContent` in `Screen.jsx` uses Tailwind `max-w-lg` (~512px). Laptop/full-width layout is deferred.
+```
+--ed-page-x:      16px   (horizontal page padding)
+--ed-page-top:    12px   (header top padding)
+--ed-space-1..12: 4px to 48px scale
+--ed-r-sm/md/lg/xl/full: 6 / 10 / 14 / 20 / 9999px
+```
 
-## Charts
+## Primitives
 
-Neon minimal analytics via `getChartTheme()` + `.ct-chart-plot` — thin glowing lines/bars, soft dashed grid, minimal labels.
+| Component | Class output |
+|-----------|-------------|
+| `<Card>` | `ed-card` |
+| `<Button variant="primary">` | `ed-btn ed-btn-primary` |
+| `<Text variant="h1">` | `ed-display` |
+| `<Badge tone="success">` | `ed-pill ed-pill-green` |
 
-## Outside `src/ui/`
-
-Only **`ct-*` layout** classes on wrappers (`ct-page`, `ct-stack`, `ct-row`).
-
-## Audits
+## Auditing
 
 ```bash
-npm run audit:design
-npm run audit:ui
-npm run audit:styles
+# Check for any remaining ct- class usage in JSX
+grep -rn '"ct-\| ct-' src/ui --include="*.jsx" | grep -v "router-dom\|//"
+
+# Check for hardcoded hex in inline styles
+grep -rn 'style=.*#[0-9a-fA-F]' src/ui --include="*.jsx"
+
+# Check for old Tailwind color classes
+grep -rn 'text-\|bg-\|border-' src/ui --include="*.jsx" | grep -E "emerald|violet|indigo|slate-[0-9]"
 ```

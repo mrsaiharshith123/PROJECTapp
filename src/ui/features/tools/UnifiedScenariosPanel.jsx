@@ -114,7 +114,10 @@ export default function UnifiedScenariosPanel() {
           </div>
           <div className="ed-inset">
             <p className="ed-stat-label">{t("netWorth.sim.delta")}</p>
-            <p className={`ed-stat-value ed-numeral ${wealthResult.deltaNetWorth >= 0 ? "text-emerald-500" : "text-red-400"}`}>
+            <p
+              className="ed-stat-value ed-numeral"
+              style={{ color: wealthResult.deltaNetWorth >= 0 ? "var(--ed-green)" : "var(--ed-red)" }}
+            >
               {wealthResult.deltaNetWorth >= 0 ? "+" : ""}
               {formatInr(wealthResult.deltaNetWorth)}
             </p>

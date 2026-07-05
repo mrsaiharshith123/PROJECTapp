@@ -1,17 +1,4 @@
 {
-  "note": "Temporary — remove before launch. Add rows when you ship a new APK for update testing.",
-  "releases": [
-    {
-      "version": "1.0.0",
-      "builtAt": "2026-06-20T16:01:01.583Z",
-      "label": "1.0.0 — latest",
-      "androidApkUrl": "https://mrsaiharshith123.github.io/PROJECTapp/apk/Perovo-dev-latest.apk"
-    },
-    {
-      "version": "0.9.0",
-      "builtAt": "2026-06-01T00:00:00.000Z",
-      "label": "0.9.0 — update test shell (one button only)",
-      "androidApkUrl": "https://github.com/mrsaiharshith123/PROJECTapp/releases/download/v0.9.0/Perovo-dev-0.9.0.apk"
-    }
-  ]
+  "note": "Release history for in-app update UI. Add rows when shipping a new APK.",
+  "releases": []
 }

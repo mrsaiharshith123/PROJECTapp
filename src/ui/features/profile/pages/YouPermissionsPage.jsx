@@ -28,7 +28,7 @@ export default function YouPermissionsPage() {
 
   useEffect(() => {
     if (!native) return undefined;
-    refreshStatus();
+    queueMicrotask(() => refreshStatus());
     return undefined;
   }, [native, refreshStatus]);
 

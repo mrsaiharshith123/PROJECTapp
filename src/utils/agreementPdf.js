@@ -1,4 +1,5 @@
 import { numberToWords } from "../engines/lendingAgreement.js";
+import { sanitizeName, sanitizeText } from "./sanitize.js";
 
 /** @returns {Promise<typeof import("pdfmake/build/pdfmake.js")>} */
 async function loadPdfMake() {
@@ -14,9 +15,9 @@ async function loadPdfMake() {
 
 /** @param {object} lending @param {object} [settings] */
 export function buildAgreementDocDefinition(lending, settings = {}) {
-  const lender = lending.lenderFullName || settings?.displayName || "Lender";
-  const borrower = lending.borrowerFullName || lending.personName || "Borrower";
-  const city = lending.agreementCity || "India";
+  const lender = sanitizeName(lending.lenderFullName || settings?.displayName || "Lender");
+  const borrower = sanitizeName(lending.borrowerFullName || lending.personName || "Borrower");
+  const city = sanitizeText(lending.agreementCity || "India", 80);
   const amount = Number(lending.principalAmount ?? lending.totalAmount) || 0;
   const amountWords = numberToWords(amount);
   const penalty = lending.penaltyRatePerMonth || 2;

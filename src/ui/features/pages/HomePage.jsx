@@ -4,6 +4,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { getTier } from "../../../utils/tierAccess.js";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import HomeEditorialHeader from "../home/HomeEditorialHeader.jsx";
+import { EngineGuard } from "../../primitives/EngineGuard.jsx";
 import HomeFinancialPulse from "../home/HomeFinancialPulse.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
@@ -41,14 +42,20 @@ const Home = () => {
       />
 
       <HomeEditorialHeader tier={tier} />
-      <HomeFinancialPulse />
+      <EngineGuard>
+        <HomeFinancialPulse />
+      </EngineGuard>
 
       <div className="ed-home-body">
         <HomeNetPositionHero />
         <HomeCategoryTiles />
         <HomeQuickActions />
-        <HomeNeedsAttention />
-        <HomeUpcomingSection />
+        <EngineGuard>
+          <HomeNeedsAttention />
+        </EngineGuard>
+        <EngineGuard>
+          <HomeUpcomingSection />
+        </EngineGuard>
         <HomeSavingGoal />
         <HomeToolsSection />
       </div>

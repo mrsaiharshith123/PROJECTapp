@@ -1,4 +1,5 @@
 import { trustScoreForPerson, lendingTrustByPerson, trustSummaryLine } from "./lendingTrust.js";
+import { sanitizeName } from "../utils/sanitize.js";
 
 const ONES = [
   "",
@@ -59,14 +60,16 @@ function formatFullDate(d = new Date()) {
 
 function partyNames(lending, settings) {
   const isLent = lending.type === "lent";
-  const borrower =
+  const borrower = sanitizeName(
     lending.borrowerFullName ||
-    (isLent ? lending.personName : settings.displayName) ||
-    "Borrower";
-  const lender =
+      (isLent ? lending.personName : settings.displayName) ||
+      "Borrower",
+  );
+  const lender = sanitizeName(
     lending.lenderFullName ||
-    (isLent ? settings.displayName : lending.personName) ||
-    "Lender";
+      (isLent ? settings.displayName : lending.personName) ||
+      "Lender",
+  );
   return { borrower, lender };
 }
 

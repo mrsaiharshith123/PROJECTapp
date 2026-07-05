@@ -16,6 +16,7 @@ const warnings = [];
 function walkCss(dir, acc = []) {
   if (!fs.existsSync(dir)) return acc;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === "_archive") continue;
     const p = path.join(dir, e.name);
     if (e.isDirectory()) walkCss(p, acc);
     else if (e.name.endsWith(".css")) acc.push(p);
@@ -27,7 +28,7 @@ function rel(file) {
   return path.relative(ROOT, file).replace(/\\/g, "/");
 }
 
-function auditFile(file) {
+function auditFile(file, definedGlobal) {
   const r = rel(file);
   const lines = fs.readFileSync(file, "utf8").split("\n");
 
@@ -74,13 +75,9 @@ function auditFile(file) {
   }
 
   const undefinedVars = [...fs.readFileSync(file, "utf8").matchAll(/var\((--[a-zA-Z0-9-]+)\)/g)].map((m) => m[1]);
-  const defined = new Set(
-    [...fs.readFileSync(file, "utf8").matchAll(/^(\s*)?(--[a-zA-Z0-9-]+)\s*:/gm)].map((m) => m[2]),
-  );
-  const tokensFile = path.join(ROOT, "src/ui/styles/tokens.css");
-  if (fs.existsSync(tokensFile)) {
-    const tok = fs.readFileSync(tokensFile, "utf8");
-    for (const m of tok.matchAll(/^(\s*)?(--[a-zA-Z0-9-]+)\s*:/gm)) defined.add(m[2]);
+  const defined = new Set(definedGlobal);
+  for (const m of fs.readFileSync(file, "utf8").matchAll(/^(\s*)?(--[a-zA-Z0-9-]+)\s*:/gm)) {
+    defined.add(m[2]);
   }
   for (const v of undefinedVars) {
     if (!defined.has(v) && !v.startsWith("--tw-")) {
@@ -100,7 +97,14 @@ const cssFiles = [
 ];
 const uniqueCss = [...new Set(cssFiles)];
 
-for (const f of uniqueCss) auditFile(f);
+/** Collect --var definitions across the whole style tree (cross-file var() is valid). */
+const globalDefined = new Set();
+for (const f of uniqueCss) {
+  const src = fs.readFileSync(f, "utf8");
+  for (const m of src.matchAll(/^(\s*)?(--[a-zA-Z0-9-]+)\s*:/gm)) globalDefined.add(m[2]);
+}
+
+for (const f of uniqueCss) auditFile(f, globalDefined);
 
 const report = {
   errors: errors.length,

@@ -1,0 +1,48 @@
+name: Launch Readiness Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --legacy-peer-deps
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+        env:
+          VITE_SUPABASE_URL: https://test.supabase.co
+          VITE_SUPABASE_ANON_KEY: test-anon-key
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://test.supabase.co
+          VITE_SUPABASE_ANON_KEY: test-anon-key
+      - name: Check bundle size
+        run: |
+          du -sh dist/assets/*.js | sort -h
+          echo "Total JS:"
+          du -ch dist/assets/*.js | tail -1
+      - name: Verify no ct- classes in JSX
+        run: |
+          if grep -rn '"ct-\| ct-' src/ui --include="*.jsx" | grep -v "router-dom\|//"; then
+            echo "FAIL: ct- classes found in JSX"
+            exit 1
+          fi
+          echo "PASS: No ct- classes in JSX"
+      - name: Verify no hardcoded hex in UI
+        run: |
+          if grep -rn 'style=.*#[0-9a-fA-F]\{3,6\}' src/ui --include="*.jsx"; then
+            echo "WARN: Hardcoded hex colors found"
+          fi
+      - name: Verify no console.log in production files
+        run: |
+          if grep -rn 'console\.log' src --include="*.js" --include="*.jsx" | grep -v devSubscription | grep -v "//"; then
+            echo "WARN: console.log found outside dev files"
+          fi

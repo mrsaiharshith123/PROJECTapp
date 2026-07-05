@@ -519,7 +519,7 @@ export function saveGoalsToStorage(goals) {
   }
 }
 
-const COLOR_SCHEMES = ["light", "dark", "system"];
+const COLOR_SCHEMES = ["light", "dark", "amoled", "system"];
 
 const PROFILE_COLORS = ["indigo", "violet", "emerald", "amber", "rose", "sky"];
 

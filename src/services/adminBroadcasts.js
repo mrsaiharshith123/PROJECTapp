@@ -1,5 +1,6 @@
 import { getSupabaseClient } from "./supabase/auth.js";
 import { formatAuthError } from "../utils/authErrors.js";
+import { invokeEdgeFunction } from "./supabase/invokeEdgeFunction.js";
 
 /**
  * @param {unknown} err
@@ -63,6 +64,14 @@ export async function createAdminBroadcast(payload) {
     .single();
 
   if (error) throwAdminError(error);
+
+  invokeEdgeFunction("send-broadcast-push", {
+    body: { broadcast_id: data.id },
+    retries: 0,
+  }).catch(() => {
+    /* push is optional until FCM_SERVICE_ACCOUNT_JSON is set */
+  });
+
   return data;
 }
 

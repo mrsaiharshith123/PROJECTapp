@@ -2,9 +2,9 @@
 /**
  * Roger all — full project health pass (run when user says "roger all").
  *
- *   npm run roger:all
+ *   npm run roger:all              # strict by default
  *   npm run roger:all -- --fix     # ESLint auto-fix before audit
- *   npm run roger:all -- --strict  # Fail on advisories too
+ *   npm run roger:all -- --relaxed # advisories do not fail the gate
  */
 import { spawnSync } from "child_process";
 import path from "path";
@@ -14,7 +14,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const args = process.argv.slice(2);
 const FIX = args.includes("--fix");
-const STRICT = args.includes("--strict");
+const RELAXED = args.includes("--relaxed");
+const STRICT = !RELAXED;
 
 const C = {
   reset: "\x1b[0m",
@@ -50,7 +51,7 @@ if (FIX) {
 steps.push(
   ["Sync i18n keys from en.js", "sync:i18n", []],
   ["Docs vs code (implementation status)", "audit:docs-sync", []],
-  ["Full production audit gate", "audit", STRICT ? ["--", "--strict"] : []],
+  ["Full production audit gate", RELAXED ? "audit:relaxed" : "audit", []],
 );
 
 let failed = 0;

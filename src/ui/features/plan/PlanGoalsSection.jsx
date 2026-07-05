@@ -139,12 +139,12 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
   const behindCount = enriched.filter((r) => r.intel.status === "behind").length;
   const heroColor =
     activeGoals.length === 0
-      ? "#2dd4bf"
+      ? "var(--ed-green)"
       : behindCount > 0
-        ? "#f87171"
+        ? "var(--ed-red)"
         : onTrackCount < activeGoals.length
-          ? "#fbbf24"
-          : "#2dd4bf";
+          ? "var(--ed-amber)"
+          : "var(--ed-green)";
 
   const nearest = sorted[0];
   const topGoal = sorted.find((r) => r.intel.status === "behind") || nearest;
@@ -207,7 +207,7 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
               ) : null}
             </div>
             <div className="text-right shrink-0">
-              <Body className="font-semibold" style={{ color: "#2dd4bf" }}>
+              <Body className="font-semibold" style={{ color: "var(--ed-green)" }}>
                 {intel.progressPercent}%
               </Body>
               {monthsLeft != null ? (
@@ -287,7 +287,7 @@ export default function PlanGoalsSection({ requestOpen = false, variant = "full"
                 ) : null}
               </div>
               <div className="text-right shrink-0">
-                <Body className="font-semibold" style={{ color: "#2dd4bf" }}>
+                <Body className="font-semibold" style={{ color: "var(--ed-green)" }}>
                   {intel.progressPercent}%
                 </Body>
                 {monthsLeft != null ? (

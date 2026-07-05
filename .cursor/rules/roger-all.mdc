@@ -15,12 +15,14 @@ When the user says **"roger all"** (any casing), run the full maintenance pass â
 npm run roger:all
 ```
 
-Optional flags (pass through if user asks for strict/fix):
+Optional flags:
 
 ```bash
-npm run roger:all -- --fix      # ESLint auto-fix, then full gate
-npm run roger:all -- --strict   # Advisories also fail the gate
+npm run roger:all -- --fix       # ESLint auto-fix, then full gate
+npm run roger:all -- --relaxed   # Skip strict blocking on code/CSS/i18n warnings
 ```
+
+`npm run audit` and `npm run roger:all` use **strict mode by default**. Use `npm run audit:relaxed` or `npm run roger:relaxed` for the old advisory-only gate.
 
 ## What roger:all runs
 

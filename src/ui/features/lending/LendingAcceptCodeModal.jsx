@@ -65,7 +65,7 @@ export default function LendingAcceptCodeModal({ onClose }) {
             maxLength={6}
             autoComplete="off"
             inputMode="text"
-            placeholder="ABC234"
+            placeholder={t("lending.acceptCode.placeholder")}
           />
         </div>
         {error ? <p className="ed-caption text-[var(--ed-red)]">{error}</p> : null}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePerovo } from "../context/PerovoContext.jsx";
 import {
@@ -8,13 +8,14 @@ import {
   markUserNotificationRead,
 } from "../services/broadcasts.js";
 
-const POLL_INTERVAL_MS = 15 * 60 * 1000;
+const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
 export function useBroadcasts() {
   const { user, isLoggedIn } = useAuth();
   const { effectiveSubscriptionTier } = usePerovo();
   const [broadcasts, setBroadcasts] = useState([]);
   const [userNotifications, setUserNotifications] = useState([]);
+  const loadRef = useRef(null);
 
   const load = useCallback(async () => {
     if (!isLoggedIn || !user?.id) {
@@ -31,11 +32,39 @@ export function useBroadcasts() {
     setUserNotifications(userNotifs);
   }, [isLoggedIn, user, effectiveSubscriptionTier]);
 
+  loadRef.current = load;
+
   useEffect(() => {
-    load();
+    queueMicrotask(() => {
+      load();
+    });
     const id = setInterval(load, POLL_INTERVAL_MS);
     return () => clearInterval(id);
   }, [load]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadRef.current?.();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    let appListener = null;
+    import("@capacitor/app")
+      .then(({ App }) =>
+        App.addListener("appStateChange", (state) => {
+          if (state.isActive) loadRef.current?.();
+        }),
+      )
+      .then((listener) => {
+        appListener = listener;
+      })
+      .catch(() => {});
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      appListener?.remove?.();
+    };
+  }, []);
 
   const dismiss = useCallback(
     async (broadcastId) => {

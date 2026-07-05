@@ -74,16 +74,18 @@ export async function upsertDeviceSession(userId, settings = {}) {
   if (error) throw error;
 
   if (isNewDevice) {
-    await supabase
-      .from("user_notifications")
-      .insert({
+    try {
+      const { error: notifError } = await supabase.from("user_notifications").insert({
         user_id: userId,
         type: "security",
         title: "New sign-in detected",
         body: "A new device signed into your Perovo account. If this wasn't you, go to Security settings.",
         route: "/you/security",
-      })
-      .catch(() => {});
+      });
+      if (notifError) throw notifError;
+    } catch {
+      /* non-fatal */
+    }
   }
 
   try {

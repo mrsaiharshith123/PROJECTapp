@@ -199,7 +199,10 @@ export function SimulationPanel({ simulationBase }) {
           >
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-[var(--ed-ink)]">{t(s.labelKey)}</p>
-              <p className={`text-xs ed-numeral mt-0.5 ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+              <p
+                className="text-xs ed-numeral mt-0.5"
+                style={{ color: delta >= 0 ? "var(--ed-green)" : "var(--ed-red)" }}
+              >
                 {delta >= 0 ? "+" : ""}
                 {formatInr(delta)}
               </p>

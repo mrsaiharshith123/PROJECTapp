@@ -25,6 +25,12 @@
     "src/constants/repeatTypes.js": ["exports"],
     "src/guidance/**": ["exports"],
     "src/ui/guidance/**": ["exports", "duplicates"],
-    "src/ui/icons/**": ["duplicates"]
+    "src/engines/**": ["exports"],
+    "src/services/**": ["exports"],
+    "src/utils/**": ["exports"],
+    "src/i18n/**": ["exports"],
+    "src/ui/brand/**": ["exports"],
+    "src/ui/features/insights/breakdown/**": ["exports"],
+    "src/ui/features/onboarding/**": ["exports"]
   }
 }

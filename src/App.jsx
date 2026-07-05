@@ -13,6 +13,8 @@ import AuthConfirmPage from "./ui/features/auth/AuthConfirmPage.jsx";
 import AuthGatePage from "./ui/features/auth/AuthGatePage.jsx";
 import ScrollToTop from "./app/ScrollToTop.jsx";
 import NotificationSync from "./app/NotificationSync.jsx";
+import LocalReminderSync from "./app/LocalReminderSync.jsx";
+import PushNotificationBridge from "./app/PushNotificationBridge.jsx";
 import ThemeSync from "./app/ThemeSync.jsx";
 import BrandDocumentSync from "./app/BrandDocumentSync.jsx";
 import CloudSyncBridge from "./app/CloudSyncBridge.jsx";
@@ -22,6 +24,7 @@ import NativePermissionGate from "./app/NativePermissionGate.jsx";
 import SalaryDayBridge from "./app/SalaryDayBridge.jsx";
 import AnalyticsBridge from "./app/AnalyticsBridge.jsx";
 import BootShell from "./boot/BootShell.jsx";
+import { OfflineScreen, useOnlineStatus } from "./ui/layout/OfflineScreen.jsx";
 import { isAccountSetupComplete } from "./utils/profileSetup.js";
 import { normalizeIndianPhone } from "./utils/phone.js";
 import { isSignupPending } from "./utils/authSessionCleanup.js";
@@ -206,6 +209,8 @@ function MainShell() {
       <AnalyticsBridge />
       <Navbar />
       <NotificationSync />
+      <LocalReminderSync />
+      <PushNotificationBridge />
       <MainContent>
         <AppRoutes />
       </MainContent>
@@ -216,7 +221,9 @@ function MainShell() {
 function AppShell() {
   const { settings, updateSettings } = usePerovo();
   const { isReady, isLoggedIn, user, profile, profileResolved, saveProfile } = useAuth();
+  const isOnline = useOnlineStatus();
   const [authBootTimedOut, setAuthBootTimedOut] = useState(false);
+  const [hasBootstrapped, setHasBootstrapped] = useState(false);
   const setupComplete = isAccountSetupComplete(settings, profile, user?.id);
   const authSeededRef = useRef(false);
   const settingsRef = useRef(settings);
@@ -273,6 +280,14 @@ function AppShell() {
     const timer = window.setTimeout(() => setAuthBootTimedOut(true), 12000);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (isReady) setHasBootstrapped(true);
+  }, [isReady]);
+
+  if (!isOnline && !hasBootstrapped) {
+    return <OfflineScreen />;
+  }
 
   const authStillBooting = !isReady || (isLoggedIn && !profileResolved);
   if (authStillBooting && !authBootTimedOut) return <BootShell />;

@@ -25,10 +25,6 @@ import { loadWealthState, saveWealthState } from "../utils/netWorth/wealthStorag
 import { mergeAccountSettingsFromServer } from "../utils/accountSettingsSync.js";
 import { saveSyncMeta } from "../services/sync/syncMeta.js";
 import { refreshAllChitCommitments } from "../utils/chitSync.js";
-import {
-  registerDevSubscriptionTools,
-  unregisterDevSubscriptionTools,
-} from "../utils/devSubscriptionTools.js";
 import { sortCommitments } from "./perovoSort.js";
 import { usePerovoCrud } from "./usePerovoCrud.js";
 import { fetchFundNav } from "../services/market/amfiNav.js";
@@ -112,7 +108,7 @@ export function PerovoProvider({ children }) {
 
   useEffect(() => {
     if (!user?.id) {
-      setServerSubscriptionTier(null);
+      queueMicrotask(() => setServerSubscriptionTier(null));
       return;
     }
     loadSubscriptionTier(user.id)
@@ -261,8 +257,18 @@ export function PerovoProvider({ children }) {
   }, [updateCommitment]);
 
   useEffect(() => {
-    registerDevSubscriptionTools({ updateSettings, userId: user?.id ?? null });
-    return () => unregisterDevSubscriptionTools();
+    if (!import.meta.env.DEV) return undefined;
+    let cancelled = false;
+    let unregister = () => {};
+    import("../utils/devSubscriptionTools.js").then((mod) => {
+      if (cancelled) return;
+      mod.registerDevSubscriptionTools({ updateSettings, userId: user?.id ?? null });
+      unregister = mod.unregisterDevSubscriptionTools;
+    });
+    return () => {
+      cancelled = true;
+      unregister();
+    };
   }, [updateSettings, user?.id]);
 
   const refreshGoldRate = useCallback(async (options = {}) => {

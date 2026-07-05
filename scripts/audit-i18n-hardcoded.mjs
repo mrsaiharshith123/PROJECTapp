@@ -18,7 +18,7 @@ const STRICT = process.argv.includes("--strict");
 const LIST = process.argv.includes("--list");
 const JSON_OUT = process.argv.includes("--json");
 
-const SKIP_DIRS = new Set(["__tests__", "tokens", "utils"]);
+const SKIP_DIRS = new Set(["__tests__", "tokens", "utils", "dev"]);
 const SKIP_FILE_RE = /\.(test|spec)\./;
 
 /** JSX / UI patterns that are OK */

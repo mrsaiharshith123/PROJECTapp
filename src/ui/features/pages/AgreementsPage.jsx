@@ -16,7 +16,7 @@ import AgreementsHeroSummary from "../agreements/AgreementsHeroSummary.jsx";
 import AgreementsHeaderActions from "../agreements/AgreementsHeaderActions.jsx";
 import LendingAcceptCodeModal from "../lending/LendingAcceptCodeModal.jsx";
 import { getTier } from "../../../utils/tierAccess.js";
-import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
+import { EditorialMastheadRight } from "../../patterns/EditorialMastheadRight.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const emptyLendingForm = () => ({
@@ -163,9 +163,7 @@ export default function AgreementsPage() {
             <h1 className="ed-title">{t("nav.agreements")}</h1>
             <div className="ed-tagline">{t("agreements.ed.tagline")}</div>
           </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+          <EditorialMastheadRight tier={tier} />
         </div>
       </header>
 

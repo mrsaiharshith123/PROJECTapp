@@ -4,6 +4,7 @@ import { usePerovo } from "../context/PerovoContext.jsx";
 function resolveFromPreference(preference, systemPrefersDark) {
   if (preference === "light") return "light";
   if (preference === "dark") return "dark";
+  if (preference === "amoled") return "dark";
   return systemPrefersDark ? "dark" : "light";
 }
 

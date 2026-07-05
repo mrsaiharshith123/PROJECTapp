@@ -47,7 +47,7 @@ export function useCommitIntelInternal() {
   } = usePerovo();
 
   const devTick = useDevOverrideTick();
-  const { broadcasts, userNotifications } = useBroadcasts();
+  const { broadcasts, userNotifications, reload: reloadNotifications } = useBroadcasts();
 
   const rawIntel = useMemo(() => {
     const openSum = commitments.reduce((s, c) => s + (Number(c.remainingAmount) || 0), 0);
@@ -67,6 +67,9 @@ export function useCommitIntelInternal() {
       settings.liquidSavings,
       monthlySnapshots?.length,
       settings.readNotificationIds?.length,
+      settings.updatedAt,
+      broadcasts.length,
+      userNotifications.length,
     ]);
 
     const intel = memoIntel(cacheKey, () => {
@@ -165,6 +168,11 @@ export function useCommitIntelInternal() {
       monthlySnapshots,
       previousPressureScore,
     });
+    const readSet = new Set((settings.readNotificationIds || []).map(String));
+    const supplemental = (supplementalNotifications || []).map((n) => ({
+      ...n,
+      read: Boolean(n.read) || readSet.has(String(n.id)),
+    }));
     const broadcastNotifs = broadcasts.map((b) => ({
       id: `broadcast-${b.id}`,
       broadcastId: b.id,
@@ -185,7 +193,7 @@ export function useCommitIntelInternal() {
               ? "success"
               : "info",
       route: b.route || null,
-      read: false,
+      read: readSet.has(`broadcast-${b.id}`),
       createdAt: new Date(b.active_from).getTime(),
       source: "broadcast",
     }));
@@ -197,11 +205,11 @@ export function useCommitIntelInternal() {
       urgency: n.type === "security" ? "critical" : "normal",
       tone: n.type === "security" ? "danger" : "info",
       route: n.route || null,
-      read: false,
+      read: readSet.has(`user-notif-${n.id}`),
       createdAt: new Date(n.created_at).getTime(),
       source: "server",
     }));
-    const notifications = [...(supplementalNotifications || []), ...serverNotifs, ...broadcastNotifs, ...feed].sort((a, b) => {
+    const notifications = [...supplemental, ...serverNotifs, ...broadcastNotifs, ...feed].sort((a, b) => {
       const order = { critical: 0, high: 1, normal: 2, low: 3 };
       const d = (order[a.urgency] ?? 9) - (order[b.urgency] ?? 9);
       if (d !== 0) return d;
@@ -258,7 +266,10 @@ export function useCommitIntelInternal() {
 
   // devTick intentionally invalidates dev override layer when panel toggles
   // eslint-disable-next-line react-hooks/exhaustive-deps -- devTick is not read inside memo; it forces recomputation
-  return useMemo(() => applyDevOverrideToCommitIntel(rawIntel), [rawIntel, devTick]);
+  return useMemo(
+    () => ({ ...applyDevOverrideToCommitIntel(rawIntel), reloadNotifications }),
+    [rawIntel, devTick, reloadNotifications],
+  );
 }
 
 export function useCommitIntel() {

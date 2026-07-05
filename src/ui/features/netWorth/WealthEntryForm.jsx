@@ -85,7 +85,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
     if (!isGold || !isGoldApiConfigured() || !refreshGoldRate) return;
     if (!shouldRefreshGoldRate(settings.goldRateLastFetched, settings.goldRatePerGram)) return;
     let cancelled = false;
-    setGoldRateLoading(true);
+    queueMicrotask(() => setGoldRateLoading(true));
     refreshGoldRate()
       .catch(() => false)
       .finally(() => {
@@ -147,7 +147,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       purchaseYear: Number(form.purchaseYear) || undefined,
       vehicleYear: Number(form.vehicleYear) || undefined,
     });
-  }, [isVehicle, form.purchasePrice, form.purchaseYear, form.vehicleYear]);
+  }, [isVehicle, form.purchasePrice, form.purchaseYear, form.vehicleYear, form.trackGrowth]);
 
   const submit = async () => {
     if (savingRef.current) return;

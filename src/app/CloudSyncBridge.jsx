@@ -42,7 +42,7 @@ export default function CloudSyncBridge() {
 
     syncCloudBackupAtStartup(ctx)
       .then(() => {
-        /* push-only at startup — restore is manual via ProfileCloudSyncSection */
+        /* startup sync: restore empty devices, pull when remote is newer, push when local is ahead */
       })
       .catch(() => {
         /* non-blocking */

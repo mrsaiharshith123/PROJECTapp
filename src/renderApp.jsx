@@ -16,7 +16,10 @@ import App from "./App.jsx";
 import { log } from "./utils/logger.js";
 import { isNativeCapacitorShell } from "./utils/nativePermissions.js";
 import { applyDevPhoneFrameBootAttrs } from "./utils/devPhoneFrame.js";
-import DevPhoneFrame from "./ui/dev/DevPhoneFrame.jsx";
+
+const DevPhoneFrame = import.meta.env.DEV
+  ? (await import("./ui/dev/DevPhoneFrame.jsx")).default
+  : ({ children }) => children;
 
 applyDevPhoneFrameBootAttrs();
 

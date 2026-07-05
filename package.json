@@ -10,13 +10,14 @@
     "dev": "vite",
     "dev:simulate-pay": "node scripts/dev-simulate-pay.mjs",
     "preview:simulate-pay": "node scripts/dev-simulate-pay.mjs preview",
-    "build": "node scripts/generate-pwa-icons.mjs && node scripts/generate-app-version.mjs && node scripts/vite-build-pages.mjs && node scripts/build-ota-bundle.mjs && node scripts/copy-404.mjs",
+    "build": "node scripts/generate-app-version.mjs && node scripts/vite-build-pages.mjs && node scripts/build-ota-bundle.mjs && node scripts/copy-404.mjs",
     "capture:landing-screens": "node scripts/capture-landing-screens.mjs",
     "generate:android-icons": "node scripts/generate-android-icons.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "clean": "node scripts/clean.mjs",
-    "audit": "node scripts/audit-all.mjs",
+    "audit": "node scripts/audit-all.mjs --strict",
+    "audit:relaxed": "node scripts/audit-all.mjs",
     "audit:gov": "node scripts/audit-runner.mjs --gov",
     "audit:gov:quick": "node scripts/audit-runner.mjs --gov --quick",
     "audit:fix": "node scripts/audit-fix.mjs",
@@ -26,6 +27,7 @@
     "audit:apis": "node scripts/audit-apis.mjs",
     "audit:docs-sync": "node scripts/audit-docs-sync.mjs",
     "roger:all": "node scripts/roger-all.mjs",
+    "roger:relaxed": "node scripts/roger-all.mjs",
     "i18n:translate:fast": "node scripts/translate-fallback-locales.mjs",
     "sync:i18n": "node scripts/sync-i18n-keys.mjs",
     "i18n:repair": "node scripts/i18n-repair-corruption.mjs && node scripts/i18n-repair-placeholders.mjs",
@@ -60,9 +62,11 @@
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
     "apk:dev": "node scripts/build-dev-apk.mjs",
+    "apk:patch-version": "node scripts/patch-android-version.mjs",
     "apk:twa": "cd twa && bubblewrap build --manifest twa-manifest.json",
     "apk:twa:install": "cd twa && bubblewrap install",
-    "zip": "node scripts/zip.mjs"
+    "zip": "node scripts/zip.mjs",
+    "secrets:fcm": "node scripts/set-fcm-secret.mjs"
   },
   "dependencies": {
     "@capacitor-community/file-opener": "^7.0.1",
@@ -74,6 +78,7 @@
     "@capacitor/geolocation": "^7.1.8",
     "@capacitor/ios": "^7.4.2",
     "@capacitor/local-notifications": "^7.0.6",
+    "@capacitor/push-notifications": "^8.1.1",
     "@capacitor/status-bar": "^7.0.6",
     "@capgo/capacitor-updater": "^7.45.10",
     "@lottiefiles/react-lottie-player": "^3.6.0",
@@ -83,6 +88,7 @@
     "date-fns": "^4.1.0",
     "decimal.js": "^10.6.0",
     "exceljs": "^4.4.0",
+    "firebase": "^12.15.0",
     "fuse.js": "^7.4.2",
     "pdfjs-dist": "^4.10.38",
     "pdfmake": "^0.3.11",
@@ -116,6 +122,7 @@
     "tailwindcss": "^3.4.19",
     "typescript": "~5.8.3",
     "vite": "^8.0.10",
+    "vite-plugin-webfont-dl": "^3.12.0",
     "vitest": "^4.1.9"
   }
 }

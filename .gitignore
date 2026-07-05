@@ -23,6 +23,7 @@ releases/
 .env
 .env.*
 !.env.example
+.secrets/
 
 # Supabase CLI cache — recreates on supabase CLI commands
 supabase/.temp/

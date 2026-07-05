@@ -7,13 +7,15 @@ All commands run from the project root (`PROJECTapp/`).
 | Command | What it does |
 |---------|----------------|
 | `npm run dev` | Start Vite dev server — full app in **localhost phone shell** (`http://localhost:5173`) |
-| `npm run roger:all` | **Full maintenance pass** — sync i18n, docs-sync, full audit (use when you say "roger all") |
+| `npm run roger:all` | **Full maintenance pass** — strict audit by default (sync i18n, docs-sync, full gate) |
+| `npm run roger:relaxed` | Same pass without strict blocking on code/CSS/i18n warnings |
 | `npm run preview` | Serve production build locally (run `build` first) |
 | `npm test` | Run Vitest once (all unit tests — engines, utils, storage, sync, i18n) |
 | `npm run test:sync` | Snapshot + sync meta tests only |
 | `npm run test:engines` | Engine tests only |
 | `npm run test:utils` | Utils tests only |
-| `npm run audit -- --strict` | Full gate; merge suggestions stay advisory (not blocking) |
+| `npm run audit` | Full production gate (**strict** by default) |
+| `npm run audit:relaxed` | Full gate; advisories in code/CSS/i18n do not fail |
 | `npm run test:watch` | Vitest in watch mode |
 | `npm run lint` | ESLint on `src/` (build artifacts under `android/`, `dist-*` ignored) |
 | `npm run lint:fix` | ESLint with auto-fix where safe |
@@ -27,7 +29,8 @@ All commands run from the project root (`PROJECTapp/`).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run audit` | Full production gate |
+| `npm run audit` | Full production gate (strict) |
+| `npm run audit:relaxed` | Full gate without strict blocking |
 | `npm run audit:gov` | All governance audits (28 checks) |
 | `npm run audit:gov:quick` | Fast governance-only scan |
 | `npm run audit:fix` | Report auto-fixable issues |
@@ -129,9 +132,9 @@ Full guide: [MOBILE.md](./MOBILE.md).
 
 | Command | What it does |
 |---------|----------------|
-| `npm run roger:all` | Sync i18n → docs-sync → full `audit` gate |
+| `npm run roger:all` | Sync i18n → docs-sync → strict `audit` gate |
+| `npm run roger:relaxed` | Same pass with `audit:relaxed` |
 | `npm run roger:all -- --fix` | ESLint auto-fix first, then roger pass |
-| `npm run roger:all -- --strict` | Fail on advisories too |
 
 See [11-roger-all.md](./11-roger-all.md). Cursor: say **"roger all"** to run this workflow.
 

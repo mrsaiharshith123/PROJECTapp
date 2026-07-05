@@ -39,8 +39,10 @@ export default function CloudRestoreGate({ children }) {
 
   useEffect(() => {
     if (!isLoggedIn || !user?.id || !isCloudSyncConfigured()) {
-      setOfferOpen(false);
-      setAutoRestoring(false);
+      queueMicrotask(() => {
+        setOfferOpen(false);
+        setAutoRestoring(false);
+      });
       return;
     }
 

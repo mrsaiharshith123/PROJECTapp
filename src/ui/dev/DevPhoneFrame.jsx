@@ -9,6 +9,10 @@ import {
 } from "../../utils/devPhoneFrame.js";
 import "./dev-phone-frame.css";
 
+if (import.meta.env.PROD) {
+  throw new Error("[Perovo] DevPhoneFrame must never be imported in production builds.");
+}
+
 const CONTROL_BAR_H = 40;
 
 function usePhoneDevice() {

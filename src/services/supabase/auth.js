@@ -5,6 +5,7 @@ import { formatAuthError } from "../../utils/authErrors.js";
 import { ProfilesTableMissingError } from "../../utils/authSessionCleanup.js";
 import { pickAccountSettingsForServer } from "../../utils/accountSettingsSync.js";
 import { invokeEdgeFunction } from "./invokeEdgeFunction.js";
+import { isRateLimited } from "../../utils/withRateLimit.js";
 
 /**
  * Build a full profiles row for upsert — never null-out fields omitted from patch.
@@ -152,6 +153,9 @@ export async function signUpWithEmail(email, password, metadata = null) {
 }
 
 export async function signInWithEmail(email, password) {
+  if (isRateLimited("signin", 2000)) {
+    throwAuth(new Error("Please wait before trying again."), "Sign in");
+  }
   const supabase = getSupabaseClient();
   if (!supabase) throwAuth(new Error("Supabase is not configured."), "Sign in");
   log.auth.info("Sign in attempt");
@@ -180,6 +184,9 @@ export function getPasswordResetRedirectUrl() {
 }
 
 export async function requestPasswordReset(email) {
+  if (isRateLimited("password-reset", 30000)) {
+    throwAuth(new Error("Please wait 30 seconds before requesting another reset."), "Password reset");
+  }
   const supabase = getSupabaseClient();
   if (!supabase) throwAuth(new Error("Supabase is not configured."), "Password reset");
   log.auth.info("Password reset requested");

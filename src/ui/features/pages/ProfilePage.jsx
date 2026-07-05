@@ -8,7 +8,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getTier } from "../../../utils/tierAccess.js";
 import ProfileSettingsGroups from "../profile/hub/ProfileSettingsGroups.jsx";
 import ProfileHubFooter from "../profile/hub/ProfileHubFooter.jsx";
-import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
+import { EditorialMastheadRight } from "../../patterns/EditorialMastheadRight.jsx";
 import { Body, Button, Caption, Modal } from "../../index.js";
 
 /** @route /you — Settings hub (identity in profile glimpse menu). */
@@ -120,9 +120,7 @@ const Profile = () => {
             <h1 className="ed-title">{t("nav.you")}</h1>
             <div className="ed-tagline">{t("profile.ed.tagline")}</div>
           </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+          <EditorialMastheadRight tier={tier} />
         </div>
       </header>
 

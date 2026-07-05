@@ -1,9 +1,24 @@
 import { describe, it, expect } from "vitest";
-import * as engine from "../loanPayoffTiming.js";
+import { computeEmiFromPrincipal } from "../prepayment.js";
+import { isDebtCommitment } from "../loanPayoffTiming.js";
 
-describe("src/engines/loanPayoffTiming.js", () => {
-  it("loads and exports at least one symbol", () => {
-    expect(engine).toBeTruthy();
-    expect(Object.keys(engine).length).toBeGreaterThan(0);
+describe("loanPayoffTiming", () => {
+  it("EMI is positive for valid loan inputs", () => {
+    const emi = computeEmiFromPrincipal(500000, 8.5, 60);
+    expect(emi).toBeGreaterThan(0);
+  });
+
+  it("handles zero interest rate", () => {
+    const emi = computeEmiFromPrincipal(120000, 0, 12);
+    expect(emi).toBeCloseTo(10000, 0);
+  });
+
+  it("does not return NaN for edge inputs", () => {
+    expect(Number.isNaN(computeEmiFromPrincipal(0, 0, 0))).toBe(false);
+  });
+
+  it("identifies debt commitment categories", () => {
+    expect(isDebtCommitment({ category: "EMI" })).toBe(true);
+    expect(isDebtCommitment({ category: "Rent" })).toBe(false);
   });
 });

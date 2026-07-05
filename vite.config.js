@@ -3,7 +3,11 @@ import fs from "fs";
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import webfontDownload from "vite-plugin-webfont-dl";
 import pkg from "./package.json" with { type: "json" };
+
+const SELF_HOSTED_FONTS_URL =
+  "https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400;9..144,1,600;9..144,1,700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap";
 
 /** GitHub Pages project site: https://user.github.io/PROJECTapp/ */
 function resolveViteBase(raw) {
@@ -105,12 +109,20 @@ export default defineConfig({
               if (id.includes("@supabase")) return "supabase";
               if (id.includes("react-router") || id.includes("react-dom") || id.includes("/react/")) return "react-vendor";
               if (id.includes("date-fns")) return "date-fns";
+              if (id.includes("tesseract")) return "ocr";
+              if (id.includes("pdfmake") || id.includes("pdfjs-dist")) return "pdf";
+              if (id.includes("exceljs")) return "excel";
+              if (id.includes("fuse.js")) return "search";
+              if (id.includes("@lottiefiles") || id.includes("lottie")) return "lottie";
+              if (id.includes("decimal.js")) return "decimal";
+              if (id.includes("posthog")) return "analytics";
             },
           },
     },
   },
   plugins: [
     react(),
+    webfontDownload([SELF_HOSTED_FONTS_URL]),
     ...(capgoNotifyEnabled ? [capgoNotifyFirstPlugin()] : []),
   ],
 });

@@ -1,5 +1,6 @@
 import { useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { usePerovo } from "../context/PerovoContext.jsx";
 import { applyColorScheme } from "../utils/theme.js";
 
 /**
@@ -12,16 +13,17 @@ import { applyColorScheme } from "../utils/theme.js";
  */
 export default function ScrollToTop() {
   const { pathname, key } = useLocation();
+  const { settings } = usePerovo();
+  const preference = settings.colorScheme || "light";
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
     document.querySelector(".ed-main")?.scrollTo?.(0, 0);
 
-    // Re-apply current theme — changes root.style.colorScheme which is a real
+    // Re-apply stored theme preference — changes root.style.colorScheme which is a real
     // CSS property change that forces Chrome to repaint the entire frame.
-    const theme = (document.documentElement.dataset.theme || "dark");
-    applyColorScheme(theme === "light" ? "light" : "dark");
-  }, [pathname, key]);
+    applyColorScheme(preference);
+  }, [pathname, key, preference]);
 
   return null;
 }

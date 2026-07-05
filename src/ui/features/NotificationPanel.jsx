@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { usePerovo } from "../../context/PerovoContext.jsx";
 import { useCommitIntel } from "../../hooks/useCommitIntel.js";
+import { useNotificationActions } from "../../hooks/useNotificationActions.js";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { translateNotification } from "../../i18n/notificationLabels.js";
 import { Button } from "../primitives/Button.jsx";
@@ -32,8 +32,8 @@ export function NotificationPanel({ onClose }) {
   const panelRef = useRef(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { markNotificationRead, markAllNotificationsRead } = usePerovo();
-  const { notifications } = useCommitIntel();
+  const { markRead, markAllRead } = useNotificationActions();
+  const { notifications, reloadNotifications } = useCommitIntel();
   const unread = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -69,6 +69,14 @@ export function NotificationPanel({ onClose }) {
               {unread > 0 ? (
                 <Badge tone="danger">{t("notifications.panel.new", { count: unread })}</Badge>
               ) : null}
+              <button
+                type="button"
+                onClick={() => reloadNotifications?.()}
+                className="ed-btn ed-btn-ghost ed-btn-sm ed-icon-btn"
+                aria-label={t("notifications.panel.refresh")}
+              >
+                <CtIcon name="arrows-clockwise" size={14} />
+              </button>
               <button
                 type="button"
                 onClick={onClose}
@@ -111,7 +119,7 @@ export function NotificationPanel({ onClose }) {
                               variant="secondary"
                               size="sm"
                               onClick={() => {
-                                markNotificationRead(n.id);
+                                markRead(n);
                                 onClose();
                                 navigate(String(n.href));
                               }}
@@ -122,7 +130,7 @@ export function NotificationPanel({ onClose }) {
                             </Button>
                           ) : null}
                           {!n.read ? (
-                            <Button type="button" variant="ghost" size="sm" onClick={() => markNotificationRead(n.id)}>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => markRead(n)}>
                               {t("notifications.panel.read")}
                             </Button>
                           ) : null}
@@ -141,7 +149,7 @@ export function NotificationPanel({ onClose }) {
                 variant="ghost"
                 size="sm"
                 className="w-full"
-                onClick={() => markAllNotificationsRead(notifications.map((n) => n.id))}
+                onClick={() => markAllRead(notifications)}
               >
                 {t("notifications.markRead")}
               </Button>

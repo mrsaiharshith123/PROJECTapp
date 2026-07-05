@@ -21,6 +21,7 @@ export default function YouAppearancePage() {
   const themes = [
     { id: "light", label: t("appearance.light") },
     { id: "dark", label: t("appearance.dark") },
+    { id: "amoled", label: t("appearance.amoled") },
     { id: "system", label: t("appearance.system") },
   ];
 

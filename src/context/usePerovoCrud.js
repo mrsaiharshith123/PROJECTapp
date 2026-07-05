@@ -307,12 +307,16 @@ export function usePerovoCrud({
 
   const markAllNotificationsRead = useCallback(
     (ids) => {
+      const idList = ids.map(String);
+      setSupplementalNotifications((prev) =>
+        prev.map((n) => (idList.includes(String(n.id)) ? { ...n, read: true } : n)),
+      );
       persistSettings((prev) => {
-        const set = new Set([...(prev.readNotificationIds || []), ...ids.map(String)]);
+        const set = new Set([...(prev.readNotificationIds || []), ...idList]);
         return { ...prev, readNotificationIds: [...set] };
       });
     },
-    [persistSettings]
+    [persistSettings, setSupplementalNotifications],
   );
 
   const logSavingsToGoal = useCallback(

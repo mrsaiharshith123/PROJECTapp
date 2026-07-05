@@ -26,8 +26,10 @@ export function AppHeaderAvatar() {
           flexShrink: 0,
           cursor: "pointer",
           padding: 0,
-          border: open ? "2px solid rgba(99,102,241,0.65)" : "2px solid rgba(99,102,241,0.3)",
-          background: imageUrl ? "transparent" : "linear-gradient(135deg,#6366f1,#4f46e5)",
+          border: open
+            ? "2px solid var(--ed-gold)"
+            : "1.5px solid var(--ed-rule-strong)",
+          background: imageUrl ? "transparent" : "var(--ed-surface-3)",
         }}
       >
         {imageUrl ? (
@@ -42,7 +44,7 @@ export function AppHeaderAvatar() {
               height: "100%",
               fontSize: 12,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--ed-ink-soft)",
             }}
           >
             {initials}

@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { getTier } from "../../../utils/tierAccess.js";
-import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
+import { EditorialMastheadRight } from "../../patterns/EditorialMastheadRight.jsx";
 
 /** Ledger bills shell — nested under /ledger/bills. */
 export default function LedgerOpsShell() {
@@ -33,9 +33,7 @@ export default function LedgerOpsShell() {
             <h1 className="ed-title">{t("nav.ledger")}</h1>
             <p className="ed-masthead-sub">{t("money.bills.sectionSub")}</p>
           </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+          <EditorialMastheadRight tier={tier} />
         </div>
       </header>
 

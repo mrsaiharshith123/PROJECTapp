@@ -23,6 +23,7 @@ import {
   repeatTypeToPremiumFrequency,
 } from "../../../constants/insurance.js";
 import { inferPriorityFromCategory } from "../../../constants/priority.js";
+import { sanitizeName, sanitizeText } from "../../../utils/sanitize.js";
 import { evaluateNewCommitmentAffordability } from "../../../engines/affordability.js";
 import { getUserModeConfig } from "../../../constants/userModes.js";
 import { estimatePriorSpend } from "../../../utils/billLifecycle.js";
@@ -242,8 +243,8 @@ const Add = () => {
 
     const dueDate = form.dueDate || form.startDate;
     const billName = showInsurance
-      ? buildInsuranceBillName(form) || form.name.trim() || "Insurance policy"
-      : form.name.trim();
+      ? sanitizeName(buildInsuranceBillName(form) || form.name || "Insurance policy")
+      : sanitizeName(form.name);
 
     const chitPayload = showChit ? buildChitPayloadFromForm(form) : {};
     const billAmount = showChit ? chitPayload.amount : Number(form.amount);
@@ -258,7 +259,7 @@ const Add = () => {
       category,
       repeatType: showChit ? "monthly" : form.repeatType,
       priority: isOther ? form.priority : inferPriorityFromCategory(category),
-      notes: form.notes.trim(),
+      notes: sanitizeText(form.notes),
       annualInterestRate:
         showInterest && form.annualInterestRate !== ""
           ? Math.min(60, Math.max(0, Number(form.annualInterestRate) || 0))
@@ -307,7 +308,7 @@ const Add = () => {
     addLending(
       buildLendingRecord({
         type: lendingForm.type,
-        personName: lendingForm.personName.trim(),
+        personName: sanitizeName(lendingForm.personName),
         totalAmount: lendingForm.totalAmount,
         dueDate: lendingForm.dueDate,
         interestRate: 0,

@@ -142,6 +142,14 @@ export default function AdminBroadcastComposer() {
       {flash ? (
         <p style={{ fontSize: 12, color: "var(--ed-green)", marginTop: 4 }}>{flash}</p>
       ) : null}
+      {import.meta.env.DEV ? (
+        <p className="ed-caption" style={{ color: "var(--ed-ink-faint)", marginTop: 4 }}>
+          {t("admin.broadcasts.supabaseProject", {
+            project:
+              import.meta.env.VITE_SUPABASE_URL?.split(".")[0]?.split("//")[1] || "unknown",
+          })}
+        </p>
+      ) : null}
     </div>
   );
 }

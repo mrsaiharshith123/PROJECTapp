@@ -11,7 +11,8 @@ import { yearlyBurdenFromCommitments } from "../../../engines/analyticsSeries.js
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { getTier } from "../../../utils/tierAccess.js";
-import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
+import { EditorialMastheadRight } from "../../patterns/EditorialMastheadRight.jsx";
+import { EngineGuard } from "../../primitives/EngineGuard.jsx";
 
 /** Build sparkline SVG path from forecast rows */
 function buildForecastPath(rows, w, h) {
@@ -134,12 +135,11 @@ export default function InsightsEditorialPage({ data }) {
             <h1 className="ed-title">{t("nav.insights")}</h1>
             <div className="ed-tagline">{t("analytics.hub.subtitle")}</div>
           </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+          <EditorialMastheadRight tier={tier} />
         </div>
       </header>
 
+      <EngineGuard>
       <div className="ed-ins-story">
         <div className="ed-ins-kicker">{t("insights.editorial.cashflowKicker")}</div>
         <div className="ed-ins-cols">
@@ -396,6 +396,7 @@ export default function InsightsEditorialPage({ data }) {
           {t("insights.editorial.networthBreakdown")}
         </button>
       </div>
+      </EngineGuard>
       <div className="ed-safe-bottom" />
     </div>
   );

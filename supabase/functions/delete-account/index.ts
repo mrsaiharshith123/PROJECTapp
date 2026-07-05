@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
     await adminClient.from("daily_spends").delete().eq("user_id", user.id);
     await adminClient.from("user_broadcast_dismissals").delete().eq("user_id", user.id);
     await adminClient.from("user_notifications").delete().eq("user_id", user.id);
+    await adminClient.from("user_push_tokens").delete().eq("user_id", user.id);
     await adminClient.from("profiles").delete().eq("id", user.id);
 
     return json({ ok: true });

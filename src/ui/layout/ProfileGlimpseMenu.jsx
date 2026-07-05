@@ -66,9 +66,8 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
 
   const menuItems = useMemo(
     () => [
-      { labelKey: "profileGlimpse.account", icon: "gear", path: "/you" },
-      { labelKey: "ledger.headerBills", icon: "clipboard-text", path: "/ledger/bills" },
-      { labelKey: "nav.insights", icon: "chart-bar", path: "/insights" },
+      { id: "account", labelKey: "profileGlimpse.account", icon: "gear", path: "/you" },
+      { id: "bills", labelKey: "ledger.headerBills", icon: "clipboard-text", path: "/ledger/bills" },
     ],
     [],
   );
@@ -91,14 +90,6 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
             <p className="ed-glimpse-name">{name}</p>
             {email ? <p className="ed-glimpse-email">{email}</p> : null}
           </div>
-          <button
-            type="button"
-            className="ed-glimpse-gear"
-            aria-label={t("settings.row.appearance")}
-            onClick={() => go("/you/appearance")}
-          >
-            <CtIcon name="gear" size={18} />
-          </button>
         </div>
 
         <button type="button" className="ed-glimpse-balance" onClick={() => go("/ledger")}>
@@ -113,7 +104,7 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
         </button>
 
         {menuItems.map((item) => (
-          <button key={item.path} type="button" className="ed-glimpse-row" onClick={() => go(item.path)}>
+          <button key={item.id} type="button" className="ed-glimpse-row" onClick={() => go(item.path)}>
             <span className="ed-glimpse-row-icon">
               <CtIcon name={item.icon} size={16} />
             </span>

@@ -312,7 +312,8 @@ export async function syncCloudBackupAtStartup(ctx) {
 
   const localHasData = localStateHasUserData(state);
   if (!localHasData) {
-    return { ok: false, reason: "empty_local", action: "none" };
+    const restoreResult = await tryAutoRestoreFromCloud(ctx);
+    return { ...restoreResult, action: restoreResult.ok ? "pull" : "none" };
   }
 
   const remote = await fetchRemoteSnapshot(ctx.userId);

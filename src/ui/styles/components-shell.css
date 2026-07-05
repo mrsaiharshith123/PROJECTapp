@@ -1,6 +1,3 @@
-/* Minimal app shell — ct-* layout hooks until full Direction H migration */
-
-html[data-ui="ct"] .ct-screen,
 html[data-ui="ct"] .ed-screen {
   min-height: 100vh;
   min-height: 100dvh;
@@ -14,7 +11,6 @@ html[data-ui="ct"] .ed-screen-narrow {
   margin-inline: auto;
 }
 
-html[data-ui="ct"] .ct-main,
 html[data-ui="ct"] .ed-main {
   padding-top: env(safe-area-inset-top, 0px);
   padding-left: max(var(--ed-page-x), env(safe-area-inset-left, 0px));
@@ -27,7 +23,6 @@ html[data-ui="ct"] .ed-main {
   width: 100%;
 }
 
-html[data-ui="ct"] .ct-screen-narrow .ct-main,
 html[data-ui="ct"] .ed-screen-narrow .ed-main {
   max-width: 28rem;
 }
@@ -45,20 +40,6 @@ html[data-ui="ct"] .ed-section-title {
   color: var(--ed-ink-soft);
 }
 
-html[data-ui="ct"] .ct-page {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  overflow-x: hidden;
-  max-width: 100%;
-  background: transparent;
-  padding-bottom: 0;
-}
-
-html[data-ui="ct"] .ct-stack,
-html[data-ui="ct"] .ct-stack-sm,
-html[data-ui="ct"] .ct-stack-lg,
-html[data-ui="ct"] .ct-stack-tight,
 html[data-ui="ct"] .ed-stack,
 html[data-ui="ct"] .ed-stack-sm,
 html[data-ui="ct"] .ed-stack-lg,
@@ -67,82 +48,21 @@ html[data-ui="ct"] .ed-stack-tight {
   flex-direction: column;
 }
 
-html[data-ui="ct"] .ct-stack,
 html[data-ui="ct"] .ed-stack { gap: 1rem; }
-html[data-ui="ct"] .ct-stack-sm,
+
 html[data-ui="ct"] .ed-stack-sm { gap: 0.5rem; }
-html[data-ui="ct"] .ct-stack-lg,
+
 html[data-ui="ct"] .ed-stack-lg { gap: 1.5rem; }
-html[data-ui="ct"] .ct-stack-tight,
+
 html[data-ui="ct"] .ed-stack-tight { gap: 0.25rem; }
 
-html[data-ui="ct"] .ct-row,
 html[data-ui="ct"] .ed-row { display: flex; align-items: center; gap: 0.5rem; }
-html[data-ui="ct"] .ct-row-between,
+
 html[data-ui="ct"] .ed-row-between {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-}
-
-html[data-ui="ct"] .ct-section { margin-top: 0.25rem; }
-
-/* Bottom nav structure (colors in components-editorial-home.css) */
-html[data-ui="ct"] .ct-bottom-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 90;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  isolation: isolate;
-}
-
-html[data-ui="ct"] .ct-bottom-nav-inner {
-  max-width: 100%;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  height: var(--ed-nav-h);
-  align-items: center;
-  padding: 0;
-}
-
-html[data-ui="ct"] .ct-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  text-decoration: none;
-  min-height: var(--ed-nav-h);
-  padding: 0;
-  transition: color var(--ed-t-fast) var(--ed-ease);
-  position: relative;
-}
-
-html[data-ui="ct"] .ct-nav-icon {
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-html[data-ui="ct"] .ct-nav-fab-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 100%;
-}
-
-html[data-ui="ct"] .ct-nav-fab {
-  position: relative;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-family: inherit;
-  margin: 0 auto;
 }
 
 /* FAB radial menu */
@@ -155,49 +75,6 @@ html[data-ui="ct"] .ct-nav-fab {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-}
-
-html[data-ui="ct"] .ct-fab-menu {
-  position: fixed;
-  bottom: calc(var(--ed-nav-h) + 46px * 0.55 + env(safe-area-inset-bottom, 0px) + 0.75rem);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  z-index: 95;
-  pointer-events: none;
-  max-height: min(16.5rem, calc(100dvh - var(--ed-nav-h) - 5rem));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 0 0.5rem;
-}
-
-html[data-ui="ct"] .ct-fab-menu.open {
-  pointer-events: auto;
-}
-
-html[data-ui="ct"] .ct-fab-menu.open .ct-fab-item {
-  opacity: 1;
-  animation: ed-fab-item-in 0.22s var(--ed-ease-spring) both;
-}
-
-html[data-ui="ct"] .ct-fab-menu.open .ct-fab-item:nth-child(1) { animation-delay: 0ms; }
-html[data-ui="ct"] .ct-fab-menu.open .ct-fab-item:nth-child(2) { animation-delay: 40ms; }
-html[data-ui="ct"] .ct-fab-menu.open .ct-fab-item:nth-child(3) { animation-delay: 80ms; }
-
-html[data-ui="ct"] .ct-fab-item {
-  opacity: 0;
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-}
-
-html[data-ui="ct"] .ct-fab-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 94;
 }
 
 /* Home enter stagger */

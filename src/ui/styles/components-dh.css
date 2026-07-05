@@ -30,8 +30,6 @@ html[data-ui="ct"] .ed-page-full {
 }
 
 /* Masthead owns top safe-area — avoid ct-main / page double-padding */
-html[data-ui="ct"] .ct-main:has(.ed-page-full),
-html[data-ui="ct"] .ct-main:has(.ed-paper),
 html[data-ui="ct"] .ed-main:has(.ed-page-full),
 html[data-ui="ct"] .ed-main:has(.ed-paper) {
   padding-top: 0;
@@ -60,7 +58,8 @@ html[data-ui="ct"] .ed-masthead > :first-child {
   width: 100%;
 }
 
-/* Sub-page masthead — back + title row, same band + thick rule as Home */
+/* Sub-page masthead — back + title row,
+ same band + thick rule as Home */
 html[data-ui="ct"] .ed-masthead-top.ed-masthead-top--sub {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -122,8 +121,11 @@ html[data-ui="ct"] .ed-masthead-brand {
 }
 
 html[data-ui="ct"] .ed-masthead-brand .ed-title,
+
 html[data-ui="ct"] .ed-masthead-brand .ed-tagline,
+
 html[data-ui="ct"] .ed-masthead-brand .ed-masthead-title,
+
 html[data-ui="ct"] .ed-masthead-brand .ed-masthead-sub {
   display: block;
   width: 100%;
@@ -149,6 +151,7 @@ html[data-ui="ct"] .ed-masthead::after {
 }
 
 html[data-ui="ct"] .ed-mast-tabs,
+
 html[data-ui="ct"] .ed-agreements-actions {
   display: flex;
   align-items: center;
@@ -238,6 +241,7 @@ html[data-ui="ct"] .ed-kicker {
   gap:             8px;
   margin-bottom:   6px;
 }
+
 html[data-ui="ct"] .ed-kicker::after {
   content:    "";
   flex:       1;
@@ -343,7 +347,9 @@ html[data-ui="ct"] .ed-card-red {
    LAYER 2 — Typography scale
 ───────────────────────────────────────── */
 
-/* Display numbers — Fraunces, big, for scores/amounts */
+/* Display numbers — Fraunces,
+ big,
+ for scores/amounts */
 html[data-ui="ct"] .ed-display {
   font-family:     var(--ed-font-serif);
   font-size:       48px;
@@ -371,7 +377,8 @@ html[data-ui="ct"] .ed-display-sm {
   font-variant-numeric: tabular-nums;
 }
 
-/* Headline — Fraunces italic, for page titles */
+/* Headline — Fraunces italic,
+ for page titles */
 html[data-ui="ct"] .ed-headline {
   font-family: var(--ed-font-serif);
   font-size:   20px;
@@ -398,7 +405,10 @@ html[data-ui="ct"] .ed-body-sm {
   color:       var(--ed-ink-faint);
 }
 
-/* UI text — Inter, for labels, values, data */
+/* UI text — Inter,
+ for labels,
+ values,
+ data */
 html[data-ui="ct"] .ed-label {
   font-family:    var(--ed-font);
   font-size:      11px;
@@ -427,10 +437,14 @@ html[data-ui="ct"] .ed-icon-muted {
 
 /* Amount colours */
 html[data-ui="ct"] .ed-amount-pos { color: var(--ed-green); }
+
 html[data-ui="ct"] .ed-amount-neg { color: var(--ed-red); }
+
 html[data-ui="ct"] .ed-amount-red { color: var(--ed-red); }
+
 html[data-ui="ct"] .ed-amount-neu { color: var(--ed-ink-soft); }
-html[data-ui="ct"] .ed-amount-gold{ color: var(--ed-gold); }
+
+html[data-ui="ct"] .ed-amount-gold { color: var(--ed-gold); }
 
 /* ─────────────────────────────────────────
    LAYER 3 — List rows
@@ -459,6 +473,7 @@ html[data-ui="ct"] .ed-row-press {
   cursor:     pointer;
   transition: opacity var(--ed-t-fast) var(--ed-ease);
 }
+
 html[data-ui="ct"] .ed-row-press:active {
   opacity: 0.6;
 }
@@ -1206,7 +1221,9 @@ html[data-ui="ct"] .ed-progress-bar {
 }
 
 html[data-ui="ct"] .ed-progress-bar--danger { background: var(--ed-red); }
+
 html[data-ui="ct"] .ed-progress-bar--success { background: var(--ed-green); }
+
 html[data-ui="ct"] .ed-progress-bar--warning { background: var(--ed-amber); }
 
 html[data-ui="ct"] .ed-grid-2 {
@@ -1233,16 +1250,23 @@ html[data-ui="ct"] .ed-pill {
   white-space:    nowrap;
 }
 
-html[data-ui="ct"] .ed-pill-gold    { background: var(--ed-gold-soft);   color: var(--ed-gold); }
-html[data-ui="ct"] .ed-pill-green   { background: var(--ed-green-soft);  color: var(--ed-green); }
-html[data-ui="ct"] .ed-pill-red     { background: var(--ed-red-soft);    color: var(--ed-red); }
-html[data-ui="ct"] .ed-pill-amber   { background: var(--ed-amber-soft);  color: var(--ed-amber); }
-html[data-ui="ct"] .ed-pill-violet  { background: var(--ed-violet-soft); color: var(--ed-violet); }
+html[data-ui="ct"] .ed-pill-gold { background: var(--ed-gold-soft);   color: var(--ed-gold); }
+
+html[data-ui="ct"] .ed-pill-green { background: var(--ed-green-soft);  color: var(--ed-green); }
+
+html[data-ui="ct"] .ed-pill-red { background: var(--ed-red-soft);    color: var(--ed-red); }
+
+html[data-ui="ct"] .ed-pill-amber { background: var(--ed-amber-soft);  color: var(--ed-amber); }
+
+html[data-ui="ct"] .ed-pill-violet { background: var(--ed-violet-soft); color: var(--ed-violet); }
+
 html[data-ui="ct"] .ed-pill-neutral { background: var(--ed-surface-3);   color: var(--ed-ink-faint); border: 0.5px solid var(--ed-rule); }
 
 /* ─────────────────────────────────────────
    LAYER 9 — Metric tiles
-   For scores, amounts, stats on home/insights
+   For scores,
+ amounts,
+ stats on home/insights
 ───────────────────────────────────────── */
 
 html[data-ui="ct"] .ed-metrics {
@@ -1300,9 +1324,11 @@ html[data-ui="ct"] .ed-divider {
   margin:     0;
 }
 
-html[data-ui="ct"] .ed-spacer-sm  { height: var(--ed-space-2); }
-html[data-ui="ct"] .ed-spacer-md  { height: var(--ed-space-4); }
-html[data-ui="ct"] .ed-spacer-lg  { height: var(--ed-space-6); }
+html[data-ui="ct"] .ed-spacer-sm { height: var(--ed-space-2); }
+
+html[data-ui="ct"] .ed-spacer-md { height: var(--ed-space-4); }
+
+html[data-ui="ct"] .ed-spacer-lg { height: var(--ed-space-6); }
 
 html[data-ui="ct"] .ed-safe-bottom {
   min-height: calc(var(--ed-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
@@ -1327,14 +1353,18 @@ html[data-ui="ct"] .ed-skeleton {
 
 /* ── Form validation error state ── */
 html[data-ui="ct"] .ed-input.error,
+
 html[data-ui="ct"] .ed-select.error,
+
 html[data-ui="ct"] .ed-you-input.error {
   border-color: var(--ed-red);
   background: var(--ed-red-soft);
 }
 
 html[data-ui="ct"] .ed-input.error:focus,
+
 html[data-ui="ct"] .ed-select.error:focus,
+
 html[data-ui="ct"] .ed-you-input.error:focus {
   border-color: var(--ed-red);
   outline: none;

@@ -3,7 +3,7 @@ import { useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { getTier } from "../../../utils/tierAccess.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import HomeEditorialAvatar from "../home/HomeEditorialAvatar.jsx";
+import { EditorialMastheadRight } from "../../patterns/EditorialMastheadRight.jsx";
 import LedgerAssetsView from "../ledger/LedgerAssetsView.jsx";
 import LedgerLiabilitiesView from "../ledger/LedgerLiabilitiesView.jsx";
 import LedgerInstrumentsView from "../ledger/LedgerInstrumentsView.jsx";
@@ -67,9 +67,7 @@ export default function LedgerPage() {
             <h1 className="ed-title">{t("nav.ledger")}</h1>
             <p className="ed-masthead-sub">{t("ledger.ed.tagline")}</p>
           </div>
-          <div className="ed-masthead-right">
-            <HomeEditorialAvatar tier={tier} />
-          </div>
+          <EditorialMastheadRight tier={tier} />
         </div>
       </header>
 

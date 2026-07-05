@@ -3,6 +3,7 @@ import { Modal, Button, inputClassName } from "../../../ui";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import LendingDetailDashboard from "../lending/LendingDetailDashboard.jsx";
+import { EngineGuard } from "../../primitives/EngineGuard.jsx";
 import { todayYmd } from "../../../utils/dates.js";
 
 const RELATIONSHIP_TAGS = ["friend", "family", "business", "other"];
@@ -52,15 +53,17 @@ export default function LendingDetailModal({ lending, onClose }) {
   return (
     <Modal title={lending.personName} onClose={onClose}>
       <div className="max-h-[75vh] overflow-y-auto pb-2 ed-inset">
-        <LendingDetailDashboard
-          lending={lending}
-          agreementDraft={agreementDraft}
-          setAgreementDraft={setAgreementDraft}
-          onSimulatePay={simulateUpiPay}
-          onAcceptAgreement={acceptAgreement}
-          fileRef={fileRef}
-          onAddProof={addProof}
-        />
+        <EngineGuard>
+          <LendingDetailDashboard
+            lending={lending}
+            agreementDraft={agreementDraft}
+            setAgreementDraft={setAgreementDraft}
+            onSimulatePay={simulateUpiPay}
+            onAcceptAgreement={acceptAgreement}
+            fileRef={fileRef}
+            onAddProof={addProof}
+          />
+        </EngineGuard>
         <div className="mt-4 ed-stack-sm ed-inset">
           <label className="ed-field-label">{t("lending.form.relationship")}</label>
           <select

@@ -1,3 +1,7 @@
+if (import.meta.env.PROD) {
+  throw new Error("devSubscriptionTools must never be imported in production builds.");
+}
+
 import {
   completeSimulatedSubscriptionUpgrade,
   isPaymentSimulationEnabled,

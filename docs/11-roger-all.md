@@ -6,9 +6,11 @@ Say **"roger all"** in Cursor (or run the npm script) whenever you want a comple
 
 ```bash
 npm run roger:all
-npm run roger:all -- --fix      # auto-fix ESLint, then full gate
-npm run roger:all -- --strict   # treat advisories as failures
+npm run roger:all -- --fix       # auto-fix ESLint, then full gate
+npm run roger:relaxed            # advisories do not fail the gate
 ```
+
+`npm run audit` and `npm run roger:all` use **strict mode by default**.
 
 Cursor rule: `.cursor/rules/roger-all.mdc` — the agent runs this workflow automatically when you type **roger all**.
 
@@ -36,7 +38,7 @@ Cursor rule: `.cursor/rules/roger-all.mdc` — the agent runs this workflow auto
 11. Governance (design, mobile, shells, tree, …)
 12. Feature registry + engine tests + cloud sync rules
 
-**Green exit** = safe to ship from a tooling perspective. Yellow advisories (bundle size, engines without tests) are informational unless `--strict`.
+**Green exit** = safe to ship from a tooling perspective. Yellow advisories (deps, governance, bundle size) are informational in strict mode unless they are in a strict-blocking section (code, CSS, i18n).
 
 ## After roger all fails
 

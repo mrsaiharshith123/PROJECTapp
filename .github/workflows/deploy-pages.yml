@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,14 +27,24 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - run: npm ci --legacy-peer-deps
-      - name: Lint
-        run: npm run lint
-      - name: Type check
-        run: npm run typecheck
-      - run: npm test
+      - run: npm run audit
         env:
           VITE_SUPABASE_URL: https://test.supabase.co
           VITE_SUPABASE_ANON_KEY: test-anon-key
+
+  build:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci --legacy-peer-deps
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -52,7 +62,7 @@ jobs:
           path: dist
 
   deploy:
-    needs: build
+    needs: [build]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

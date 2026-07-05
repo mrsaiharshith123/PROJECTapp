@@ -25,4 +25,10 @@ describe("perovoScore", () => {
     expect(r.pillars).toBeTruthy();
     expect(r.tier?.id).toBeTruthy();
   });
+
+  it("higher pressure yields lower score", () => {
+    const low = computePerovoScore({ pressureScore: 20, billPortfolioScore: 70 });
+    const high = computePerovoScore({ pressureScore: 80, billPortfolioScore: 70 });
+    expect(low.score).toBeGreaterThan(high.score);
+  });
 });

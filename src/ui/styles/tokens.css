@@ -2,9 +2,8 @@
    Perovo — Direction H · Editorial Design System
    Warm charcoal · Fraunces + Newsreader + Inter
    All screens use ed-* tokens exclusively
+   Fonts: self-hosted at build time via vite-plugin-webfont-dl
 ═══════════════════════════════════════════════════ */
-
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,400;9..144,0,600;9..144,0,700;9..144,1,400;9..144,1,600;9..144,1,700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Noto+Sans+Ol+Chiki:wght@400;500;600;700&family=Noto+Sans+Oriya:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&display=swap");
 
 /* ── Dark mode (default) ── */
 html[data-ui="ct"] {
@@ -15,6 +14,7 @@ html[data-ui="ct"] {
   /* ── Backgrounds ── */
   --ed-bg:          #16140f;
   --ed-surface:     #1c1a13;
+  --ed-surface-1:   var(--ed-surface);
   --ed-surface-2:   #232019;
   --ed-surface-3:   #2a2720;
 
@@ -99,6 +99,7 @@ html[data-ui="ct"] {
   --ed-ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
   --ed-t-fast:       120ms;
   --ed-t-base:       200ms;
+  --ed-t-med:        var(--ed-t-base);
   --ed-t-slow:       320ms;
   --ed-motion:       var(--ed-t-base) var(--ed-ease);
 
@@ -135,6 +136,80 @@ html[data-ui="ct"] {
   --ct-radius-2xl: var(--ed-r-xl);
   --ct-font-display: var(--ed-font-serif);
   --ct-progress-track-bg: var(--ed-rule);
+  --ct-page-inset-x: var(--ed-page-x);
+  --ct-page-inset-top: var(--ed-page-top);
+  --ct-duration-fast: var(--ed-t-fast);
+  --ct-duration-base: var(--ed-t-base);
+  --ct-duration-enter: var(--ed-t-slow);
+  --ct-ease-out-expo: var(--ed-ease);
+  --ct-ease-in-out: var(--ed-ease-in-out);
+  --ct-radius-sm: var(--ed-r-sm);
+  --ct-radius-md: var(--ed-r-md);
+  --ct-radius-full: var(--ed-r-full);
+  --ct-nav-h: var(--ed-nav-h);
+  --ct-nav-fab-size: 52px;
+  --ct-bg: var(--ed-bg);
+  --ct-bg-elevated: var(--ed-surface);
+  --ct-surface-raised: var(--ed-surface-2);
+  --ct-surface-glass: var(--ed-surface);
+  --ct-border-strong: var(--ed-rule-strong);
+  --ct-border-accent: var(--ed-gold);
+  --ct-border-accent-soft: var(--ed-gold-soft);
+  --ct-border-success: var(--ed-green-soft);
+  --ct-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --ct-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --ct-shadow-dock: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  --ct-shadow-glow: 0 0 24px var(--ed-gold-soft);
+  --ct-shadow-indigo: 0 0 20px var(--ed-indigo-soft);
+  --ct-glass-blur: 12px;
+  --ct-spring: var(--ed-ease-spring);
+  --ct-accent-glow: var(--ed-gold-soft);
+  --ct-hero-from: var(--ed-surface);
+  --ct-hero-mid: var(--ed-surface-2);
+  --ct-hero-to: var(--ed-bg);
+  --ct-hero-inset-bg: var(--ed-surface-2);
+  --ct-hero-inset-border: var(--ed-rule);
+  --ct-life-grad: linear-gradient(135deg, var(--ed-surface) 0%, var(--ed-surface-2) 100%);
+  --ct-life-grad-soft: linear-gradient(180deg, var(--ed-surface) 0%, var(--ed-bg) 100%);
+  --ct-life-grad-panel: var(--ed-surface-2);
+  --ct-life-grad-hero: var(--ct-life-grad);
+  --ct-life-grad-surface: var(--ed-surface);
+  --ct-life-shadow: var(--ct-shadow-card);
+  --ct-life-inset-bg: var(--ed-surface-2);
+  --ct-life-inset-border: var(--ed-rule);
+  --ct-life-heading: var(--ed-ink);
+  --ct-life-label: var(--ed-ink-soft);
+  --ct-life-btn-grad: linear-gradient(135deg, var(--ed-gold) 0%, var(--ed-gold-deep) 100%);
+  --ct-life-btn-border: var(--ed-gold-deep);
+  --ct-life-btn-shadow: var(--ct-shadow);
+  --ct-life-btn-shadow-hover: var(--ct-shadow-card);
+  --ct-life-glass: var(--ed-surface);
+  --ct-life-glow: var(--ed-gold-soft);
+  --ct-life-footer-wash: var(--ed-bg);
+  --ct-card-danger-grad: linear-gradient(135deg, var(--ed-red-soft) 0%, var(--ed-surface) 100%);
+  --ct-teal-text: var(--ed-green);
+  --ct-teal-soft: var(--ed-green-soft);
+  --ct-coral-text: var(--ed-red);
+  --ct-coral-soft: var(--ed-red-soft);
+  --ct-gold-text: var(--ed-gold);
+  --ct-gold-soft: var(--ed-gold-soft);
+  --ct-info-text: var(--ed-blue);
+  --ct-info-soft: var(--ed-blue-soft);
+  --ct-glow-teal: var(--ed-green-soft);
+  --ct-glow-amber: var(--ed-amber-soft);
+  --ct-glow-indigo: var(--ed-indigo-soft);
+  --ct-grad-primary-btn: var(--ct-life-btn-grad);
+  --ct-grad-teal-fill: linear-gradient(135deg, var(--ed-green-soft) 0%, var(--ed-surface) 100%);
+  --ct-grad-amber-fill: linear-gradient(135deg, var(--ed-amber-soft) 0%, var(--ed-surface) 100%);
+  --ct-grad-danger-fill: var(--ct-card-danger-grad);
+  --ct-grad-lending: linear-gradient(135deg, var(--ed-indigo-soft) 0%, var(--ed-surface) 100%);
+  --ct-grad-pressure: linear-gradient(135deg, var(--ed-amber-soft) 0%, var(--ed-red-soft) 100%);
+  --ct-grad-survival: linear-gradient(135deg, var(--ed-green-soft) 0%, var(--ed-blue-soft) 100%);
+  --ct-grad-wealth: linear-gradient(135deg, var(--ed-gold-soft) 0%, var(--ed-violet-soft) 100%);
+  --ct-health-strip-bg: var(--ed-surface-2);
+  --ct-insight-surface-end: var(--ed-surface);
+  --ct-insight-violet-bg: var(--ed-violet-soft);
+  --dev-phone-h: 720px;
 }
 
 /* ── Light mode ── */
@@ -182,6 +257,48 @@ html[data-ui="ct"][data-theme="light"] {
   --ed-backdrop: rgba(26, 24, 20, 0.55);
 }
 
+/* ── AMOLED dark mode — true black for AMOLED screens ── */
+html[data-ui="ct"][data-theme="amoled"] {
+  color-scheme: dark;
+
+  --ed-bg:          #000000;
+  --ed-surface:     #0d0c09;
+  --ed-surface-2:   #131109;
+  --ed-surface-3:   #1a1710;
+
+  --ed-ink:         #f0ebe0;
+  --ed-ink-soft:    #c4bdac;
+  --ed-ink-faint:   #7d7665;
+  --ed-ink-zero:    #3d3928;
+
+  --ed-rule:        rgba(240, 235, 224, 0.10);
+  --ed-rule-soft:   rgba(240, 235, 224, 0.06);
+  --ed-rule-strong: rgba(240, 235, 224, 0.18);
+
+  --ed-gold:        #e3c489;
+  --ed-gold-soft:   rgba(227, 196, 137, 0.10);
+  --ed-gold-deep:   #c9a96a;
+
+  --ed-green:       #5ec795;
+  --ed-green-soft:  rgba(94, 199, 149, 0.10);
+  --ed-red:         #e89490;
+  --ed-red-soft:    rgba(232, 148, 144, 0.10);
+  --ed-amber:       #e3b06a;
+  --ed-amber-soft:  rgba(227, 176, 106, 0.10);
+  --ed-violet:      #b3a0e8;
+  --ed-violet-soft: rgba(179, 160, 232, 0.10);
+  --ed-blue:        #7aaee3;
+  --ed-blue-soft:   rgba(122, 174, 227, 0.10);
+  --ed-indigo:      #8b9de8;
+  --ed-indigo-soft: rgba(139, 157, 232, 0.10);
+
+  --ed-backdrop:    rgba(0, 0, 0, 0.80);
+
+  --ed-navbg:       #000000;
+  --ed-navink:      rgba(240, 235, 224, 0.35);
+  --ed-navon:       #f0ebe0;
+}
+
 /* ── Base body ── */
 html[data-ui="ct"] body {
   font-family:              var(--ed-font);
@@ -224,4 +341,64 @@ html[data-ui="ct"][data-script="Ol Chiki"] {
 }
 html[data-ui="ct"][data-script="Arabic"] {
   --ed-font: "Noto Nastaliq Urdu", "Inter", system-ui, sans-serif;
+}
+
+@keyframes ed-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+html[data-ui="ct"] .ed-offline-screen {
+  min-height: 100dvh;
+  background: var(--ed-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px var(--ed-page-x);
+  text-align: center;
+  gap: 20px;
+}
+
+html[data-ui="ct"] .ed-offline-icon {
+  font-size: 64px;
+  line-height: 1;
+  animation: ed-float 3s ease-in-out infinite;
+}
+
+html[data-ui="ct"] .ed-offline-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+html[data-ui="ct"] .ed-offline-title {
+  font-family: var(--ed-font-serif);
+  font-size: 24px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--ed-ink);
+  margin: 0;
+}
+
+html[data-ui="ct"] .ed-offline-body {
+  font-size: 14px;
+  color: var(--ed-ink-faint);
+  max-width: 280px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+html[data-ui="ct"] .ed-offline-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--ed-ink-soft);
 }

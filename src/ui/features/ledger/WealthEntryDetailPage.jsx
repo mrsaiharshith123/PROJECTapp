@@ -10,6 +10,7 @@ import { fetchAssetInsight, fetchPropertyValueHistory, PHYSICAL_ASSET_TYPES, res
 import { expandMilestonesToSeries } from "../../../utils/netWorth/propertyValueHistory.js";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import MarketAnalysis from "./MarketAnalysis.jsx";
+import { EngineGuard } from "../../primitives/EngineGuard.jsx";
 import ValueHistoryChart from "./ValueHistoryChart.jsx";
 
 import PropertyDetailSections from "./detail/PropertyDetailSections.jsx";
@@ -138,10 +139,12 @@ export default function WealthEntryDetailPage() {
   );
 
   useEffect(() => {
-    setLiveMarketOpen(false);
-    setAnalysis(null);
-    setAnalyzeErr("");
-    setHistoryLoading(false);
+    queueMicrotask(() => {
+      setLiveMarketOpen(false);
+      setAnalysis(null);
+      setAnalyzeErr("");
+      setHistoryLoading(false);
+    });
   }, [id]);
 
   if (!entry || !intel) {
@@ -432,15 +435,17 @@ export default function WealthEntryDetailPage() {
 
               {hasLiveMarket && !analyzing ? (
                 <>
-                  <MarketAnalysis
-                    t={t}
-                    marketData={analysis.marketData}
-                    categoryId={entry.categoryId}
-                    insight={analysis.insight}
-                    source={analysis.source}
-                    formatAmount={formatAmount}
-                    areaMeasure={entry.areaMeasure}
-                  />
+                  <EngineGuard>
+                    <MarketAnalysis
+                      t={t}
+                      marketData={analysis.marketData}
+                      categoryId={entry.categoryId}
+                      insight={analysis.insight}
+                      source={analysis.source}
+                      formatAmount={formatAmount}
+                      areaMeasure={entry.areaMeasure}
+                    />
+                  </EngineGuard>
 
                   {isAutoEstimated && impliedMarketValue > 0 ? (
                     <div

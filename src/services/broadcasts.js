@@ -26,7 +26,7 @@ export async function fetchActiveBroadcasts(userId, userTier = "free") {
       .order("active_from", { ascending: false });
 
     if (dismissedIds.length > 0) {
-      query = query.not("id", "in", `(${dismissedIds.join(",")})`);
+      query = query.not("id", "in", dismissedIds);
     }
 
     const { data, error } = await query;
@@ -71,11 +71,14 @@ export async function fetchUserNotifications(userId) {
 export async function dismissBroadcast(userId, broadcastId) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId || !broadcastId) return;
-  await supabase
-    .from("user_broadcast_dismissals")
-    .upsert({ user_id: userId, broadcast_id: broadcastId })
-    .throwOnError()
-    .catch(() => {});
+  try {
+    const { error } = await supabase
+      .from("user_broadcast_dismissals")
+      .upsert({ user_id: userId, broadcast_id: broadcastId });
+    if (error) throw error;
+  } catch {
+    /* non-fatal */
+  }
 }
 
 /**
@@ -85,11 +88,14 @@ export async function dismissBroadcast(userId, broadcastId) {
 export async function markUserNotificationRead(userId, notificationId) {
   const supabase = getSupabaseClient();
   if (!supabase || !userId || !notificationId) return;
-  await supabase
-    .from("user_notifications")
-    .update({ read: true })
-    .eq("user_id", userId)
-    .eq("id", notificationId)
-    .throwOnError()
-    .catch(() => {});
+  try {
+    const { error } = await supabase
+      .from("user_notifications")
+      .update({ read: true })
+      .eq("user_id", userId)
+      .eq("id", notificationId);
+    if (error) throw error;
+  } catch {
+    /* non-fatal */
+  }
 }

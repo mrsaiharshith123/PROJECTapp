@@ -1,14 +1,49 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../utils/cn.js";
 import { Heading } from "./Text.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
+
+function useFocusTrap(active) {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    if (!active || !panelRef.current) return undefined;
+
+    const focusable = panelRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first?.focus();
+
+    function onKey(e) {
+      if (e.key !== "Tab") return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
+      } else if (document.activeElement === last) {
+        e.preventDefault();
+        first?.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [active]);
+
+  return panelRef;
+}
 
 /**
  * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode, fullScreen?: boolean, sheet?: boolean, darkSheet?: boolean }} props
  */
 export function Modal({ title, children, onClose, footer, fullScreen = false, sheet = false, darkSheet = false }) {
   const { t } = useTranslation();
+  const panelRef = useFocusTrap(true);
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -16,6 +51,14 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
       document.body.style.overflow = prev;
     };
   }, []);
+
+  useEffect(() => {
+    function handleEsc(e) {
+      if (e.key === "Escape") onClose?.();
+    }
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
 
   const panel = (
     <div
@@ -29,6 +72,7 @@ export function Modal({ title, children, onClose, footer, fullScreen = false, sh
     >
       <button type="button" className="ed-modal-backdrop" aria-label={t("common.close")} onClick={onClose} />
       <div
+        ref={panelRef}
         className={cn(
           "ed-modal-panel",
           sheet ? "ed-modal-panel--sheet ed-animate-sheet-up" : "ed-animate-scale-in",
