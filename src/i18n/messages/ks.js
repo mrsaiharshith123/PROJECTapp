@@ -1,3 +1,5 @@
+/** Kashmiri (ks) locale — Perovo messages */
+
 export default {
   "brand.appName": "پیروو",
   "brand.byTadsaya": "",
@@ -189,6 +191,9 @@ export default {
   "home.ed.attention.primaryCta": "حل کریں →",
   "home.ed.attention.overdueKick": "Overdue · Act now",
   "home.ed.attention.dueSoonKick": "Due soon",
+  "home.ed.attention.pressureKick": "High pressure",
+  "home.ed.attention.lowCashKick": "Low free cash",
+  "home.ed.attention.alertKick": "Watch",
   "home.ed.attention.insuranceOverdueHead": "انشورنس پریمیم واجب الادا چھُ۔",
   "home.ed.attention.billOverdueHead": "Bill overdue",
   "home.ed.attention.lendingOverdueHead": "قرض کٕ واپسی واجب الادا چھُ۔",

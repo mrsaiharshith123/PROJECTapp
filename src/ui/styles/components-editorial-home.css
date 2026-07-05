@@ -21,16 +21,6 @@ html[data-ui="ct"] .ed-page.ed-paper {
   gap: 0;
 }
 
-html[data-ui="ct"] .ed-masthead-top {
-  padding: 0 var(--ed-page-x);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 12px;
-  width: 100%;
-  flex: 0 0 auto;
-}
-
 html[data-ui="ct"] .ed-masthead + .ed-agreements-actions,
 
 html[data-ui="ct"] .ed-masthead + .ed-ins-story {

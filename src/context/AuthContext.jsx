@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   getAuthSession,
-  getSupabaseClient,
   loadUserProfile,
   onAuthStateChanged,
   requestPasswordReset,
@@ -11,7 +10,7 @@ import {
   signUpWithEmail,
   updateUserPassword,
 } from "../services/supabase/auth.js";
-import { formatAuthError } from "../utils/authErrors.js";
+import { formatAuthError, isTransientAuthError } from "../utils/authErrors.js";
 import {
   clearAccountSeedKeys,
   clearSignupPending,
@@ -43,7 +42,7 @@ export function AuthProvider({ children }) {
   const [authNotice, setAuthNotice] = useState("");
 
   const hardSignOut = useCallback(async (userId, notice = "") => {
-    await signOutAuth();
+    await signOutAuth("local");
     clearAccountSeedKeys(userId);
     clearSignupPending();
     resetLocalAccountFlags();
@@ -95,17 +94,22 @@ export function AuthProvider({ children }) {
         if (p?.onboarding_complete) clearSignupPending();
         return p;
       } catch (e) {
-        setProfileResolved(true);
         const message = e instanceof Error ? e.message : String(e);
         if (message.includes("profile_timeout")) {
-          log.auth.warn("Profile load timed out — continuing with cached session");
+          log.auth.warn("Profile load timed out — keeping session, will retry");
+          if (!background) setProfileResolved(false);
           return null;
         }
+        setProfileResolved(true);
         if (isProfilesTableMissingError(e)) {
           await hardSignOut(
             userId,
             "Account tables are missing in Supabase. Run migrations in supabase/migrations/, then create your account.",
           );
+          return null;
+        }
+        if (isTransientAuthError(e)) {
+          log.auth.warn("Profile load transient error — keeping session", { message: formatAuthError(e) });
           return null;
         }
         throw e;
@@ -141,14 +145,6 @@ export function AuthProvider({ children }) {
         setProfileResolved(true);
         return;
       }
-      const supabase = getSupabaseClient();
-      if (supabase && event === "SIGNED_IN") {
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data?.user) {
-          await hardSignOut(u.id, "Your session ended — sign in again.");
-          return;
-        }
-      }
       try {
         await refreshProfile(u.id, { background: event === "TOKEN_REFRESHED" });
         if (isCloudSyncConfigured()) {
@@ -165,7 +161,8 @@ export function AuthProvider({ children }) {
         }
       } catch (e) {
         log.auth.error("Profile refresh failed", { message: formatAuthError(e) });
-        if (!isProfilesTableMissingError(e) && event !== "TOKEN_REFRESHED") {
+        if (isTransientAuthError(e) || event === "TOKEN_REFRESHED") return;
+        if (!isProfilesTableMissingError(e)) {
           await hardSignOut(u.id, "Could not load your account. Sign in again.");
         }
       }
@@ -176,6 +173,14 @@ export function AuthProvider({ children }) {
       unsubscribe();
     };
   }, [refreshProfile, hardSignOut]);
+
+  useEffect(() => {
+    if (!user?.id || profile || profileResolved) return;
+    const timer = window.setTimeout(() => {
+      void refreshProfile(user.id, { background: true });
+    }, 2500);
+    return () => window.clearTimeout(timer);
+  }, [user?.id, profile, profileResolved, refreshProfile]);
 
   const signUp = useCallback(async (email, password, metadata = null) => {
     const result = await signUpWithEmail(email, password, metadata);
@@ -201,8 +206,17 @@ export function AuthProvider({ children }) {
   const signOut = useCallback(async () => {
     const uid = user?.id;
     setAuthNotice("");
-    await hardSignOut(uid);
-  }, [user?.id, hardSignOut]);
+    await signOutAuth("global");
+    clearAccountSeedKeys(uid);
+    clearSignupPending();
+    resetLocalAccountFlags();
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setProfileResolved(true);
+    clearAnalyticsUser();
+    trackEvent(ANALYTICS_EVENTS.AUTH_SIGN_OUT, { module: "auth" });
+  }, [user?.id]);
 
   const resetPassword = useCallback(async (email) => {
     setAuthNotice("");

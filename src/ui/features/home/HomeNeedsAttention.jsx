@@ -2,7 +2,9 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
+import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
+import { translateInsight } from "../../../i18n/insightLabels.js";
 import { isActiveBill } from "../../../utils/billLifecycle.js";
 import { getBillDisplayName } from "../../../utils/billDisplayName.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
@@ -20,10 +22,20 @@ function attentionBillTitle(commitment) {
   return full.length > 28 ? `${full.slice(0, 26)}…` : full;
 }
 
+function insightKicker(insight, t) {
+  if (insight.id === "free-cash-low") return t("home.ed.attention.lowCashKick");
+  if (insight.id?.startsWith("burden") || insight.id?.includes("pressure") || insight.id?.includes("emi")) {
+    return t("home.ed.attention.pressureKick");
+  }
+  return t("home.ed.attention.alertKick");
+}
+
 function AttentionRow({ item, navigate, formatAmount, t, primary = false }) {
   const isOverdue = item.overdue;
-  const tone = isOverdue ? "danger" : "warning";
-  const kickerText = isOverdue ? t("home.ed.attention.overdueKick") : t("home.ed.attention.dueSoonKick");
+  const tone = item.tone || (isOverdue ? "danger" : "warning");
+  const kickerText =
+    item.kicker ||
+    (isOverdue ? t("home.ed.attention.overdueKick") : t("home.ed.attention.dueSoonKick"));
 
   return (
     <button
@@ -35,10 +47,12 @@ function AttentionRow({ item, navigate, formatAmount, t, primary = false }) {
       <div className="ed-break-body">
         <div className={`ed-break-kick ${tone}`}>{kickerText}</div>
         <div className="ed-break-head">{item.name}</div>
-        <div className="ed-break-sub">{item.statusText}</div>
+        {item.statusText ? <div className="ed-break-sub">{item.statusText}</div> : null}
         {primary ? <span className="ed-break-cta">{t("home.ed.attention.primaryCta")}</span> : null}
       </div>
-      <span className={`ed-break-amt ${tone}`}>{formatAmount(item.amount)}</span>
+      {item.amount != null ? (
+        <span className={`ed-break-amt ${tone}`}>{formatAmount(item.amount)}</span>
+      ) : null}
     </button>
   );
 }
@@ -47,16 +61,16 @@ export default function HomeNeedsAttention() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { sortedCommitments, lendings, getEffectiveStatus, todayStr } = usePerovo();
+  const { insights } = useCommitIntel();
   const { formatAmount } = usePrivacyAmount();
 
-  const { overdue, dueSoon, totalCount } = useMemo(() => {
+  const { overdueAll, dueSoonAll, intelAll } = useMemo(() => {
     /** @type {object[]} */
     const overdueRows = [];
     /** @type {object[]} */
     const dueSoonRows = [];
 
     for (const c of sortedCommitments) {
-      if (overdueRows.length >= 2) break;
       if (!isActiveBill(c, getEffectiveStatus, todayStr)) continue;
       const status = getEffectiveStatus(c);
       if (status !== "overdue") continue;
@@ -72,10 +86,8 @@ export default function HomeNeedsAttention() {
     }
 
     for (const l of lendings) {
-      if (overdueRows.length >= 2) break;
       if (l.type !== "lent") continue;
       for (const r of l.repaymentSchedule || []) {
-        if (overdueRows.length >= 2) break;
         if (r.paymentStatus === "paid" || !r.dueDate) continue;
         const daysLate = differenceInCalendarDays(parseISO(todayStr), parseISO(r.dueDate));
         if (daysLate <= 0) continue;
@@ -91,7 +103,6 @@ export default function HomeNeedsAttention() {
     }
 
     for (const c of sortedCommitments) {
-      if (dueSoonRows.length >= 2) break;
       if (!isActiveBill(c, getEffectiveStatus, todayStr)) continue;
       const status = getEffectiveStatus(c);
       if (status !== "pending") continue;
@@ -107,12 +118,28 @@ export default function HomeNeedsAttention() {
       });
     }
 
-    const shownOverdue = overdueRows.slice(0, 1);
-    const shownDueSoon = dueSoonRows.slice(0, shownOverdue.length ? 1 : 2);
-    const total = overdueRows.length + dueSoonRows.length;
+    const intelRows = [];
+    const hasOverdueBills = overdueRows.length > 0;
+    for (const ins of insights) {
+      if (ins.tone !== "critical" && ins.tone !== "warning") continue;
+      if (hasOverdueBills && ins.id === "multi-overdue") continue;
+      intelRows.push({
+        id: `intel-${ins.id}`,
+        name: translateInsight(t, ins),
+        kicker: insightKicker(ins, t),
+        tone: ins.tone === "critical" ? "danger" : "warning",
+        to: "/insights",
+      });
+    }
 
-    return { overdue: shownOverdue, dueSoon: shownDueSoon, totalCount: total };
-  }, [sortedCommitments, lendings, getEffectiveStatus, todayStr, t]);
+    return { overdueAll: overdueRows, dueSoonAll: dueSoonRows, intelAll: intelRows };
+  }, [sortedCommitments, lendings, getEffectiveStatus, todayStr, insights, t]);
+
+  const overdue = overdueAll.slice(0, 2);
+  const dueSoon = dueSoonAll.slice(0, overdue.length ? 2 : 3);
+  const intel = intelAll.slice(0, 2);
+  const rows = [...overdue, ...dueSoon, ...intel];
+  const totalCount = overdueAll.length + dueSoonAll.length + intelAll.length;
 
   if (totalCount === 0) return null;
 
@@ -128,18 +155,15 @@ export default function HomeNeedsAttention() {
         {sectionTitle}
         {totalCount > 1 ? <span className="ed-break-section-badge">{totalCount}</span> : null}
       </div>
-      {overdue.map((item, i) => (
+      {rows.map((item, i) => (
         <AttentionRow
           key={item.id}
           item={item}
           navigate={navigate}
           formatAmount={formatAmount}
           t={t}
-          primary={i === 0}
+          primary={i === 0 && item.overdue}
         />
-      ))}
-      {dueSoon.map((item) => (
-        <AttentionRow key={item.id} item={item} navigate={navigate} formatAmount={formatAmount} t={t} />
       ))}
     </section>
   );

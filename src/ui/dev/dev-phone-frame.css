@@ -95,43 +95,11 @@
   position: relative;
   background: #16140f;
 
-  /* Simulate Android S23 FE safe areas */
+  /* Simulate Android status-bar inset — absorbed by .ed-masthead, not a separate frame */
   --sat: 36px;
   --sab: 20px;
   padding-top: 0;
   padding-bottom: 0;
-}
-
-/* Fake status bar — shows time/battery area */
-.dev-phone-screen::before {
-  content: "";
-  display: block;
-  width: 100%;
-  height: 36px;
-  background: #16140f;
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  flex-shrink: 0;
-  pointer-events: none;
-}
-
-/* Fake status bar text */
-.dev-phone-screen::after {
-  content: "9:41  ·  ·  ·";
-  position: fixed;
-  top: 8px;
-  left: 0;
-  width: var(--dev-phone-w, 412px);
-  display: flex;
-  justify-content: space-between;
-  padding: 0 20px;
-  font-family: system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(240, 235, 224, 0.7);
-  pointer-events: none;
-  z-index: 10000;
 }
 
 /* Mobile shell only — laptop viewport width must not switch to desktop nav. */
@@ -234,11 +202,11 @@ html[data-dev-phone-frame="1"] .dev-phone-screen {
   background: var(--ed-bg, #16140f);
 }
 
-/* Safe area inset simulation */
+/* Safe area inset simulation — masthead owns top chrome (no duplicate status frame) */
 html[data-dev-phone-frame="1"] {
   --sat: 36px;
   --sab: 20px;
-  --ed-masthead-band-h: 72px;
+  --ed-mast-safe-top: var(--sat);
 }
 
 /* Masthead absorbs simulated status bar — page shell stays flush */

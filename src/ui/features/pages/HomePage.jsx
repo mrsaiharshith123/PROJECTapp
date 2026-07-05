@@ -5,7 +5,6 @@ import { getTier } from "../../../utils/tierAccess.js";
 import { AppTourModal } from "../../guidance/AppTourModal.jsx";
 import HomeEditorialHeader from "../home/HomeEditorialHeader.jsx";
 import { EngineGuard } from "../../primitives/EngineGuard.jsx";
-import HomeFinancialPulse from "../home/HomeFinancialPulse.jsx";
 import HomeNetPositionHero from "../home/HomeNetPositionHero.jsx";
 import HomeCategoryTiles from "../home/HomeCategoryTiles.jsx";
 import HomeQuickActions from "../home/HomeQuickActions.jsx";
@@ -42,9 +41,6 @@ const Home = () => {
       />
 
       <HomeEditorialHeader tier={tier} />
-      <EngineGuard>
-        <HomeFinancialPulse />
-      </EngineGuard>
 
       <div className="ed-home-body">
         <HomeNetPositionHero />

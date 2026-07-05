@@ -3,7 +3,7 @@
  profile glimpse,
  shared page chrome */
 
-/* ── Masthead: date + avatar pinned top-right (home uses .ed-masthead-top) ── */
+/* ── Masthead: date + bell + avatar inline with title (no separate status frame) ── */
 html[data-ui="ct"] .ed-masthead-top {
   display: flex;
   justify-content: space-between;
@@ -11,7 +11,6 @@ html[data-ui="ct"] .ed-masthead-top {
   gap: 12px;
   width: 100%;
   flex: 0 0 auto;
-  padding: 0 var(--ed-page-x);
 }
 
 html[data-ui="ct"] .ed-masthead-brand {
@@ -45,7 +44,7 @@ html[data-ui="ct"] .ed-glimpse-backdrop {
 
 html[data-ui="ct"] .ed-glimpse {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 58px);
+  top: calc(var(--ed-mast-safe-top) + var(--ed-masthead-total-h) + 6px);
   right: max(var(--ed-page-x), env(safe-area-inset-right, 0px));
   z-index: 101;
   width: min(320px, calc(100vw - 2 * var(--ed-page-x)));

@@ -1,11 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { normalizePan } from "../../utils/pan.js";
 import { log } from "../../utils/logger.js";
-import { formatAuthError } from "../../utils/authErrors.js";
+import { formatAuthError, isDefinitiveAuthError } from "../../utils/authErrors.js";
 import { ProfilesTableMissingError } from "../../utils/authSessionCleanup.js";
 import { pickAccountSettingsForServer } from "../../utils/accountSettingsSync.js";
 import { invokeEdgeFunction } from "./invokeEdgeFunction.js";
 import { isRateLimited } from "../../utils/withRateLimit.js";
+import { isEmbeddedApp } from "../../utils/embeddedApp.js";
 
 /**
  * Build a full profiles row for upsert — never null-out fields omitted from patch.
@@ -101,7 +102,8 @@ export function getSupabaseClient() {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true,
+      // Hash tokens in Capacitor WebView can false-trigger sign-out loops.
+      detectSessionInUrl: !isEmbeddedApp(),
     },
   });
   log.auth.info("Supabase client initialized");
@@ -118,23 +120,44 @@ export async function getAuthSession() {
   const supabase = getSupabaseClient();
   if (!supabase) return { session: null, user: null };
 
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
-    log.auth.warn("No valid server user — clearing local session", {
-      message: userError?.message,
-    });
-    try {
-      await supabase.auth.signOut({ scope: "local" });
-    } catch {
-      /* ignore */
-    }
-    return { session: null, user: null };
-  }
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throwAuth(sessionError, "Could not read session");
 
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throwAuth(error, "Could not read session");
-  log.auth.debug("Session loaded", { hasSession: Boolean(data.session) });
-  return { session: data.session, user: userData.user };
+  const session = sessionData.session;
+  if (!session?.user) return { session: null, user: null };
+
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError) {
+      if (isDefinitiveAuthError(userError)) {
+        log.auth.warn("Invalid server user — clearing local session", {
+          message: userError.message,
+        });
+        try {
+          await supabase.auth.signOut({ scope: "local" });
+        } catch {
+          /* ignore */
+        }
+        return { session: null, user: null };
+      }
+      log.auth.warn("getUser failed transiently — keeping cached session", {
+        message: userError.message,
+      });
+      return { session, user: session.user };
+    }
+    return { session, user: userData.user ?? session.user };
+  } catch (e) {
+    if (isDefinitiveAuthError(e)) {
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        /* ignore */
+      }
+      return { session: null, user: null };
+    }
+    log.auth.warn("getUser threw — keeping cached session", { message: formatAuthError(e) });
+    return { session, user: session.user };
+  }
 }
 
 export async function signUpWithEmail(email, password, metadata = null) {
@@ -204,14 +227,16 @@ export async function updateUserPassword(newPassword) {
   if (error) throwAuth(error, "Update password failed");
 }
 
-export async function signOutAuth() {
+export async function signOutAuth(scope = "global") {
   const supabase = getSupabaseClient();
   if (!supabase) return;
-  log.auth.info("Sign out");
-  const { error } = await supabase.auth.signOut({ scope: "global" });
-  if (error) {
+  log.auth.info("Sign out", { scope });
+  const { error } = await supabase.auth.signOut({ scope });
+  if (error && scope === "global") {
     const localOnly = await supabase.auth.signOut({ scope: "local" });
     if (localOnly.error) throwAuth(localOnly.error, "Sign out failed");
+  } else if (error) {
+    throwAuth(error, "Sign out failed");
   }
 }
 

@@ -1,7 +1,14 @@
 import { getSupabaseClient } from "../supabase/auth.js";
 import { getAssetCategory } from "../../constants/netWorth/wealthCategories.js";
 import { analyzePropertyLocation } from "../../engines/propertyLocationIntel.js";
-import { expandMilestonesToSeries } from "../../utils/netWorth/propertyValueHistory.js";
+import {
+  expandMilestonesToSeries,
+  buildHistoryExpandOpts,
+} from "../../utils/netWorth/propertyValueHistory.js";
+import {
+  stabilizePropertyMarketRate,
+  applyStabilizedMarketRate,
+} from "../../utils/netWorth/propertyMarketRate.js";
 
 const ASSET_INSIGHT_FUNCTION = "asset-insight";
 
@@ -32,31 +39,107 @@ const PROPERTY_IDS = new Set([
   "property_commercial",
 ]);
 
-const AI_CACHE_KEY = "perovo_property_ai_cache_v1";
+const AI_CACHE_KEY = "perovo_property_ai_cache_v2";
 const AI_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const LOCALITY_RATE_KEY = "perovo_locality_rate_v2";
+const LOCALITY_RATE_TTL_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 const AI_COOLDOWN_MS = 2 * 60 * 1000;
 /** @type {Map<string, Promise<unknown>>} */
 const inflight = new Map();
 
-function propertyCacheKey(fields, extra = {}) {
-  // Location + area + category determine the market rate.
-  // currentValue excluded — two plots at same location share one cache entry.
+function normalizePropertyLoc(fields) {
   const loc = (fields.location || "")
     .toLowerCase()
     .replace(/\s*,\s*/g, ",")
     .replace(/\s+/g, " ")
     .trim();
-  return JSON.stringify({
-    loc,
-    area: fields.areaMeasure,
-    unit: fields.areaUnit,
-    categoryId: fields.categoryId,
-    ...extra,
-  });
+  const lat =
+    fields.latitude != null && !Number.isNaN(Number(fields.latitude))
+      ? Math.round(Number(fields.latitude) * 1000) / 1000
+      : null;
+  const lng =
+    fields.longitude != null && !Number.isNaN(Number(fields.longitude))
+      ? Math.round(Number(fields.longitude) * 1000) / 1000
+      : null;
+  return { loc, lat, lng, categoryId: fields.categoryId };
+}
+
+function propertyCacheKey(fields, extra = {}) {
+  // ₹/sqyd is locality-based — same GPS/address shares one cache (area applied at expand time).
+  const { loc, lat, lng, categoryId } = normalizePropertyLoc(fields);
+  return JSON.stringify({ loc, lat, lng, categoryId, ...extra });
+}
+
+function readLocalityRate(locKey) {
+  try {
+    const raw = localStorage.getItem(LOCALITY_RATE_KEY);
+    const store = raw ? JSON.parse(raw) : {};
+    const hit = store[locKey];
+    if (!hit || Date.now() - hit.at > LOCALITY_RATE_TTL_MS) return null;
+    return hit;
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalityRate(locKey, rate, govtRate) {
+  try {
+    const raw = localStorage.getItem(LOCALITY_RATE_KEY);
+    const store = raw ? JSON.parse(raw) : {};
+    store[locKey] = { rate, govtRate: govtRate ?? null, at: Date.now() };
+    localStorage.setItem(LOCALITY_RATE_KEY, JSON.stringify(store));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+/** Merge new AI rate with persisted locality — reject >15% jumps. */
+function mergeLocalityRate(locKey, incomingRate, govtRate) {
+  const prev = readLocalityRate(locKey);
+  if (!prev?.rate) {
+    writeLocalityRate(locKey, incomingRate, govtRate);
+    return incomingRate;
+  }
+  const delta = Math.abs(incomingRate - prev.rate) / prev.rate;
+  let merged = incomingRate;
+  if (delta > 0.15) {
+    merged = prev.rate;
+  } else if (delta > 0.03) {
+    merged = Math.round(prev.rate * 0.85 + incomingRate * 0.15);
+  } else {
+    merged = prev.rate;
+  }
+  writeLocalityRate(locKey, merged, govtRate ?? prev.govtRate);
+  return merged;
+}
+
+/** @param {unknown} payload */
+function extractMilestones(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  const p = /** @type {Record<string, unknown>} */ (payload);
+  const md = p.marketData && typeof p.marketData === "object" ? p.marketData : null;
+  const fromTop = p.milestones;
+  const fromMd = md && /** @type {Record<string, unknown>} */ (md).milestones;
+  const ms = Array.isArray(fromTop) ? fromTop : Array.isArray(fromMd) ? fromMd : null;
+  return ms && ms.length >= 2 ? ms : null;
+}
+
+function cacheExpectsMilestones(cacheKey) {
+  if (!cacheKey) return false;
+  try {
+    const k = JSON.parse(cacheKey);
+    return Boolean(k.withHistory || k.history);
+  } catch {
+    return false;
+  }
 }
 
 function clearPropertyAiCache(fields, extra = {}) {
   const key = propertyCacheKey(fields, extra);
+  clearPropertyAiCacheByKey(key);
+}
+
+function clearPropertyAiCacheByKey(key) {
   try {
     const raw = localStorage.getItem(AI_CACHE_KEY);
     const store = raw ? JSON.parse(raw) : {};
@@ -117,7 +200,13 @@ function setCooldown(key, ms = AI_COOLDOWN_MS) {
 async function invokeAssetInsight(body, cacheKey) {
   if (cacheKey) {
     const cached = readAiCache(cacheKey);
-    if (cached) return cached;
+    if (cached) {
+      const needsMilestones = cacheExpectsMilestones(cacheKey);
+      if (!needsMilestones || extractMilestones(cached)) {
+        return cached;
+      }
+      clearPropertyAiCacheByKey(cacheKey);
+    }
     if (isOnCooldown(cacheKey)) {
       return { error: "rate_limited", message: "Please wait a moment before fetching again." };
     }
@@ -135,7 +224,12 @@ async function invokeAssetInsight(body, cacheKey) {
       const payload = data && typeof data === "object" ? data : {};
       if (payload.error) return payload;
       if (error) return { error: "invoke_failed", message: error.message };
-      if (cacheKey && payload.insight != null && !payload.error) {
+      const canCache =
+        cacheKey &&
+        !payload.error &&
+        (payload.insight != null || extractMilestones(payload)) &&
+        (!cacheExpectsMilestones(cacheKey) || extractMilestones(payload));
+      if (canCache) {
         writeAiCache(cacheKey, payload);
       }
       if (String(payload.error || "").includes("429") || String(payload.message || "").includes("429")) {
@@ -314,10 +408,17 @@ export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
       }
 
       if (!payload.error && payload.insight != null) {
+        let marketData = payload.marketData ?? null;
+        if (PROPERTY_IDS.has(entry.categoryId) && marketData) {
+          const parsed = parsePropertyMarketPayload(payload, entry);
+          if (parsed.ok && parsed.marketData) {
+            marketData = parsed.marketData;
+          }
+        }
         const result = {
           insight: String(payload.insight),
-          marketData: payload.marketData ?? null,
-          milestones: Array.isArray(payload.milestones) ? payload.milestones : null,
+          marketData,
+          milestones: extractMilestones(payload),
           structured: Boolean(payload.structured),
           source: /** @type {const} */ ("ai"),
           categoryId: entry.categoryId,
@@ -426,6 +527,16 @@ function parsePropertyMarketPayload(payload, fields) {
     return { ok: false, errorCode: "no_market_rate" };
   }
 
+  const area = Number(fields.areaMeasure) || 0;
+  const currentValue = Number(fields.currentValue ?? fields.value) || 0;
+  const locKey = propertyCacheKey(fields);
+  const locality = readLocalityRate(locKey);
+
+  const stabilized = stabilizePropertyMarketRate(md, {
+    storedRate: fields.marketRatePerSqyd,
+    localityRate: locality?.rate,
+  });
+
   const rateObj = md.marketRate || {};
   let perSqyd = rateObj.perSqyd != null ? Number(rateObj.perSqyd) : null;
   const perSqft = rateObj.perSqft != null ? Number(rateObj.perSqft) : null;
@@ -433,26 +544,36 @@ function parsePropertyMarketPayload(payload, fields) {
     perSqyd = perSqft * 9;
   }
 
-  const area = Number(fields.areaMeasure) || 0;
+  let finalRate = stabilized ?? perSqyd;
+  if (finalRate > 0) {
+    const govt = md.governmentRate?.perSqyd != null ? Number(md.governmentRate.perSqyd) : null;
+    finalRate = mergeLocalityRate(locKey, Math.round(finalRate), govt);
+  }
+
+  if (!finalRate || finalRate <= 0 || Number.isNaN(finalRate)) {
+    return { ok: false, errorCode: "no_market_rate" };
+  }
+
+  const marketData = applyStabilizedMarketRate(md, finalRate, area, currentValue);
   const value =
-    md.impliedMarketValue != null
-      ? Number(md.impliedMarketValue)
-      : perSqyd && area > 0
-        ? Math.round(perSqyd * area)
+    marketData.impliedMarketValue != null
+      ? Number(marketData.impliedMarketValue)
+      : area > 0
+        ? Math.round(finalRate * area)
         : null;
 
-  if (!value || value <= 0 || !perSqyd || Number.isNaN(perSqyd)) {
+  if (!value || value <= 0) {
     return { ok: false, errorCode: "no_market_rate" };
   }
 
   return {
     ok: true,
     value,
-    marketRatePerSqyd: Math.round(perSqyd),
+    marketRatePerSqyd: finalRate,
     annualGrowthPct: md.trend?.annualGrowthPct ?? null,
     dataSource: rateObj.dataSource ? String(rateObj.dataSource) : null,
-    marketData: md,
-    milestones: Array.isArray(payload.milestones) ? payload.milestones : null,
+    marketData,
+    milestones: extractMilestones(payload),
   };
 }
 
@@ -589,9 +710,21 @@ export async function fetchPropertyAiBundle(fields) {
         purchaseYear,
         currentYear,
         Number(fields.purchasePrice) || 0,
+        buildHistoryExpandOpts(fields, parsed.marketRatePerSqyd),
       );
       if (series.length >= 2) {
         return { ...parsed, series };
+      }
+    }
+
+    if (purchaseYear > 0 && purchaseYear < currentYear && area > 0) {
+      const hist = await fetchPropertyValueHistory({
+        ...fields,
+        marketRatePerSqyd: parsed.marketRatePerSqyd,
+        currentValue: parsed.value,
+      });
+      if (hist.ok && hist.series?.length >= 2) {
+        return { ...parsed, series: hist.series };
       }
     }
 
@@ -635,8 +768,8 @@ export async function fetchPropertyValueHistory(fields) {
       return { ok: false, errorCode: String(payload.error) };
     }
 
-    const milestones = payload.milestones;
-    if (!Array.isArray(milestones) || milestones.length < 2) {
+    const milestones = extractMilestones(payload);
+    if (!milestones) {
       return { ok: false, errorCode: "no_market_rate" };
     }
 
@@ -646,6 +779,7 @@ export async function fetchPropertyValueHistory(fields) {
       purchaseYear,
       currentYear,
       Number(fields.purchasePrice) || 0,
+      buildHistoryExpandOpts(fields, fields.marketRatePerSqyd),
     );
 
     if (series.length < 2) return { ok: false, errorCode: "no_market_rate" };

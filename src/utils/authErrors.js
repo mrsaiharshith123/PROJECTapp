@@ -58,3 +58,44 @@ export function formatAuthError(err) {
 
   return msg.length > 120 ? `${msg.slice(0, 117)}…` : msg;
 }
+
+/**
+ * Network / timeout failures — do not clear a valid local session.
+ * @param {unknown} err
+ */
+export function isTransientAuthError(err) {
+  const msg = formatAuthError(err).toLowerCase();
+  const code =
+    typeof err === "object" && err && "code" in err ? String(/** @type {{ code?: string }} */ (err).code) : "";
+  if (code === "profile_timeout") return true;
+  return (
+    msg.includes("network") ||
+    msg.includes("fetch") ||
+    msg.includes("timeout") ||
+    msg.includes("failed to fetch") ||
+    msg.includes("load profile failed")
+  );
+}
+
+/**
+ * JWT/session is invalid — safe to clear local auth.
+ * @param {unknown} err
+ */
+export function isDefinitiveAuthError(err) {
+  if (!err) return false;
+  const msg = (
+    (err instanceof Error ? err.message : null) ||
+    (typeof err === "object" && err && "message" in err ? String(/** @type {{ message?: string }} */ (err).message) : "") ||
+    String(err)
+  ).toLowerCase();
+  const code =
+    typeof err === "object" && err && "code" in err ? String(/** @type {{ code?: string }} */ (err).code).toLowerCase() : "";
+  const status =
+    typeof err === "object" && err && "status" in err ? Number(/** @type {{ status?: number }} */ (err).status) : 0;
+
+  if (status === 401 || status === 403) return true;
+  if (code.includes("session_not_found") || code.includes("invalid") && code.includes("jwt")) return true;
+  if (msg.includes("invalid refresh token") || msg.includes("jwt expired")) return true;
+  if (msg.includes("session not found")) return true;
+  return false;
+}

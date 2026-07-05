@@ -35,26 +35,19 @@ html[data-ui="ct"] .ed-main:has(.ed-paper) {
   padding-top: 0;
 }
 
-/* Page header / masthead — title block centered in band; equal gap above/below to rule */
+/* Page header / masthead — one row (brand + date/bell/avatar) + thick rule */
 html[data-ui="ct"] .ed-masthead {
-  position: relative;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) var(--ed-masthead-rule-gap) var(--ed-masthead-rule-h);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
   width: 100%;
   box-sizing: border-box;
   padding: 0;
-  min-height: calc(
-    max(var(--ed-masthead-band-h), env(safe-area-inset-top, 0px) + 40px) +
-    var(--ed-masthead-rule-gap) +
-    var(--ed-masthead-rule-h)
-  );
 }
 
 html[data-ui="ct"] .ed-masthead > :first-child {
-  grid-row: 1;
-  align-self: center;
   min-width: 0;
-  flex: none;
+  flex: 1 1 100%;
   width: 100%;
 }
 
@@ -103,7 +96,10 @@ html[data-ui="ct"] .ed-masthead-top.ed-masthead-top--sub .ed-masthead-right {
 }
 
 html[data-ui="ct"] .ed-masthead-top {
-  padding: 0 var(--ed-page-x);
+  padding:
+    calc(var(--ed-mast-chrome-pt) + var(--ed-mast-safe-top))
+    var(--ed-page-x)
+    var(--ed-mast-chrome-pb);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -141,7 +137,7 @@ html[data-ui="ct"] .ed-masthead-right {
 
 html[data-ui="ct"] .ed-masthead::after {
   content: "";
-  grid-row: 3;
+  flex-basis: 100%;
   display: block;
   height: var(--ed-masthead-rule-h);
   background: var(--ed-ink);

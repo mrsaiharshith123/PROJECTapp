@@ -1,48 +1,125 @@
+/** Bump when milestone expansion logic changes — triggers re-fetch on detail open. */
+export const VALUE_HISTORY_ALGO_VERSION = 2;
+
 /**
- * Expand AI milestone rates into a yearly value series for charts.
+ * Sanitize AI milestones — sometimes returns total plot value in ratePerSqyd.
+ * @param {{ year: number, ratePerSqyd?: number, value?: number }[]} milestones
+ * @param {number} area
+ * @param {string} [areaUnit]
+ */
+export function sanitizeMilestoneRates(milestones, area, areaUnit = "sqyd") {
+  if (!Array.isArray(milestones) || !milestones.length) return [];
+
+  const sqydArea = areaUnit === "sqft" && area > 0 ? area / 9 : area;
+
+  return milestones
+    .map((m) => {
+      const year = Number(m.year);
+      let rate = Number(m.ratePerSqyd);
+      const totalValue = m.value != null ? Number(m.value) : null;
+
+      if (totalValue > 0 && (!rate || rate <= 0 || Number.isNaN(rate))) {
+        rate = sqydArea > 0 ? totalValue / sqydArea : totalValue;
+      } else if (totalValue > 0 && sqydArea > 0 && rate > 0) {
+        const asTotal = rate * sqydArea;
+        if (Math.abs(asTotal - totalValue) / totalValue > 0.35) {
+          const asRate = totalValue / sqydArea;
+          if (asRate > 50 && asRate < 500_000) rate = asRate;
+        }
+      }
+
+      // Total property value mistaken as per-sqyd rate (e.g. ₹33L stored as rate on 215 sqyd plot).
+      if (rate > 0 && sqydArea > 0 && rate > 200_000) {
+        const corrected = rate / sqydArea;
+        if (corrected > 100 && corrected < 200_000) rate = corrected;
+      }
+
+      // Per-sqft returned as per-sqyd (common AI mistake).
+      if (rate > 0 && rate < 8_000 && areaUnit !== "sqft") {
+        const asSqyd = rate * 9;
+        if (asSqyd > 5_000 && asSqyd < 200_000) rate = asSqyd;
+      }
+
+      return { year, ratePerSqyd: rate };
+    })
+    .filter((m) => m.year && m.ratePerSqyd > 0 && !Number.isNaN(m.ratePerSqyd));
+}
+
+/**
+ * Expand locality ₹/sqyd milestones into a plot-specific yearly value series.
+ * Same locality curve × each plot's area and purchase/current anchors.
+ *
  * @param {{ year: number, ratePerSqyd: number }[]} milestones
  * @param {number} area
  * @param {number} purchaseYear
  * @param {number} currentYear
  * @param {number} [purchasePrice]
+ * @param {{ purchaseRatePerUnit?: number, currentRate?: number, areaUnit?: string }} [opts]
  */
-export function expandMilestonesToSeries(milestones, area, purchaseYear, currentYear, purchasePrice = 0) {
+export function expandMilestonesToSeries(
+  milestones,
+  area,
+  purchaseYear,
+  currentYear,
+  purchasePrice = 0,
+  opts = {},
+) {
   if (!milestones?.length || !area || area <= 0 || !purchaseYear || currentYear < purchaseYear) {
     return [];
   }
 
-  const sorted = [...milestones]
-    .map((m) => ({
-      year: Number(m.year),
-      ratePerSqyd: Number(m.ratePerSqyd),
-    }))
-    .filter((m) => m.year && m.ratePerSqyd > 0 && !Number.isNaN(m.ratePerSqyd))
-    .sort((a, b) => a.year - b.year);
+  const areaUnit = opts.areaUnit || "sqyd";
+  const sqydArea = areaUnit === "sqft" ? area / 9 : area;
+  if (sqydArea <= 0) return [];
 
+  const sorted = sanitizeMilestoneRates(milestones, sqydArea, "sqyd").sort((a, b) => a.year - b.year);
   if (!sorted.length) return [];
 
+  const purchaseRatePerUnit = Number(opts.purchaseRatePerUnit) || 0;
+  const currentRate = Number(opts.currentRate) || 0;
+
   const purchaseRate =
-    purchasePrice > 0 ? purchasePrice / area : sorted[0].ratePerSqyd;
+    purchaseRatePerUnit > 0
+      ? purchaseRatePerUnit
+      : purchasePrice > 0
+        ? purchasePrice / sqydArea
+        : interpolateRateAtYear(sorted, purchaseYear);
 
-  if (sorted[0].year > purchaseYear) {
-    sorted.unshift({ year: purchaseYear, ratePerSqyd: purchaseRate });
-  } else {
-    sorted[0].ratePerSqyd = purchaseRate;
-  }
+  const endRate =
+    currentRate > 0 ? currentRate : interpolateRateAtYear(sorted, currentYear);
 
-  const last = sorted[sorted.length - 1];
-  if (last.year < currentYear) {
-    sorted.push({ year: currentYear, ratePerSqyd: last.ratePerSqyd });
-  }
+  const localAtPurchase = interpolateRateAtYear(sorted, purchaseYear);
+  const localAtCurrent = interpolateRateAtYear(sorted, currentYear);
+  const localSpan = localAtCurrent - localAtPurchase;
+  const yearSpan = currentYear - purchaseYear || 1;
+
+  const useAnchoredShape =
+    endRate > 0 && purchaseRate > 0 && (purchasePrice > 0 || purchaseRatePerUnit > 0 || currentRate > 0);
 
   /** @type {{ year: number, value: number, ratePerSqyd: number }[]} */
   const series = [];
   for (let y = purchaseYear; y <= currentYear; y++) {
-    const rate = interpolateRateAtYear(sorted, y);
+    let rate;
+    if (useAnchoredShape) {
+      if (Math.abs(localSpan) < 1) {
+        const t = (y - purchaseYear) / yearSpan;
+        rate = purchaseRate + (endRate - purchaseRate) * t;
+      } else {
+        const localY = interpolateRateAtYear(sorted, y);
+        const shape = (localY - localAtPurchase) / localSpan;
+        rate = purchaseRate + (endRate - purchaseRate) * shape;
+      }
+    } else {
+      rate = interpolateRateAtYear(sorted, y);
+      if (y === purchaseYear) rate = purchaseRate;
+      if (y === currentYear && endRate > 0) rate = endRate;
+    }
+
+    const roundedRate = Math.round(Math.max(0, rate));
     series.push({
       year: y,
-      ratePerSqyd: Math.round(rate),
-      value: Math.round(rate * area),
+      ratePerSqyd: roundedRate,
+      value: Math.round(roundedRate * sqydArea),
     });
   }
   return series;
@@ -133,4 +210,27 @@ export function buildPropertyValueSeries(entry) {
     });
   }
   return linear;
+}
+
+/**
+ * Build expand opts from a wealth entry or insight fields object.
+ * @param {object} fields
+ * @param {number} [marketRatePerSqyd]
+ */
+export function buildHistoryExpandOpts(fields, marketRatePerSqyd) {
+  const area = Number(fields.areaMeasure) || 0;
+  const currentValue = Number(fields.currentValue ?? fields.value) || 0;
+  const purchaseRatePerUnit = Number(fields.purchaseRatePerUnit) || 0;
+  const mkt =
+    Number(marketRatePerSqyd) ||
+    Number(fields.marketRatePerSqyd) ||
+    0;
+  const currentRate =
+    mkt > 0 ? mkt : area > 0 && currentValue > 0 ? currentValue / area : 0;
+
+  return {
+    purchaseRatePerUnit: purchaseRatePerUnit > 0 ? purchaseRatePerUnit : undefined,
+    currentRate: currentRate > 0 ? currentRate : undefined,
+    areaUnit: fields.areaUnit || "sqyd",
+  };
 }

@@ -301,7 +301,7 @@ function AppShell() {
   }
 
   if (!isLoggedIn) return <AuthGateShell />;
-  if (!profile && !isSignupPending()) return <AuthGateShell />;
+  if (!profile && !isSignupPending()) return <BootShell />;
   return (
     <CloudRestoreGate>
       {!setupComplete ? <OnboardingShell /> : <MainShell />}

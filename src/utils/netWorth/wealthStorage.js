@@ -32,6 +32,7 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [valueAiFetchedAt]
  * @property {{ year: number, value: number, ratePerSqyd?: number }[]} [valueHistorySeries]
  * @property {number} [valueHistoryFetchedAt]
+ * @property {number} [valueHistoryAlgoVersion]
  * @property {string} [location]
  * @property {number} [latitude]
  * @property {number} [longitude]
@@ -162,6 +163,8 @@ export function normalizeWealthEntry(raw) {
       : undefined,
     valueHistoryFetchedAt:
       r.valueHistoryFetchedAt != null ? Number(r.valueHistoryFetchedAt) || undefined : undefined,
+    valueHistoryAlgoVersion:
+      r.valueHistoryAlgoVersion != null ? Number(r.valueHistoryAlgoVersion) || undefined : undefined,
     location: optStr(r.location),
     latitude: r.latitude != null ? Number(r.latitude) : undefined,
     longitude: r.longitude != null ? Number(r.longitude) : undefined,

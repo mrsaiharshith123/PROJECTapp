@@ -80,11 +80,17 @@ html[data-ui="ct"] {
   --ed-section-gap: 16px;
   --ed-page-bottom: 84px;
   --ed-status-bar-h: env(safe-area-inset-top, 24px);
-  --ed-masthead-band-h: 68px;
+  --ed-mast-safe-top: env(safe-area-inset-top, 0px);
   --ed-masthead-rule-h: 3px;
-  --ed-masthead-rule-gap: 4px;
-  --ed-mast-chrome-pt: 8px;
-  --ed-mast-chrome-pb: 6px;
+  --ed-mast-chrome-pt: 14px;
+  --ed-mast-chrome-pb: 13px;
+  /* Approximate masthead stack for glimpse / overlays (safe-top added separately). */
+  --ed-masthead-total-h: calc(
+    var(--ed-mast-chrome-pt) +
+    44px +
+    var(--ed-mast-chrome-pb) +
+    var(--ed-masthead-rule-h)
+  );
 
   /* ── Border radius ── */
   --ed-r-sm:   6px;

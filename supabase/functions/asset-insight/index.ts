@@ -101,6 +101,8 @@ function enrichPropertyMarketData(
   const area = Number(body.areaMeasure || 0);
   const currentValue = Number(body.currentValue || 0);
   const rate = (md.marketRate || {}) as Record<string, number | string | null>;
+  const govtMd = (md.governmentRate || {}) as Record<string, number | string | null>;
+  const govt = govtMd.perSqyd != null ? Number(govtMd.perSqyd) : null;
 
   let perSqyd = rate.perSqyd != null ? Number(rate.perSqyd) : null;
   const perSqft = rate.perSqft != null ? Number(rate.perSqft) : null;
@@ -108,21 +110,50 @@ function enrichPropertyMarketData(
   const rangeMax = rate.rangeMax != null ? Number(rate.rangeMax) : null;
   if ((!perSqyd || Number.isNaN(perSqyd)) && perSqft && !Number.isNaN(perSqft)) {
     perSqyd = perSqft * 9;
-    rate.perSqyd = perSqyd;
-    md.marketRate = rate;
   }
 
-  if (perSqyd && area > 0 && !md.impliedMarketValue) {
+  /** Prefer range midpoint — AI point estimates jump between calls. */
+  if (rangeMin && rangeMax && !Number.isNaN(rangeMin) && !Number.isNaN(rangeMax) && rangeMax >= rangeMin) {
+    const mid = Math.round((rangeMin + rangeMax) / 2);
+    if (govt && govt > 0) {
+      const target = govt * 2.5;
+      const candidates = [mid, perSqyd, govt * 2, govt * 2.5, govt * 3].filter(
+        (n): n is number => typeof n === "number" && n > 0 && !Number.isNaN(n),
+      );
+      perSqyd = candidates.reduce((best, c) =>
+        Math.abs(c - target) < Math.abs(best - target) ? c : best,
+      );
+    } else {
+      perSqyd = mid;
+    }
+    rate.perSqyd = perSqyd;
+    rate.rangeMin = rangeMin;
+    rate.rangeMax = rangeMax;
+    md.marketRate = rate;
+  } else if (perSqyd && govt && govt > 0) {
+    const minM = govt * 1.4;
+    const maxM = govt * 4.5;
+    if (perSqyd < minM || perSqyd > maxM) {
+      perSqyd = Math.round(govt * 2.5);
+      rate.perSqyd = perSqyd;
+      md.marketRate = rate;
+    }
+  }
+
+  if (perSqyd && area > 0) {
     md.impliedMarketValue = Math.round(perSqyd * area);
   }
   if (!perSqyd && rangeMin && rangeMax && !Number.isNaN(rangeMin) && !Number.isNaN(rangeMax)) {
     const mid = Math.round((Number(rangeMin) + Number(rangeMax)) / 2);
     rate.perSqyd = mid;
     md.marketRate = rate;
-    if (area > 0 && !md.impliedMarketValue) md.impliedMarketValue = mid * area;
+    if (area > 0) md.impliedMarketValue = mid * area;
   }
   if (md.impliedMarketValue != null && md.valuationGap == null) {
     md.valuationGap = Number(md.impliedMarketValue) - currentValue;
+  }
+  if (govt && perSqyd && govt > 0 && md.marketVsGovtGap == null) {
+    md.marketVsGovtGap = Math.round(((perSqyd - govt) / govt) * 1000) / 10;
   }
   return md;
 }
@@ -141,18 +172,9 @@ function buildPropertyMarketCompact(b: Record<string, unknown>, withHistory = fa
     .filter(Boolean)
     .join(" · ");
   const area = Number(b.areaMeasure) || 0;
-  const purchaseYear = Number(b.purchaseYear) || 0;
   const currentYear = new Date().getFullYear();
-  const purchasePrice = Number(b.purchasePrice) || 0;
-  const purchaseRate =
-    b.purchaseRatePerUnit != null
-      ? Number(b.purchaseRatePerUnit)
-      : area > 0 && purchasePrice > 0
-        ? purchasePrice / area
-        : 0;
-
-  const historyBlock = withHistory && purchaseYear > 0
-    ? `,"milestones":[{"year":${purchaseYear},"ratePerSqyd":${Math.round(purchaseRate) || 30}},{"year":<Y>,"ratePerSqyd":<N>},...${milestoneCountForSpan(currentYear - purchaseYear)} key years evenly from ${purchaseYear} to ${currentYear},non-flat rates not CAGR]`
+  const historyBlock = withHistory
+    ? `,"milestones":[{"year":1980,"ratePerSqyd":<N>},...${milestoneCountForSpan(currentYear - 1980)} LOCALITY ₹/sqyd key years 1980→${currentYear},PER SQYD not plot total,non-flat rates not CAGR]`
     : "";
 
   return `Gemini (Google AI). ${loc}. ${area} ${b.areaUnit || "sqyd"}.
@@ -161,7 +183,7 @@ Search:
 - "${loc} IGRS guideline rate 2025" OR "${loc} ready reckoner rate" OR "${loc} stamp duty value 2024-25"
 One web search for 2026 ₹/sqyd in this locality. JSON only, no markdown:
 {"marketRate":{"perSqyd":<N>,"rangeMin":<N>,"rangeMax":<N>,"confidence":"medium","dataSource":"<site>"},"governmentRate":{"perSqyd":<government guideline/circle rate per sqyard as number or null>,"source":"<IGRS Telangana / Ready Reckoner / Sub-registrar rate>","asOf":"<financial year e.g. 2024-25>","confidence":"high|medium|low","note":"<one line about what this rate means legally>"},"marketVsGovtGap":<((marketRate.perSqyd - governmentRate.perSqyd) / governmentRate.perSqyd * 100) rounded to 1 decimal or null>,"impliedMarketValue":<perSqyd*${area}>,"trend":{"direction":"rising|flat|declining","annualGrowthPct":<N>,"description":"<short>"},"holdRecommendation":{"verdict":"hold|sell|wait","specificReason":"<short>"},"summary":"<one sentence>"${historyBlock}}
-The government rate is the official IGRS (Inspector General of Registration & Stamps) guideline/circle rate — the MINIMUM value for stamp duty. Market rate is typically 1.5x–4x the government rate in urban India. Search for the actual IGRS rate for this specific area, not a city average.`;
+The government rate is the official IGRS (Inspector General of Registration & Stamps) guideline/circle rate — the MINIMUM value for stamp duty. Market rate is typically 1.5x–4x the government rate in urban India. perSqyd MUST equal (rangeMin+rangeMax)/2 and stay within 1.5x–4x of governmentRate when known. Search for the actual IGRS rate for this specific area, not a city average.`;
 }
 
 function buildPropertyBundlePrompt(b: Record<string, unknown>): string {
@@ -173,28 +195,20 @@ function buildPropertyPrompt(b: Record<string, unknown>): string {
 }
 
 function buildPropertyValueHistoryPrompt(b: Record<string, unknown>): string {
-  const purchaseYear = Number(b.purchaseYear) || 1980;
+  const loc = [b.location, b.latitude && b.longitude ? `GPS ${b.latitude},${b.longitude}` : ""]
+    .filter(Boolean)
+    .join(" · ");
   const currentYear = new Date().getFullYear();
-  const area = Number(b.areaMeasure) || 0;
-  const purchaseRate =
-    b.purchaseRatePerUnit != null
-      ? Number(b.purchaseRatePerUnit)
-      : area > 0 && Number(b.purchasePrice) > 0
-        ? Number(b.purchasePrice) / area
-        : 30;
-  const currentRate =
-    b.marketRatePerSqyd != null
-      ? Number(b.marketRatePerSqyd)
-      : area > 0 && Number(b.currentValue) > 0
-        ? Number(b.currentValue) / area
-        : 0;
-
-  const span = currentYear - purchaseYear;
+  const historyStart = 1980;
+  const span = currentYear - historyStart;
   const count = milestoneCountForSpan(span);
 
-  return `Gemini. ${b.location}. ${area}sqyd. ₹/sqyd ${purchaseYear}→${currentYear} (${span}y). JSON only:
-{"milestones":[{"year":${purchaseYear},"ratePerSqyd":${Math.round(purchaseRate)}},...${count} key years spread across ${span} years...,{"year":${currentYear},"ratePerSqyd":${Math.round(currentRate)}}],"summary":"<short>"}
-Non-flat rates (booms/dips), not CAGR. Include pre-1990, 2000s boom, 2008 dip, COVID if relevant.`;
+  return `Gemini (Google AI). LOCALITY ₹/sqyd market history: ${loc}.
+Search: "${loc} property rate per sqyard history" and local IGRS/guideline trends.
+Return PER-SQYARD rates for this LOCALITY (not total plot value, not per sqft).
+${count} milestones from ${historyStart} to ${currentYear}. JSON only:
+{"milestones":[{"year":${historyStart},"ratePerSqyd":<N>},...key years including 2000,2008,2020 COVID dip...,{"year":${currentYear},"ratePerSqyd":<N>}],"summary":"<short>"}
+Non-flat locality rates (booms/dips), not CAGR.`;
 }
 
 function buildGoldPrompt(b: Record<string, unknown>): string {

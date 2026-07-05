@@ -11,6 +11,7 @@ import {
   resolveStoredCategoryId,
 } from "../../../constants/netWorth/assetFormCategories.js";
 import { fetchPropertyAiBundle } from "../../../services/ai/assetInsight.js";
+import { VALUE_HISTORY_ALGO_VERSION } from "../../../utils/netWorth/propertyValueHistory.js";
 import { isGoldApiConfigured, shouldRefreshGoldRate } from "../../../services/market/goldPrice.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -220,6 +221,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
       if (result.series?.length) {
         propertyAiPayload.valueHistorySeries = result.series;
         propertyAiPayload.valueHistoryFetchedAt = Date.now();
+        propertyAiPayload.valueHistoryAlgoVersion = VALUE_HISTORY_ALGO_VERSION;
       }
     } else if (isGold && !form.valueManual && goldEstimatedValue) {
       resolvedValue = goldEstimatedValue;

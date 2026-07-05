@@ -7,7 +7,7 @@ import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { buildWealthEntryIntel } from "../../../engines/wealthEntryIntel.js";
 import { fetchAssetInsight, fetchPropertyValueHistory, ASSET_AI_INSIGHT_TYPES, resolveAssetInsightError, clearPropertyAiCache } from "../../../services/ai/assetInsight.js";
-import { expandMilestonesToSeries } from "../../../utils/netWorth/propertyValueHistory.js";
+import { expandMilestonesToSeries, buildHistoryExpandOpts, VALUE_HISTORY_ALGO_VERSION } from "../../../utils/netWorth/propertyValueHistory.js";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import MarketAnalysis from "./MarketAnalysis.jsx";
 import { EngineGuard } from "../../primitives/EngineGuard.jsx";
@@ -38,6 +38,7 @@ function milestonesToSeries(milestones, entryRow) {
     purchaseYear,
     currentYear,
     Number(entryRow.purchasePrice) || 0,
+    buildHistoryExpandOpts(entryRow, entryRow.marketRatePerSqyd),
   );
   return series.length >= 2 ? series : null;
 }
@@ -86,6 +87,7 @@ export default function WealthEntryDetailPage() {
         !force &&
         entryRow.valueHistorySeries?.length >= 2 &&
         entryRow.valueHistoryFetchedAt &&
+        entryRow.valueHistoryAlgoVersion === VALUE_HISTORY_ALGO_VERSION &&
         Date.now() - entryRow.valueHistoryFetchedAt < HISTORY_TTL_MS
       ) {
         return;
@@ -111,6 +113,7 @@ export default function WealthEntryDetailPage() {
           await updateEntry(entryRow.id, {
             valueHistorySeries: result.series,
             valueHistoryFetchedAt: Date.now(),
+            valueHistoryAlgoVersion: VALUE_HISTORY_ALGO_VERSION,
           });
         }
       } finally {
@@ -127,6 +130,7 @@ export default function WealthEntryDetailPage() {
       await updateEntry(entryRow.id, {
         valueHistorySeries: series,
         valueHistoryFetchedAt: Date.now(),
+        valueHistoryAlgoVersion: VALUE_HISTORY_ALGO_VERSION,
       });
       return true;
     },
@@ -177,6 +181,27 @@ export default function WealthEntryDetailPage() {
     });
   }, [id]);
 
+  useEffect(() => {
+    if (!entry?.categoryId?.startsWith("property")) return;
+    const historyLen = entry.valueHistorySeries?.length ?? 0;
+    const algoStale = entry.valueHistoryAlgoVersion !== VALUE_HISTORY_ALGO_VERSION;
+    if (historyLen >= 2 && !algoStale) return;
+    const purchaseYear = Number(entry.purchaseYear);
+    const area = Number(entry.areaMeasure) || 0;
+    if (!entry.location?.trim() || !purchaseYear || purchaseYear >= new Date().getFullYear() || area <= 0) {
+      return;
+    }
+    void refreshValueHistory(entry);
+  }, [
+    entry?.id,
+    entry?.categoryId,
+    entry?.location,
+    entry?.purchaseYear,
+    entry?.areaMeasure,
+    entry?.valueHistorySeries?.length,
+    refreshValueHistory,
+  ]);
+
   if (!entry || !intel) {
     return (
       <div className="ed-page-full ed-ins-page">
@@ -205,12 +230,13 @@ export default function WealthEntryDetailPage() {
     if (!analysis && !analyzing) handleAnalyze(false);
   };
 
-  const handleAnalyze = async (force = false) => {
+  const handleAnalyze = async (bustCache = false) => {
     setAnalyzing(true);
     setAnalyzeErr("");
     try {
       const needsHistory = !entry.valueHistorySeries?.length;
-      if (force && entry.categoryId?.startsWith("property")) {
+      // Only bust AI cache on error retry — routine refresh reuses 7-day cache + locality rate.
+      if (bustCache && entry.categoryId?.startsWith("property")) {
         clearPropertyAiCache(entry, needsHistory ? { withHistory: true } : {});
       }
       const result = await fetchAssetInsight(entry, t, settings, {
@@ -577,7 +603,7 @@ export default function WealthEntryDetailPage() {
                     type="button"
                     className="ed-ins-link"
                     style={{ padding: "10px 0 0", display: "block" }}
-                    onClick={() => handleAnalyze(true)}
+                    onClick={() => handleAnalyze(false)}
                   >
                     {t("wealthDetail.market.refresh")}
                   </button>
