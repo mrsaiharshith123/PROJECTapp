@@ -153,9 +153,9 @@ describe("💾 SETTINGS: persistence across devices", () => {
 });
 
 describe("VISUAL: home + insights layout tokens", () => {
-  it("[P1] HomeFinancialPulse uses stable layout class hooks", () => {
-    const content = src("src/ui/features/home/HomeFinancialPulse.jsx");
-    expect(content).toMatch(/ct-card|pulse|financial/i);
+  it("[P1] HomeNeedsAttention uses stable layout class hooks", () => {
+    const content = src("src/ui/features/home/HomeNeedsAttention.jsx");
+    expect(content).toMatch(/ed-ins|attention|needs/i);
   });
 
   it("[P1] Insights breakdown pages export route components", () => {
