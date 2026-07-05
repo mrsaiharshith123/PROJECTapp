@@ -101,7 +101,7 @@ function mergeLocalityRate(locKey, incomingRate, govtRate) {
     return incomingRate;
   }
   const delta = Math.abs(incomingRate - prev.rate) / prev.rate;
-  let merged = incomingRate;
+  let merged;
   if (delta > 0.15) {
     merged = prev.rate;
   } else if (delta > 0.03) {

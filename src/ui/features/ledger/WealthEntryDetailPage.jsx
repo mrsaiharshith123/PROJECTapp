@@ -191,14 +191,11 @@ export default function WealthEntryDetailPage() {
     if (!entry.location?.trim() || !purchaseYear || purchaseYear >= new Date().getFullYear() || area <= 0) {
       return;
     }
-    void refreshValueHistory(entry);
+    queueMicrotask(() => {
+      void refreshValueHistory(entry);
+    });
   }, [
-    entry?.id,
-    entry?.categoryId,
-    entry?.location,
-    entry?.purchaseYear,
-    entry?.areaMeasure,
-    entry?.valueHistorySeries?.length,
+    entry,
     refreshValueHistory,
   ]);
 
