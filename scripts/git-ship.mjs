@@ -127,7 +127,19 @@ function repoSlug() {
   return (r.stdout || "").trim() || "mrsaiharshith123/PROJECTapp";
 }
 
-console.log("Perovo — ship (commit → push → APK → GitHub Release)\n");
+console.log("Perovo — ship (APK → commit → push → GitHub Release)\n");
+
+// Build first so public/app-version.json (version + builtAt + apkSize) is included in the git push.
+if (!noApk) {
+  if (releaseOnly && fs.existsSync(APK_PATH)) {
+    console.log(`\n▶ Using existing APK: ${APK_PATH}`);
+  } else {
+    run("Build developer APK", "npm", ["run", "apk:dev"]);
+  }
+  run("Refresh app-version.json", "node", ["scripts/generate-app-version.mjs"]);
+} else {
+  run("Refresh app-version.json", "node", ["scripts/generate-app-version.mjs"]);
+}
 
 if (!releaseOnly) {
   git(["add", "-A"]);
@@ -145,14 +157,8 @@ if (!releaseOnly) {
 }
 
 if (noApk) {
-  console.log("\n✓ Done (--no-apk: skipped APK build and GitHub Release).");
+  console.log("\n✓ Done (--no-apk: skipped GitHub Release).");
   process.exit(0);
-}
-
-if (releaseOnly && fs.existsSync(APK_PATH)) {
-  console.log(`\n▶ Using existing APK: ${APK_PATH}`);
-} else {
-  run("Build developer APK", "npm", ["run", "apk:dev"]);
 }
 
 publishApkRelease();

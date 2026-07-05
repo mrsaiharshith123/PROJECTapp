@@ -168,5 +168,7 @@ fs.copyFileSync(apkSrc, apkDest);
 const latest = path.join(outDir, "Perovo-dev-latest.apk");
 fs.copyFileSync(apkSrc, latest);
 
+run("Refresh app-version.json", "node", ["scripts/generate-app-version.mjs"]);
+
 console.log(`\n✓ Developer APK ready:\n  ${apkDest}\n  ${latest}\n`);
 console.log("Share either file — installs on any Android device (enable Unknown sources).");
