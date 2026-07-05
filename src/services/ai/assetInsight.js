@@ -24,21 +24,38 @@ const PROPERTY_IDS = new Set([
 ]);
 
 const AI_CACHE_KEY = "perovo_property_ai_cache_v1";
-const AI_CACHE_TTL_MS = 48 * 60 * 60 * 1000; // 48 hours
+const AI_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const AI_COOLDOWN_MS = 2 * 60 * 1000;
 /** @type {Map<string, Promise<unknown>>} */
 const inflight = new Map();
 
 function propertyCacheKey(fields, extra = {}) {
+  // Location + area + category determine the market rate.
+  // currentValue excluded — two plots at same location share one cache entry.
+  const loc = (fields.location || "")
+    .toLowerCase()
+    .replace(/\s*,\s*/g, ",")
+    .replace(/\s+/g, " ")
+    .trim();
   return JSON.stringify({
-    loc: (fields.location || "").toLowerCase().trim(),
+    loc,
     area: fields.areaMeasure,
     unit: fields.areaUnit,
-    purchasePrice: fields.purchasePrice,
     categoryId: fields.categoryId,
-    currentValue: fields.currentValue ?? fields.value ?? null,
     ...extra,
   });
+}
+
+function clearPropertyAiCache(fields, extra = {}) {
+  const key = propertyCacheKey(fields, extra);
+  try {
+    const raw = localStorage.getItem(AI_CACHE_KEY);
+    const store = raw ? JSON.parse(raw) : {};
+    delete store[key];
+    localStorage.setItem(AI_CACHE_KEY, JSON.stringify(store));
+  } catch {
+    /* ignore */
+  }
 }
 
 function readAiCache(key) {
@@ -248,7 +265,7 @@ export async function fetchAssetInsight(entry, t, settings = {}, opts = {}) {
   if (supabase) {
     try {
       const cacheKey = PROPERTY_IDS.has(entry.categoryId)
-        ? propertyCacheKey(entry, { mode: wantHistory ? "bundle" : "market" })
+        ? propertyCacheKey(entry, wantHistory ? { withHistory: true } : {})
         : null;
       const payload = await invokeAssetInsight(
         propertyInsightBody(entry, { includeValueHistory: wantHistory || undefined }),
@@ -447,8 +464,21 @@ export async function fetchPropertyLiveValue(fields) {
     return { ok: false, errorCode: "unauthorized" };
   }
 
+  const storedRate = Number(fields.marketRatePerSqyd) || 0;
+  const area = Number(fields.areaMeasure) || 0;
+  if (storedRate > 0 && area > 0 && !fields.forceRefresh) {
+    return {
+      ok: true,
+      value: Math.round(storedRate * area),
+      marketRatePerSqyd: storedRate,
+      annualGrowthPct: null,
+      dataSource: "stored",
+      marketData: { marketRate: { perSqyd: storedRate, dataSource: "stored" } },
+    };
+  }
+
   try {
-    const cacheKey = propertyCacheKey(fields, { mode: "market" });
+    const cacheKey = propertyCacheKey(fields);
     const payload = await invokeAssetInsight(propertyInsightBody(fields), cacheKey);
     if (payload.error) {
       return {
@@ -485,7 +515,7 @@ export async function fetchPropertyAiBundle(fields) {
   if (!getSupabaseClient()) return { ok: false, errorCode: "unauthorized" };
 
   try {
-    const cacheKey = propertyCacheKey(fields, { mode: "property_bundle" });
+    const cacheKey = propertyCacheKey(fields, { withHistory: true });
     const payload = await invokeAssetInsight(
       propertyInsightBody(fields, { analysisMode: "property_bundle" }),
       cacheKey,
@@ -556,7 +586,7 @@ export async function fetchPropertyValueHistory(fields) {
   }
 
   try {
-    const cacheKey = propertyCacheKey(fields, { mode: "value_history" });
+    const cacheKey = propertyCacheKey(fields, { history: true });
     const payload = await invokeAssetInsight(
       propertyInsightBody(fields, { analysisMode: "value_history" }),
       cacheKey,
@@ -589,3 +619,5 @@ export async function fetchPropertyValueHistory(fields) {
     return { ok: false, errorCode: "invoke_failed" };
   }
 }
+
+export { clearPropertyAiCache };

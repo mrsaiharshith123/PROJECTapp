@@ -18,6 +18,10 @@ const config: CapacitorConfig = {
       /** Full app needs time to load chunks before notifyAppReady — avoid rollback black screen. */
       appReadyTimeout: 120000,
       autoDeleteFailed: true,
+      /** Drop old OTA zip bundles after a successful switch — limits "cache" growth. */
+      autoDeletePrevious: true,
+      /** When user installs a newer APK from the store/sideload, remove downloaded OTA bundles. */
+      resetWhenUpdate: true,
     },
     StatusBar: {
       overlaysWebView: false,

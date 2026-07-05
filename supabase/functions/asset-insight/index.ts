@@ -355,9 +355,9 @@ Deno.serve(async (req) => {
         geminiResult = await callGeminiWithFallback(geminiKey, {
           prompt: buildPropertyValueHistoryPrompt(body),
           latLng: lat,
-          useGoogleSearch: false,
+          useGoogleSearch: true,
           maxOutputTokens: 4096,
-          temperature: 0.15,
+          temperature: 0,
         });
       } catch (e) {
         const msg = String(e);
@@ -415,9 +415,9 @@ Deno.serve(async (req) => {
       geminiResult = await callGeminiWithFallback(geminiKey, {
         prompt,
         latLng: lat,
-        useGoogleSearch: false,
+        useGoogleSearch: true,
         maxOutputTokens,
-        temperature: 0.1,
+        temperature: 0,
       });
     } catch (e) {
       const msg = String(e);

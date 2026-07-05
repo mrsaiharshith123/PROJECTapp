@@ -3571,6 +3571,8 @@ export default {
   "wealthDetail.market.intro.generic": "اس اثاثے کے لیے مارکیٹ کا تازہ ترین تجزیہ حاصل کریں۔",
   "wealthDetail.market.runAnalysis": "لائیو تجزیہ چلائیں →",
   "wealthDetail.market.openButton": "لائیو مارکیٹ تجزیہ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "گوگل پر تلاش کر رہا ہے… (5–10 سیکنڈ)",
   "wealthDetail.market.failed": "تجزیہ ناکام ہو گیا — براہ کرم دوبارہ کوشش کریں۔",

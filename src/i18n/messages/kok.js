@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ह्या मालमत्ते खातीर अद्ययावत बाजार विश्लेशण मेळोवचें.",
   "wealthDetail.market.runAnalysis": "लायव्ह विश्लेशण चालीक लावचें →",
   "wealthDetail.market.openButton": "लायव्ह बाजार विश्लेशण →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "गूगल सोदप... (5-10 सेकंद)",
   "wealthDetail.market.failed": "विश्लेशण अपयशी — उपकार करून परतून यत्न करात.",

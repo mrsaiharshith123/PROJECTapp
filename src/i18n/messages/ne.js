@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "यस सम्पत्तिको लागि अप-टु-डेट बजार विश्लेषण प्राप्त गर्नुहोस्।",
   "wealthDetail.market.runAnalysis": "प्रत्यक्ष विश्लेषण चलाउनुहोस् →",
   "wealthDetail.market.openButton": "प्रत्यक्ष बजार विश्लेषण →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "गुगल खोज्दै… (५–१० सेकेन्ड)",
   "wealthDetail.market.failed": "विश्लेषण असफल भयो — कृपया पुन: प्रयास गर्नुहोस्।",

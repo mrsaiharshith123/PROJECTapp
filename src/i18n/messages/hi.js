@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "इस परिसंपत्ति के लिए नवीनतम बाज़ार विश्लेषण प्राप्त करें।",
   "wealthDetail.market.runAnalysis": "लाइव विश्लेषण चलाएँ →",
   "wealthDetail.market.openButton": "लाइव बाज़ार विश्लेषण →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Google पर खोज रहा हूँ... (5-10 सेकंड)",
   "wealthDetail.market.failed": "विश्लेषण विफल - कृपया पुनः प्रयास करें।",

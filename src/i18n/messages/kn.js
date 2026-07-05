@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ಈ ಸ್ವತ್ತಿಗೆ ನವೀಕೃತ ಮಾರುಕಟ್ಟೆ ವಿಶ್ಲೇಷಣೆಯನ್ನು ಪಡೆಯಿರಿ.",
   "wealthDetail.market.runAnalysis": "ಲೈವ್ ವಿಶ್ಲೇಷಣೆಯನ್ನು ರನ್ ಮಾಡಿ →",
   "wealthDetail.market.openButton": "ಲೈವ್ ಮಾರುಕಟ್ಟೆ ವಿಶ್ಲೇಷಣೆ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Google ಅನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ... (5–10 ಸೆಕೆಂಡುಗಳು)",
   "wealthDetail.market.failed": "ವಿಶ್ಲೇಷಣೆ ವಿಫಲವಾಗಿದೆ - ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",

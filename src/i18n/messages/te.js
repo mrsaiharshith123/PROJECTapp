@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ఈ ఆస్తి కోసం తాజా మార్కెట్ విశ్లేషణను పొందండి.",
   "wealthDetail.market.runAnalysis": "ప్రత్యక్ష విశ్లేషణను అమలు చేయండి →",
   "wealthDetail.market.openButton": "ప్రత్యక్ష మార్కెట్ విశ్లేషణ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Googleని శోధిస్తోంది... (5–10 సెకన్లు)",
   "wealthDetail.market.failed": "విశ్లేషణ విఫలమైంది — దయచేసి మళ్లీ ప్రయత్నించండి.",

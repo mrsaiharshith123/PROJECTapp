@@ -61,7 +61,7 @@
     "cap:android": "npx cap open android",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
-    "apk:dev": "node scripts/build-dev-apk.mjs",
+    "apk:dev": "node scripts/patch-android-version.mjs && node scripts/build-dev-apk.mjs",
     "apk:patch-version": "node scripts/patch-android-version.mjs",
     "apk:twa": "cd twa && bubblewrap build --manifest twa-manifest.json",
     "apk:twa:install": "cd twa && bubblewrap install",

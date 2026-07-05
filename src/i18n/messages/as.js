@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "এই সম্পত্তিৰ বাবে এটা শেহতীয়া বজাৰ বিশ্লেষণ লাভ কৰক।",
   "wealthDetail.market.runAnalysis": "লাইভ বিশ্লেষণ চলাওক →",
   "wealthDetail.market.openButton": "লাইভ মাৰ্কেট বিশ্লেষণ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "গুগলত সন্ধান কৰি আছে... (৫–১০ ছেকেণ্ড)",
   "wealthDetail.market.failed": "বিশ্লেষণ বিফল — অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক।",

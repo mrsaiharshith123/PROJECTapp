@@ -1,5 +1,6 @@
 import { compareSemver } from "../utils/updateServer.js";
 import { getApkDownloadUrl } from "../utils/apkDownload.js";
+import { openAndroidInstallPermissionSettings } from "../utils/nativePermissions.js";
 import { canUseNativeOta } from "./nativeOtaUpdate.js";
 import { markApkDownloaded, isApkDownloadedForVersion } from "./pendingApkInstall.js";
 
@@ -51,26 +52,42 @@ export function apkCacheFileName(version) {
   return `perovo-update-${version || "latest"}.apk`;
 }
 
+/** External storage — Android package installer can read this (private Cache/Data cannot). */
+async function apkStorageDirectory() {
+  const { Directory } = await import("@capacitor/filesystem");
+  return Directory.External;
+}
+
+/** Resolve downloaded APK — External first, then legacy Data/Cache paths. */
+async function resolveApkFile(version) {
+  const { Filesystem, Directory } = await import("@capacitor/filesystem");
+  const fileName = apkCacheFileName(version);
+  for (const directory of [Directory.External, Directory.Data, Directory.Cache]) {
+    try {
+      await Filesystem.stat({ path: fileName, directory });
+      const { uri } = await Filesystem.getUri({ path: fileName, directory });
+      return { fileName, directory, uri };
+    } catch {
+      /* try next */
+    }
+  }
+  throw new Error("apk_not_found");
+}
+
 /** Re-open a downloaded APK in the system installer (no re-download). */
 export async function openCachedApkInstall(version) {
-  const fileName = apkCacheFileName(version);
   const {
     markApkInstallPending,
     markApkPermissionRequested,
-    wasApkPermissionRequested,
     clearApkPermissionRequested,
     clearApkUpdateTracking,
   } = await import("./pendingApkInstall.js");
 
   markApkInstallPending(version || "latest");
 
-  const { Filesystem, Directory } = await import("@capacitor/filesystem");
-  const { uri } = await Filesystem.getUri({
-    path: fileName,
-    directory: Directory.Cache,
-  });
-
+  const { uri } = await resolveApkFile(version);
   const { FileOpener } = await import("@capacitor-community/file-opener");
+  const { App } = await import("@capacitor/app");
 
   async function launchInstaller() {
     await FileOpener.open({
@@ -80,17 +97,7 @@ export async function openCachedApkInstall(version) {
     });
   }
 
-  try {
-    await launchInstaller();
-  } catch {
-    markApkPermissionRequested(version || "latest");
-    const { App } = await import("@capacitor/app");
-    await App.minimizeApp().catch(() => {});
-    return;
-  }
-
-  const { App } = await import("@capacitor/app");
-
+  // Register before launch — catches return from Settings or installer (success or permission grant).
   let stateHandle = null;
   stateHandle = await App.addListener("appStateChange", async (state) => {
     if (!state.isActive) return;
@@ -107,22 +114,27 @@ export async function openCachedApkInstall(version) {
       return;
     }
 
-    if (wasApkPermissionRequested(version || "latest")) {
-      clearApkPermissionRequested();
-      try {
-        await launchInstaller();
-        await App.minimizeApp().catch(() => {});
-      } catch {
-        /* permission still denied — UI retry */
-      }
+    clearApkPermissionRequested();
+    try {
+      await launchInstaller();
+      await App.minimizeApp().catch(() => {});
+    } catch {
+      /* Still denied — UI retry button */
     }
   });
+
+  try {
+    await launchInstaller();
+  } catch {
+    markApkPermissionRequested(version || "latest");
+    openAndroidInstallPermissionSettings();
+  }
 
   await App.minimizeApp().catch(() => {});
 }
 
 /**
- * Download APK to cache only — does not open the installer.
+ * Download APK to external storage — does not open the installer.
  * @param {{ version?: string, apkUrl?: string, apkSize?: number }} manifest
  * @param {(p: { phase?: string, percent?: number, bytesLoaded?: number, bytesTotal?: number }) => void} [onProgress]
  */
@@ -171,12 +183,17 @@ export async function downloadNativeApk(manifest, onProgress) {
 
   const { Filesystem, Directory } = await import("@capacitor/filesystem");
   const fileName = apkCacheFileName(version);
+  const directory = await apkStorageDirectory();
 
   await Filesystem.writeFile({
     path: fileName,
     data: base64,
-    directory: Directory.Cache,
+    directory,
   });
+
+  // Remove legacy private copies the installer cannot read
+  await Filesystem.deleteFile({ path: fileName, directory: Directory.Data }).catch(() => {});
+  await Filesystem.deleteFile({ path: fileName, directory: Directory.Cache }).catch(() => {});
 
   markApkDownloaded(version);
   onProgress?.({ phase: "installing", percent: 100 });

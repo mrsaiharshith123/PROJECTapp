@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ਇਸ ਸੰਪੱਤੀ ਲਈ ਇੱਕ ਅੱਪ-ਟੂ-ਡੇਟ ਮਾਰਕੀਟ ਵਿਸ਼ਲੇਸ਼ਣ ਪ੍ਰਾਪਤ ਕਰੋ।",
   "wealthDetail.market.runAnalysis": "ਲਾਈਵ ਵਿਸ਼ਲੇਸ਼ਣ ਚਲਾਓ →",
   "wealthDetail.market.openButton": "ਲਾਈਵ ਮਾਰਕੀਟ ਵਿਸ਼ਲੇਸ਼ਣ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "ਗੂਗਲ 'ਤੇ ਖੋਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ... (5-10 ਸਕਿੰਟ)",
   "wealthDetail.market.failed": "ਵਿਸ਼ਲੇਸ਼ਣ ਅਸਫਲ ਰਿਹਾ — ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",

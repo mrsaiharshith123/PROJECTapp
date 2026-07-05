@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ꯑꯦꯁꯦꯠ ꯑꯁꯤꯒꯤꯗꯃꯛꯇꯥ ꯃꯇꯃꯒꯥ ꯆꯥꯟꯅꯕꯥ ꯃꯥꯔꯀꯦꯠ ꯑꯦꯅꯥꯂꯥꯏꯁꯤꯁ ꯑꯃꯥ ꯐꯪꯕꯤꯌꯨ꯫",
   "wealthDetail.market.runAnalysis": "ꯂꯥꯏꯕ ꯑꯦꯅꯥꯂꯥꯏꯁꯤꯁ ꯆꯠꯊꯕꯥ →",
   "wealthDetail.market.openButton": "ꯂꯥꯏꯕ ꯃꯥꯔꯀꯦꯠ ꯑꯦꯅꯥꯂꯥꯏꯁꯤꯁ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "ꯒꯨꯒꯂꯗꯥ ꯁꯥꯔꯆ ꯇꯧꯔꯤ... (ꯁꯦꯀꯦꯟꯗ ꯵–꯱꯰)",
   "wealthDetail.market.failed": "ꯑꯦꯅꯥꯂꯥꯏꯁꯤꯁ ꯑꯁꯤ ꯃꯥꯌ ꯄꯥꯀꯈꯤꯗꯦ — ꯆꯥꯅꯕꯤꯗꯨꯅꯥ ꯑꯃꯨꯛ ꯍꯟꯅꯥ ꯍꯣꯠꯅꯕꯤꯌꯨ꯫",

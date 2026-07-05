@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "এই সম্পদের জন্য একটি আপ-টু-ডেট বাজার বিশ্লেষণ পান।",
   "wealthDetail.market.runAnalysis": "লাইভ বিশ্লেষণ চালান →",
   "wealthDetail.market.openButton": "লাইভ বাজার বিশ্লেষণ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "গুগলে সার্চ করা হচ্ছে... (5-10 সেকেন্ড)",
   "wealthDetail.market.failed": "বিশ্লেষণ ব্যর্থ হয়েছে — অনুগ্রহ করে আবার চেষ্টা করুন।",

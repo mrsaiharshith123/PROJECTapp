@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ഈ അസറ്റിനായി ഒരു കാലികമായ മാർക്കറ്റ് വിശകലനം നേടുക.",
   "wealthDetail.market.runAnalysis": "തത്സമയ വിശകലനം റൺ ചെയ്യുക →",
   "wealthDetail.market.openButton": "തത്സമയ വിപണി വിശകലനം →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Google തിരയുന്നു... (5-10 സെക്കൻഡ്)",
   "wealthDetail.market.failed": "വിശകലനം പരാജയപ്പെട്ടു - വീണ്ടും ശ്രമിക്കുക.",

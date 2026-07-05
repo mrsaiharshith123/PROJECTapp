@@ -6,7 +6,7 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 import { buildWealthEntryIntel } from "../../../engines/wealthEntryIntel.js";
-import { fetchAssetInsight, fetchPropertyValueHistory, PHYSICAL_ASSET_TYPES, resolveAssetInsightError } from "../../../services/ai/assetInsight.js";
+import { fetchAssetInsight, fetchPropertyValueHistory, PHYSICAL_ASSET_TYPES, resolveAssetInsightError, clearPropertyAiCache } from "../../../services/ai/assetInsight.js";
 import { expandMilestonesToSeries } from "../../../utils/netWorth/propertyValueHistory.js";
 import WealthEntryModal from "../netWorth/WealthEntryModal.jsx";
 import MarketAnalysis from "./MarketAnalysis.jsx";
@@ -36,6 +36,21 @@ function milestonesToSeries(milestones, entryRow) {
     Number(entryRow.purchasePrice) || 0,
   );
   return series.length >= 2 ? series : null;
+}
+
+function buildStoredMarketAnalysis(entryRow) {
+  const rate = Number(entryRow.marketRatePerSqyd);
+  const area = Number(entryRow.areaMeasure) || 0;
+  if (!rate || rate <= 0) return null;
+  return {
+    source: "ai",
+    structured: true,
+    insight: null,
+    marketData: {
+      marketRate: { perSqyd: rate, dataSource: "stored" },
+      impliedMarketValue: area > 0 ? Math.round(rate * area) : null,
+    },
+  };
 }
 
 /** @route /insights/entry/:id */
@@ -166,14 +181,22 @@ export default function WealthEntryDetailPage() {
 
   const handleOpenLiveMarket = () => {
     setLiveMarketOpen(true);
-    if (!analysis && !analyzing) handleAnalyze();
+    const stored = buildStoredMarketAnalysis(entry);
+    if (stored && !analysis) {
+      setAnalysis(stored);
+      return;
+    }
+    if (!analysis && !analyzing) handleAnalyze(false);
   };
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = async (force = false) => {
     setAnalyzing(true);
     setAnalyzeErr("");
     try {
       const needsHistory = !entry.valueHistorySeries?.length;
+      if (force && entry.categoryId?.startsWith("property")) {
+        clearPropertyAiCache(entry, needsHistory ? { withHistory: true } : {});
+      }
       const result = await fetchAssetInsight(entry, t, settings, {
         includeValueHistory: needsHistory,
       });
@@ -218,10 +241,12 @@ export default function WealthEntryDetailPage() {
   const impliedMarketValue =
     analysis?.marketData?.impliedMarketValue || analysis?.marketData?.impliedCurrentValue || null;
 
+  const hasStoredRate = Number(entry.marketRatePerSqyd) > 0;
   const hasLiveMarket =
-    analysis?.source === "ai" &&
-    analysis?.structured &&
-    Boolean(analysis?.marketData);
+    (analysis?.source === "ai" &&
+      analysis?.structured &&
+      Boolean(analysis?.marketData)) ||
+    hasStoredRate;
 
   const marketIntroKey = entry.categoryId.startsWith("property")
     ? "wealthDetail.market.intro.property"
@@ -393,7 +418,9 @@ export default function WealthEntryDetailPage() {
         <div className="ed-ins-story ed-live-market-wrap" style={{ borderBottom: "none" }}>
           {!liveMarketOpen ? (
             <button type="button" className="ed-live-market-trigger" onClick={handleOpenLiveMarket}>
-              <span className="ed-live-market-trigger-label">{t("wealthDetail.market.openButton")}</span>
+              <span className="ed-live-market-trigger-label">
+                {hasStoredRate ? t("wealthDetail.market.refresh") : t("wealthDetail.market.analyse")}
+              </span>
               <span className="ed-live-market-trigger-sub">
                 {t(marketIntroKey, {
                   location: entry.location || t("wealthDetail.property.outlookAreaFallback"),
@@ -427,7 +454,7 @@ export default function WealthEntryDetailPage() {
                   <p className="ed-you-note error" style={{ marginTop: 10 }}>
                     {analyzeErr}
                   </p>
-                  <button type="button" className="ed-you-save" style={{ marginTop: 8 }} onClick={handleAnalyze}>
+                  <button type="button" className="ed-you-save" style={{ marginTop: 8 }} onClick={() => handleAnalyze(true)}>
                     {t("wealthDetail.estimated.retry")}
                   </button>
                 </>
@@ -438,7 +465,18 @@ export default function WealthEntryDetailPage() {
                   <EngineGuard>
                     <MarketAnalysis
                       t={t}
-                      marketData={analysis.marketData}
+                      marketData={
+                        analysis.marketData ||
+                        (hasStoredRate
+                          ? {
+                              marketRate: { perSqyd: entry.marketRatePerSqyd, dataSource: "stored" },
+                              impliedMarketValue:
+                                Number(entry.areaMeasure) > 0
+                                  ? Math.round(Number(entry.marketRatePerSqyd) * Number(entry.areaMeasure))
+                                  : null,
+                            }
+                          : null)
+                      }
                       categoryId={entry.categoryId}
                       insight={analysis.insight}
                       source={analysis.source}
@@ -500,9 +538,9 @@ export default function WealthEntryDetailPage() {
                     type="button"
                     className="ed-ins-link"
                     style={{ padding: "10px 0 0", display: "block" }}
-                    onClick={handleAnalyze}
+                    onClick={() => handleAnalyze(true)}
                   >
-                    {t("wealthDetail.estimated.refreshAnalysis")}
+                    {t("wealthDetail.market.refresh")}
                   </button>
                 </>
               ) : null}

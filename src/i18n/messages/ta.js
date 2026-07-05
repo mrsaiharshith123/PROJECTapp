@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "இந்தச் சொத்துக்கான சமீபத்திய சந்தைப் பகுப்பாய்வைப் பெறுங்கள்.",
   "wealthDetail.market.runAnalysis": "நேரடி பகுப்பாய்வை இயக்கவும் →",
   "wealthDetail.market.openButton": "நேரடி சந்தை பகுப்பாய்வு →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Google ஐத் தேடுகிறது... (5-10 வினாடிகள்)",
   "wealthDetail.market.failed": "பகுப்பாய்வு தோல்வியடைந்தது - மீண்டும் முயற்சிக்கவும்.",

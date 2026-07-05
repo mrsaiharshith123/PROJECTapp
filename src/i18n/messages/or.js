@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ଏହି ସମ୍ପତ୍ତି ପାଇଁ ଏକ ଅତ୍ୟାଧୁନିକ ବଜାର ବିଶ୍ଳେଷଣ ପ୍ରାପ୍ତ କରନ୍ତୁ |",
   "wealthDetail.market.runAnalysis": "ଲାଇଭ୍ ଆନାଲିସିସ୍ ଚଲାନ୍ତୁ |",
   "wealthDetail.market.openButton": "ଜୀବନ୍ତ ବଜାର ବିଶ୍ଳେଷଣ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "ଗୁଗୁଲ୍ ଖୋଜୁଛି… (5-10 ସେକେଣ୍ଡ୍)",
   "wealthDetail.market.failed": "ବିଶ୍ଳେଷଣ ବିଫଳ ହେଲା - ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ |",

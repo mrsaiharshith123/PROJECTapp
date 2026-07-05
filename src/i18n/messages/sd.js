@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "ھن اثاثن لاءِ مارڪيٽ جي تازه ترين تجزيو حاصل ڪريو.",
   "wealthDetail.market.runAnalysis": "هلو لائيو تجزيو →",
   "wealthDetail.market.openButton": "لائيو مارڪيٽ تجزيو →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "گوگل ڳولهي رهيو آهي… (5-10 سيڪنڊ)",
   "wealthDetail.market.failed": "تجزيو ناڪام ٿيو — مھرباني ڪري ٻيهر ڪوشش ڪريو.",

@@ -39,6 +39,19 @@ Output:
 
 Package id: `app.perovo.mobile` (side-by-side with Play Store `app.perovo.twa`).
 
+### Storage on Android
+
+| What | Where Android shows it | Cleared by |
+|------|------------------------|------------|
+| Bills, settings (local-first) | App **storage** | Clear **data** |
+| Capgo OTA web bundle | App **storage** (not APK size) | Clear **data** |
+| Downloaded APK before install | App **data** (was cache; fixed in 1.5.x) | Clear **data** |
+| Installed APK update | **App size** in Settings | Uninstall only |
+
+**Clear data** wipes OTA updates and all local finances — use **cloud backup** (Pro/Power) before clearing. For version bumps, **install the APK** when prompted so the update lives in the installed app, not only as an OTA patch in data.
+
+OTA hotfixes (same version, newer build) are small patches; full semver bumps should use **APK install**.
+
 ## Ship (commit + push + GitHub Release APK)
 
 ```bash

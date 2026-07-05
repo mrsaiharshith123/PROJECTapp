@@ -140,6 +140,9 @@ export function clearApkUpdateTracking() {
   } catch {
     /* ignore */
   }
+  void import("./updateStorageCleanup.js")
+    .then((m) => m.deleteCachedApkFiles(null))
+    .catch(() => {});
 }
 
 /**
@@ -151,6 +154,8 @@ export async function syncApkUpdateTrackingWithInstalled(remote) {
   const localNative = await getLocalNativeAppVersion();
   if (!needsNativeApkUpdate(remote, localNative)) {
     clearApkUpdateTracking();
+    const { deleteCachedApkFiles } = await import("./updateStorageCleanup.js");
+    await deleteCachedApkFiles(null);
   }
 }
 

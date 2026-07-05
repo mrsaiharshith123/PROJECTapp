@@ -3569,6 +3569,8 @@ export default {
   "wealthDetail.market.intro.generic": "આ સંપત્તિ માટે અપ-ટૂ-ડેટ બજાર વિશ્લેષણ મેળવો.",
   "wealthDetail.market.runAnalysis": "જીવંત વિશ્લેષણ ચલાવો →",
   "wealthDetail.market.openButton": "જીવંત બજાર વિશ્લેષણ →",
+  "wealthDetail.market.analyse": "Get live rate →",
+  "wealthDetail.market.refresh": "↻ Refresh rate",
   "wealthDetail.market.hide": "Hide",
   "wealthDetail.market.searching": "Google માં શોધી રહ્યાં છીએ… (5-10 સેકન્ડ)",
   "wealthDetail.market.failed": "વિશ્લેષણ નિષ્ફળ થયું — કૃપા કરીને ફરી પ્રયાસ કરો.",

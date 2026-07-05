@@ -137,3 +137,10 @@ export function openAndroidAppSettings() {
   if (window.Capacitor?.getPlatform?.() !== "android") return;
   window.location.href = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;scheme=package;package=${ANDROID_PACKAGE_ID};end`;
 }
+
+/** Android 8+ — grant "Install unknown apps" for sideload APK updates. */
+export function openAndroidInstallPermissionSettings() {
+  if (!isNativeCapacitorShell()) return;
+  if (window.Capacitor?.getPlatform?.() !== "android") return;
+  window.location.href = `intent:#Intent;action=android.settings.MANAGE_UNKNOWN_APP_SOURCES;package=${ANDROID_PACKAGE_ID};end`;
+}

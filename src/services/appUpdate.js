@@ -85,7 +85,7 @@ export async function checkForAppUpdate() {
   const apkWaiting = apkNeeded && (apkDownloaded || (await isApkWaitingForInstall(remote)));
 
   /** @type {"apk" | "ota" | undefined} */
-  const updateKind = otaNeeded ? "ota" : apkNeeded ? "apk" : undefined;
+  const updateKind = apkNeeded ? "apk" : otaNeeded ? "ota" : undefined;
 
   const base = {
     localVersion: local.version,
@@ -132,6 +132,19 @@ export async function applyAppUpdate({ onProgress, allowApk = true } = {}) {
   }
 
   if (isEmbeddedApp()) {
+    // APK install updates the real app binary. OTA only patches the web bundle in app data
+    // (cleared when the user taps "Clear storage"). Prefer APK when the shell semver is behind.
+    if (apkNeeded && allowApk) {
+      if (isApkDownloadedForVersion(remote.version)) {
+        await applyNativeApkUpdate(remote, onProgress);
+        return { kind: "apk" };
+      }
+      await downloadNativeApk(remote, onProgress);
+      return { kind: "apk_downloaded" };
+    }
+
+    if (apkNeeded && !allowApk) return { kind: "apk_deferred" };
+
     if (canUseNativeOta() && remote.bundleUrl && otaNeeded) {
       await applyNativeOtaUpdate(
         {
@@ -144,17 +157,6 @@ export async function applyAppUpdate({ onProgress, allowApk = true } = {}) {
       );
       return { kind: "ota" };
     }
-
-    if (apkNeeded && allowApk) {
-      if (isApkDownloadedForVersion(remote.version)) {
-        await applyNativeApkUpdate(remote, onProgress);
-        return { kind: "apk" };
-      }
-      await downloadNativeApk(remote, onProgress);
-      return { kind: "apk_downloaded" };
-    }
-
-    if (apkNeeded && !allowApk) return { kind: "apk_deferred" };
   }
 
   await applyWebOrPwaUpdate(remote, onProgress);
