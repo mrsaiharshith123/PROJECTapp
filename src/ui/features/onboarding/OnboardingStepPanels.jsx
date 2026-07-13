@@ -1,5 +1,5 @@
 import { Card, Button, Eyebrow, Caption, Body, ToneSurface } from "../../index.js";
-import { ONBOARDING_EXPERIENCES } from "../../../guidance/index.js";
+import { ONBOARDING_EXPERIENCES } from "../../../constants/guidance/index.js";
 import { routerBasename } from "../../../utils/basePath.js";
 import { getCategoryById } from "../../../constants/categories.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";

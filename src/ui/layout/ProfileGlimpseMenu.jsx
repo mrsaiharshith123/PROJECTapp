@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../i18n/I18nProvider.js";
 import { usePerovo } from "../../context/PerovoContext.jsx";
@@ -10,6 +10,7 @@ import { useResolvedTheme } from "../../hooks/useResolvedTheme.js";
 import { resolveProfileAvatar } from "../../constants/profileAvatars.js";
 import { applyColorScheme } from "../../utils/theme.js";
 import { CtIcon } from "../icons/CtIcon.jsx";
+import { useFocusTrap } from "../hooks/useFocusTrap.js";
 
 /**
  * Groww-style profile card — drops from the masthead avatar (top-right), not a bottom sheet.
@@ -18,7 +19,7 @@ import { CtIcon } from "../icons/CtIcon.jsx";
 export default function ProfileGlimpseMenu({ open, onClose }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const panelRef = useRef(null);
+  const panelRef = useFocusTrap(open);
   const { settings, updateSettings } = usePerovo();
   const { user, isLoggedIn, signOut } = useAuth();
   const { privacyMode } = useNetWorth();
@@ -77,7 +78,13 @@ export default function ProfileGlimpseMenu({ open, onClose }) {
   return (
     <>
       <div className="ed-glimpse-backdrop" aria-hidden onClick={onClose} />
-      <div ref={panelRef} className="ed-glimpse ed-glimpse--open" role="dialog" aria-label={t("profileGlimpse.title")}>
+      <div
+        ref={panelRef}
+        className="ed-glimpse ed-glimpse--open"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("profileGlimpse.title")}
+      >
         <div className="ed-glimpse-head ed-glimpse-head--avatar">
           {avatar.imageUrl ? (
             <img src={avatar.imageUrl} alt="" className="ed-profile-avatar" />

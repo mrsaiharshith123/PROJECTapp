@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { Badge } from "../primitives/Badge.jsx";
 import { Heading, Caption } from "../primitives/Text.jsx";
 import { CtIcon } from "../icons/CtIcon.jsx";
 import { cn } from "../utils/cn.js";
+import { useFocusTrap } from "../hooks/useFocusTrap.js";
 
 const URGENCY_ICON = {
   critical: { icon: "warning", tone: "danger" },
@@ -29,7 +30,7 @@ function formatNotifTime(createdAt) {
 }
 
 export function NotificationPanel({ onClose }) {
-  const panelRef = useRef(null);
+  const panelRef = useFocusTrap(true);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { markRead, markAllRead } = useNotificationActions();

@@ -1,6 +1,7 @@
+import { memo } from "react";
 import { cn } from "../utils/cn.js";
 
-export function StatCard({ value, label, className = "", valueClassName = "", variant = "default" }) {
+function StatCardImpl({ value, label, className = "", valueClassName = "", variant = "default" }) {
   const tile = variant === "tile";
   return (
     <div className={cn(tile ? "ed-inset" : "ed-metric", className)}>
@@ -11,5 +12,7 @@ export function StatCard({ value, label, className = "", valueClassName = "", va
     </div>
   );
 }
+
+export const StatCard = memo(StatCardImpl);
 
 export default StatCard;

@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { createElement, memo } from "react";
 import { Row } from "../primitives/Stack.jsx";
 import { Body, Caption } from "../primitives/Text.jsx";
 import { Badge } from "../primitives/Badge.jsx";
@@ -7,7 +7,7 @@ import { CtIcon } from "../icons/CtIcon.jsx";
 /**
  * @param {{ icon?: string, title: string, subtitle?: string, amount?: string, amountTone?: 'positive' | 'negative' | 'neutral', status?: string, statusTone?: string, onClick?: () => void, as?: string }} props
  */
-export function ListRow({
+function ListRowImpl({
   icon,
   title,
   subtitle,
@@ -58,3 +58,5 @@ export function ListRow({
   }
   return createElement(Tag, { className: "ed-nav-row w-full text-left" }, inner);
 }
+
+export const ListRow = memo(ListRowImpl);

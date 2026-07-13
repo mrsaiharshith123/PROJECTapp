@@ -1,16 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   buildPromissoryNoteText,
-  numberToWords,
   borrowerTrustSnapshot,
 } from "../lendingAgreement.js";
 
 describe("lendingAgreement", () => {
-  it("numberToWords handles typical principal amounts", () => {
-    expect(numberToWords(100000)).toMatch(/lakh/i);
-    expect(numberToWords(0)).toBe("zero rupees only");
-  });
-
   it("buildPromissoryNoteText strips HTML from borrower name", () => {
     const text = buildPromissoryNoteText(
       {

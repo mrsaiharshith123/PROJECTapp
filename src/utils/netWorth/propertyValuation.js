@@ -1,4 +1,4 @@
-import { isPropertyCategory } from "../../engines/propertyLocationIntel.js";
+import { isPropertyCategory } from "../../constants/netWorth/propertyCategories.js";
 
 const PROPERTY_RESIDENTIAL = "property_residential";
 

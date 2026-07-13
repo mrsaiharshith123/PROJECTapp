@@ -1,4 +1,4 @@
-import { numberToWords } from "../engines/lendingAgreement.js";
+import { numberToWords } from "./numberToWords.js";
 import { sanitizeName, sanitizeText } from "./sanitize.js";
 
 /** @returns {Promise<typeof import("pdfmake/build/pdfmake.js")>} */

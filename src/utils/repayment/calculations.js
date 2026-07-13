@@ -1,6 +1,10 @@
 /**
  * Centralized repayment math (no UI).
+ *
+ * This is the single canonical EMI/amortization implementation for the app —
+ * do not add another one. `computeLoanEmi` (utils/loanEmi.js) delegates here.
  */
+import Decimal from "decimal.js";
 
 /** Simple interest: I = P * r * t (t in years). */
 export function calculateSimpleInterest(principal, annualRatePercent, termMonths) {
@@ -23,9 +27,10 @@ export function calculateMonthlyEMI(principal, annualRatePercent, n) {
   const annual = Math.max(0, Number(annualRatePercent) || 0) / 100;
   if (P <= 0) return 0;
   if (annual === 0) return P / installments;
-  const r = annual / 12;
-  const pow = (1 + r) ** installments;
-  return (P * r * pow) / (pow - 1);
+  const r = new Decimal(annual).div(12);
+  const onePlusR = new Decimal(1).plus(r);
+  const pow = onePlusR.pow(installments);
+  return new Decimal(P).times(r).times(pow).div(pow.minus(1)).toNumber();
 }
 
 export function calculateTotalPayableSimple(principal, annualRatePercent, termMonths) {

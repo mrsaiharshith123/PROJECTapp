@@ -9,15 +9,19 @@ export const INSTRUMENT_WEALTH_IDS = new Set([
   "mutual_fund",
 ]);
 
-/** Commitment categories treated as liabilities in the ledger. */
+/**
+ * Commitment categories treated as liabilities in the ledger.
+ * Must stay a subset of the canonical category ids in constants/categories.js —
+ * "Home Loan"/"Car Loan"/"Personal Loan" were legacy strings no UI can assign
+ * and "Equipment" was missing, silently excluding equipment/vehicle loans
+ * from the Liabilities view even though they're counted as debt everywhere else.
+ */
 export const LIABILITY_COMMITMENT_CATEGORIES = new Set([
   "EMI",
   "Loan",
   "Credit Card",
   "BNPL",
-  "Home Loan",
-  "Car Loan",
-  "Personal Loan",
+  "Equipment",
 ]);
 
 /** Commitment categories treated as instruments. */

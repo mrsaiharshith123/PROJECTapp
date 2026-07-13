@@ -23,7 +23,6 @@ export function PasswordInput({ className = "", value, onChange, ...props }) {
         className="ed-password-toggle"
         onClick={() => setShow((s) => !s)}
         aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
-        tabIndex={-1}
       >
         {show ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
       </button>

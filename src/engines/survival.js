@@ -66,7 +66,7 @@ function essentialMonthlyBurden(commitments, getEffectiveStatus) {
 
 function computeRunwayMonths(pool, burn) {
   if (burn <= 0) return pool > 0 ? 99 : null;
-  return Math.round((pool / burn) * 10) / 10;
+  return Math.max(0, Math.round((pool / burn) * 10) / 10);
 }
 
 function breakingMonthLabel(runwayMonths, todayStr) {
@@ -93,7 +93,7 @@ function runScenario({
   todayStr = "",
 }) {
   const burn = Math.max(0, monthlyBurden + Math.max(0, lendingOutflow));
-  const pool = Math.max(0, liquidSavings) + Math.max(0, freeMoney) - Math.max(0, emergencyHit);
+  const pool = Math.max(0, Math.max(0, liquidSavings) + Math.max(0, freeMoney) - Math.max(0, emergencyHit));
   const runwayMonths = computeRunwayMonths(pool, burn);
   const { tier, label: tierLabel } = survivalTierFromMonths(runwayMonths);
   const inc = Math.max(0, income || 0);
@@ -215,13 +215,20 @@ export function computeSurvivalAnalysis({
   const stressedIncome = Math.round(inc * 0.7);
   const stressedFree = Math.max(0, stressedIncome - totalBurn);
 
+  // Scale the emergency shock to the user's own burn rate instead of a flat
+  // rupee figure — a flat ₹150,000 hit is trivial for a high earner and can
+  // exceed a low earner's entire pool, producing a meaningless negative-runway
+  // "stressed" scenario. Two months of burn approximates a real one-off shock
+  // (medical bill, urgent repair) while still scaling with the user's own life.
+  const emergencyHit = Math.min(STRESSED_EMERGENCY_HIT, Math.round(totalBurn * 2));
+
   const stressed = runScenario({
     income: stressedIncome,
     freeMoney: stressedFree,
     liquidSavings: liquid,
     monthlyBurden: stressedBurden,
     lendingOutflow: 0,
-    emergencyHit: STRESSED_EMERGENCY_HIT,
+    emergencyHit,
     todayStr,
   });
 

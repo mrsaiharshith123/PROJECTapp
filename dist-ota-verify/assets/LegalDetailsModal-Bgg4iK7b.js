@@ -1,1 +1,0 @@
-import{t as e}from"./LegalDetailsModal-BbuV1Yg0.js";export{e as default};

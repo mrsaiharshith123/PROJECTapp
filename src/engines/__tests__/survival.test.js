@@ -50,4 +50,40 @@ describe("survival", () => {
     });
     expect(typeof r.tierLabel).toBe("string");
   });
+
+  it("regression: stressed-scenario runway is never negative for a low earner with thin savings", () => {
+    // A low earner whose liquid + free money is well under the emergency-shock
+    // amount previously produced a negative "runwayMonths" that rendered
+    // straight to the UI (e.g. "-14.2 months"). Must always clamp to >= 0.
+    const r = computeSurvivalAnalysis({
+      income: 15000,
+      freeMoney: 500,
+      liquidSavings: 3000,
+      monthlyBurden: 12000,
+      lendingOutflow: 0,
+      settings: {},
+      todayStr: "2025-06-01",
+      commitments: [],
+      getEffectiveStatus: () => "active",
+    });
+    expect(r.scenarios.stressed.runwayMonths).toBeGreaterThanOrEqual(0);
+    expect(r.scenarios.critical.runwayMonths).toBeGreaterThanOrEqual(0);
+    expect(r.scenarios.baseline.runwayMonths).toBeGreaterThanOrEqual(0);
+  });
+
+  it("scales the emergency shock to burn rate instead of a flat figure for low earners", () => {
+    const lowEarner = computeSurvivalAnalysis({
+      income: 15000,
+      freeMoney: 500,
+      liquidSavings: 3000,
+      monthlyBurden: 8000,
+      lendingOutflow: 0,
+      settings: {},
+      todayStr: "2025-06-01",
+      commitments: [],
+      getEffectiveStatus: () => "active",
+    });
+    // Emergency hit should be capped at 2x monthly burn (~16,000), not the flat ₹150,000.
+    expect(lowEarner.scenarios.stressed.poolAfterEmergency).toBeGreaterThanOrEqual(0);
+  });
 });

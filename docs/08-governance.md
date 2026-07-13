@@ -63,7 +63,7 @@ npm run audit:platform   # architecture, features
 | `audit:charts` (duplicates) | Resolved: net worth categories → `wealthCategories.js` | Bill categories stay in `constants/categories.js` |
 | `audit:governance` | Large page files (AuthGate, Analytics) | Extract sections when touching those files |
 | `audit:performance` | Main JS chunk ~510 kB | Code-split when adding heavy routes |
-| Baseline | **120** QA tests / colocated `src/**/__tests__` / governance tree + Knip clean | Update docs when counts change |
+| Baseline | Run `npm test` for the current count — colocated `src/**/__tests__` + `tests/suites/` | Don't hardcode a test count in docs; it drifts every PR |
 
 ### Flags
 
@@ -72,15 +72,19 @@ node scripts/audit-runner.mjs modes --json --verbose
 node scripts/audit-runner.mjs --all --quick --strict
 ```
 
-## Registries (`src/governance/registries/`)
+## Registries (`scripts/registries/`)
+
+Build-time audit tooling only — not part of the `src/` bundle. (Was `src/governance/registries/` until it moved here on 2026-07-02.)
 
 | File | Purpose |
 |------|---------|
-| `features.js` | Product feature map |
-| `modes.js` | Mode capabilities & allowlists |
-| `insights.js` | Insight producers & tones |
-| `analytics.js` | Chart / analytics surfaces |
-| `severityRegistry.js` | UI severity tokens (not `ui/tokens/severity.js`) |
+| `features.mjs` | Product feature map |
+| `modes.mjs` | Mode capabilities & allowlists |
+| `insights.mjs` | Insight producers & tones |
+| `analytics.mjs` | Chart / analytics surfaces |
+| `severityRegistry.mjs` | UI severity tokens (not `ui/tokens/severity.js`) |
+| `transactions.mjs` | Transaction category/taxonomy registry |
+| `index.mjs` | Barrel entry point for the audit scripts |
 
 Update registries when adding modes, tools, or major features.
 

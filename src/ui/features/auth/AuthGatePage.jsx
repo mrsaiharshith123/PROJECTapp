@@ -4,11 +4,12 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { formatAuthError } from "../../../utils/authErrors.js";
 import { isValidIndianPhone, normalizeIndianPhone } from "../../../utils/phone.js";
 import { isCloudSyncConfigured } from "../../../services/sync/syncEngine.js";
-import { saveUserProfile } from "../../../services/supabase/auth.js";
+import { saveUserProfile, resendVerificationEmail } from "../../../services/supabase/auth.js";
 import { markSignupPending } from "../../../utils/authSessionCleanup.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CitySelect } from "../../patterns/CitySelect.jsx";
 import { CtIcon } from "../../icons/CtIcon.jsx";
+import { PasswordInput } from "../../primitives/PasswordInput.jsx";
 
 const AUTH_FEATURES = [
   "auth.ed.featureBills",
@@ -29,48 +30,20 @@ function isRecoverySession() {
  *   label: string,
  *   value: string,
  *   onChange: (v: string) => void,
- *   show: boolean,
- *   onToggle: () => void,
  *   autoComplete?: string,
  *   placeholder?: string,
- *   t: (key: string) => string,
  * }} props
  */
-function AuthPasswordField({ label, value, onChange, show, onToggle, autoComplete, placeholder, t }) {
+function AuthPasswordField({ label, value, onChange, autoComplete, placeholder }) {
   return (
     <div className="ed-field">
       <label className="ed-field-label">{label}</label>
-      <div style={{ position: "relative" }}>
-        <input
-          className="ed-input"
-          type={show ? "text" : "password"}
-          autoComplete={autoComplete}
-          placeholder={placeholder}
-          value={value}
-          style={{ paddingRight: 44 }}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          style={{
-            position: "absolute",
-            right: 12,
-            top: "50%",
-            transform: "translateY(-50%)",
-            background: "none",
-            border: "none",
-            color: "var(--ed-ink-faint)",
-            cursor: "pointer",
-            padding: 4,
-            display: "flex",
-            alignItems: "center",
-          }}
-          aria-label={show ? t("auth.hidePassword") : t("auth.showPassword")}
-        >
-          <CtIcon name={show ? "eye-slash" : "eye"} size={18} />
-        </button>
-      </div>
+      <PasswordInput
+        autoComplete={autoComplete}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
@@ -91,9 +64,8 @@ export default function AuthGatePage() {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [noteTone, setNoteTone] = useState("neutral");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [resendEligible, setResendEligible] = useState(false);
+  const [resendBusy, setResendBusy] = useState(false);
 
   const configured = isCloudSyncConfigured();
   const isLogin = mode === "signin";
@@ -104,6 +76,7 @@ export default function AuthGatePage() {
       setNote("");
       setNoteTone("neutral");
     }
+    setResendEligible(false);
     clearAuthNotice();
   };
 
@@ -111,13 +84,26 @@ export default function AuthGatePage() {
     setMode(next);
     setNote("");
     setNoteTone("neutral");
+    setResendEligible(false);
     clearAuthNotice();
     setConfirmPassword("");
-    setShowPassword(false);
-    setShowConfirmPassword(false);
     if (next !== "reset") {
       setNewPassword("");
-      setShowNewPassword(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendBusy(true);
+    try {
+      await resendVerificationEmail(email.trim());
+      setNote(t("auth.resendSent"));
+      setNoteTone("success");
+      setResendEligible(false);
+    } catch (e) {
+      setNote(formatAuthError(e));
+      setNoteTone("danger");
+    } finally {
+      setResendBusy(false);
     }
   };
 
@@ -126,6 +112,11 @@ export default function AuthGatePage() {
     if (password.length < 6) return t("auth.errPasswordLength");
     if (password !== confirmPassword) return t("auth.passwordMismatch");
     if (!name.trim()) return t("auth.errNameRequired");
+    // Browser/OS autofill can misfire a saved password into an adjacent
+    // unlabeled text field (this is what the "name" field used to be) —
+    // catch it even with the autocomplete hints now in place, since some
+    // autofill engines ignore them.
+    if (name.trim() === password) return t("auth.errNameLooksLikePassword");
     if (!isValidIndianPhone(phone)) return t("auth.errPhoneInvalid");
     const incomeNum = Number(income);
     if (!income || incomeNum <= 0) return t("auth.errSalaryRequired");
@@ -280,14 +271,19 @@ export default function AuthGatePage() {
         } else if (uid) {
           setNote(t("auth.accountCreatedConfirm"));
           setNoteTone("success");
+          setResendEligible(true);
         } else {
           setNote(t("auth.checkEmail"));
           setNoteTone("success");
+          setResendEligible(true);
         }
       }
     } catch (e) {
       setNote(formatAuthError(e));
       setNoteTone("danger");
+      if (formatAuthError(e).toLowerCase().includes("confirm your email")) {
+        setResendEligible(true);
+      }
     } finally {
       setBusy(false);
     }
@@ -498,11 +494,8 @@ export default function AuthGatePage() {
                 setPassword(v);
                 clearFeedback();
               }}
-              show={showPassword}
-              onToggle={() => setShowPassword((p) => !p)}
               autoComplete="current-password"
               placeholder={t("auth.ed.passwordPlaceholder")}
-              t={t}
             />
             <div
               className="ed-row"
@@ -564,11 +557,8 @@ export default function AuthGatePage() {
                 setPassword(v);
                 clearFeedback();
               }}
-              show={showPassword}
-              onToggle={() => setShowPassword((p) => !p)}
               autoComplete="new-password"
               placeholder={t("auth.ed.passwordCreatePlaceholder")}
-              t={t}
             />
             <AuthPasswordField
               label={t("auth.confirmPassword")}
@@ -577,16 +567,16 @@ export default function AuthGatePage() {
                 setConfirmPassword(v);
                 clearFeedback();
               }}
-              show={showConfirmPassword}
-              onToggle={() => setShowConfirmPassword((p) => !p)}
               autoComplete="new-password"
               placeholder={t("auth.ed.passwordCreatePlaceholder")}
-              t={t}
             />
             <div className="ed-field">
               <label className="ed-field-label">{t("auth.yourName")}</label>
               <input
                 className="ed-input"
+                type="text"
+                name="name"
+                autoComplete="name"
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
@@ -598,6 +588,8 @@ export default function AuthGatePage() {
               <label className="ed-field-label">{t("auth.mobile")}</label>
               <input
                 type="tel"
+                name="phone"
+                autoComplete="tel"
                 className="ed-input"
                 value={phone}
                 onChange={(e) => {
@@ -643,11 +635,8 @@ export default function AuthGatePage() {
                 setNewPassword(v);
                 clearFeedback();
               }}
-              show={showNewPassword}
-              onToggle={() => setShowNewPassword((p) => !p)}
               autoComplete="new-password"
               placeholder={t("auth.ed.passwordCreatePlaceholder")}
-              t={t}
             />
             <AuthPasswordField
               label={t("auth.confirmPassword")}
@@ -656,11 +645,8 @@ export default function AuthGatePage() {
                 setConfirmPassword(v);
                 clearFeedback();
               }}
-              show={showConfirmPassword}
-              onToggle={() => setShowConfirmPassword((p) => !p)}
               autoComplete="new-password"
               placeholder={t("auth.ed.passwordCreatePlaceholder")}
-              t={t}
             />
           </>
         )}
@@ -669,6 +655,18 @@ export default function AuthGatePage() {
           <div className="ed-field-error" style={{ marginBottom: 14, color: noteColor }}>
             {feedback}
           </div>
+        )}
+
+        {resendEligible && email.trim() && (
+          <button
+            type="button"
+            className="ed-btn-link"
+            style={{ display: "block", textAlign: "center", width: "100%", marginBottom: 14 }}
+            disabled={resendBusy}
+            onClick={handleResendVerification}
+          >
+            {resendBusy ? t("auth.pleaseWait") : t("auth.resendVerificationEmail")}
+          </button>
         )}
 
         {mode === "forgot" ? (

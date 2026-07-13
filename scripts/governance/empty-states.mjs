@@ -24,9 +24,9 @@ export function runEmptyStatesAudit() {
   const warnings = [];
   const advisories = [];
 
-  const registryPath = path.join(SRC, "guidance/registry/emptyStates.js");
+  const registryPath = path.join(SRC, "constants/guidance/registry/emptyStates.js");
   if (!fs.existsSync(registryPath)) {
-    errors.push({ message: "Missing src/guidance/registry/emptyStates.js" });
+    errors.push({ message: "Missing src/constants/guidance/registry/emptyStates.js" });
     return { id: "empty-states", title: "Empty-state registry coverage", errors, warnings, advisories };
   }
 

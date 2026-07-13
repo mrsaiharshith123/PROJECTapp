@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getAppTourSteps } from "../../guidance/registry/appTour.js";
+import { getAppTourSteps } from "../../constants/guidance/registry/appTour.js";
 import { Modal } from "../primitives/Modal.jsx";
 import { Button } from "../primitives/Button.jsx";
 import { Body, Caption, Eyebrow } from "../primitives/Text.jsx";

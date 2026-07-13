@@ -270,11 +270,3 @@ export function extrasFromTimingRows(adviceRows) {
   return map;
 }
 
-export function computeEmiFromPrincipal(principal, annualRatePercent, tenureMonths) {
-  const P = Math.max(0, Number(principal) || 0);
-  const n = Math.max(1, Math.floor(Number(tenureMonths) || 1));
-  const r = Math.max(0, Number(annualRatePercent) || 0) / 100 / 12;
-  if (r === 0) return P / n;
-  const factor = Math.pow(1 + r, n);
-  return (P * r * factor) / (factor - 1);
-}

@@ -1,41 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "../utils/cn.js";
 import { Heading } from "./Text.jsx";
 import { useTranslation } from "../../i18n/I18nProvider.js";
-
-function useFocusTrap(active) {
-  const panelRef = useRef(null);
-
-  useEffect(() => {
-    if (!active || !panelRef.current) return undefined;
-
-    const focusable = panelRef.current.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    );
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    first?.focus();
-
-    function onKey(e) {
-      if (e.key !== "Tab") return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last?.focus();
-        }
-      } else if (document.activeElement === last) {
-        e.preventDefault();
-        first?.focus();
-      }
-    }
-
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [active]);
-
-  return panelRef;
-}
+import { useFocusTrap } from "../hooks/useFocusTrap.js";
 
 /**
  * @param {{ title?: string, children: import('react').ReactNode, onClose: () => void, footer?: import('react').ReactNode, fullScreen?: boolean, sheet?: boolean, darkSheet?: boolean }} props

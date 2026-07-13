@@ -1,1 +1,0 @@
-import{n as e}from"./auth-3Yqvco7c.js";export{e as deleteAccountData};

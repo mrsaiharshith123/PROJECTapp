@@ -6,11 +6,15 @@ Centralized education and explanation — not scattered copy in features.
 
 | Layer | Path | Role |
 |-------|------|------|
-| Registry | `src/guidance/registry/` | Concepts, onboarding, empty states, dashboard focus, micro tips |
-| Logic | `src/guidance/explainInsight.js`, `interpretMetric.js` | Why insights appear; KPI interpretation |
+| Registry | `src/constants/guidance/registry/` | Concepts, onboarding, empty states, dashboard focus, micro tips |
+| Logic | `src/constants/guidance/explainInsight.js`, `interpretMetric.js` | Why insights appear; KPI interpretation |
 | UI | `src/ui/guidance/` | ConceptHelp, WhyInsightPanel, GuidanceBanner, GuidedEmptyState, MicroTipCard |
 
-Import from `src/guidance/index.js` in app code; import UI from `src/ui` or `src/ui/guidance/`.
+Import content/copy from `src/constants/guidance/index.js`; import UI components from `src/ui/guidance/`.
+These two directories share the word "guidance" but are deliberately kept apart by tier
+(constants = data, ui = components) — do not merge them back under one top-level `src/guidance/`,
+that naming collision (same word resolving to two different directories depending on relative
+import depth) was the actual bug this reorganization fixed.
 
 ## Principles
 

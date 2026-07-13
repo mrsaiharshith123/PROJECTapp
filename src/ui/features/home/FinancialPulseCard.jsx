@@ -17,7 +17,7 @@ import { insightToneClass } from "../../tokens/severity.js";
 import { Heading, Caption } from "../../primitives/Text.jsx";
 import { ConceptHelp } from "../../guidance/ConceptHelp.jsx";
 import { WhyInsightPanel } from "../../guidance/WhyInsightPanel.jsx";
-import { pickMicroTip } from "../../../guidance/index.js";
+import { pickMicroTip } from "../../../constants/guidance/index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { joinEngineMessages, translatePressureLabel } from "../../../i18n/engineLabels.js";
 import { translateInsight } from "../../../i18n/insightLabels.js";

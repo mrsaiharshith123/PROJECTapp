@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeEmiFromPrincipal } from "../prepayment.js";
+import { calculateMonthlyEMI as computeEmiFromPrincipal } from "../../utils/repayment/calculations.js";
 import { isDebtCommitment } from "../loanPayoffTiming.js";
 
 describe("loanPayoffTiming", () => {

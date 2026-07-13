@@ -1,4 +1,5 @@
 import { totalMonthlyBurden } from "../burden.js";
+import { lendingMonthlyOutflow } from "../survival.js";
 
 /**
  * @param {object} input
@@ -21,13 +22,21 @@ export function computeDebtHealth(input) {
       ? totalMonthlyBurden(input.commitments, input.getEffectiveStatus)
       : 0;
 
+  // Prefer the same schedule-based outflow used by the survival engine
+  // (src/engines/survival.js) so "how much borrowed money do I owe monthly"
+  // agrees across screens instead of debtHealth guessing a flat 5%/month
+  // regardless of the loan's actual repayment schedule. Falls back to the
+  // old flat-rate heuristic only when the caller can't supply the status
+  // resolver (kept for backward compatibility with any other caller).
   const lendingOutflow =
-    input.lendings?.reduce((/** @type {number} */ s, row) => {
-      const l = /** @type {{ type?: string, remainingAmount?: number }} */ (row);
-      const rem = Number(l.remainingAmount) || 0;
-      if (l.type === "borrowed" && rem > 0) return s + rem * 0.05;
-      return s;
-    }, 0) || 0;
+    input.lendings && input.getEffectiveLendingStatus
+      ? lendingMonthlyOutflow(input.lendings, input.getEffectiveLendingStatus, input.todayStr)
+      : input.lendings?.reduce((/** @type {number} */ s, row) => {
+          const l = /** @type {{ type?: string, remainingAmount?: number }} */ (row);
+          const rem = Number(l.remainingAmount) || 0;
+          if (l.type === "borrowed" && rem > 0) return s + rem * 0.05;
+          return s;
+        }, 0) || 0;
 
   const totalEmiLoad = manualEmi + billEmi + lendingOutflow;
   const debtToIncome = income > 0 ? totalDebt / (income * 12) : totalDebt > 0 ? 99 : 0;

@@ -1,60 +1,54 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { todayYmd } from "../utils/dates.js";
-import { normalizeCommitmentStatusForSave } from "../utils/commitmentStatus.js";
-import { emitLocalDataChanged, SETTINGS_RESET_EVENT } from "../utils/storage/events.js";
+import { emitLocalDataChanged } from "../utils/storage/events.js";
 import { useAuth } from "./AuthContext.jsx";
-import { loadSubscriptionTier, syncSettingsToServer, loadSettingsFromServer } from "../services/supabase/auth.js";
-import {
-  loadInitialAppState,
-  loadSettingsFromStorage,
-  invalidateInitialAppStateCache,
-  saveMonthlySnapshotsToStorage,
-  saveGoalsToStorage,
-  normalizeCommitment,
-  normalizeLending,
-  SCHEMA_VERSION_KEY,
-  CURRENT_SCHEMA_VERSION,
-} from "../utils/migrateStorage.js";
+import { SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION } from "../utils/migrateStorage.js";
 import { getEffectiveLendingStatus } from "../utils/lendingStatus.js";
 import { filterByProfile } from "../utils/profileScope.js";
 import { getEffectiveStatus } from "../utils/commitmentStatus.js";
 import { buildMonthlySnapshot } from "../engines/snapshots.js";
 import { mergeImportedAppState } from "../utils/dataImport.js";
 import { loadWealthState, saveWealthState } from "../utils/netWorth/wealthStorage.js";
-import { mergeAccountSettingsFromServer } from "../utils/accountSettingsSync.js";
-import { saveSyncMeta } from "../services/sync/syncMeta.js";
-import { refreshAllChitCommitments } from "../utils/chitSync.js";
 import { sortCommitments } from "./perovoSort.js";
 import { usePerovoCrud } from "./usePerovoCrud.js";
-import { fetchFundNav } from "../services/market/amfiNav.js";
-import {
-  fetchGoldPricePerGram,
-  isGoldApiConfigured,
-  shouldRefreshGoldRate,
-} from "../services/market/goldPrice.js";
-import { applyGoldRateToWealth } from "../utils/netWorth/goldRateSync.js";
+import { usePerovoPersistence } from "./usePerovoPersistence.js";
+import { useServerSettingsSync } from "./useServerSettingsSync.js";
+import { useSubscriptionTierSync } from "./useSubscriptionTierSync.js";
+import { useMarketRateSync } from "./useMarketRateSync.js";
 
 /** @type {import('react').Context<import('../types/context.js').PerovoContextValue | null>} */
 const PerovoContext = createContext(/** @type {import('../types/context.js').PerovoContextValue | null} */ (null));
 
+/**
+ * Composition root for local-first app state. Each concern lives in its own
+ * hook (usePerovoPersistence, useServerSettingsSync, useSubscriptionTierSync,
+ * useMarketRateSync, usePerovoCrud) — this component wires them together and
+ * assembles the context value. Keep new state/effects in a dedicated hook
+ * unless they're a single small effect tightly coupled to wiring here.
+ */
 export function PerovoProvider({ children }) {
   const { user } = useAuth();
-  const syncTimerRef = useRef(null);
-  const userIdRef = useRef(user?.id);
-  useEffect(() => {
-    userIdRef.current = user?.id;
-  }, [user?.id]);
-  const [commitments, setCommitments] = useState(() =>
-    refreshAllChitCommitments(loadInitialAppState().commitments, todayYmd())
-  );
-  const [lendings, setLendings] = useState(() => loadInitialAppState().lendings);
-  const [settings, setSettings] = useState(() => loadInitialAppState().settings);
-  const [monthlySnapshots, setMonthlySnapshots] = useState(() => loadInitialAppState().monthlySnapshots);
-  const [goals, setGoals] = useState(() => loadInitialAppState().goals);
-  const [supplementalNotifications, setSupplementalNotifications] = useState([]);
-  const [serverSubscriptionTier, setServerSubscriptionTier] = useState(/** @type {string | null} */ (null));
 
+  const {
+    commitments,
+    persistCommitments,
+    lendings,
+    persistLendings,
+    settings,
+    setSettings,
+    persistSettings,
+    settingsRef,
+    monthlySnapshots,
+    persistSnapshots,
+    goals,
+    persistGoals,
+  } = usePerovoPersistence(user?.id);
+
+  useServerSettingsSync(user, setSettings);
+  const { effectiveSubscriptionTier, refreshSubscriptionTier } = useSubscriptionTierSync(user, settings, setSettings);
+
+  // One-time startup schema-version bump — not tied to any state slice above.
   useEffect(() => {
     try {
       const v = localStorage.getItem(SCHEMA_VERSION_KEY);
@@ -66,177 +60,9 @@ export function PerovoProvider({ children }) {
     }
   }, []);
 
-  useEffect(() => {
-    const onSettingsReset = () => setSettings(loadSettingsFromStorage());
-    window.addEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
-    return () => window.removeEventListener(SETTINGS_RESET_EVENT, onSettingsReset);
-  }, []);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    (async () => {
-      const local = loadSettingsFromStorage();
-      let serverSettings = null;
-      try {
-        serverSettings = await loadSettingsFromServer();
-      } catch {
-        /* ignore */
-      }
-      if (cancelled) return;
-
-      const merged = serverSettings
-        ? mergeAccountSettingsFromServer(local, serverSettings)
-        : local;
-
-      if (serverSettings && merged !== local) {
-        try {
-          localStorage.setItem("perovo_settings", JSON.stringify(merged));
-          invalidateInitialAppStateCache();
-        } catch {
-          /* ignore */
-        }
-        setSettings(merged);
-      }
-
-      await syncSettingsToServer(merged).catch(() => {});
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user?.id) {
-      queueMicrotask(() => setServerSubscriptionTier(null));
-      return;
-    }
-    loadSubscriptionTier(user.id)
-      .then((tier) => {
-        setServerSubscriptionTier(tier);
-        setSettings((prev) => {
-          if (tier === (prev.subscriptionTier || "free")) return prev;
-          const next = { ...prev, subscriptionTier: tier };
-          try {
-            localStorage.setItem("perovo_settings", JSON.stringify(next));
-            invalidateInitialAppStateCache();
-          } catch {
-            /* ignore */
-          }
-          return next;
-        });
-      })
-      .catch(() => {
-        setServerSubscriptionTier("free");
-      });
-  }, [user?.id]);
-
-  useEffect(() => {
-    return () => clearTimeout(syncTimerRef.current);
-  }, []);
-
-  const persistCommitments = useCallback((updater) => {
-    setCommitments((prev) => {
-      const raw = typeof updater === "function" ? updater(prev) : updater;
-      const todayStr = todayYmd();
-      const next = refreshAllChitCommitments(raw, todayStr);
-      const normalized = next.map((c) =>
-        normalizeCommitmentStatusForSave(normalizeCommitment(c), todayStr, next)
-      );
-      try {
-        localStorage.setItem("commitments", JSON.stringify(normalized));
-        invalidateInitialAppStateCache();
-        emitLocalDataChanged();
-      } catch {
-        /* ignore */
-      }
-      return normalized;
-    });
-  }, []);
-
-  const persistLendings = useCallback((updater) => {
-    setLendings((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      const normalized = next.map((l) => normalizeLending(l));
-      try {
-        localStorage.setItem("lendings", JSON.stringify(normalized));
-        invalidateInitialAppStateCache();
-        emitLocalDataChanged();
-      } catch {
-        /* ignore */
-      }
-      return normalized;
-    });
-  }, []);
-
-  const persistSettings = useCallback((updater) => {
-    setSettings((prev) => {
-      const merged = typeof updater === "function" ? updater(prev) : { ...prev, ...updater };
-      if (merged === prev) return prev;
-      const next = { ...merged, updatedAt: new Date().toISOString() };
-      try {
-        localStorage.setItem("perovo_settings", JSON.stringify(next));
-        invalidateInitialAppStateCache();
-        emitLocalDataChanged();
-        if ("cloudSyncEnabled" in merged && merged.cloudSyncEnabled !== prev.cloudSyncEnabled) {
-          saveSyncMeta({ cloudBackupEnabled: Boolean(merged.cloudSyncEnabled) });
-        }
-        clearTimeout(syncTimerRef.current);
-        if (userIdRef.current) {
-          syncTimerRef.current = setTimeout(() => {
-            syncSettingsToServer(next);
-          }, 2000);
-        }
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
-
-  const persistSnapshots = useCallback((updater) => {
-    setMonthlySnapshots((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      saveMonthlySnapshotsToStorage(next);
-      invalidateInitialAppStateCache();
-      emitLocalDataChanged();
-      return next;
-    });
-  }, []);
-
-  const persistGoals = useCallback((updater) => {
-    setGoals((prev) => {
-      const next = typeof updater === "function" ? updater(prev) : updater;
-      saveGoalsToStorage(next);
-      invalidateInitialAppStateCache();
-      emitLocalDataChanged();
-      return next;
-    });
-  }, []);
-
-  const settingsRef = useRef(settings);
-  useEffect(() => {
-    settingsRef.current = settings;
-  }, [settings]);
-
   const todayStr = todayYmd();
 
-  useEffect(() => {
-    const monthKey = format(new Date(), "yyyy-MM");
-    const s = settingsRef.current;
-    persistSnapshots((prev) => {
-      if (prev.some((snap) => snap.month === monthKey)) return prev;
-      const scoped = filterByProfile(commitments, s.activeProfileId || "default");
-      const snap = buildMonthlySnapshot(
-        monthKey,
-        scoped,
-        s.monthlyIncome,
-        (c) => getEffectiveStatus(c, todayStr),
-        prev
-      );
-      return [...prev, snap].sort((a, b) => a.month.localeCompare(b.month)).slice(-48);
-    });
-  }, [commitments, todayStr, persistSnapshots]);
+  const [supplementalNotifications, setSupplementalNotifications] = useState([]);
 
   const crud = usePerovoCrud({
     commitments,
@@ -271,105 +97,47 @@ export function PerovoProvider({ children }) {
     };
   }, [updateSettings, user?.id]);
 
-  const refreshGoldRate = useCallback(async (options = {}) => {
-    const force = Boolean(options.force);
-    if (!isGoldApiConfigured()) return false;
+  const { refreshGoldRate } = useMarketRateSync({
+    settingsRef,
+    persistSettings,
+    commitments,
+    todayStr,
+    updateCommitmentRef,
+  });
+
+  // Build (once per month) a monthly snapshot from the current commitments —
+  // orchestrates commitments + settings + snapshots together, so it stays
+  // here rather than inside usePerovoPersistence.
+  useEffect(() => {
+    const monthKey = format(new Date(), "yyyy-MM");
     const s = settingsRef.current;
-    if (
-      !force &&
-      !shouldRefreshGoldRate(s.goldRateLastFetched, s.goldRatePerGram)
-    ) {
-      return Number(s.goldRatePerGram) > 0;
-    }
-    const result = await fetchGoldPricePerGram();
-    if (!result) return false;
-    persistSettings((prev) => ({
-      ...prev,
-      goldRatePerGram: result.perGram,
-      goldRateLastFetched: result.date,
-    }));
-    applyGoldRateToWealth(Number(result.perGram));
-    return true;
-  }, [persistSettings]);
-
-  useEffect(() => {
-    if (!isGoldApiConfigured()) return;
-    refreshGoldRate();
-  }, [refreshGoldRate]);
-
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState !== "visible") return;
-      const s = settingsRef.current;
-      if (!shouldRefreshGoldRate(s.goldRateLastFetched, s.goldRatePerGram)) return;
-      refreshGoldRate();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [refreshGoldRate]);
+    persistSnapshots((prev) => {
+      if (prev.some((snap) => snap.month === monthKey)) return prev;
+      const scoped = filterByProfile(commitments, s.activeProfileId || "default");
+      const snap = buildMonthlySnapshot(
+        monthKey,
+        scoped,
+        s.monthlyIncome,
+        (c) => getEffectiveStatus(c, todayStr),
+        prev
+      );
+      return [...prev, snap].sort((a, b) => a.month.localeCompare(b.month)).slice(-48);
+    });
+  }, [commitments, todayStr, persistSnapshots, settingsRef]);
 
   const commitmentsRef = useRef(commitments);
   useEffect(() => {
     commitmentsRef.current = commitments;
   }, [commitments]);
 
-  const navStaleSig = useMemo(
-    () =>
-      commitments
-        .filter((c) => {
-          if (!c.schemeCode) return false;
-          const fetched = c.navFetchedAt ? String(c.navFetchedAt).slice(0, 10) : "";
-          return fetched !== todayStr;
-        })
-        .map((c) => String(c.id))
-        .sort()
-        .join(","),
-    [commitments, todayStr],
-  );
-
-  const navRefreshRef = useRef({ sig: "", inFlight: false });
-
-  useEffect(() => {
-    if (!navStaleSig) {
-      navRefreshRef.current = { sig: "", inFlight: false };
-      return;
-    }
-    if (navRefreshRef.current.inFlight && navRefreshRef.current.sig === navStaleSig) return;
-
-    navRefreshRef.current = { sig: navStaleSig, inFlight: true };
-    let cancelled = false;
-    const ids = navStaleSig.split(",").filter(Boolean);
-
-    (async () => {
-      try {
-        for (const id of ids) {
-          const c = commitmentsRef.current.find((row) => String(row.id) === id);
-          if (!c?.schemeCode) continue;
-          const fetched = c.navFetchedAt ? String(c.navFetchedAt).slice(0, 10) : "";
-          if (fetched === todayStr) continue;
-          const nav = await fetchFundNav(c.schemeCode);
-          if (cancelled || !nav) continue;
-          updateCommitmentRef.current(c.id, { currentNav: nav.nav, navFetchedAt: todayStr });
-        }
-      } finally {
-        if (!cancelled) navRefreshRef.current.inFlight = false;
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      navRefreshRef.current.inFlight = false;
-    };
-  }, [navStaleSig, todayStr]);
-
   const getEffectiveStatusForCtx = useCallback(
     (c) => getEffectiveStatus(c, todayStr, commitmentsRef.current),
-    [todayStr],
+    [todayStr]
   );
 
   const getEffectiveLendingStatusForCtx = useCallback(
     (l) => getEffectiveLendingStatus(l, todayStr),
-    [todayStr],
+    [todayStr]
   );
 
   const activeProfileId = settings.activeProfileId || "default";
@@ -386,6 +154,7 @@ export function PerovoProvider({ children }) {
     () => filterByProfile(goals, activeProfileId).filter((g) => g.active !== false && !g.archived),
     [goals, activeProfileId]
   );
+
   const importAppData = useCallback(
     (payload, options = {}) => {
       const merged = mergeImportedAppState(
@@ -411,40 +180,11 @@ export function PerovoProvider({ children }) {
       emitLocalDataChanged();
       return merged.summary;
     },
-    [
-      lendings,
-      goals,
-      monthlySnapshots,
-      persistCommitments,
-      persistLendings,
-      persistGoals,
-      persistSettings,
-      persistSnapshots,
-    ]
+    [lendings, goals, monthlySnapshots, persistCommitments, persistLendings, persistGoals, persistSettings, persistSnapshots, settingsRef]
   );
-  const refreshSubscriptionTier = useCallback(async () => {
-    if (!user?.id) return "free";
-    const tier = await loadSubscriptionTier(user.id);
-    setServerSubscriptionTier(tier);
-    setSettings((prev) => {
-      if (tier === (prev.subscriptionTier || "free")) return prev;
-      const next = { ...prev, subscriptionTier: tier };
-      try {
-        localStorage.setItem("perovo_settings", JSON.stringify(next));
-        invalidateInitialAppStateCache();
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-    return tier;
-  }, [user]);
 
   const sortedCommitments = useMemo(() => sortCommitments(profileCommitments), [profileCommitments]);
-  const effectiveSubscriptionTier = useMemo(() => {
-    if (user?.id) return serverSubscriptionTier ?? "free";
-    return settings.subscriptionTier || "free";
-  }, [user?.id, serverSubscriptionTier, settings.subscriptionTier]);
+
   const value = useMemo(
     () => ({
       commitments: profileCommitments,

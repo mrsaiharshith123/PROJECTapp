@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { differenceInMonths, parseISO } from "date-fns";
 import { getBillDisplayName } from "../../utils/billDisplayName.js";
@@ -95,7 +95,7 @@ function billCardVariant(eff, item, monthPaid) {
  *   health?: { score: number, band: string, insightId?: string | null, params?: object },
  * }} props
  */
-export function BillCard({
+function BillCardImpl({
   item,
   effectiveStatus: eff,
   cycleDue,
@@ -267,3 +267,5 @@ export function BillCard({
     </div>
   );
 }
+
+export const BillCard = memo(BillCardImpl);

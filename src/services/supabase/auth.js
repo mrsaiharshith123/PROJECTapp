@@ -219,6 +219,27 @@ export async function requestPasswordReset(email) {
   if (error) throwAuth(error, "Password reset failed");
 }
 
+/**
+ * Re-send the signup confirmation email — the only recovery path when the
+ * first one never arrives (spam filter, provider rate limit) and sign-in
+ * fails with "email not confirmed" with no other way to get back in.
+ * @param {string} email
+ */
+export async function resendVerificationEmail(email) {
+  if (isRateLimited("resend-verification", 30000)) {
+    throwAuth(new Error("Please wait 30 seconds before requesting another email."), "Resend verification");
+  }
+  const supabase = getSupabaseClient();
+  if (!supabase) throwAuth(new Error("Supabase is not configured."), "Resend verification");
+  log.auth.info("Verification email resend requested");
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email: String(email).trim(),
+    options: { emailRedirectTo: getAuthConfirmRedirectUrl() },
+  });
+  if (error) throwAuth(error, "Resend verification failed");
+}
+
 export async function updateUserPassword(newPassword) {
   const supabase = getSupabaseClient();
   if (!supabase) throwAuth(new Error("Supabase is not configured."), "Update password");

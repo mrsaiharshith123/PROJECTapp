@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "../../../../i18n/I18nProvider.js";
-import { isEmbeddedApp } from "../../../../utils/embeddedApp.js";
 import { isNativeCapacitorShell } from "../../../../utils/nativePermissions.js";
 import { SettingsGroup, SettingsGroupRow } from "../SettingsGroup.jsx";
 import ProfileUpdateAppRow from "../ProfileUpdateAppRow.jsx";
@@ -9,14 +8,12 @@ import ProfileUpdateAppRow from "../ProfileUpdateAppRow.jsx";
  * Settings list on the You tab — Groww-style: few groups, one row per destination.
  * @param {{
  *   settings: object,
- *   updateSettings: (p: object) => void,
  *   privacyMode?: boolean,
  *   onTogglePrivacyMode?: () => void,
  * }} props
  */
 export default function ProfileSettingsGroups({
   settings,
-  updateSettings,
   privacyMode = false,
   onTogglePrivacyMode,
 }) {
@@ -24,7 +21,6 @@ export default function ProfileSettingsGroups({
   const { t } = useTranslation();
   const privacyValue = privacyMode ? t("settings.value.on") : t("settings.value.off");
   const remindersOn = settings.remindersEnabled !== false;
-  const embedded = isEmbeddedApp();
   const native = isNativeCapacitorShell();
 
   return (
@@ -64,15 +60,6 @@ export default function ProfileSettingsGroups({
             label={t("settings.row.appPermissions")}
             hint={t("settings.row.appPermissionsHint")}
             onClick={() => navigate("/you/permissions")}
-          />
-        ) : null}
-        {embedded ? (
-          <SettingsGroupRow
-            iconColor="teal"
-            icon="lock"
-            label={t("profileHub.biometricLock")}
-            value={settings.biometricLock ? t("settings.value.on") : t("settings.value.off")}
-            onClick={() => updateSettings({ biometricLock: !settings.biometricLock })}
           />
         ) : null}
         <SettingsGroupRow

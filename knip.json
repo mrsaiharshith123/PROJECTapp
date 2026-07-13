@@ -23,7 +23,7 @@
     "src/constants/modeExperience.js": ["exports"],
     "src/constants/metricTaxonomy.js": ["exports"],
     "src/constants/repeatTypes.js": ["exports"],
-    "src/guidance/**": ["exports"],
+    "src/constants/guidance/**": ["exports"],
     "src/ui/guidance/**": ["exports", "duplicates"],
     "src/engines/**": ["exports"],
     "src/services/**": ["exports"],

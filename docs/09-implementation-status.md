@@ -2,7 +2,7 @@
 
 Living snapshot of what is **shipped in code** vs **planned**. Update when you land a major feature.
 
-**Version:** `1.5.0` (see [CHANGELOG.md](./CHANGELOG.md)) · **Last reviewed:** 2 July 2026 · **Tests:** 122 Vitest · **Audit:** run `npm run audit` — gate may fail until ESLint/TypeScript backlog is cleared
+**Version:** see `package.json` (see [CHANGELOG.md](./CHANGELOG.md)) · **Last reviewed:** 13 July 2026 · **Tests:** run `npm test` for the current count — don't hardcode it here, it drifts every release · **Audit:** run `npm run audit` — gate may fail until ESLint/TypeScript backlog is cleared
 
 **Product docs:** [encyclopedia/00-index.md](./encyclopedia/00-index.md) (routes, pages, engines, QA) — prefer encyclopedia over duplicating detail here.
 
@@ -73,13 +73,15 @@ Full table: [encyclopedia/01-routes-and-navigation.md](./encyclopedia/01-routes-
 
 ---
 
-## Quality gate (June 2026)
+## Quality gate
 
-| Check | Result |
+Snapshot claims here go stale fast (a prior version of this table said "122/122" against a codebase that had already grown past 259 tests) — check CI for the current state instead of trusting a hardcoded number:
+
+| Check | How to verify |
 |-------|--------|
-| `npm run audit` | ✅ 0 blocking errors |
-| `npm test` | ✅ 122/122 |
-| `npm run qa` | ✅ Launch ready |
-| `npm run audit:docs-sync` | ✅ |
+| `npm run audit` | Run locally or check the `test` job in `.github/workflows/ci.yml` |
+| `npm test` | Run locally or check CI — do not hardcode a pass count here |
+| `npm run qa` | Run locally |
+| `npm run audit:docs-sync` | Run locally |
 
 Optional QA prompt library: [planning/perovo-QA-framework.md](./planning/perovo-QA-framework.md).

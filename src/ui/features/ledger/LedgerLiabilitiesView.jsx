@@ -13,8 +13,10 @@ import {
 import { computeBillPaymentProgress } from "../../../utils/billPaymentProgress.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
-const SECURED = new Set(["Home Loan", "Car Loan", "EMI"]);
-const UNSECURED = new Set(["Personal Loan", "Credit Card", "BNPL", "Loan"]);
+// Category ids must match constants/categories.js — "Home Loan"/"Car Loan"/
+// "Personal Loan" were legacy strings the UI can never assign to a commitment.
+const SECURED = new Set(["EMI", "Equipment"]);
+const UNSECURED = new Set(["Loan", "Credit Card", "BNPL"]);
 
 function liabilityGroup(category) {
   if (SECURED.has(category)) return "secured";

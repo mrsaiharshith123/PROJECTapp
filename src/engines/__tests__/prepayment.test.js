@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeEmiFromPrincipal, simulatePrepayment } from "../prepayment.js";
+import { simulatePrepayment } from "../prepayment.js";
+import { calculateMonthlyEMI as computeEmiFromPrincipal } from "../../utils/repayment/calculations.js";
 
 describe("prepayment", () => {
   it("EMI is positive for valid loan inputs", () => {

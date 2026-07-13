@@ -4,8 +4,8 @@
 import fs from "fs";
 import path from "path";
 import { ROOT, SRC, rel } from "../lib/audit-core.mjs";
-import { FINANCIAL_CONCEPTS } from "../../src/guidance/registry/concepts.js";
-import { ONBOARDING_EXPERIENCES } from "../../src/guidance/registry/onboardingCopy.js";
+import { FINANCIAL_CONCEPTS } from "../../src/constants/guidance/registry/concepts.js";
+import { ONBOARDING_EXPERIENCES } from "../../src/constants/guidance/registry/onboardingCopy.js";
 import { runCopyToneAudit } from "../lib/copy-tone-rules.mjs";
 
 const JARGON_RE = /\b(EBITDA|amortization|liquidity ratio|NPV|IRR|capital expenditure)\b/i;
@@ -16,9 +16,9 @@ export function runGuidanceAudit() {
   const warnings = [];
   const advisories = [];
 
-  const guidanceDir = path.join(SRC, "guidance");
+  const guidanceDir = path.join(SRC, "constants", "guidance");
   if (!fs.existsSync(guidanceDir)) {
-    errors.push({ message: "Missing src/guidance/ — centralized guidance required" });
+    errors.push({ message: "Missing src/constants/guidance/ — centralized guidance required" });
   }
 
   if (!fs.existsSync(UI_GUIDANCE)) {

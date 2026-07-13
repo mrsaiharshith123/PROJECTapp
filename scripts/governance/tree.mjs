@@ -191,7 +191,7 @@ export function runTreeAudit() {
     "Visual UI: src/ui/{primitives,patterns,features,layout,guidance,styles}",
     "Screens: src/ui/features/pages/* + lazy route in App.jsx",
     "Glue only: src/app/* (sync, theme, redirects) — return null or ct-* loader",
-    "Logic: src/engines/*.js + src/guidance/*.js (no JSX)",
+    "Logic: src/engines/*.js + src/constants/guidance/*.js (no JSX)",
     "Audits: npm run audit:ui · audit:ui-depth · audit:tree · audit:governance",
   ];
 

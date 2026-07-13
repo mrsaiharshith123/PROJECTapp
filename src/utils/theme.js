@@ -35,6 +35,21 @@ export function applyColorScheme(preference) {
   return resolved;
 }
 
+/**
+ * Re-apply the current theme to force a repaint.
+ *
+ * Without this, Chrome's GPU compositor (promoted by the fixed bottom nav's
+ * backdrop-filter) can hold a stale layer after a React commit. Setting
+ * root.style.colorScheme is a real CSS property change that forces a repaint.
+ * Called from both src/app/ScrollToTop.jsx (on route change) and
+ * src/app/ThemeSync.jsx (on tab visibility / OS theme change) — those are
+ * genuinely different triggers, so both call sites are intentional, not
+ * duplicated logic. Keep the Chrome-repaint explanation here, in one place.
+ */
+export function forceThemeRepaint(preference) {
+  return applyColorScheme(preference);
+}
+
 /** Apply theme before React mounts (avoids flash). */
 export function bootstrapThemeFromStorage() {
   try {

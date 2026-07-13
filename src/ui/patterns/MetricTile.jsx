@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { ConceptHelp } from "../guidance/ConceptHelp.jsx";
 
 /** @param {{ label: string, value: string, valueClassName?: string, caption?: string, conceptId?: string, className?: string }} props */
-export function MetricTile({
+function MetricTileImpl({
   label,
   value,
   valueClassName = "",
@@ -20,3 +21,5 @@ export function MetricTile({
     </div>
   );
 }
+
+export const MetricTile = memo(MetricTileImpl);

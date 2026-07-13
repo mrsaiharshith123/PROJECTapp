@@ -68,8 +68,7 @@ describe("➕ MISSING UI: buttons and entry points", () => {
         content.includes("addLending") ||
         content.includes("openAdd") ||
         content.includes("ct-btn-primary"));
-    if (!hasAdd) console.warn("[P1] No add button found for lending — users can't add records");
-    expect(true).toBe(true);
+    expect(hasAdd).toBe(true);
   });
 
   it("[P1] Home shows upcoming bills within 7 days", () => {
@@ -78,9 +77,7 @@ describe("➕ MISSING UI: buttons and entry points", () => {
       content.includes("days > 3") ||
       content.includes("days <= 7") ||
       content.includes("upcoming");
-    if (!hasUpcoming)
-      console.warn("[P1] HomeNeedsAttention only shows 0-3 day window — 4-7 days invisible from Home");
-    expect(true).toBe(true);
+    expect(hasUpcoming).toBe(true);
   });
 });
 
@@ -119,20 +116,24 @@ describe("🗑️ UX: destructive actions should be de-emphasized", () => {
   it("[P2] BillCard Delete button is NOT variant='danger' (solid red)", () => {
     const content = src("src/ui/patterns/BillCard.jsx");
     const hasSolidDanger = content.includes('variant="danger"') && content.includes("onDelete");
-    if (hasSolidDanger) console.warn("[P2] Delete button is solid red — should be ghost/outline");
-    expect(true).toBe(true);
+    expect(hasSolidDanger).toBe(false);
   });
 });
 
 describe("💾 SETTINGS: persistence across devices", () => {
   it("[P1] persistSettings syncs to Supabase (not localStorage only)", () => {
-    const content = src("src/context/PerovoContext.jsx");
+    // Sync logic is split across PerovoContext.jsx and its composed hooks
+    // (usePerovoPersistence.js debounces settings -> server;
+    // useServerSettingsSync.js pulls server -> settings on login) — check
+    // the whole context layer, not one file, so this doesn't re-break every
+    // time that composition is refactored.
+    const content = ["PerovoContext.jsx", "usePerovoPersistence.js", "useServerSettingsSync.js"]
+      .map((f) => src(`src/context/${f}`))
+      .join("\n");
     const hasSyncToServer =
       content.includes("syncSettingsToServer") ||
       (content.includes("supabase") && content.includes("persistSettings"));
-    if (!hasSyncToServer)
-      console.warn("[P1] persistSettings only uses localStorage — settings lost on new device");
-    expect(true).toBe(true);
+    expect(hasSyncToServer).toBe(true);
   });
 
   it("[P1] app_settings column exists in profiles migration", () => {
@@ -146,9 +147,7 @@ describe("💾 SETTINGS: persistence across devices", () => {
         return false;
       }
     });
-    if (!hasSettingsCol)
-      console.warn("[P1] No app_settings column in migrations — settings not persisted to server");
-    expect(true).toBe(true);
+    expect(hasSettingsCol).toBe(true);
   });
 });
 

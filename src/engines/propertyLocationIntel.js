@@ -2,13 +2,11 @@ import { computeAssetCagr, computeRealCagr } from "../utils/netWorth/physicalAss
 import { monthsSincePurchase } from "../utils/netWorth/propertyValuation.js";
 import { INDIAN_CITIES } from "../constants/cityLivingCosts.js";
 import { formatInr } from "../constants/symbols.js";
+import { PROPERTY_CATEGORY_IDS, isPropertyCategory } from "../constants/netWorth/propertyCategories.js";
 
-const PROPERTY_IDS = new Set([
-  "property",
-  "property_residential",
-  "property_land",
-  "property_commercial",
-]);
+export { isPropertyCategory };
+
+const PROPERTY_IDS = PROPERTY_CATEGORY_IDS;
 
 const DEFAULT_INFLATION_PCT = 6;
 const BENCHMARK_REAL_ESTATE_CAGR = 7.5;
@@ -447,6 +445,3 @@ function buildPropertyNarrativeKeys(ctx) {
   return keys;
 }
 
-export function isPropertyCategory(categoryId) {
-  return PROPERTY_IDS.has(categoryId);
-}

@@ -1,6 +1,6 @@
 import { invalidateInitialAppStateCache, loadSettingsFromStorage } from "./migrateStorage.js";
 import { STORAGE_KEYS } from "./storage/keys.js";
-import { emitSettingsReset } from "./storage/events.js";
+import { emitLocalDataChanged, emitSettingsReset } from "./storage/events.js";
 
 /** @see AuthGatePage - skip server profile check right after signup */
 export const SIGNUP_PENDING_KEY = "perovo_signup_pending";
@@ -47,20 +47,37 @@ export function clearAccountSeedKeys(userId) {
   }
 }
 
-/** Clear account fields on sign-out — keep bills/ledger local data intact. */
+/**
+ * Wipe financial/sensitive local data on sign-out so the app shows nothing
+ * without re-authenticating (shared/resold-device leak fix). Only non-sensitive
+ * device preferences (color scheme, app language) survive sign-out; everything
+ * else — commitments, lendings, snapshots, goals, wealth entries, income, PAN,
+ * phone, city, EPF figures — is cleared. A subsequent sign-in restores from
+ * the cloud backup (if the account has one) rather than trusting stale local state.
+ */
 export function resetLocalAccountFlags() {
   try {
+    localStorage.removeItem(STORAGE_KEYS.commitments);
+    localStorage.removeItem(STORAGE_KEYS.lendings);
+    localStorage.removeItem(STORAGE_KEYS.monthlySnapshots);
+    localStorage.removeItem(STORAGE_KEYS.goals);
+    localStorage.removeItem(STORAGE_KEYS.wealth);
+    localStorage.removeItem(STORAGE_KEYS.syncMeta);
+
     const defaults = loadSettingsFromStorage();
     const raw = localStorage.getItem(STORAGE_KEYS.settings);
     const prev = raw ? JSON.parse(raw) : {};
     const next = {
-      ...prev,
+      ...defaults,
+      colorScheme: prev.colorScheme ?? defaults.colorScheme,
+      appLanguage: prev.appLanguage ?? defaults.appLanguage,
       onboardingComplete: false,
       cloudSyncEnabled: false,
       appGuideComplete: defaults.appGuideComplete ?? false,
     };
     localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(next));
     invalidateInitialAppStateCache();
+    emitLocalDataChanged();
     emitSettingsReset();
   } catch {
     /* ignore */

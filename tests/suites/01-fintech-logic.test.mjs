@@ -3,12 +3,12 @@ import { computeCanonicalPressureScore } from "../../src/engines/pressureScore.j
 import { computeSurvivalAnalysis } from "../../src/engines/survival.js";
 import { monthlyBurdenForCommitment } from "../../src/engines/burden.js";
 import {
-  numberToWords,
   buildPromissoryNoteText,
   isAgreementFullyLocked,
   canEditLending,
   canDeleteLending,
 } from "../../src/engines/lendingAgreement.js";
+import { numberToWords } from "../../src/utils/numberToWords.js";
 import { computeSafeToSpendDaily } from "../../src/engines/safeToSpend.js";
 import { INCOME, STATUS, COMMITMENT, LENDING, SETTINGS, TODAY, makeCommitments } from "../fixtures.mjs";
 

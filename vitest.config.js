@@ -5,8 +5,7 @@ export default defineConfig({
     environment: "node",
     include: [
       "tests/suites/**/*.test.mjs",
-      "src/engines/__tests__/**/*.test.js",
-      "src/engines/netWorth/__tests__/**/*.test.js",
+      "src/**/__tests__/**/*.test.js",
     ],
     reporters: ["verbose"],
     globals: true,

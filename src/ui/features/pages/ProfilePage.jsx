@@ -45,7 +45,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { isLoggedIn, signOut, user } = useAuth();
   const { privacyMode, togglePrivacyMode } = useNetWorth();
-  const { settings, updateSettings, effectiveSubscriptionTier } = usePerovo();
+  const { settings, effectiveSubscriptionTier } = usePerovo();
   const { t } = useTranslation();
   const [signingOut, setSigningOut] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -149,7 +149,6 @@ const Profile = () => {
 
       <ProfileSettingsGroups
         settings={settings}
-        updateSettings={updateSettings}
         privacyMode={privacyMode}
         onTogglePrivacyMode={togglePrivacyMode}
       />

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { computeCanonicalPressureScore } from "../../src/engines/pressureScore.js";
 import { computeSurvivalAnalysis } from "../../src/engines/survival.js";
 import { computeSafeToSpendDaily } from "../../src/engines/safeToSpend.js";
-import { numberToWords } from "../../src/engines/lendingAgreement.js";
+import { numberToWords } from "../../src/utils/numberToWords.js";
 import { canAddLendingRecord } from "../../src/utils/tierAccess.js";
 import { INCOME, STATUS, COMMITMENT, SETTINGS, TODAY, makeLendings } from "../fixtures.mjs";
 

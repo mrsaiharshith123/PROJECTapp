@@ -1,4 +1,4 @@
-import { conceptHelpText, getConcept } from "../../guidance/index.js";
+import { conceptHelpText, getConcept } from "../../constants/guidance/index.js";
 import { InfoTip } from "../primitives/InfoTip.jsx";
 
 /** Contextual metric help from the guidance registry. */

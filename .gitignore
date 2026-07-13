@@ -33,6 +33,7 @@ supabase/.temp/
 
 # Generated reports
 eslint-report.json
+.audit-lint.txt
 
 # i18n machine-translation cache (rebuild: npm run i18n:translate:fast)
 scripts/.i18n-translate-cache.json

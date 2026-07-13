@@ -1,1 +1,0 @@
-function e(e){let t=String(e??``).replace(/\D/g,``);return t.length===12&&t.startsWith(`91`)?t.slice(2):t.length===11&&t.startsWith(`0`)?t.slice(1):t.length===10?t:``}function t(t){let n=e(t);return/^[6-9]\d{9}$/.test(n)}export{e as n,t};

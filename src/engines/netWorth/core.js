@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { getAssetCategory, liquidityTierWeight } from "../../constants/netWorth/wealthCategories.js";
 import { safeNum } from "../_guard.js";
 
@@ -16,32 +17,46 @@ export function partitionWealth(entries, opts = {}) {
 
 /** @param {WealthEntry[]} assets */
 export function sumAssets(assets) {
-  return assets.reduce((s, a) => s + (Number(a.value) || 0), 0);
+  return assets
+    .reduce((s, a) => s.plus(Number(a.value) || 0), new Decimal(0))
+    .toNumber();
 }
 
 /** @param {WealthEntry[]} liabilities */
 export function sumLiabilities(liabilities) {
-  return liabilities.reduce((s, l) => s + (Number(l.value) || 0), 0);
+  return liabilities
+    .reduce((s, l) => s.plus(Number(l.value) || 0), new Decimal(0))
+    .toNumber();
 }
 
 /** @param {WealthEntry[]} assets */
 export function sumLiquidAssets(assets) {
-  return assets.reduce((s, a) => {
-    const tier = getAssetCategory(a.categoryId).tier;
-    const weight = liquidityTierWeight(tier);
-    return s + (Number(a.value) || 0) * weight;
-  }, 0);
+  return assets
+    .reduce((s, a) => {
+      const tier = getAssetCategory(a.categoryId).tier;
+      const weight = liquidityTierWeight(tier);
+      return s.plus(new Decimal(Number(a.value) || 0).times(weight));
+    }, new Decimal(0))
+    .toNumber();
 }
 
 /** @param {WealthEntry[]} assets */
 export function sumByLiquidityTier(assets) {
-  /** @type {Record<string, number>} */
-  const tiers = { liquid: 0, "semi-liquid": 0, locked: 0, "high-risk": 0 };
+  /** @type {Record<string, Decimal>} */
+  const tiers = {
+    liquid: new Decimal(0),
+    "semi-liquid": new Decimal(0),
+    locked: new Decimal(0),
+    "high-risk": new Decimal(0),
+  };
   for (const a of assets) {
     const tier = getAssetCategory(a.categoryId).tier;
-    tiers[tier] = (tiers[tier] || 0) + (Number(a.value) || 0);
+    tiers[tier] = (tiers[tier] || new Decimal(0)).plus(Number(a.value) || 0);
   }
-  return tiers;
+  /** @type {Record<string, number>} */
+  const result = {};
+  for (const key of Object.keys(tiers)) result[key] = tiers[key].toNumber();
+  return result;
 }
 
 function finiteNum(value, fallback = 0) {
