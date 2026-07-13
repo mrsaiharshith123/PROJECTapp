@@ -88,6 +88,8 @@ const InsightsInstrumentsBreakdown = lazy(() =>
 const WealthEntryDetail = lazy(() => import("./ui/features/ledger/WealthEntryDetailPage.jsx"));
 const YouToolsPage = lazy(() => import("./ui/features/profile/pages/YouToolsPage.jsx"));
 const Privacy = lazy(() => import("./ui/features/pages/PrivacyPage.jsx"));
+const EmergencyMode = lazy(() => import("./ui/features/pages/EmergencyModePage.jsx"));
+const EmergencyAccessView = lazy(() => import("./ui/features/pages/EmergencyAccessViewPage.jsx"));
 const Admin = lazy(() => import("./ui/features/pages/AdminPage.jsx"));
 const YouPersonalPage = lazy(() => import("./ui/features/profile/pages/YouPersonalPage.jsx"));
 const YouAccountPage = lazy(() => import("./ui/features/profile/pages/YouAccountPage.jsx"));
@@ -165,6 +167,7 @@ function AppRoutes() {
         <Route path="/you/plans" element={<LazyRoute name="Plans"><YouPlansPage /></LazyRoute>} />
         <Route path="/admin" element={<RequireAdmin><LazyRoute name="Admin"><Admin /></LazyRoute></RequireAdmin>} />
         <Route path="/privacy" element={<LazyRoute name="Privacy"><Privacy /></LazyRoute>} />
+        <Route path="/emergency" element={<LazyRoute name="Emergency"><EmergencyMode /></LazyRoute>} />
         <Route path="/auth" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -322,6 +325,14 @@ function App() {
               <Suspense fallback={<BootShell />}>
                 <Routes>
                   <Route path="/auth/confirm" element={<AuthConfirmPage />} />
+                  <Route
+                    path="/emergency-access/:token"
+                    element={
+                      <Suspense fallback={<BootShell />}>
+                        <EmergencyAccessView />
+                      </Suspense>
+                    }
+                  />
                   <Route
                     path="/lend/offer"
                     element={

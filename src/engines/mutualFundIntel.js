@@ -100,3 +100,39 @@ export function analyzeMutualFund(entry, settings = {}) {
     folio: entry.folio || "",
   };
 }
+
+/**
+ * Flags redundant exposure — 3+ funds all in the same sub-type (e.g.
+ * large-cap equity) look diversified by fund count but aren't. Uses the
+ * existing fundSubType field, no new data.
+ * @param {import('../utils/netWorth/wealthStorage.js').WealthEntry[]} entries
+ * @param {number} [overlapThreshold] minimum funds in one sub-type to flag
+ */
+export function detectPortfolioOverlap(entries, overlapThreshold = 3) {
+  const funds = (entries || []).filter((e) => e.kind === "asset" && e.categoryId === "mutual_fund" && !e.hidden);
+
+  /** @type {Map<string, { subType: string, funds: { id: string, name: string, value: number }[], totalValue: number }>} */
+  const groups = new Map();
+  for (const f of funds) {
+    const subType = f.fundSubType || "unclassified";
+    if (!groups.has(subType)) groups.set(subType, { subType, funds: [], totalValue: 0 });
+    const group = groups.get(subType);
+    const value = Math.max(0, Number(f.value) || 0);
+    group.funds.push({ id: f.id, name: f.name, value });
+    group.totalValue += value;
+  }
+
+  const totalValue = funds.reduce((s, f) => s + Math.max(0, Number(f.value) || 0), 0);
+  const overlapping = [...groups.values()]
+    .filter((g) => g.funds.length >= overlapThreshold && g.subType !== "unclassified")
+    .map((g) => ({ ...g, pctOfPortfolio: totalValue > 0 ? Math.round((g.totalValue / totalValue) * 100) : 0 }))
+    .sort((a, b) => b.totalValue - a.totalValue);
+
+  return {
+    totalFunds: funds.length,
+    totalValue,
+    groups: [...groups.values()].sort((a, b) => b.totalValue - a.totalValue),
+    overlapping,
+    hasOverlap: overlapping.length > 0,
+  };
+}

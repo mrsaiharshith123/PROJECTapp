@@ -500,3 +500,53 @@ export function analyzeChitPortfolio({
     freeCash: Math.round(baseline.freeMoney),
   };
 }
+
+/**
+ * For chits where the user is the organizer/foreman — scores group default
+ * risk from member payment punctuality. Reads the optional flat fields
+ * `chitIsOrganizer` (boolean) and `chitMembers` (array):
+ * `[{ name, monthsPaid, monthsDue, defaulted }]` — matching the flat
+ * chit-field convention normalizeCommitment() already uses (chitValue,
+ * chitMonths, chitTaken, etc.), not a nested object. Returns null when the
+ * user isn't the organizer for this chit (no members data recorded) — this
+ * is not meant to guess at risk without real data.
+ * @param {object} commitment
+ */
+export function chitOrganizerRiskScore(commitment) {
+  const members = Array.isArray(commitment?.chitMembers) ? commitment.chitMembers : [];
+  if (!commitment?.chitIsOrganizer || members.length === 0) return null;
+
+  const defaultedCount = members.filter((m) => m.defaulted).length;
+  const punctualityRates = members.map((m) => {
+    const due = Math.max(1, Number(m.monthsDue) || 1);
+    const paid = Math.max(0, Number(m.monthsPaid) || 0);
+    return Math.min(1, paid / due);
+  });
+  const avgPunctuality = punctualityRates.reduce((s, r) => s + r, 0) / punctualityRates.length;
+  const defaultRatePct = Math.round((defaultedCount / members.length) * 100);
+
+  // Higher score = higher risk.
+  let riskScore = Math.round((1 - avgPunctuality) * 60 + defaultRatePct * 0.4);
+  riskScore = Math.min(100, Math.max(0, riskScore));
+
+  /** @type {'low'|'moderate'|'high'|'critical'} */
+  let riskLevel;
+  if (riskScore >= 70 || defaultRatePct >= 25) riskLevel = "critical";
+  else if (riskScore >= 45) riskLevel = "high";
+  else if (riskScore >= 20) riskLevel = "moderate";
+  else riskLevel = "low";
+
+  const atRiskMembers = members
+    .filter((m) => m.defaulted || (Number(m.monthsPaid) || 0) < (Number(m.monthsDue) || 0))
+    .map((m) => ({ name: m.name, monthsPaid: Number(m.monthsPaid) || 0, monthsDue: Number(m.monthsDue) || 0, defaulted: Boolean(m.defaulted) }));
+
+  return {
+    memberCount: members.length,
+    defaultedCount,
+    defaultRatePct,
+    avgPunctuality: Math.round(avgPunctuality * 100),
+    riskScore,
+    riskLevel,
+    atRiskMembers,
+  };
+}

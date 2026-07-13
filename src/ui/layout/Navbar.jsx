@@ -10,6 +10,8 @@ import { Modal } from "../primitives/Modal.jsx";
 import { FAB_CHANGE_EVENT } from "../../constants/fabEvents.js";
 
 const BillScannerTool = lazy(() => import("../features/tools/BillScannerTool.jsx"));
+const LoanSanctionScannerTool = lazy(() => import("../features/tools/LoanSanctionScannerTool.jsx"));
+const InsurancePolicyScannerTool = lazy(() => import("../features/tools/InsurancePolicyScannerTool.jsx"));
 
 /** @param {{ to: string, navGroup?: string }} item @param {{ pathname: string }} location */
 function isNavItemActive(item, location) {
@@ -43,7 +45,7 @@ function isNavItemActive(item, location) {
   return path === item.to || path.startsWith(`${item.to}/`);
 }
 
-function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {
+function FabRadialMenu({ open, onClose, navTo, onScanBill, onScanLoan, onScanInsurance, onRequestMoney }) {
   const { t } = useTranslation();
   if (!open) return null;
 
@@ -84,6 +86,34 @@ function FabRadialMenu({ open, onClose, navTo, onScanBill, onRequestMoney }) {
           className="ed-row ed-row-press"
           role="menuitem"
           onClick={() => {
+            onScanLoan();
+            onClose();
+          }}
+        >
+          <span className="ed-row-icon">
+            <CtIcon name="file-text" size={16} />
+          </span>
+          <span className="ed-row-title">{t("tools.loanScanner.title")}</span>
+        </button>
+        <button
+          type="button"
+          className="ed-row ed-row-press"
+          role="menuitem"
+          onClick={() => {
+            onScanInsurance();
+            onClose();
+          }}
+        >
+          <span className="ed-row-icon">
+            <CtIcon name="umbrella" size={16} />
+          </span>
+          <span className="ed-row-title">{t("tools.insuranceScanner.title")}</span>
+        </button>
+        <button
+          type="button"
+          className="ed-row ed-row-press"
+          role="menuitem"
+          onClick={() => {
             onRequestMoney();
             onClose();
           }}
@@ -104,6 +134,8 @@ export function Navbar() {
   const { settings } = usePerovo();
   const { t } = useTranslation();
   const [scanBillOpen, setScanBillOpen] = useState(false);
+  const [scanLoanOpen, setScanLoanOpen] = useState(false);
+  const [scanInsuranceOpen, setScanInsuranceOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
 
   const hideOnYouSubpage = location.pathname.startsWith("/you/");
@@ -112,6 +144,8 @@ export function Navbar() {
   const navTo = useCallback((to) => {
     setFabOpen(false);
     setScanBillOpen(false);
+    setScanLoanOpen(false);
+    setScanInsuranceOpen(false);
     navigate(to);
   }, [navigate]);
 
@@ -140,6 +174,8 @@ export function Navbar() {
         onClose={closeFab}
         navTo={navTo}
         onScanBill={() => setScanBillOpen(true)}
+        onScanLoan={() => setScanLoanOpen(true)}
+        onScanInsurance={() => setScanInsuranceOpen(true)}
         onRequestMoney={openRequestMoney}
       />
 
@@ -181,6 +217,22 @@ export function Navbar() {
         <Suspense fallback={null}>
           <Modal title={t("tools.billScanner.title")} onClose={() => setScanBillOpen(false)}>
             <BillScannerTool />
+          </Modal>
+        </Suspense>
+      )}
+
+      {scanLoanOpen && (
+        <Suspense fallback={null}>
+          <Modal title={t("tools.loanScanner.title")} onClose={() => setScanLoanOpen(false)}>
+            <LoanSanctionScannerTool />
+          </Modal>
+        </Suspense>
+      )}
+
+      {scanInsuranceOpen && (
+        <Suspense fallback={null}>
+          <Modal title={t("tools.insuranceScanner.title")} onClose={() => setScanInsuranceOpen(false)}>
+            <InsurancePolicyScannerTool />
           </Modal>
         </Suspense>
       )}

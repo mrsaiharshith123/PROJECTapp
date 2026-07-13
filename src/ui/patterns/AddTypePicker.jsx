@@ -3,6 +3,13 @@ import { CtIcon } from "../icons/CtIcon.jsx";
 
 const CATEGORIES = [
   {
+    id: "bill",
+    icon: "clipboard-text",
+    labelKey: "add.pick.bill",
+    subKey: "add.pick.billDesc",
+    colorClass: "liability",
+  },
+  {
     id: "asset",
     icon: "chart-line-up",
     labelKey: "add.category.asset",
@@ -21,6 +28,13 @@ const CATEGORIES = [
     icon: "shield",
     labelKey: "add.category.instrument",
     subKey: "add.category.instrumentSub",
+    colorClass: "instrument",
+  },
+  {
+    id: "lending",
+    icon: "handshake",
+    labelKey: "add.category.agreement",
+    subKey: "add.category.agreementSub",
     colorClass: "instrument",
   },
   {

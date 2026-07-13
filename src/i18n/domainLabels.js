@@ -23,6 +23,7 @@ const CATEGORY_KEYS = {
   Transport: "category.transport",
   Food: "category.food",
   BNPL: "category.bnpl",
+  "Family Support": "category.familySupport",
   Other: "category.other",
 };
 

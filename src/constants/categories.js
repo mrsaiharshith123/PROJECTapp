@@ -23,6 +23,11 @@ export const CATEGORIES = [
   { id: "Transport", label: "Transport", icon: "bus", activeIcon: "bus" },
   { id: "Food", label: "Food & daily", icon: "fork-knife", activeIcon: "fork-knife" },
   { id: "BNPL", label: "BNPL / pay-later", icon: "hourglass", activeIcon: "hourglass" },
+  // Deliberately distinct from "Loan" — this is ongoing family obligation
+  // (monthly support to parents, repeated help to a sibling), not money
+  // expected back. Tracking it separately lets a household see the real
+  // annual outflow without it reading as a debt or an accusation.
+  { id: "Family Support", label: "Family support", icon: "users-three", activeIcon: "users-three" },
   { id: "Other", label: "Other", icon: "push-pin", activeIcon: "push-pin" },
 ];
 

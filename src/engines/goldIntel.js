@@ -115,3 +115,40 @@ export function analyzeGold(entry, settings = {}) {
     inflationPct: INFLATION,
   };
 }
+
+/**
+ * Making charges are a sunk cost — never recoverable on resale, since jewelers
+ * buy back only at melt/metal value. Most gain figures (including this
+ * engine's own `gain` above) quietly conflate "metal appreciated" with
+ * "you're this much richer," when making charges paid up front never come
+ * back. This makes that distinction explicit using the optional
+ * `makingChargesActual` field (the real recorded amount) instead of the
+ * flat 15% `makingChargesEstimate` guess used elsewhere.
+ * @param {object} entry
+ */
+export function makingChargesRecoveryAnalysis(entry) {
+  const purchasePrice = Number(entry.purchasePrice) || 0;
+  const currentValue = Number(entry.value) || 0;
+  const makingCharges = Number(entry.makingChargesActual) || 0;
+
+  if (purchasePrice <= 0 || makingCharges <= 0) {
+    return { hasData: false };
+  }
+
+  const metalOnlyCost = Math.max(0, purchasePrice - makingCharges);
+  const grossGrowthIfMakingChargesIgnored = currentValue - metalOnlyCost;
+  const realGainAfterMakingCharges = currentValue - purchasePrice;
+  const makingChargesPctOfPurchase = Math.round((makingCharges / purchasePrice) * 100);
+
+  return {
+    hasData: true,
+    purchasePrice,
+    makingCharges,
+    metalOnlyCost,
+    currentValue,
+    grossGrowthIfMakingChargesIgnored,
+    realGainAfterMakingCharges,
+    makingChargesNeverRecoverable: makingCharges,
+    makingChargesPctOfPurchase,
+  };
+}

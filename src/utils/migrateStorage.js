@@ -134,6 +134,9 @@ export function normalizeCommitment(raw) {
     insurancePolicyId: String(raw.insurancePolicyId || "").trim(),
     insuredPersonName: String(raw.insuredPersonName || "").trim(),
     insuranceCompany: String(raw.insuranceCompany || "").trim(),
+    // Emergency Mode (engines/emergencyMode.js) surfaces this directly —
+    // the one number that matters in a real claim moment.
+    insuranceClaimContact: String(raw.insuranceClaimContact || "").trim(),
     insuranceSumAssured:
       raw.insuranceSumAssured != null && !Number.isNaN(Number(raw.insuranceSumAssured))
         ? Math.max(0, Number(raw.insuranceSumAssured))
@@ -189,6 +192,9 @@ export function normalizeCommitment(raw) {
       category === "Chit Fund" && raw.chitTakenPayout != null
         ? Math.max(0, Number(raw.chitTakenPayout))
         : null,
+    // Chit Fund Registration Verifier (engines/chitFraudScanner.js) — the
+    // state registrar registration number the operator claims to have.
+    chitRegistrationNumber: category === "Chit Fund" ? String(raw.chitRegistrationNumber || "").trim() : "",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
     schemeCode: String(raw.schemeCode || ""),
@@ -199,6 +205,29 @@ export function normalizeCommitment(raw) {
     navFetchedAt: raw.navFetchedAt ? String(raw.navFetchedAt).slice(0, 10) : "",
     navDate: raw.navDate ? String(raw.navDate).slice(0, 10) : raw.navFetchedAt ? String(raw.navFetchedAt).slice(0, 10) : "",
     unitsHeld: raw.unitsHeld != null ? Math.max(0, Number(raw.unitsHeld) || 0) : 0,
+    // Informal/unregulated moneylender debt — always highest payoff priority
+    // regardless of amount (see engines/payoffPriority.js).
+    isInformalLender: Boolean(raw.isInformalLender),
+    // Major-life-event tagging (e.g. "wedding") — a neutral label so debt
+    // from one big life event can be tracked/paid down as its own thing
+    // without every screen calling it out by name if the user prefers not to.
+    lifeEventTag: raw.lifeEventTag ? String(raw.lifeEventTag).trim() : "",
+    // Cost-per-use habit loop (engines/costPerUse.js) — how many times a
+    // Subscription-category bill was actually used, and when that was last logged.
+    usageCount: raw.usageCount != null && !Number.isNaN(Number(raw.usageCount)) ? Math.max(0, Number(raw.usageCount)) : null,
+    usageLoggedAt: raw.usageLoggedAt ? String(raw.usageLoggedAt).slice(0, 10) : "",
+    // Chit-fund organizer risk scoring (engines/chitFund.js chitOrganizerRiskScore) —
+    // flat fields matching the existing chitValue/chitMonths/... convention.
+    chitIsOrganizer: category === "Chit Fund" ? Boolean(raw.chitIsOrganizer) : false,
+    chitMembers:
+      category === "Chit Fund" && Array.isArray(raw.chitMembers)
+        ? raw.chitMembers.map((m) => ({
+            name: String(m?.name || "").trim() || "Member",
+            monthsPaid: Math.max(0, Number(m?.monthsPaid) || 0),
+            monthsDue: Math.max(0, Number(m?.monthsDue) || 0),
+            defaulted: Boolean(m?.defaulted),
+          }))
+        : [],
   };
 }
 

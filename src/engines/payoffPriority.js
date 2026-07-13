@@ -26,12 +26,22 @@ export function estimatedMonthlyInterestCost(commitment) {
 }
 
 /**
+ * Informal/unregulated moneylender debt — flagged separately from formal
+ * bank loans because the real-world risk isn't just interest cost, it's
+ * coercion risk. Always ranks above everything else regardless of amount.
+ */
+export function isInformalHighRateDebt(commitment) {
+  return Boolean(commitment?.isInformalLender);
+}
+
+/**
  * Higher score = pay first.
  */
 export function payoffPriorityScore(commitment, getEffectiveStatusFn, todayStr) {
   const eff = getEffectiveStatusFn(commitment);
   const rem = Math.max(0, Number(commitment.remainingAmount ?? 0));
   let score = 0;
+  if (isInformalHighRateDebt(commitment)) score += 100000; // always first, regardless of amount
   if (eff === "overdue") score += 500;
   if (commitment.priority === "critical") score += 120;
   else if (commitment.priority === "medium") score += 60;

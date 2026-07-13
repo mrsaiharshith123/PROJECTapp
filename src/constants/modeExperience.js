@@ -3,8 +3,8 @@ import { USER_MODE_IDS, REMOVED_USER_MODE_IDS } from "./userModes.js";
 
 /** Bill category ids shown when adding a commitment. */
 export const MODE_CATEGORY_IDS = {
-  salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
-  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Other"],
+  salaried: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Family Support", "Other"],
+  power: ["EMI", "Credit Card", "Subscription", "Insurance", "SIP", "Chit Fund", "Rent", "Loan", "Utility", "Family Support", "Other"],
 };
 
 /** Quick calculator tool ids per mode (Home dashboard). */

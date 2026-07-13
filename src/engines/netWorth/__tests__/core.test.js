@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as engine from "../core.js";
-import { computeNetWorthCore, sumAssets, sumLiabilities } from "../core.js";
+import { computeNetWorthCore, sumAssets, sumLiabilities, effectiveEntryValue } from "../core.js";
 
 describe("src/engines/netWorth/core.js", () => {
   it("loads and exports at least one symbol", () => {
@@ -42,5 +42,35 @@ describe("computeNetWorthCore — exact-value regression (headline net-worth fig
       value: 0.1,
     }));
     expect(sumAssets(manyAssets)).toBe(1000);
+  });
+});
+
+describe("effectiveEntryValue / fractional ownership — regression", () => {
+  it("counts the full value when ownershipPct is unset (default, zero behavior change)", () => {
+    expect(effectiveEntryValue({ value: 1000000 })).toBe(1000000);
+  });
+
+  it("counts only the user's share when ownershipPct is set", () => {
+    // Ancestral property, user owns 40% — net worth must reflect 40%, not the full value.
+    expect(effectiveEntryValue({ value: 1000000, ownershipPct: 40 })).toBe(400000);
+  });
+
+  it("clamps ownershipPct to 0-100", () => {
+    expect(effectiveEntryValue({ value: 1000000, ownershipPct: 150 })).toBe(1000000);
+    expect(effectiveEntryValue({ value: 1000000, ownershipPct: -20 })).toBe(0);
+  });
+
+  it("computeNetWorthCore reflects fractional ownership in totals, not the full property value", () => {
+    const entries = [
+      { id: "p1", kind: "asset", categoryId: "property_land", name: "Ancestral land", value: 5000000, ownershipPct: 25 },
+      { id: "b1", kind: "asset", categoryId: "bank", name: "Savings", value: 100000 },
+    ];
+    const result = computeNetWorthCore(entries);
+    // 5,000,000 * 25% + 100,000 = 1,350,000 — not 5,100,000.
+    expect(result.totalAssets).toBe(1350000);
+    const propertyRow = result.assetAllocation.find((a) => a.id === "p1");
+    expect(propertyRow.value).toBe(1250000);
+    expect(propertyRow.fullValue).toBe(5000000);
+    expect(propertyRow.ownershipPct).toBe(25);
   });
 });

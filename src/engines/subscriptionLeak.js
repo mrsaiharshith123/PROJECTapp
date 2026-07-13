@@ -86,3 +86,52 @@ export function subscriptionLeakReport(commitments, getEffectiveStatusFn, todayS
     insights,
   };
 }
+
+const PRICE_CREEP_MIN_HISTORY = 4; // need at least this many paid cycles to call it a trend, not noise
+const PRICE_CREEP_THRESHOLD_PCT = 12;
+
+/**
+ * "Your broadband bill rose 34% in 18 months without a plan change" —
+ * applies to any recurring bill with a payment history (not just
+ * Subscription category; a Utility bill creeping up is the same pattern).
+ * Compares the average of the earliest third of recorded payments against
+ * the most recent third — cheap, no external price data needed.
+ * @param {object[]} commitments
+ */
+export function billPriceCreepReport(commitments) {
+  const recurring = (commitments || []).filter(
+    (c) => c.repeatType === "monthly" && Array.isArray(c.payments) && c.payments.length >= PRICE_CREEP_MIN_HISTORY,
+  );
+
+  const rows = recurring
+    .map((c) => {
+      const sorted = [...c.payments].filter((p) => p.date).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+      const amounts = sorted.map((p) => Math.max(0, Number(p.amount) || 0)).filter((a) => a > 0);
+      if (amounts.length < PRICE_CREEP_MIN_HISTORY) return null;
+
+      const third = Math.max(1, Math.floor(amounts.length / 3));
+      const earliest = amounts.slice(0, third);
+      const recent = amounts.slice(-third);
+      const earliestAvg = earliest.reduce((s, a) => s + a, 0) / earliest.length;
+      const recentAvg = recent.reduce((s, a) => s + a, 0) / recent.length;
+      if (earliestAvg <= 0) return null;
+
+      const creepPct = Math.round(((recentAvg - earliestAvg) / earliestAvg) * 1000) / 10;
+      if (creepPct < PRICE_CREEP_THRESHOLD_PCT) return null;
+
+      const monthsSpanned = amounts.length;
+      return {
+        id: c.id,
+        name: c.name,
+        category: c.category,
+        earliestAvg: Math.round(earliestAvg),
+        recentAvg: Math.round(recentAvg),
+        creepPct,
+        monthsSpanned,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.creepPct - a.creepPct);
+
+  return { rows, hasCreep: rows.length > 0 };
+}

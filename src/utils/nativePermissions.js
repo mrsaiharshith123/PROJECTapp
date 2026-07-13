@@ -1,4 +1,13 @@
 import { isEmbeddedApp } from "./embeddedApp.js";
+import { withTimeout } from "./withTimeout.js";
+
+// Native plugin calls have no built-in timeout — if the Capacitor bridge is
+// briefly unresponsive (observed right after a Capgo OTA reload swaps the
+// WebView content), an unawaited-forever promise leaves the permission gate
+// stuck on its "Allow" button indefinitely with no way out. Every native
+// call in this file goes through this so a bridge hiccup surfaces as a
+// normal failure instead of hanging the UI forever.
+const NATIVE_CALL_TIMEOUT_MS = 8000;
 
 /** @returns {boolean} */
 export function isNativeCapacitorShell() {
@@ -16,16 +25,16 @@ export async function checkNativePermission(kind) {
   try {
     if (kind === "notifications") {
       const { LocalNotifications } = await import("@capacitor/local-notifications");
-      const result = await LocalNotifications.checkPermissions();
+      const result = await withTimeout(LocalNotifications.checkPermissions(), NATIVE_CALL_TIMEOUT_MS, "check_notifications");
       return normalizePerm(result.display);
     }
     if (kind === "location") {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const result = await Geolocation.checkPermissions();
+      const result = await withTimeout(Geolocation.checkPermissions(), NATIVE_CALL_TIMEOUT_MS, "check_location");
       return normalizePerm(result.location ?? result.coarseLocation);
     }
     const { Camera } = await import("@capacitor/camera");
-    const result = await Camera.checkPermissions();
+    const result = await withTimeout(Camera.checkPermissions(), NATIVE_CALL_TIMEOUT_MS, "check_camera");
     if (kind === "camera") return normalizePerm(result.camera);
     return normalizePerm(result.photos);
   } catch {
@@ -42,16 +51,20 @@ export async function requestNativePermission(kind) {
   try {
     if (kind === "notifications") {
       const { LocalNotifications } = await import("@capacitor/local-notifications");
-      const result = await LocalNotifications.requestPermissions();
+      const result = await withTimeout(LocalNotifications.requestPermissions(), NATIVE_CALL_TIMEOUT_MS, "request_notifications");
       return normalizePerm(result.display);
     }
     if (kind === "location") {
       const { Geolocation } = await import("@capacitor/geolocation");
-      const result = await Geolocation.requestPermissions();
+      const result = await withTimeout(Geolocation.requestPermissions(), NATIVE_CALL_TIMEOUT_MS, "request_location");
       return normalizePerm(result.location ?? result.coarseLocation);
     }
     const { Camera } = await import("@capacitor/camera");
-    const result = await Camera.requestPermissions({ permissions: ["camera", "photos"] });
+    const result = await withTimeout(
+      Camera.requestPermissions({ permissions: ["camera", "photos"] }),
+      NATIVE_CALL_TIMEOUT_MS,
+      "request_camera",
+    );
     if (kind === "camera") return normalizePerm(result.camera);
     return normalizePerm(result.photos);
   } catch {
@@ -59,13 +72,42 @@ export async function requestNativePermission(kind) {
   }
 }
 
-/** @param {string | undefined} value */
+/**
+ * Capacitor plugins can return states beyond the three we gate on
+ * ("granted"/"denied"/"prompt") — e.g. "limited" (iOS partial photo access)
+ * or "prompt-with-rationale". Previously anything unrecognized silently
+ * became "denied", which triggers "you denied this — open Settings"
+ * messaging even when the permission is actually fine (or the check itself
+ * just failed/timed out). Only the literal "denied" means denied; anything
+ * else unrecognized falls back to "prompt" (ask again), never a false denial.
+ * @param {string | undefined} value
+ */
 function normalizePerm(value) {
   if (value === "granted" || value === "denied" || value === "prompt") return value;
-  return "denied";
+  if (value === "limited") return "granted";
+  return "prompt";
 }
 
 const ANDROID_PACKAGE_ID = "app.perovo.mobile";
+
+/** Set once a device has ever had every essential permission granted at the same time. */
+const EVER_FULLY_GRANTED_KEY = "perovo_native_perms_ever_granted_v1";
+
+function markEverFullyGranted() {
+  try {
+    localStorage.setItem(EVER_FULLY_GRANTED_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function wasEverFullyGranted() {
+  try {
+    return localStorage.getItem(EVER_FULLY_GRANTED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 /**
  * @returns {Promise<{ notifications: string, camera: string, photos: string, location: string }>}
@@ -77,7 +119,26 @@ export async function checkEssentialPermissions() {
     checkNativePermission("photos"),
     checkNativePermission("location"),
   ]);
-  return { notifications, camera, photos, location };
+  const status = { notifications, camera, photos, location };
+
+  if (allEssentialPermissionsGranted(status)) {
+    markEverFullyGranted();
+    return status;
+  }
+
+  // A device that has previously proven every permission was granted can
+  // only lose that via an explicit OS-level revoke, which always reports
+  // "denied" — never "unsupported"/"prompt". So if nothing here is an
+  // explicit "denied" (i.e. everything short of fully-granted is just a
+  // transient check hiccup — the exact failure mode right after a Capgo OTA
+  // reload, before this fix, left users stuck re-granting permissions they
+  // already gave at install), trust the prior grant instead of re-blocking
+  // the user with a gate that can never actually be satisfied this launch.
+  if (wasEverFullyGranted() && !anyEssentialPermissionDenied(status)) {
+    return { notifications: "granted", camera: "granted", photos: "granted", location: "granted" };
+  }
+
+  return status;
 }
 
 /** @param {{ notifications: string, camera: string, photos: string, location: string }} status */
@@ -107,26 +168,20 @@ export function anyEssentialPermissionDenied(status) {
 export async function requestEssentialPermissions() {
   if (!isNativeCapacitorShell()) return null;
 
-  let notifications = await checkNativePermission("notifications");
-  if (notifications !== "granted") {
-    notifications = await requestNativePermission("notifications");
-  }
+  // Each of these already has its own timeout (see checkNativePermission /
+  // requestNativePermission above) — run them in sequence, not parallel,
+  // since stacking multiple system permission dialogs at once is confusing
+  // and some Android versions only show one at a time anyway.
+  const requestOne = async (kind) => {
+    let state = await checkNativePermission(kind);
+    if (state !== "granted") state = await requestNativePermission(kind);
+    return state;
+  };
 
-  const { Camera } = await import("@capacitor/camera");
-  const current = await Camera.checkPermissions();
-  let camera = normalizePerm(current.camera);
-  let photos = normalizePerm(current.photos);
-
-  if (camera !== "granted" || photos !== "granted") {
-    const result = await Camera.requestPermissions({ permissions: ["camera", "photos"] });
-    camera = normalizePerm(result.camera);
-    photos = normalizePerm(result.photos);
-  }
-
-  let location = await checkNativePermission("location");
-  if (location !== "granted") {
-    location = await requestNativePermission("location");
-  }
+  const notifications = await requestOne("notifications");
+  const camera = await requestOne("camera");
+  const photos = await requestOne("photos");
+  const location = await requestOne("location");
 
   return { notifications, camera, photos, location };
 }

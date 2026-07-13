@@ -144,6 +144,65 @@ export function analyzeSipPlan(input) {
 }
 
 /**
+ * "Income grew 18% this year, SIP unchanged 14 months — stepping up to
+ * 6,000/mo adds an estimated 4.2L by retirement." Compares two future-value
+ * projections (flat SIP vs stepped-up SIP) so the number is a direct,
+ * concrete comparison rather than an abstract percentage.
+ * @param {object} input
+ * @param {number} input.currentMonthlySip
+ * @param {number} input.currentIncome
+ * @param {number} input.priorIncome income at the time the SIP was last set
+ * @param {number} input.monthsSinceLastChange
+ * @param {number} input.remainingYears years left until the goal/retirement horizon
+ * @param {number} [input.annualReturn]
+ * @param {number} [input.incomeGrowthTriggerPct] minimum income growth to suggest a step-up
+ * @param {number} [input.staleMonthsTrigger] minimum months unchanged to suggest a step-up
+ */
+export function recommendSipStepUp({
+  currentMonthlySip,
+  currentIncome,
+  priorIncome,
+  monthsSinceLastChange,
+  remainingYears,
+  annualReturn = 0.12,
+  incomeGrowthTriggerPct = 10,
+  staleMonthsTrigger = 12,
+}) {
+  const sip = Math.max(0, Number(currentMonthlySip) || 0);
+  const income = Math.max(0, Number(currentIncome) || 0);
+  const prior = Math.max(0, Number(priorIncome) || 0);
+  const staleMonths = Math.max(0, Number(monthsSinceLastChange) || 0);
+  const years = Math.max(1, Math.floor(Number(remainingYears) || 1));
+
+  if (prior <= 0 || sip <= 0) {
+    return { eligible: false, reason: "insufficient_data" };
+  }
+
+  const incomeGrowthPct = Math.round(((income - prior) / prior) * 1000) / 10;
+  const eligible = incomeGrowthPct >= incomeGrowthTriggerPct && staleMonths >= staleMonthsTrigger;
+  if (!eligible) {
+    return { eligible: false, incomeGrowthPct, staleMonths, reason: incomeGrowthPct < incomeGrowthTriggerPct ? "income_flat" : "recently_changed" };
+  }
+
+  // Step up the SIP by the same proportion income grew, rounded to a clean figure.
+  const suggestedSip = Math.round((sip * (1 + incomeGrowthPct / 100)) / 500) * 500;
+  const months = years * 12;
+  const flatCorpus = sipFutureValue(sip, months, annualReturn);
+  const steppedCorpus = sipFutureValue(suggestedSip, months, annualReturn);
+  const additionalCorpus = Math.max(0, steppedCorpus - flatCorpus);
+
+  return {
+    eligible: true,
+    incomeGrowthPct,
+    staleMonths,
+    currentSip: Math.round(sip),
+    suggestedSip,
+    additionalCorpus: Math.round(additionalCorpus),
+    remainingYears: years,
+  };
+}
+
+/**
  * SIP plan aligned to a savings goal.
  * @param {{ targetAmount: number, targetDate?: string, todayStr?: string, monthlyFreeCash?: number, annualReturn?: number }} goalInput
  */

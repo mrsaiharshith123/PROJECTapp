@@ -46,7 +46,7 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [buyPrice]
  * @property {string} [exchange]
  * @property {string} [ticker]
- * @property {{ date?: string, type?: string, ratio?: string, amount?: number }[]} [corporateActions]
+ * @property {{ date?: string, type?: string, ratio?: string, amount?: number, applied?: boolean }[]} [corporateActions]
  * @property {number} [lastLivePrice]
  * @property {number} [livePriceFetchedAt]
  * @property {string} [fundSubType]
@@ -56,6 +56,13 @@ export const WEALTH_SCHEMA_VERSION = 1;
  * @property {number} [prepaymentPenaltyPct]
  * @property {string} [aiInsight]
  * @property {string} [aiInsightDate]
+ * @property {string} [lifeEventTag]
+ * @property {number} [ownershipPct] fractional/co-ownership share, 0-100; unset = 100%
+ * @property {boolean} [nomineeSet]
+ * @property {number} [makingChargesActual]
+ * @property {string} [pucExpiryDate]
+ * @property {string} [propertyTaxDueDate]
+ * @property {{ id: string, pawnDate: string, amount: number, interestRate: number, redemptionDate?: string }[]} [goldLoanCycles]
  * @property {number} createdAt
  * @property {number} updatedAt
  */
@@ -188,6 +195,7 @@ export function normalizeWealthEntry(raw) {
               type: String(row.type),
               ratio: row.ratio ? String(row.ratio) : undefined,
               amount: row.amount != null ? Number(row.amount) || undefined : undefined,
+              applied: row.applied === true ? true : undefined,
             };
           })
           .filter(Boolean)
@@ -202,6 +210,43 @@ export function normalizeWealthEntry(raw) {
     prepaymentPenaltyPct: optNum(r.prepaymentPenaltyPct),
     aiInsight: optStr(r.aiInsight),
     aiInsightDate: optStr(r.aiInsightDate),
+    // Major-life-event tagging (e.g. "wedding") for liability entries —
+    // see engines/lifeEventDebt.js.
+    lifeEventTag: optStr(r.lifeEventTag),
+    // Fractional/co-ownership (ancestral or joint-family property) — net
+    // worth counts only this share when set (see netWorth/core.js
+    // effectiveEntryValue). Unset = 100%, zero behavior change.
+    ownershipPct:
+      r.ownershipPct != null && !Number.isNaN(Number(r.ownershipPct))
+        ? Math.min(100, Math.max(0, Number(r.ownershipPct)))
+        : undefined,
+    // Succession completeness (engines/successionCompleteness.js) — whether
+    // a nominee is registered for this asset. Defaults to false/incomplete
+    // when unrecorded, deliberately: an unrecorded nominee is not "assumed fine."
+    nomineeSet: r.nomineeSet === true ? true : r.nomineeSet === false ? false : undefined,
+    // Gold making-charges recovery analysis (engines/goldIntel.js) — the
+    // real recorded making-charge amount, distinct from the flat 15% guess.
+    makingChargesActual: optNum(r.makingChargesActual),
+    // Document Expiry Radar (engines/documentExpiryRadar.js).
+    pucExpiryDate: optStr(r.pucExpiryDate),
+    propertyTaxDueDate: optStr(r.propertyTaxDueDate),
+    // Gold-as-recurring-credit cycle tracking (engines/goldLoanCycles.js).
+    goldLoanCycles: Array.isArray(r.goldLoanCycles)
+      ? r.goldLoanCycles
+          .map((c) => {
+            const row = /** @type {Record<string, unknown>} */ (c || {});
+            const amount = Number(row.amount) || 0;
+            if (amount <= 0 || !row.pawnDate) return null;
+            return {
+              id: String(row.id || `${row.pawnDate}-${amount}`),
+              pawnDate: String(row.pawnDate).slice(0, 10),
+              amount: Math.max(0, amount),
+              interestRate: Math.max(0, Number(row.interestRate) || 0),
+              redemptionDate: row.redemptionDate ? String(row.redemptionDate).slice(0, 10) : undefined,
+            };
+          })
+          .filter(Boolean)
+      : undefined,
     createdAt: Number(r.createdAt) || now,
     updatedAt: Number(r.updatedAt) || now,
   };

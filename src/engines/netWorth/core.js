@@ -15,17 +15,32 @@ export function partitionWealth(entries, opts = {}) {
   return { assets, liabilities };
 }
 
+/**
+ * Fractional ownership: an entry with `ownershipPct` set (co-owned family
+ * property being the main case) contributes only the user's actual share to
+ * every net-worth figure, not the full property value. Entries without
+ * `ownershipPct` set behave exactly as before (100% — this is purely
+ * additive, zero change for any entry that doesn't opt in).
+ * @param {WealthEntry} entry
+ */
+export function effectiveEntryValue(entry) {
+  const raw = Math.max(0, Number(entry.value) || 0);
+  if (entry.ownershipPct == null) return raw;
+  const pct = Math.min(100, Math.max(0, Number(entry.ownershipPct) || 0));
+  return (raw * pct) / 100;
+}
+
 /** @param {WealthEntry[]} assets */
 export function sumAssets(assets) {
   return assets
-    .reduce((s, a) => s.plus(Number(a.value) || 0), new Decimal(0))
+    .reduce((s, a) => s.plus(effectiveEntryValue(a)), new Decimal(0))
     .toNumber();
 }
 
 /** @param {WealthEntry[]} liabilities */
 export function sumLiabilities(liabilities) {
   return liabilities
-    .reduce((s, l) => s.plus(Number(l.value) || 0), new Decimal(0))
+    .reduce((s, l) => s.plus(effectiveEntryValue(l)), new Decimal(0))
     .toNumber();
 }
 
@@ -35,7 +50,7 @@ export function sumLiquidAssets(assets) {
     .reduce((s, a) => {
       const tier = getAssetCategory(a.categoryId).tier;
       const weight = liquidityTierWeight(tier);
-      return s.plus(new Decimal(Number(a.value) || 0).times(weight));
+      return s.plus(new Decimal(effectiveEntryValue(a)).times(weight));
     }, new Decimal(0))
     .toNumber();
 }
@@ -51,7 +66,7 @@ export function sumByLiquidityTier(assets) {
   };
   for (const a of assets) {
     const tier = getAssetCategory(a.categoryId).tier;
-    tiers[tier] = (tiers[tier] || new Decimal(0)).plus(Number(a.value) || 0);
+    tiers[tier] = (tiers[tier] || new Decimal(0)).plus(effectiveEntryValue(a));
   }
   /** @type {Record<string, number>} */
   const result = {};
@@ -74,24 +89,34 @@ export function computeNetWorthCore(entries) {
   const liquidNetWorth = sumLiquidAssets(assets) - totalLiabilities;
   const liquidityBreakdown = sumByLiquidityTier(assets);
 
-  const assetAllocation = assets.map((a) => ({
-    id: a.id,
-    categoryId: a.categoryId,
-    name: a.name,
-    value: finiteNum(a.value),
-    pct: totalAssets > 0 ? finiteNum((a.value / totalAssets) * 100) : 0,
-    tier: getAssetCategory(a.categoryId).tier,
-  })).sort((a, b) => b.value - a.value);
+  const assetAllocation = assets.map((a) => {
+    const value = finiteNum(effectiveEntryValue(a));
+    return {
+      id: a.id,
+      categoryId: a.categoryId,
+      name: a.name,
+      value,
+      fullValue: finiteNum(a.value),
+      ownershipPct: a.ownershipPct != null ? finiteNum(a.ownershipPct, 100) : null,
+      pct: totalAssets > 0 ? finiteNum((value / totalAssets) * 100) : 0,
+      tier: getAssetCategory(a.categoryId).tier,
+    };
+  }).sort((a, b) => b.value - a.value);
 
-  const liabilityAllocation = liabilities.map((l) => ({
-    id: l.id,
-    categoryId: l.categoryId,
-    name: l.name,
-    value: finiteNum(l.value),
-    pct: totalLiabilities > 0 ? finiteNum((l.value / totalLiabilities) * 100) : 0,
-    emi: l.emi,
-    interestRate: l.interestRate,
-  })).sort((a, b) => b.value - a.value);
+  const liabilityAllocation = liabilities.map((l) => {
+    const value = finiteNum(effectiveEntryValue(l));
+    return {
+      id: l.id,
+      categoryId: l.categoryId,
+      name: l.name,
+      value,
+      fullValue: finiteNum(l.value),
+      ownershipPct: l.ownershipPct != null ? finiteNum(l.ownershipPct, 100) : null,
+      pct: totalLiabilities > 0 ? finiteNum((value / totalLiabilities) * 100) : 0,
+      emi: l.emi,
+      interestRate: l.interestRate,
+    };
+  }).sort((a, b) => b.value - a.value);
 
   return {
     totalAssets: finiteNum(totalAssets),

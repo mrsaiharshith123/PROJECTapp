@@ -25,6 +25,16 @@ export default function ProfileSettingsGroups({
 
   return (
     <div id="profile-settings">
+      <SettingsGroup title={t("settings.group.emergency")} icon="first-aid">
+        <SettingsGroupRow
+          iconColor="red"
+          icon="first-aid"
+          label={t("settings.row.emergencyMode")}
+          hint={t("settings.row.emergencyModeHint")}
+          onClick={() => navigate("/emergency")}
+        />
+      </SettingsGroup>
+
       <SettingsGroup title={t("settings.group.account")} icon="user-circle">
         <SettingsGroupRow
           iconColor="indigo"

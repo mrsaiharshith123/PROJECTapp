@@ -1,4 +1,5 @@
 import { MONTH_OPTIONS } from "./wealthEntryFormState.js";
+import { applyStockSplitOrBonus, parseSplitMultiplier } from "../../../utils/netWorth/corporateActions.js";
 
 export default function WealthEntryExtendedFields({
   form,
@@ -174,6 +175,33 @@ export default function WealthEntryExtendedFields({
                     })
                   }
                 />
+                {(action.type === "split" || action.type === "bonus") && (
+                  <button
+                    type="button"
+                    className="ed-btn ed-btn-ghost"
+                    disabled={action.applied || parseSplitMultiplier(action.ratio) == null}
+                    onClick={() =>
+                      setForm((f) => {
+                        const result = applyStockSplitOrBonus({
+                          quantity: f.quantity,
+                          buyPrice: f.buyPrice,
+                          ratio: action.ratio,
+                        });
+                        if (!result) return f;
+                        const next = [...f.corporateActions];
+                        next[i] = { ...next[i], applied: true };
+                        return {
+                          ...f,
+                          quantity: String(result.quantity),
+                          buyPrice: String(result.buyPrice),
+                          corporateActions: next,
+                        };
+                      })
+                    }
+                  >
+                    {action.applied ? t("netWorth.form.corporateActionApplied") : t("netWorth.form.corporateActionApply")}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="ed-btn ed-btn-ghost"
