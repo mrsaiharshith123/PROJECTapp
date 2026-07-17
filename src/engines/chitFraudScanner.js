@@ -17,13 +17,21 @@ const NO_REGISTRATION_PATTERN = /no\s*registration|not\s*registered|unregistered
 /**
  * @param {object} chitCommitment
  * @param {string} [chitCommitment.notes]
+ * @param {string} [chitCommitment.chitOrganizerCompany]
  * @param {string} [chitCommitment.chitRegistrationNumber]
  * @param {string} [chitCommitment.name]
  */
 export function scanChitFundRedFlags(chitCommitment) {
   const text = `${chitCommitment?.notes || ""} ${chitCommitment?.name || ""}`;
+  const organizerCompany = String(chitCommitment?.chitOrganizerCompany || "").trim();
   /** @type {{ id: string, severity: 'critical'|'high'|'medium' }[]} */
   const flags = [];
+
+  // Without knowing who actually runs it, none of the other checks mean
+  // anything — there is nothing for the user to go verify.
+  if (!organizerCompany) {
+    flags.push({ id: "no-organizer-name", severity: "medium" });
+  }
 
   if (GUARANTEED_RETURN_PATTERN.test(text)) {
     flags.push({ id: "guaranteed-return", severity: "critical" });
@@ -48,5 +56,11 @@ export function scanChitFundRedFlags(chitCommitment) {
   const hasCritical = flags.some((f) => f.severity === "critical");
   const riskLevel = hasCritical ? "critical" : flags.length >= 2 ? "high" : flags.length === 1 ? "medium" : "low";
 
-  return { flags, riskLevel, needsExternalVerification: flags.some((f) => f.id === "no-registration-number" || f.id === "implausible-registration-number") };
+  return {
+    flags,
+    riskLevel,
+    needsExternalVerification: flags.some((f) =>
+      ["no-organizer-name", "no-registration-number", "implausible-registration-number"].includes(f.id),
+    ),
+  };
 }

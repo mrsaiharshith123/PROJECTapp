@@ -192,8 +192,11 @@ export function normalizeCommitment(raw) {
       category === "Chit Fund" && raw.chitTakenPayout != null
         ? Math.max(0, Number(raw.chitTakenPayout))
         : null,
-    // Chit Fund Registration Verifier (engines/chitFraudScanner.js) — the
-    // state registrar registration number the operator claims to have.
+    // Chit Fund Registration Verifier (engines/chitFraudScanner.js) — which
+    // company/organizer runs this chit and the state registrar registration
+    // number the operator claims to have. Without a name, there is nothing
+    // for the user to independently verify.
+    chitOrganizerCompany: category === "Chit Fund" ? String(raw.chitOrganizerCompany || "").trim() : "",
     chitRegistrationNumber: category === "Chit Fund" ? String(raw.chitRegistrationNumber || "").trim() : "",
     createdAt: typeof raw.createdAt === "number" ? raw.createdAt : now,
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : now,
@@ -311,13 +314,10 @@ export function normalizeLending(raw) {
   };
 
   const financials = enrichLendingFinancials(base, "");
-  const trustScoreSnapshot =
-    typeof raw.trustScoreSnapshot === "number" ? raw.trustScoreSnapshot : null;
 
   return {
     ...base,
     ...financials,
-    trustScoreSnapshot,
     borrowerFullName: String(raw.borrowerFullName ?? ""),
     borrowerAddress: String(raw.borrowerAddress ?? ""),
     borrowerPhone: String(raw.borrowerPhone ?? ""),
@@ -343,6 +343,19 @@ export function normalizeLending(raw) {
     lastReminderLevel: Math.max(0, Math.min(3, Math.floor(Number(raw.lastReminderLevel) || 0))),
     status: financials.remainingBalance <= 0 ? "complete" : status === "complete" && financials.remainingBalance > 0 ? "pending" : status,
     remainingAmount: financials.remainingBalance,
+    // Document integrity seal (utils/agreementExport.js sealAgreement) — a
+    // SHA-256 of the agreement text taken at seal time. Was being computed
+    // and printed onto the PDF but never actually written back onto the
+    // lending record, and even if it had been, this normalizer used to
+    // silently drop both fields on every reload — fixed below.
+    agreementHash: raw.agreementHash ? String(raw.agreementHash) : "",
+    agreementSealedAt: raw.agreementSealedAt ? String(raw.agreementSealedAt) : "",
+    // External timestamp anchor (services/lending/timestampAnchor.js) — proof
+    // the sealed hash existed at a point in time from a source outside our
+    // own storage, so tampering is provable even if our backend is compromised.
+    anchorProof: raw.anchorProof ? String(raw.anchorProof) : "",
+    anchorSubmittedAt: raw.anchorSubmittedAt ? Number(raw.anchorSubmittedAt) : null,
+    anchorCalendarUrl: raw.anchorCalendarUrl ? String(raw.anchorCalendarUrl) : "",
   };
 }
 

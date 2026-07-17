@@ -374,15 +374,6 @@ const Add = () => {
               className={fieldClass("personName")}
             />
           </div>
-          <div>
-            <label className="ed-field-label">{t("add.amountLabel")}</label>
-            <input
-              type="number"
-              value={lendingForm.totalAmount}
-              onChange={(e) => setLendingForm((f) => ({ ...f, totalAmount: e.target.value }))}
-              className={fieldClass("totalAmount")}
-            />
-          </div>
           <div className="ed-grid-2">
             <button
               type="button"
@@ -398,6 +389,15 @@ const Add = () => {
             >
               {t("lending.sectionOwe")}
             </button>
+          </div>
+          <div>
+            <label className="ed-field-label">{t("add.amountLabel")}</label>
+            <input
+              type="number"
+              value={lendingForm.totalAmount}
+              onChange={(e) => setLendingForm((f) => ({ ...f, totalAmount: e.target.value }))}
+              className={fieldClass("totalAmount")}
+            />
           </div>
           <div>
             <label className="ed-field-label">{t("add.dueDateLabel")}</label>

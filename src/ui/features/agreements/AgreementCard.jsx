@@ -26,22 +26,17 @@ function formatShortDate(dateStr) {
   });
 }
 
-function trustFilledDots(score) {
-  return Math.min(5, Math.max(0, Math.round((Number(score) || 0) / 20)));
-}
-
 function lendingTypeLabel(t, type) {
   return type === "borrowed" ? t("agreements.borrowedOn") : t("agreements.lentOn");
 }
 
 /**
- * Agreement row card — trust dots, status stripe, legal + repayment actions.
+ * Agreement row card — status stripe, legal + repayment actions.
  */
-function AgreementCard({ item, todayStr, trustScore = 50, onMakeLegal, onRepayment }) {
+function AgreementCard({ item, todayStr, onMakeLegal, onRepayment }) {
   const { t } = useTranslation();
   const { formatAmount } = usePrivacyAmount();
   const eff = getEffectiveLendingStatus(item, todayStr);
-  const filled = trustFilledDots(trustScore);
   const days = daysUntil(item.dueDate, todayStr);
   const dueSoon = eff === "pending" && days >= 0 && days <= 3;
 
@@ -73,11 +68,6 @@ function AgreementCard({ item, todayStr, trustScore = 50, onMakeLegal, onRepayme
             <div className="ed-agreement-meta">
               {lendingTypeLabel(t, item.type)}
               {item.dueDate ? ` · ${t("agreements.due")} ${formatShortDate(item.dueDate)}` : ""}
-            </div>
-            <div style={{ display: "flex", gap: 3, marginTop: 5 }} aria-label={t("agreements.trustScoreAria", { score: trustScore })}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className={`ed-trust-dot${i < filled ? " filled" : ""}`} />
-              ))}
             </div>
           </div>
         </div>

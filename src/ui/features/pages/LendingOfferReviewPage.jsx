@@ -2,13 +2,12 @@ import { useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card, Button, Caption, Body, Eyebrow, ToneSurface, inputClassName } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { decodeOfferPayload, trustScoreLabel } from "../../../engines/lendingAgreement.js";
+import { decodeOfferPayload } from "../../../engines/lendingAgreement.js";
 import { loadLendingOffer } from "../../../services/lending/offerRegistry.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { formatInr } from "../../../constants/symbols.js";
-import { trustScoreToTone } from "../../../engines/lendingTrust.js";
-import { semanticToneToClass } from "../../tokens/semanticBadge.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
+import { phoneNumbersMatch } from "../../../utils/sanitize.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 
@@ -22,11 +21,24 @@ export default function LendingOfferReview() {
   const [signName, setSignName] = useState("");
   const [agree, setAgree] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   const codeParam = params.get("code");
   const payloadParam = params.get("d");
   const offer =
     (codeParam ? loadLendingOffer(codeParam) : null) ?? decodeOfferPayload(payloadParam);
+  const needsPhoneVerify = Boolean(offer?.requesterPhone) && !phoneVerified;
+
+  const verifyPhone = () => {
+    if (phoneNumbersMatch(phoneInput, offer.requesterPhone)) {
+      setPhoneVerified(true);
+      setPhoneError("");
+    } else {
+      setPhoneError(t("lending.offer.verifyPhoneError"));
+    }
+  };
 
   const acceptLoan = useCallback(() => {
     if (!offer || !signName.trim() || !agree) return;
@@ -80,8 +92,42 @@ export default function LendingOfferReview() {
     );
   }
 
-  const score = Number(offer.trustScore) || 50;
-  const label = trustScoreLabel(score);
+  if (needsPhoneVerify) {
+    return (
+      <div
+        className="ed-page ed-stack max-w-lg mx-auto min-h-screen justify-center"
+        style={{ background: "var(--ed-bg)" }}
+      >
+        <Card className="ed-stack-sm text-center py-8">
+          <span
+            className="ed-icon-tile mx-auto"
+            style={{ color: "var(--ed-indigo)", background: "var(--ed-indigo-soft)" }}
+            aria-hidden
+          >
+            <CtIcon name="shield" size={24} context="status" />
+          </span>
+          <Body className="font-semibold">{t("lending.offer.verifyPhoneTitle")}</Body>
+          <Caption className="block">
+            {t("lending.offer.verifyPhoneHint", { name: offer.borrowerName })}
+          </Caption>
+          <input
+            type="tel"
+            className={`${fieldClass} text-center`}
+            value={phoneInput}
+            onChange={(e) => {
+              setPhoneInput(e.target.value);
+              setPhoneError("");
+            }}
+            placeholder={t("lending.offer.verifyPhonePlaceholder")}
+          />
+          {phoneError ? <Caption className="block" style={{ color: "var(--ed-red)" }}>{phoneError}</Caption> : null}
+          <Button type="button" variant="primary" className="w-full" disabled={!phoneInput.trim()} onClick={verifyPhone}>
+            {t("lending.offer.verifyPhoneCta")}
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   if (accepted) {
     return (
@@ -116,19 +162,6 @@ export default function LendingOfferReview() {
         <p className="ed-kicker mt-2">{t("lending.offer.headline", { name: offer.borrowerName })}</p>
         <p className="ed-hero-number">{formatInr(offer.amount)}</p>
       </div>
-
-      <Card className="ed-stack-sm">
-        <Caption className="block font-semibold uppercase tracking-wide">{t("lending.offer.trustTitle")}</Caption>
-        <span className={`inline-flex text-sm font-bold px-3 py-1 rounded-full border ${semanticToneToClass(trustScoreToTone(score))}`}>
-          {score}/100 · {label}
-        </span>
-        <Caption className="block">{offer.trustSummary}</Caption>
-        {(offer.trustOnTime > 0 || offer.trustLate > 0) && (
-          <Caption className="block opacity-80">
-            {t("lending.offer.onTimeLate", { onTime: offer.trustOnTime, late: offer.trustLate })}
-          </Caption>
-        )}
-      </Card>
 
       <div className="ed-grid-2">
         <div className="ed-inset">

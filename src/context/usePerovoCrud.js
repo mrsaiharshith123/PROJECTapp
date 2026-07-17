@@ -15,6 +15,14 @@ import { reconcileBillAfterEdit } from "../utils/billPaymentProgress.js";
 import { normalizeAppLanguage } from "../i18n/languages.js";
 import { trackEvent, EVENTS } from "../services/analytics/perovoAnalytics.js";
 
+const INTEGRITY_SEAL_FIELDS = new Set([
+  "agreementHash",
+  "agreementSealedAt",
+  "anchorProof",
+  "anchorSubmittedAt",
+  "anchorCalendarUrl",
+]);
+
 function settingsPatchUnchanged(prev, next, patch) {
   return Object.keys(patch).every((key) => {
     const before = prev[key];
@@ -172,10 +180,16 @@ export function usePerovoCrud({
 
   const updateLending = useCallback(
     (id, patch) => {
+      // Integrity-seal fields (document hash + external timestamp anchor)
+      // describe evidence ABOUT the agreement, not its legal terms — these
+      // must stay settable even once the agreement is locked, since sealing
+      // typically happens right after finalization/eSign, which is exactly
+      // when isAgreementFullyLocked starts returning true.
+      const isIntegrityOnlyPatch = Object.keys(patch).every((k) => INTEGRITY_SEAL_FIELDS.has(k));
       persistLendings((prev) =>
         prev.map((l) => {
           if (String(l.id) !== String(id)) return l;
-          if (!canEditLending(l)) return l;
+          if (!isIntegrityOnlyPatch && !canEditLending(l)) return l;
           return normalizeLending({
             ...l,
             ...patch,

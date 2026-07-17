@@ -1,12 +1,21 @@
+import { useNavigate } from "react-router-dom";
 import { PageShell, Body, Caption } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 
 export default function PrivacyPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const contactEmail = t("support.contactEmail");
 
   return (
-    <PageShell title={t("privacy.title")}>
+    <PageShell
+      title={t("privacy.title")}
+      action={
+        <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={() => navigate(-1)} aria-label={t("common.back")}>
+          ←
+        </button>
+      }
+    >
       <div className="ed-inset relative max-h-[70vh] overflow-y-auto ed-stack">
         <Caption className="block">{t("privacy.effective")}</Caption>
 

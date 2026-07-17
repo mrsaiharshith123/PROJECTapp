@@ -209,12 +209,26 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
       }
     >
       <div className="ed-stack ed-inset">
-        {form.category ? (
-          <div className="ed-inset">
-            <p className="ed-field-label">{t("add.categoryLabel")}</p>
-            <p className="ed-numeral text-sm">{form.category}</p>
-          </div>
-        ) : null}
+        <div>
+          <label className="ed-field-label">{t("commitment.edit.category")}</label>
+          <select
+            className={fieldClass("category")}
+            value={form.category}
+            onChange={(e) => {
+              const cat = e.target.value;
+              patchForm({
+                category: cat,
+                priority: cat === "Other" ? form.priority : inferPriorityFromCategory(cat),
+              });
+            }}
+          >
+            {billCategories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="ed-field-label">{t("commitment.edit.name")}</label>
           <input
@@ -224,6 +238,58 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           />
           {errors.name && <p className="ed-field-error">{errors.name}</p>}
         </div>
+        {showChit && (
+          <ChitFundFields
+            values={form}
+            errors={errors}
+            fieldClass={fieldClass}
+            selectClass={selectClass}
+            todayStr={todayStr}
+            onChange={(name, value) => patchForm({ [name]: value })}
+          />
+        )}
+        {showInsurance && (
+          <InsuranceFields
+            values={form}
+            errors={errors}
+            fieldClass={fieldClass}
+            onChange={(name, value) => patchForm({ [name]: value })}
+          />
+        )}
+        {form.category === "SIP" ? (
+          <div>
+            <label className="ed-field-label">
+              {t("commitment.sip.fundSearch")}
+            </label>
+            <input
+              className={fieldClass("scheme")}
+              value={fundQuery}
+              onChange={(e) => setFundQuery(e.target.value)}
+            />
+            {visibleFundHits.length > 0 ? (
+              <ul className="ed-stack-sm mt-1 max-h-32 overflow-y-auto">
+                {visibleFundHits.map((hit) => (
+                  <li key={hit.schemeCode}>
+                    <button
+                      type="button"
+                      className="ed-link text-left text-sm"
+                      onClick={() => {
+                        patchForm({ schemeCode: hit.schemeCode, schemeName: hit.schemeName });
+                        setFundQuery(hit.schemeName);
+                        setFundHits([]);
+                      }}
+                    >
+                      {hit.schemeName}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <Caption className="block mt-1">
+              {form.schemeCode ? t("commitment.sip.fundNavHint") : t("commitment.sip.fundEmpty")}
+            </Caption>
+          </div>
+        ) : null}
         <div>
           <label className="ed-field-label">
             {showChit ? t("commitment.edit.installment") : t("commitment.edit.amount")}
@@ -278,60 +344,6 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
           />
           {errors.dueDate && <p className="ed-field-error">{errors.dueDate}</p>}
         </div>
-        <div>
-          <label className="ed-field-label">{t("commitment.edit.category")}</label>
-          <select
-            className={fieldClass("category")}
-            value={form.category}
-            onChange={(e) => {
-              const cat = e.target.value;
-              patchForm({
-                category: cat,
-                priority: cat === "Other" ? form.priority : inferPriorityFromCategory(cat),
-              });
-            }}
-          >
-            {billCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        {form.category === "SIP" ? (
-          <div>
-            <label className="ed-field-label">
-              {t("commitment.sip.fundSearch")}
-            </label>
-            <input
-              className={fieldClass("scheme")}
-              value={fundQuery}
-              onChange={(e) => setFundQuery(e.target.value)}
-            />
-            {visibleFundHits.length > 0 ? (
-              <ul className="ed-stack-sm mt-1 max-h-32 overflow-y-auto">
-                {visibleFundHits.map((hit) => (
-                  <li key={hit.schemeCode}>
-                    <button
-                      type="button"
-                      className="ed-link text-left text-sm"
-                      onClick={() => {
-                        patchForm({ schemeCode: hit.schemeCode, schemeName: hit.schemeName });
-                        setFundQuery(hit.schemeName);
-                        setFundHits([]);
-                      }}
-                    >
-                      {hit.schemeName}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <Caption className="block mt-1">
-              {form.schemeCode ? t("commitment.sip.fundNavHint") : t("commitment.sip.fundEmpty")}
-            </Caption>
-          </div>
-        ) : null}
         {!showChit && (
           <div>
             <label className="ed-field-label">{t("commitment.edit.repeat")}</label>
@@ -363,26 +375,6 @@ export default function CommitmentEditModal({ commitment, onClose, onSave }) {
               ))}
             </select>
           </div>
-        )}
-
-        {showChit && (
-          <ChitFundFields
-            values={form}
-            errors={errors}
-            fieldClass={fieldClass}
-            selectClass={selectClass}
-            todayStr={todayStr}
-            onChange={(name, value) => patchForm({ [name]: value })}
-          />
-        )}
-
-        {showInsurance && (
-          <InsuranceFields
-            values={form}
-            errors={errors}
-            fieldClass={fieldClass}
-            onChange={(name, value) => patchForm({ [name]: value })}
-          />
         )}
 
         {showInterest && (

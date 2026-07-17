@@ -69,17 +69,13 @@ export async function checkForAppUpdate() {
   await syncApkUpdateTrackingWithInstalled(remote);
 
   const apkNeeded = needsNativeApkUpdate(remote, localNative);
-  const applied = getAppliedOtaRecord();
-  let otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
-  if (
-    otaNeeded &&
-    applied?.version === remote.version &&
-    applied?.builtAt &&
-    remote.builtAt &&
-    applied.builtAt === remote.builtAt
-  ) {
-    otaNeeded = false;
-  }
+  // otaNeeded is decided purely from resolveLocalState()'s live-read version
+  // (CapacitorUpdater.current() when native) — never re-derive it from the
+  // applied-OTA record here. That record can only ever lag reality (see
+  // capgo-notify-only.js), and trusting it a second time on top of an
+  // already-correct live comparison is what caused updates to silently
+  // report "up to date" after a bundle swap failed or got rolled back.
+  const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
 
   const apkDownloaded = apkNeeded && isApkDownloadedForVersion(remote.version);
   const apkWaiting = apkNeeded && (apkDownloaded || (await isApkWaitingForInstall(remote)));
@@ -119,17 +115,7 @@ export async function applyAppUpdate({ onProgress, allowApk = true } = {}) {
 
   const [local, localNative] = await Promise.all([resolveLocalState(), getLocalNativeAppVersion()]);
   const apkNeeded = needsNativeApkUpdate(remote, localNative);
-  const applied = getAppliedOtaRecord();
-  let otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
-  if (
-    otaNeeded &&
-    applied?.version === remote.version &&
-    applied?.builtAt &&
-    remote.builtAt &&
-    applied.builtAt === remote.builtAt
-  ) {
-    otaNeeded = false;
-  }
+  const otaNeeded = isRemoteManifestNewer(remote, local.version, local.builtAt);
 
   if (isEmbeddedApp()) {
     // APK install updates the real app binary. OTA only patches the web bundle in app data

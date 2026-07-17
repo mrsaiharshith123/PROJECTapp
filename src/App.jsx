@@ -55,6 +55,16 @@ const InsightsYearlyBreakdown = lazy(() =>
     default: m.InsightsYearlyBreakdownPage,
   })),
 );
+const InsightsSpendingBreakdown = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsSpendingBreakdownPage,
+  })),
+);
+const InsightsAdvanced = lazy(() =>
+  import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
+    default: m.InsightsAdvancedPage,
+  })),
+);
 const InsightsNetWorthBreakdown = lazy(() =>
   import("./ui/features/insights/InsightsBreakdownPages.jsx").then((m) => ({
     default: m.InsightsNetWorthBreakdownPage,
@@ -143,6 +153,8 @@ function AppRoutes() {
         <Route path="/you" element={<Profile />} />
         <Route path="/insights" element={<LazyRoute name="Insights"><Analytics /></LazyRoute>} />
         <Route path="/insights/score" element={<LazyRoute name="Score"><ScoreDetail /></LazyRoute>} />
+        <Route path="/insights/spending" element={<LazyRoute name="Spending"><InsightsSpendingBreakdown /></LazyRoute>} />
+        <Route path="/insights/advanced" element={<LazyRoute name="Advanced insights"><InsightsAdvanced /></LazyRoute>} />
         <Route path="/insights/spending/yearly" element={<LazyRoute name="Yearly spending"><InsightsYearlyBreakdown /></LazyRoute>} />
         <Route path="/insights/networth" element={<LazyRoute name="Net worth"><InsightsNetWorthBreakdown /></LazyRoute>} />
         <Route path="/insights/assets" element={<LazyRoute name="Assets"><InsightsAssetsBreakdown /></LazyRoute>} />

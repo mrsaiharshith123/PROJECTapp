@@ -13,19 +13,6 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
     <div className="ed-inset-indigo ed-stack-sm">
       <Caption className="block leading-relaxed">{t("insurance.form.trackNote")}</Caption>
       <div>
-        <label className="ed-field-label">
-          {t("insurance.form.policyId")} <span style={{ color: "var(--ed-red)" }}>*</span>
-        </label>
-        <input
-          type="text"
-          className={fieldClass("insurancePolicyId")}
-          value={values.insurancePolicyId || ""}
-          onChange={(e) => onChange("insurancePolicyId", e.target.value)}
-          placeholder={t("insurance.form.phPolicyId")}
-        />
-        {errors.insurancePolicyId && <p className="ed-field-error">{errors.insurancePolicyId}</p>}
-      </div>
-      <div>
         <label className="ed-field-label">{t("insurance.form.company")}</label>
         <input
           type="text"
@@ -44,6 +31,19 @@ export default function InsuranceFields({ values, onChange, fieldClass, errors =
           onChange={(e) => onChange("insuredPersonName", e.target.value)}
           placeholder={t("insurance.form.phHolder")}
         />
+      </div>
+      <div>
+        <label className="ed-field-label">
+          {t("insurance.form.policyId")} <span style={{ color: "var(--ed-red)" }}>*</span>
+        </label>
+        <input
+          type="text"
+          className={fieldClass("insurancePolicyId")}
+          value={values.insurancePolicyId || ""}
+          onChange={(e) => onChange("insurancePolicyId", e.target.value)}
+          placeholder={t("insurance.form.phPolicyId")}
+        />
+        {errors.insurancePolicyId && <p className="ed-field-error">{errors.insurancePolicyId}</p>}
       </div>
       {preview && (
         <div className="ed-inset">

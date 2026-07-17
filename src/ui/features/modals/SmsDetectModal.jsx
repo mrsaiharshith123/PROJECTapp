@@ -77,7 +77,7 @@ export default function SmsDetectModal({ open, onClose }) {
 
         {match && debit ? (
           <Card variant="flat" className="ed-inset ed-stack-sm">
-<Body className="font-semibold relative">
+            <Body className="font-semibold relative">
               {t("sms.detect.confirm", {
                 name: match.name,
                 amount: formatInr(debit.amount),
@@ -85,11 +85,11 @@ export default function SmsDetectModal({ open, onClose }) {
               })}
             </Body>
             <div className="flex gap-2 relative">
-              <Button type="button" variant="primary" className="flex-1" onClick={handleConfirm}>
-                {t("sms.detect.yesMarkPaid")}
-              </Button>
               <Button type="button" variant="outline" className="flex-1" onClick={() => { reset(); onClose(); }}>
                 {t("common.cancel")}
+              </Button>
+              <Button type="button" variant="primary" className="flex-1" onClick={handleConfirm}>
+                {t("sms.detect.yesMarkPaid")}
               </Button>
             </div>
           </Card>

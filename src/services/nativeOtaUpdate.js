@@ -1,5 +1,4 @@
 import { isEmbeddedApp } from "../utils/embeddedApp.js";
-import { saveAppliedOtaRecord } from "./appliedOtaMeta.js";
 
 /** Native Capacitor shell with the OTA plugin available. */
 export function canUseNativeOta() {
@@ -90,8 +89,6 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
     const bundleId = bundle?.id;
     if (!bundleId) throw new Error("ota_bundle_id_missing");
 
-    saveAppliedOtaRecord({ version: manifest.version, builtAt: manifest.builtAt });
-
     onProgress?.({
       phase: "restarting",
       percent: 100,
@@ -101,7 +98,12 @@ export async function applyNativeOtaUpdate(manifest, onProgress) {
 
     // Manual Capgo flow: set() applies the bundle and reloads immediately.
     // next()+reload() often hangs at 100% on Android WebViews.
-    // notifyAppReady runs on boot via src/capgo-notify-only.js after the new bundle loads.
+    // We deliberately do NOT record this bundle as "applied" here — set()/next()
+    // can appear to succeed while the bundle never actually becomes the one that
+    // boots (Capgo's own readiness watchdog can still roll it back). The applied
+    // record is only written from src/capgo-notify-only.js, after the new bundle
+    // has actually booted and confirmed itself ready — that's the only point we
+    // truly know which version is running, not just which one we asked for.
     try {
       await Promise.race([
         CapacitorUpdater.set({ id: bundleId }),

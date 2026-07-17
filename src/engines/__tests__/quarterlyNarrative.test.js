@@ -33,6 +33,17 @@ describe("buildQuarterlyNarrative", () => {
     expect(result.beats[0].key).toBe("quarterlyNarrative.netWorthGrew");
     expect(result.beats[0].params.driverName).toBeUndefined();
   });
+
+  it("never produces a NaN delta when a stored snapshot has a corrupted/missing netWorth field", () => {
+    const badSnapshots = [
+      { month: "2025-04", netWorth: undefined, totalAssets: 1200000, totalLiabilities: 200000 },
+      { month: "2025-06", netWorth: NaN, totalAssets: 1400000, totalLiabilities: 216000 },
+    ];
+    const result = buildQuarterlyNarrative({ snapshots: badSnapshots, entries, commitments: [] });
+    expect(Number.isFinite(result.netWorthDelta)).toBe(true);
+    expect(result.netWorthDelta).toBe(0);
+    expect(result.beats[0].params.amount).not.toContain("NaN");
+  });
 });
 
 describe("quarterBoundsForMonth / snapshotsInQuarter", () => {

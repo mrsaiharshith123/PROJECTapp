@@ -3,6 +3,7 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { scanChitFundRedFlags } from "../../../engines/chitFraudScanner.js";
 
 const FLAG_LABEL_KEYS = {
+  "no-organizer-name": "bill.detail.chitFraud.flag.noOrganizerName",
   "guaranteed-return": "bill.detail.chitFraud.flag.guaranteedReturn",
   "cash-only": "bill.detail.chitFraud.flag.cashOnly",
   "no-registration-number": "bill.detail.chitFraud.flag.noRegistrationNumber",
@@ -33,6 +34,11 @@ export default function ChitFraudPanel({ bill }) {
   return (
     <div className="ed-ins-story" style={{ marginTop: 12 }}>
       <div className="ed-ins-kicker">{t("bill.detail.chitFraud.title")}</div>
+      {bill.chitOrganizerCompany ? (
+        <p className="ed-ins-body" style={{ opacity: 0.85 }}>
+          {bill.chitOrganizerCompany}
+        </p>
+      ) : null}
       <p className="ed-ins-body" style={{ fontWeight: 600, color: RISK_COLOR[result.riskLevel] }}>
         {t(`bill.detail.chitFraud.riskLevel.${result.riskLevel}`)}
       </p>

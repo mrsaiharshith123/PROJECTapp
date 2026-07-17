@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import Fuse from "fuse.js";
-import { lendingTrustByPerson, trustScoreForLendingEntry } from "../../../engines/lendingTrust.js";
 
 function sortLendings(list) {
   return [...list].sort((a, b) => {
@@ -31,8 +30,6 @@ export function useLendingLists(lendings, searchQuery = "") {
     () => sortLendings(filterBySearch(lendings.filter((l) => l.type === "lent"), searchQuery)),
     [lendings, searchQuery],
   );
-  const trustRows = useMemo(() => lendingTrustByPerson(lendings), [lendings]);
-
   const totals = useMemo(() => {
     let lentOut = 0;
     let borrowedIn = 0;
@@ -57,20 +54,5 @@ export function useLendingLists(lendings, searchQuery = "") {
     return { lentOut, borrowedIn, recovered, repaid, lentOutstanding, borrowedOutstanding };
   }, [lendings]);
 
-  const trustScore = useMemo(() => {
-    if (!lendings?.length) return null;
-    const scores = lendings.map((l) => trustScoreForLendingEntry(l, lendings));
-    return Math.round(scores.reduce((sum, n) => sum + n, 0) / scores.length);
-  }, [lendings]);
-
-  /** Per-entry trust scores — compute once per lendings change (avoid O(n²) per card). */
-  const trustByEntryId = useMemo(() => {
-    const map = new Map();
-    for (const l of lendings) {
-      map.set(l.id, trustScoreForLendingEntry(l, lendings));
-    }
-    return map;
-  }, [lendings]);
-
-  return { borrowedList, lentList, trustRows, totals, trustScore, trustByEntryId };
+  return { borrowedList, lentList, totals };
 }

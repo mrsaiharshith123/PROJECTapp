@@ -22,3 +22,19 @@ export function sanitizeName(input) {
 export function sanitizeNote(input) {
   return sanitizeText(input, 1000);
 }
+
+/**
+ * Last 10 digits of a phone number, ignoring spaces/dashes/country code —
+ * lets "+91 98765 43210" and "9876543210" compare as the same number.
+ */
+export function phoneLast10(input) {
+  const digits = String(input || "").replace(/\D/g, "");
+  return digits.slice(-10);
+}
+
+/** True when two phone numbers refer to the same 10-digit Indian mobile number. */
+export function phoneNumbersMatch(a, b) {
+  const da = phoneLast10(a);
+  const db = phoneLast10(b);
+  return da.length === 10 && da === db;
+}

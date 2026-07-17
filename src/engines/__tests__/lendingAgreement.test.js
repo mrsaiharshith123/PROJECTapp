@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildPromissoryNoteText,
-  borrowerTrustSnapshot,
-} from "../lendingAgreement.js";
+import { buildPromissoryNoteText } from "../lendingAgreement.js";
 
 describe("lendingAgreement", () => {
   it("buildPromissoryNoteText strips HTML from borrower name", () => {
@@ -17,21 +14,5 @@ describe("lendingAgreement", () => {
     );
     expect(text).not.toContain("<script>");
     expect(text).toContain("Ravi");
-  });
-
-  it("borrowerTrustSnapshot returns finite score", () => {
-    const snap = borrowerTrustSnapshot(
-      [
-        {
-          type: "lent",
-          personName: "Ravi",
-          principalAmount: 10000,
-          remainingAmount: 5000,
-          status: "active",
-        },
-      ],
-      "Ravi",
-    );
-    expect(Number.isFinite(snap.score)).toBe(true);
   });
 });

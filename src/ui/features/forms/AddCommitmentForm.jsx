@@ -53,6 +53,24 @@ export default function AddCommitmentForm({
           {errors.category && <p className="ed-field-error">{errors.category}</p>}
         </div>
 
+        <div>
+          <label className="ed-field-label">
+            {copy.billName}{" "}
+            {showInsurance ? (
+              <span className="ed-caption font-normal opacity-75">{t("add.form.nameOptionalInsurance")}</span>
+            ) : null}
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={onChange}
+            placeholder={showInsurance ? t("add.form.namePlaceholderInsurance") : t("add.form.namePlaceholder")}
+            className={fieldClass("name")}
+          />
+          {errors.name && <p className="ed-field-error">{errors.name}</p>}
+        </div>
+
         {showChit && (
           <ChitFundFields
             values={form}
@@ -181,24 +199,6 @@ export default function AddCommitmentForm({
             {t("add.form.priorityAuto", { category })}
           </div>
         )}
-
-        <div>
-          <label className="ed-field-label">
-            {copy.billName}{" "}
-            {showInsurance ? (
-              <span className="ed-caption font-normal opacity-75">{t("add.form.nameOptionalInsurance")}</span>
-            ) : null}
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={onChange}
-            placeholder={showInsurance ? t("add.form.namePlaceholderInsurance") : t("add.form.namePlaceholder")}
-            className={fieldClass("name")}
-          />
-          {errors.name && <p className="ed-field-error">{errors.name}</p>}
-        </div>
 
         {showInterest && (
           <div>

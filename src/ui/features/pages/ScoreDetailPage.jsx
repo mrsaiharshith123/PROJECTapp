@@ -3,6 +3,8 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { useNetWorth } from "../../../context/NetWorthContext.jsx";
 import { useStabilityIntel } from "../../../hooks/useStabilityIntel.js";
 import { usePerovoScore } from "../../../hooks/usePerovoScore.js";
+import { useCommitIntel } from "../../../hooks/useCommitIntel.js";
+import { useNetWorthIntel } from "../../../hooks/useNetWorthIntel.js";
 import { PEROVO_PILLARS } from "../../../constants/metricTaxonomy.js";
 import { ShareScoreIconButton } from "../../patterns/ShareScoreIconButton.jsx";
 import EditorialSubMasthead from "../../patterns/EditorialSubMasthead.jsx";
@@ -58,6 +60,8 @@ export default function ScoreDetailPage() {
   const { privacyMode, core: netWorthCore } = useNetWorth();
   const stable = useStabilityIntel();
   const perovo = usePerovoScore();
+  const { health, stability } = useCommitIntel();
+  const { lifeScore } = useNetWorthIntel();
 
   const survivalMonths = stable.survival?.survivalMonths ?? perovo.survivalMonths ?? 0;
   const animatedScore = useCountUp(perovo.score, 900);
@@ -209,15 +213,41 @@ export default function ScoreDetailPage() {
       </div>
 
       <div className="ed-ins-story" style={{ borderBottom: "none" }}>
-        <button
-          type="button"
-          className="ed-ins-link"
-          style={{ padding: 0 }}
-          onClick={() => navigate("/insights")}
-        >
-          {t("insights.subpages.backFooter")}
+        <div className="ed-ins-kicker">{t("scoreDetail.allScores")}</div>
+        <button type="button" className="ed-ins-row" onClick={() => navigate("/you/personal")}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("scoreDetail.pressureScoreLabel")}</div>
+            <div className="ed-ins-row-name">{stability?.label ?? "—"}</div>
+          </div>
+          <div className="ed-ins-row-val" style={{ color: pillarColor(stability?.score ?? 0) }}>
+            {privacyMode ? "•••" : (stability?.score ?? "—")}
+          </div>
+        </button>
+        <button type="button" className="ed-ins-row" onClick={() => navigate("/you/personal")}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("scoreDetail.healthScoreLabel")}</div>
+            <div className="ed-ins-row-name">{health?.label ?? "—"}</div>
+          </div>
+          <div className="ed-ins-row-val" style={{ color: pillarColor(health?.score ?? 0) }}>
+            {privacyMode ? "•••" : (health?.score ?? "—")}
+          </div>
+        </button>
+        <button type="button" className="ed-ins-row" onClick={() => navigate("/insights/networth")}>
+          <div className="ed-ins-row-left">
+            <div className="ed-ins-row-cat">{t("scoreDetail.lifeScoreLabel")}</div>
+            <div className="ed-ins-row-name">{lifeScore?.labelKey ? t(lifeScore.labelKey) : "—"}</div>
+          </div>
+          <div className="ed-ins-row-val" style={{ color: pillarColor(lifeScore?.score ?? 0) }}>
+            {privacyMode ? "•••" : (lifeScore?.score ?? "—")}
+          </div>
         </button>
       </div>
     </div>
   );
+}
+
+function pillarColor(score) {
+  if (score >= 70) return "var(--ed-green)";
+  if (score >= 45) return "var(--ed-gold)";
+  return "var(--ed-red)";
 }

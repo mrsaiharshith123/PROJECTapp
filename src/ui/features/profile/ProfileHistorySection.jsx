@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Caption, Body, Button } from "../../index.js";
 import { CtIcon } from "../../icons/CtIcon.jsx";
 import CommitmentEditModal from "../modals/CommitmentEditModal.jsx";
+import ConfirmDeleteDialog from "../../patterns/ConfirmDeleteDialog.jsx";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { isHistoryBill } from "../../../utils/billLifecycle.js";
 import { recentCommitmentPaymentEvents } from "../../../utils/profileStats.js";
@@ -27,6 +28,7 @@ export default function ProfileHistorySection({
 }) {
   const { t, locale } = useTranslation();
   const [editing, setEditing] = useState(null);
+  const [confirmDeleteFor, setConfirmDeleteFor] = useState(null);
   const [showPayments, setShowPayments] = useState(true);
   const [showBills, setShowBills] = useState(true);
 
@@ -109,7 +111,7 @@ export default function ProfileHistorySection({
                     <Button type="button" variant="outline" size="sm" className="!w-auto" onClick={() => setEditing(bill)}>
                       {t("common.edit")}
                     </Button>
-                    <Button type="button" variant="danger" size="sm" className="!w-auto" onClick={() => deleteCommitment(bill.id)}>
+                    <Button type="button" variant="danger" size="sm" className="!w-auto" onClick={() => setConfirmDeleteFor(bill)}>
                       {t("common.delete")}
                     </Button>
                   </div>
@@ -131,6 +133,17 @@ export default function ProfileHistorySection({
           }}
         />
       )}
+
+      <ConfirmDeleteDialog
+        open={!!confirmDeleteFor}
+        title={t("confirmDelete.bill.title")}
+        message={confirmDeleteFor ? t("confirmDelete.bill.message", { name: getBillDisplayName(confirmDeleteFor) }) : ""}
+        onCancel={() => setConfirmDeleteFor(null)}
+        onConfirm={() => {
+          deleteCommitment(confirmDeleteFor.id);
+          setConfirmDeleteFor(null);
+        }}
+      />
     </>
   );
 }

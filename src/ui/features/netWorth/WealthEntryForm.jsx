@@ -61,6 +61,7 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
   const isFdInstrument = ["fd", "rd"].includes(storedCategoryId);
   const showGrowthHistory = !isProperty && physical;
   const includePurchaseHistory = isProperty || form.trackGrowth || isStock || isMutualFund || isCrypto;
+  const extendedFieldsBeforeValue = isStock || form.kind === "liability";
 
   const propertyPurchaseTotal = useMemo(() => {
     if (!isProperty) return null;
@@ -455,6 +456,19 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         </div>
       )}
 
+      {extendedFieldsBeforeValue && (
+        <WealthEntryExtendedFields
+          form={form}
+          setForm={setForm}
+          fieldClass={fieldClass}
+          t={t}
+          isStock={isStock}
+          isMutualFund={isMutualFund}
+          isCrypto={isCrypto}
+          isFdInstrument={isFdInstrument}
+        />
+      )}
+
       {!(isProperty && !form.valueManual) &&
         !(isGold && !form.valueManual && (goldEstimatedValue || goldCanDeferValue)) && (
         <div>
@@ -772,16 +786,18 @@ export default function WealthEntryForm({ kind, entry, defaultCategoryId, restri
         </>
       )}
 
-      <WealthEntryExtendedFields
-        form={form}
-        setForm={setForm}
-        fieldClass={fieldClass}
-        t={t}
-        isStock={isStock}
-        isMutualFund={isMutualFund}
-        isCrypto={isCrypto}
-        isFdInstrument={isFdInstrument}
-      />
+      {!extendedFieldsBeforeValue && (
+        <WealthEntryExtendedFields
+          form={form}
+          setForm={setForm}
+          fieldClass={fieldClass}
+          t={t}
+          isStock={isStock}
+          isMutualFund={isMutualFund}
+          isCrypto={isCrypto}
+          isFdInstrument={isFdInstrument}
+        />
+      )}
       <div>
         <label className="ed-field-label">{t("netWorth.form.notes")}</label>
         <textarea

@@ -23,6 +23,7 @@ export const CALC_HELP_KEYS = {
   chitPayoutReceived: "help.chitPayoutReceived",
   chitForeman: "help.chitForeman",
   chitDiscount: "help.chitDiscount",
+  chitRegistrationNumber: "help.chitRegistrationNumber",
   chitAdvisor: "help.chitAdvisor",
   chitMaxLoss: "help.chitMaxLoss",
   loanExtraTiming: "help.loanExtraTiming",

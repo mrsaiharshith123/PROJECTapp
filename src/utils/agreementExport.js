@@ -3,6 +3,7 @@ import { persistAgreementHash } from "../services/lending/agreementHash.js";
 import {
   generateAgreementPdfBase64 as pdfBase64,
   downloadAgreementPdf,
+  shareOrDownloadAgreementPdf,
 } from "./agreementPdf.js";
 
 export { downloadAgreementPdf };
@@ -37,17 +38,27 @@ function escapeHtml(s) {
 }
 
 function textToHtml(text) {
-  return escapeHtml(text)
+  let clauseOpen = false;
+  const parts = escapeHtml(text)
     .split("\n")
     .map((line) => {
       if (line.startsWith("--- ") && line.endsWith(" ---")) {
-        return `<h2>${escapeHtml(line.replace(/^---\s*|\s*---$/g, ""))}</h2>`;
+        const title = escapeHtml(line.replace(/^---\s*|\s*---$/g, ""));
+        const closePrev = clauseOpen ? "</div>" : "";
+        clauseOpen = true;
+        return `${closePrev}<div class="clause"><h2>${title}</h2>`;
       }
       if (line === "PROMISSORY NOTE") return `<h1>${line}</h1>`;
       if (!line.trim()) return "<br/>";
       return `<p>${line}</p>`;
-    })
-    .join("\n");
+    });
+  if (clauseOpen) parts.push("</div>");
+  return parts.join("\n");
+}
+
+/** Short, stable document reference derived from the lending id — for the "Ref:" line, not a legal registration number. */
+function documentReference(lending) {
+  return `PEROVO-${String(lending.id || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase() || "DRAFT"}`;
 }
 
 /** Returns self-contained printable HTML for a promissory note. */
@@ -55,11 +66,12 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
   const bodyText = lending.agreementText?.trim() || buildPromissoryNoteText(lending, settings);
   const stamped = lending.esignStatus === "completed";
   const banner = stamped
-    ? `<div class="banner ok">OK — Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
-    : `<div class="banner warn">Warning — Not stamped — Print on stamp paper for full legal enforceability. Or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
+    ? `<div class="banner ok">Aadhaar eSign completed — ${escapeHtml(lending.esignCompletedAt || "")} · Doc: ${escapeHtml(lending.esignDocumentId || "—")}</div>`
+    : `<div class="banner warn">Not yet stamped — print onto genuine stamp paper below, or complete Aadhaar eSign for digital validity under IT Act 2000.</div>`;
   const hashBanner = lending.agreementHash
-    ? `<div class="banner ok">OK — Integrity seal (SHA-256): ${escapeHtml(lending.agreementHash)} · Sealed ${escapeHtml(lending.agreementSealedAt || "")}</div>`
+    ? `<div class="banner ok">Integrity seal (SHA-256): ${escapeHtml(lending.agreementHash.slice(0, 24))}… · Sealed ${escapeHtml(lending.agreementSealedAt || "")}</div>`
     : "";
+  const ref = documentReference(lending);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -67,23 +79,53 @@ export function generateLegalAgreementHtml(lending, settings = {}) {
 <meta charset="utf-8"/>
 <title>Promissory Note — ${escapeHtml(lending.personName || "Loan")}</title>
 <style>
-  @page { size: A4; margin: 2.5cm; }
-  body { font-family: Georgia, "Times New Roman", serif; max-width: 18cm; margin: 0 auto; padding: 1.5cm; color: #111; line-height: 1.55; font-size: 12pt; }
-  h1 { font-size: 16pt; text-align: center; letter-spacing: 0.05em; margin-bottom: 1em; }
-  h2 { font-size: 11pt; margin-top: 1.25em; border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
-  p { margin: 0.35em 0; }
-  .banner { padding: 0.6em 0.8em; margin-bottom: 1.2em; border-radius: 4px; font-size: 10pt; font-family: system-ui, sans-serif; }
+  @page { size: A4; margin: 1.4cm; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, "Times New Roman", serif; margin: 0; padding: 0; color: #161616; background: #e9e9e9; }
+  .sheet {
+    max-width: 19cm; margin: 1cm auto; background: #fff; padding: 1.4cm 1.6cm;
+    border: 2px solid #1a1a1a; outline: 1px solid #1a1a1a; outline-offset: 5px;
+    line-height: 1.6; font-size: 12pt;
+  }
+  .docref { display: flex; justify-content: space-between; font-family: system-ui, sans-serif; font-size: 8.5pt; color: #666; letter-spacing: 0.03em; margin-bottom: 10px; }
+  .stamp-box {
+    border: 1.5px dashed #999; border-radius: 4px; padding: 22px 16px; margin-bottom: 18px;
+    text-align: center; font-family: system-ui, sans-serif; color: #888; background: #fafafa;
+  }
+  .stamp-box .stamp-title { font-size: 9pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #999; }
+  .stamp-box .stamp-sub { font-size: 8.5pt; margin-top: 6px; color: #aaa; }
+  h1 { font-size: 17pt; text-align: center; letter-spacing: 0.06em; margin: 0 0 1em; }
+  .clause { counter-increment: clause; margin-top: 1.1em; }
+  .clause h2 {
+    font-size: 11pt; margin: 0 0 0.5em; padding-bottom: 3px; border-bottom: 1px solid #ccc;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .clause h2::before { content: counter(clause) ". "; font-weight: 700; }
+  body { counter-reset: clause; }
+  p { margin: 0.35em 0; text-align: justify; }
+  .banner { padding: 0.6em 0.8em; margin-bottom: 0.8em; border-radius: 4px; font-size: 9.5pt; font-family: system-ui, sans-serif; }
   .banner.warn { background: #fff8e6; border: 1px solid #e6c200; color: #664d00; }
   .banner.ok { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
-  .footer { margin-top: 2em; padding-top: 0.5em; border-top: 1px solid #ddd; font-size: 9pt; color: #555; text-align: center; }
-  @media print { .banner { break-inside: avoid; } }
+  .footer { margin-top: 2em; padding-top: 0.6em; border-top: 1px solid #ddd; font-size: 8.5pt; color: #666; text-align: center; font-family: system-ui, sans-serif; }
+  @media print {
+    body { background: #fff; }
+    .sheet { border: 2px solid #1a1a1a; outline: none; margin: 0; max-width: none; }
+    .banner { break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
-${banner}
-${hashBanner}
-${textToHtml(bodyText)}
-<div class="footer">Perovo — Private Record — ${new Date().toLocaleDateString("en-IN")}</div>
+<div class="sheet">
+  <div class="docref"><span>Ref: ${escapeHtml(ref)}</span><span>${new Date().toLocaleDateString("en-IN")}</span></div>
+  <div class="stamp-box">
+    <div class="stamp-title">Space reserved for stamp paper</div>
+    <div class="stamp-sub">Print this document onto non-judicial stamp paper of the value required in your state under the Indian Stamp Act 1899, or affix a genuine e-stamp certificate here. Do not substitute this box for real stamp paper.</div>
+  </div>
+  ${banner}
+  ${hashBanner}
+  ${textToHtml(bodyText)}
+  <div class="footer">Perovo — Private Record — Ref ${escapeHtml(ref)} — ${new Date().toLocaleDateString("en-IN")}</div>
+</div>
 </body>
 </html>`;
 }
@@ -116,11 +158,11 @@ export async function sealAndDownloadAgreement(lending, settings = {}, userId = 
     });
   }
 
-  await downloadAgreementPdf(
+  const { method } = await shareOrDownloadAgreementPdf(
     { ...lending, agreementText: text, agreementHash: hash, agreementSealedAt: sealedAt },
     settings,
   );
-  return { hash, sealedAt };
+  return { hash, sealedAt, shareMethod: method };
 }
 
 /** Real PDF base64 for Leegality upload. */

@@ -33,7 +33,6 @@ export const LEGACY_SCORE_MAP = {
   billHealth: { pillar: "cashflow", role: "child" },
   momentumScore: { role: "trend" },
   cibilScore: { pillar: "debt", role: "child" },
-  lendingTrust: { pillar: "debt", role: "child" },
 };
 
 /** FHN-style bands for the headline Perovo Score (0–100). */

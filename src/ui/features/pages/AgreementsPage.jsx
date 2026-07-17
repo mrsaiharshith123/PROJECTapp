@@ -55,7 +55,7 @@ export default function AgreementsPage() {
   const [showAcceptCode, setShowAcceptCode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { borrowedList, lentList, totals, trustScore, trustByEntryId } = useLendingLists(lendings, searchQuery);
+  const { borrowedList, lentList, totals } = useLendingLists(lendings, searchQuery);
 
   const owed = Math.max(0, Number(totals?.lentOutstanding) || 0);
   const owe = Math.max(0, Number(totals?.borrowedOutstanding) || 0);
@@ -195,7 +195,6 @@ export default function AgreementsPage() {
       ) : (
         <AgreementsHeroSummary
           totals={totals}
-          trustScore={trustScore}
           dealCount={lendings.length}
           onViewDocuments={() => setListTab("documents")}
         />
@@ -240,7 +239,6 @@ export default function AgreementsPage() {
                       key={item.id}
                       item={item}
                       todayStr={todayStr}
-                      trustScore={trustByEntryId.get(item.id) ?? 50}
                       onMakeLegal={setDetailFor}
                       onRepayment={openPayment}
                     />

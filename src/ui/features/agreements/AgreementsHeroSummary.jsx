@@ -2,10 +2,10 @@ import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePrivacyAmount } from "../../../hooks/usePrivacyAmount.js";
 
 /**
- * Agreements hero — owed vs owe split with trust meta.
- * @param {{ totals: object, trustScore?: number, dealCount?: number, onViewDocuments?: () => void }} props
+ * Agreements hero — owed vs owe split.
+ * @param {{ totals: object, dealCount?: number, onViewDocuments?: () => void }} props
  */
-export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 0, onViewDocuments }) {
+export default function AgreementsHeroSummary({ totals, dealCount = 0, onViewDocuments }) {
   const { t } = useTranslation();
   const { formatAmount } = usePrivacyAmount();
   const owed = Math.max(0, Number(totals?.lentRemaining ?? totals?.lentOutstanding) || 0);
@@ -29,12 +29,10 @@ export default function AgreementsHeroSummary({ totals, trustScore, dealCount = 
           </span>
           <span className="ed-ins-col-meta">{t("agreements.ed.toRepayMeta")}</span>
         </div>
-        {trustScore != null ? (
+        {dealCount > 0 ? (
           <div className="ed-ins-col">
-            <span className="ed-ins-col-label">{t("agreements.ed.trustScoreLabel")}</span>
-            <span className="ed-ins-col-val" style={{ color: "var(--ed-green)" }}>
-              {Math.round(trustScore)}
-            </span>
+            <span className="ed-ins-col-label">{t("agreements.ed.dealCountLabel")}</span>
+            <span className="ed-ins-col-val">{dealCount}</span>
             <span className="ed-ins-col-meta">
               {dealCount === 1
                 ? t("agreements.ed.dealCountOne")

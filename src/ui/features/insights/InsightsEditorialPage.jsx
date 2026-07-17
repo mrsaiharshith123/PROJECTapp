@@ -396,6 +396,14 @@ export default function InsightsEditorialPage({ data }) {
           {t("insights.editorial.networthBreakdown")}
         </button>
       </div>
+
+      <div className="ed-ins-story" style={{ borderBottom: "none" }}>
+        <div className="ed-ins-kicker">{t("insights.advanced.title")}</div>
+        <p className="ed-ins-body">{t("insights.advanced.hubHint")}</p>
+        <button type="button" className="ed-ins-link" onClick={() => navigate("/insights/advanced")}>
+          {t("insights.advanced.hubCta")}
+        </button>
+      </div>
       </EngineGuard>
       <div className="ed-safe-bottom" />
     </div>

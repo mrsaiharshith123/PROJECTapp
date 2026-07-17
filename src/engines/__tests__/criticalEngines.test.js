@@ -6,7 +6,6 @@ import { evaluateAffordability } from "../affordability.js";
 import { totalMonthlyBurden } from "../burden.js";
 import { buildCashflowForecastSeries } from "../forecastSeries.js";
 import { forecastInsights } from "../forecast.js";
-import { trustScoreForPerson } from "../lendingTrust.js";
 import { computeEmergencyFundIntel } from "../emergencyFund.js";
 import { computeFinancialHealthScore } from "../financialHealth.js";
 import { benchmarkNetWorth } from "../netWorthBenchmark.js";
@@ -50,17 +49,6 @@ describe("critical financial engines smoke", () => {
   it("forecast series is array", () => {
     expect(
       Array.isArray(buildCashflowForecastSeries([], 50000, status, "2026-01-15")),
-    ).toBe(true);
-  });
-
-  it("lending trust score is finite", () => {
-    expect(
-      Number.isFinite(
-        trustScoreForPerson(
-          { successfulRepayments: 2, delayedRepayments: 0, completedCycles: 0 },
-          [],
-        ),
-      ),
     ).toBe(true);
   });
 

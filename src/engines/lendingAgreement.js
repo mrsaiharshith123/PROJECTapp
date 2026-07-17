@@ -1,4 +1,3 @@
-import { trustScoreForPerson, lendingTrustByPerson, trustSummaryLine } from "./lendingTrust.js";
 import { sanitizeName } from "../utils/sanitize.js";
 import { numberToWords } from "../utils/numberToWords.js";
 
@@ -153,35 +152,6 @@ export function buildAgreementText({
   );
 }
 
-export function borrowerTrustSnapshot(lendings, borrowerName) {
-  const rows = lendingTrustByPerson(lendings || []);
-  const key = String(borrowerName || "").trim().toLowerCase();
-  const row = rows.find((r) => r.personKey === key) || {
-    personKey: key,
-    displayName: borrowerName || "Borrower",
-    totalDeals: 0,
-    successfulRepayments: 0,
-    delayedRepayments: 0,
-    completedCycles: 0,
-  };
-  const total = row.successfulRepayments + row.delayedRepayments;
-  let score = trustScoreForPerson(row);
-  if (total === 0) {
-    return {
-      score,
-      summary: "No past repayments recorded in Perovo yet. New borrower.",
-      onTime: 0,
-      late: 0,
-    };
-  }
-  return {
-    score,
-    summary: trustSummaryLine(row),
-    onTime: row.successfulRepayments,
-    late: row.delayedRepayments,
-  };
-}
-
 export function encodeOfferPayload(offer) {
   const json = JSON.stringify(offer);
   const b64 = btoa(
@@ -241,11 +211,4 @@ export function repaymentModeLabel(lending) {
   if (t === "weekly") return "Weekly installments";
   if (t === "biweekly") return "Biweekly installments";
   return "Flexible payments";
-}
-
-export function trustScoreLabel(score) {
-  if (score >= 80) return "Strong";
-  if (score >= 60) return "Good";
-  if (score >= 40) return "Fair";
-  return "Needs care";
 }

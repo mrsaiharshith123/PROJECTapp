@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageShell, Body, Caption, Heading, Button } from "../../index.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -21,6 +22,7 @@ import { getAuthRedirectUrl } from "../../../services/supabase/auth.js";
  */
 export default function EmergencyModePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { commitments, lendings, getEffectiveStatus } = usePerovo();
   const { entries } = useNetWorth();
   const { isLoggedIn } = useAuth();
@@ -87,7 +89,14 @@ export default function EmergencyModePage() {
   };
 
   return (
-    <PageShell title={t("emergencyMode.title")}>
+    <PageShell
+      title={t("emergencyMode.title")}
+      action={
+        <button type="button" className="ed-btn ed-btn-ghost ed-btn-sm" onClick={() => navigate(-1)} aria-label={t("common.back")}>
+          ←
+        </button>
+      }
+    >
       <div className="ed-stack" style={{ gap: 24 }}>
         <Caption>{t("emergencyMode.intro")}</Caption>
 

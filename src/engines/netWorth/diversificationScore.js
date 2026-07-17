@@ -23,7 +23,7 @@ export function computeDiversificationScore(assets) {
   // Normalize so evenly-split-across-n scores ~100 regardless of n, and a
   // single asset scores 0, using the normalized HHI formula.
   const normalizedHhi = n > 1 ? (hhi - 1 / n) / (1 - 1 / n) : 1;
-  const score = safeScore(100 - normalizedHhi * 100);
+  const score = Math.round(safeScore(100 - normalizedHhi * 100));
 
   const sortedByValue = [...visible].sort((a, b) => Number(b.value) - Number(a.value));
   const top = sortedByValue[0];

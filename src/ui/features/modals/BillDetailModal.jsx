@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Modal, Button } from "../../../ui";
 import { CategoryChip } from "../../patterns/CategoryChip.jsx";
 import { PriorityBadge } from "../../patterns/PriorityBadge.jsx";
 import { ToneSurface } from "../../patterns/ToneSurface.jsx";
+import ConfirmDeleteDialog from "../../patterns/ConfirmDeleteDialog.jsx";
 import { Caption, Body } from "../../primitives/Text.jsx";
 import { BillDetailCharts } from "../commitments/BillDetailCharts.jsx";
 import InsuranceWorthPanel from "../commitments/InsuranceWorthPanel.jsx";
@@ -40,6 +42,7 @@ export default function BillDetailModal({
   sheet = false,
 }) {
   const { t } = useTranslation();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const summary = computeBillSpendSummary(bill, todayStr, allCommitments);
   const progress = computeBillPaymentProgress(bill, todayStr, allCommitments);
   const amount = Number(bill.amount) || 0;
@@ -52,6 +55,7 @@ export default function BillDetailModal({
   const isInsurance = bill.category === "Insurance";
 
   return (
+    <>
     <Modal
       title={bill.name}
       onClose={onClose}
@@ -78,7 +82,7 @@ export default function BillDetailModal({
             <Button type="button" variant="secondary" size="md" onClick={() => onEdit(bill)}>
               {t("common.edit")}
             </Button>
-            <Button type="button" variant="danger" size="md" onClick={() => onDelete(bill.id)}>
+            <Button type="button" variant="danger" size="md" onClick={() => setConfirmDeleteOpen(true)}>
               {t("common.delete")}
             </Button>
           </div>
@@ -205,5 +209,17 @@ export default function BillDetailModal({
         )}
       </div>
     </Modal>
+
+    <ConfirmDeleteDialog
+        open={confirmDeleteOpen}
+        title={t("confirmDelete.bill.title")}
+        message={t("confirmDelete.bill.message", { name: bill.name })}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        onConfirm={() => {
+          setConfirmDeleteOpen(false);
+          onDelete(bill.id);
+        }}
+      />
+    </>
   );
 }

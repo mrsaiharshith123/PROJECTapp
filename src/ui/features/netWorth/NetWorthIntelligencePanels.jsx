@@ -131,23 +131,27 @@ export function AllocationCharts({ intel, privacyMode, variant = "all" }) {
       {showAssets && assetData.length > 0 && (
         <Card className="ed-inset">
           <Heading level={3}>{t("netWorth.chart.allocation")}</Heading>
-          <FlexibleDataChart
-            data={assetData}
-            chartType="donut"
-            theme={theme}
-            emptyMessage=""
-          />
+          <div className="ed-chart-area" style={{ height: 220 }}>
+            <FlexibleDataChart
+              data={assetData}
+              chartType="donut"
+              theme={theme}
+              emptyMessage=""
+            />
+          </div>
         </Card>
       )}
       {showDebt && (
       <Card className="ed-inset">
         <Heading level={3}>{t("netWorth.chart.debtRatio")}</Heading>
-        <FlexibleDataChart
-          data={debtData}
-          chartType="bar"
-          theme={theme}
-          emptyMessage=""
-        />
+        <div className="ed-chart-area" style={{ height: 220 }}>
+          <FlexibleDataChart
+            data={debtData}
+            chartType="bar"
+            theme={theme}
+            emptyMessage=""
+          />
+        </div>
       </Card>
       )}
     </div>

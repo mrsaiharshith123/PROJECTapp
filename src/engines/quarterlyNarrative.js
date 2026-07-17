@@ -21,7 +21,9 @@ export function buildQuarterlyNarrative({ snapshots, entries, commitments }) {
 
   const start = sorted[0];
   const end = sorted[sorted.length - 1];
-  const netWorthDelta = end.netWorth - start.netWorth;
+  const startNetWorth = Number(start.netWorth) || 0;
+  const endNetWorth = Number(end.netWorth) || 0;
+  const netWorthDelta = endNetWorth - startNetWorth;
 
   const visibleAssets = (entries || []).filter((e) => e.kind === "asset" && !e.hidden);
   const biggestAsset = [...visibleAssets].sort((a, b) => Number(b.value) - Number(a.value))[0];

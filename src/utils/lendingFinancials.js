@@ -8,7 +8,6 @@ import {
   sumScheduleInterest,
   getNextInstallment,
 } from "./repayment/index.js";
-import { trustScoreForLendingEntry } from "../engines/lendingTrust.js";
 
 const INTEREST_TYPES = ["simple", "compound"];
 const REPAYMENT_TYPES = ["monthly", "weekly", "biweekly", "custom", "lumpsum"];
@@ -134,7 +133,6 @@ export function buildLendingDashboard(lending, settings = {}) {
     remainingPct: 100 - paidPct,
     installmentProgress: { paid: instPaid, total: instTotal },
     salaryImpactPercent,
-    trustScore: lending.trustScoreSnapshot ?? trustScoreForLendingEntry(lending),
     paid,
     totalPayable,
   };

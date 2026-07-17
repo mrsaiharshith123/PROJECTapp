@@ -14,6 +14,8 @@ export { CHIT_INSTALLMENT_MODES };
 
 export function emptyChitFundFields() {
   return {
+    chitOrganizerCompany: "",
+    chitRegistrationNumber: "",
     chitValue: "",
     chitMonths: "",
     chitMonthsPaid: "",
@@ -89,6 +91,8 @@ export function chitFieldsFromCommitment(c) {
         ? String(Math.max(0, Number(c.chitCurrentMonth) - 1))
         : "";
   return {
+    chitOrganizerCompany: c.chitOrganizerCompany || "",
+    chitRegistrationNumber: c.chitRegistrationNumber || "",
     chitValue: c.chitValue != null ? String(c.chitValue) : "",
     chitMonths: c.chitMonths != null ? String(c.chitMonths) : "",
     chitMonthsPaid: paid,
@@ -164,6 +168,8 @@ export function buildChitPayloadFromForm(form) {
         : null;
 
   return {
+    chitOrganizerCompany: String(form.chitOrganizerCompany || "").trim(),
+    chitRegistrationNumber: String(form.chitRegistrationNumber || "").trim(),
     chitValue: V,
     chitMonths: N,
     chitMonthsPaid: monthsPaid,

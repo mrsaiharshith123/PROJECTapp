@@ -4,9 +4,9 @@ import { usePerovo } from "../../../context/PerovoContext.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { buildLendingDashboard } from "../../../utils/lendingFinancials.js";
 import { buildLendingTimeline } from "../../../utils/lendingTimeline.js";
-import { lendingTrustByPerson, trustSummaryLine } from "../../../engines/lendingTrust.js";
 import { isInDefault } from "../../../engines/lendingRecovery.js";
 import { sealAndDownloadAgreement, generateAgreementPdfBase64 } from "../../../utils/agreementExport.js";
+import { submitTimestampAnchor } from "../../../services/lending/timestampAnchor.js";
 import { canEditLending } from "../../../engines/lendingAgreement.js";
 import { Button, Card } from "../../index.js";
 import {
@@ -46,7 +46,7 @@ export default function LendingDetailDashboard({
   onAddProof,
 }) {
   const { t } = useTranslation();
-  const { settings, updateLending, allLendings, effectiveSubscriptionTier } = usePerovo();
+  const { settings, updateLending, effectiveSubscriptionTier } = usePerovo();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [legalOpen, setLegalOpen] = useState(false);
@@ -56,6 +56,9 @@ export default function LendingDetailDashboard({
   const [esignUrl, setEsignUrl] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [showShareMoment, setShowShareMoment] = useState(false);
+  const [sealing, setSealing] = useState(false);
+  const [anchoring, setAnchoring] = useState(false);
+  const [anchorError, setAnchorError] = useState("");
   const prevRemaining = useRef(Number(lending.remainingAmount) || 0);
 
   useEffect(() => {
@@ -74,25 +77,10 @@ export default function LendingDetailDashboard({
     [lending, settings],
   );
   const timeline = useMemo(() => buildLendingTimeline(lending), [lending]);
-  const trustRow = useMemo(
-    () =>
-      lendingTrustByPerson(allLendings).find(
-        (r) => r.personKey === String(lending.personName || "").trim().toLowerCase(),
-      ),
-    [allLendings, lending.personName],
-  );
 
   const salaryWarn = dash.salaryImpactPercent >= 40;
   const termsLocked = !canEditLending(lending);
   const fieldClass = `${inputClassName()} `;
-  const trustStatusClass =
-    dash.trustScore >= 80
-      ? "ed-status-success"
-      : dash.trustScore >= 60
-        ? "ed-status-neutral"
-        : dash.trustScore >= 40
-          ? "ed-status-warning"
-          : "ed-status-danger";
 
   const interestTypeLabel =
     lending.interestType === "simple" ? t("lending.detail.interestSimple") : lending.interestType || "";
@@ -185,14 +173,11 @@ export default function LendingDetailDashboard({
         onScrollToEsign={() => document.getElementById("lending-esign-section")?.scrollIntoView({ behavior: "smooth" })}
       />
 
-      <div className="ed-row-wrap">
-        <span className={`ed-status ${trustStatusClass}`}>
-          {t("lending.detail.trust", { score: dash.trustScore })}
-        </span>
-        {lending.relationshipTag && (
+      {lending.relationshipTag && (
+        <div className="ed-row-wrap">
           <span className="ed-status ed-status-neutral">{lending.relationshipTag}</span>
-        )}
-      </div>
+        </div>
+      )}
 
       <Caption className="block opacity-90">
         {t("lending.detail.interestRate")}: {lending.interestRate ?? 0}% · {interestTypeLabel}
@@ -216,10 +201,6 @@ export default function LendingDetailDashboard({
             {salaryWarn && t("lending.detail.salaryWarn")}
           </Caption>
         </ToneSurface>
-      )}
-
-      {trustRow && (
-        <Caption className="ed-inset block px-3 py-2 rounded-lg">{trustSummaryLine(trustRow)}</Caption>
       )}
 
       <section>
@@ -250,15 +231,26 @@ export default function LendingDetailDashboard({
           variant="outline"
           size="sm"
           className="flex-1 min-w-0"
-          onClick={() => {
+          disabled={sealing}
+          onClick={async () => {
             if (!canPrintAgreement) {
               navigate("/profile#upgrade");
               return;
             }
-            sealAndDownloadAgreement({ ...lending, agreementText: agreementDraft }, settings, user?.id);
+            setSealing(true);
+            try {
+              const { hash, sealedAt } = await sealAndDownloadAgreement(
+                { ...lending, agreementText: agreementDraft },
+                settings,
+                user?.id,
+              );
+              updateLending(lending.id, { agreementHash: hash, agreementSealedAt: sealedAt });
+            } finally {
+              setSealing(false);
+            }
           }}
         >
-          {t("lending.detail.printAgreement")}
+          {sealing ? t("common.loading") : t("lending.detail.printAgreement")}
         </Button>
         <Button
           type="button"
@@ -275,6 +267,52 @@ export default function LendingDetailDashboard({
           {t("lending.detail.shareSummary")}
         </Button>
       </div>
+
+      {lending.agreementHash ? (
+        <ToneSurface tone={lending.anchorProof ? "success" : "info"}>
+          <Caption className="block">
+            {t("lending.detail.sealed", { date: new Date(lending.agreementSealedAt).toLocaleDateString("en-IN") })}
+          </Caption>
+          <Caption className="block break-all" style={{ fontFamily: "monospace", opacity: 0.75 }}>
+            {lending.agreementHash.slice(0, 16)}…
+          </Caption>
+          {lending.anchorProof ? (
+            <Caption className="block mt-1">
+              {t("lending.detail.anchored", { date: new Date(lending.anchorSubmittedAt).toLocaleDateString("en-IN") })}
+            </Caption>
+          ) : (
+            <>
+              <Caption className="block mt-1 opacity-80">{t("lending.detail.anchorHint")}</Caption>
+              {anchorError ? <Caption className="block mt-1" style={{ color: "var(--ed-red)" }}>{anchorError}</Caption> : null}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                disabled={anchoring}
+                onClick={async () => {
+                  setAnchoring(true);
+                  setAnchorError("");
+                  try {
+                    const { proof, calendarUrl, submittedAt } = await submitTimestampAnchor(lending.agreementHash);
+                    updateLending(lending.id, {
+                      anchorProof: proof,
+                      anchorCalendarUrl: calendarUrl,
+                      anchorSubmittedAt: submittedAt,
+                    });
+                  } catch {
+                    setAnchorError(t("lending.detail.anchorError"));
+                  } finally {
+                    setAnchoring(false);
+                  }
+                }}
+              >
+                {anchoring ? t("common.loading") : t("lending.detail.anchorCta")}
+              </Button>
+            </>
+          )}
+        </ToneSurface>
+      ) : null}
 
       <Caption>{translateRepaymentMode(t, lending.repaymentType || lending.repaymentFrequency)}</Caption>
 

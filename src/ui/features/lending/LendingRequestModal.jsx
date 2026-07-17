@@ -1,23 +1,24 @@
 import { useMemo, useState } from "react";
 import { Modal, Button, Caption, Body, ToneSurface } from "../../index.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
-import { buildAgreementText, borrowerTrustSnapshot } from "../../../engines/lendingAgreement.js";
+import { buildAgreementText } from "../../../engines/lendingAgreement.js";
 import { LEGAL_DISCLAIMER } from "../../../constants/plainLanguage.js";
 import { INR } from "../../../constants/symbols.js";
 import { todayYmd } from "../../../utils/dates.js";
 import { buildLendingRecord } from "../../../utils/lendingRecord.js";
 import { saveLendingOffer } from "../../../services/lending/offerRegistry.js";
 import { encodeOfferPayload } from "../../../engines/lendingAgreement.js";
+import { phoneLast10 } from "../../../utils/sanitize.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
-import { CtIcon } from "../../icons/CtIcon.jsx";
 
 const inputClass = (hasError = false) => `ed-input${hasError ? " error" : ""}`;
 
 export default function LendingRequestModal({ onClose }) {
   const { t } = useTranslation();
-  const { lendings, settings, addLending } = usePerovo();
+  const { settings, addLending } = usePerovo();
   const [step, setStep] = useState("details");
   const [borrowerName, setBorrowerName] = useState(settings.displayName || "");
+  const [requesterPhone, setRequesterPhone] = useState("");
   const [lenderName, setLenderName] = useState("");
   const [amount, setAmount] = useState("");
   const [interestRate, setInterestRate] = useState("0");
@@ -30,11 +31,6 @@ export default function LendingRequestModal({ onClose }) {
   const [offerPacket, setOfferPacket] = useState("");
   const [copied, setCopied] = useState(false);
   const [copiedPacket, setCopiedPacket] = useState(false);
-
-  const trust = useMemo(
-    () => borrowerTrustSnapshot(lendings, borrowerName.trim() || "You"),
-    [lendings, borrowerName],
-  );
 
   const agreementText = useMemo(
     () =>
@@ -52,6 +48,7 @@ export default function LendingRequestModal({ onClose }) {
 
   const goAgreement = () => {
     if (!borrowerName.trim() || !amount || Number(amount) <= 0 || !dueDate) return;
+    if (phoneLast10(requesterPhone).length !== 10) return;
     setStep("agreement");
   };
 
@@ -70,10 +67,7 @@ export default function LendingRequestModal({ onClose }) {
       agreementText,
       borrowerSignName: signName.trim(),
       borrowerSignedAt: signedAt,
-      trustScore: trust.score,
-      trustSummary: trust.summary,
-      trustOnTime: trust.onTime,
-      trustLate: trust.late,
+      requesterPhone: requesterPhone.trim(),
     };
 
     const code = saveLendingOffer(offer);
@@ -160,6 +154,17 @@ export default function LendingRequestModal({ onClose }) {
             <input className={inputClass()} value={borrowerName} onChange={(e) => setBorrowerName(e.target.value)} />
           </div>
           <div>
+            <label className="ed-field-label">{t("lending.request.yourPhone")}</label>
+            <input
+              type="tel"
+              className={inputClass()}
+              value={requesterPhone}
+              onChange={(e) => setRequesterPhone(e.target.value)}
+              placeholder={t("lending.request.yourPhonePh")}
+            />
+            <Caption className="block mt-1 opacity-80">{t("lending.request.yourPhoneHint")}</Caption>
+          </div>
+          <div>
             <label className="ed-field-label">{t("lending.request.lenderName")}</label>
             <input
               className={inputClass()}
@@ -213,20 +218,6 @@ export default function LendingRequestModal({ onClose }) {
               placeholder={t("lending.form.phCollateral")}
             />
           </div>
-          <div className="ed-inset-indigo !p-3">
-            <div className="ed-row gap-2 items-start">
-              <span className="ed-icon-tile indigo shrink-0" aria-hidden>
-                <CtIcon name="shield" size={18} context="status" />
-              </span>
-              <div>
-                <Body className="!text-sm font-semibold">
-                  {t("lending.request.trustTitle", { score: trust.score })}
-                </Body>
-                <Caption className="block mt-1">{trust.summary}</Caption>
-                <Caption className="block mt-1 opacity-80">{t("lending.request.trustHint")}</Caption>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -273,6 +264,9 @@ export default function LendingRequestModal({ onClose }) {
           <Button type="button" variant="ghost" className="w-full" onClick={copyPacket}>
             {copiedPacket ? t("lending.request.copied") : t("lending.request.copyPacket")}
           </Button>
+          <ToneSurface tone="info">
+            <Caption className="block">{t("lending.request.phoneReminder", { phone: requesterPhone })}</Caption>
+          </ToneSurface>
         </div>
       )}
     </Modal>

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { formatInr } from "../../../constants/symbols.js";
+import ConfirmDeleteDialog from "../../patterns/ConfirmDeleteDialog.jsx";
 import { getAssetCategory, getLiabilityCategory } from "../../../constants/netWorth/wealthCategories.js";
 import { useTranslation } from "../../../i18n/I18nProvider.js";
 import { usePerovo } from "../../../context/PerovoContext.jsx";
@@ -29,6 +31,7 @@ export default function WealthEntryCard({
   const { t } = useTranslation();
   const { settings } = usePerovo();
   const { updateEntry } = useNetWorth();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const cat =
     entry.kind === "asset"
@@ -140,11 +143,27 @@ export default function WealthEntryCard({
     </>
   );
 
+  const confirmDialog = typeof onDelete === "function" && (
+    <ConfirmDeleteDialog
+      open={confirmDeleteOpen}
+      title={t("confirmDelete.wealthEntry.title")}
+      message={t("confirmDelete.wealthEntry.message", { name: entry.name })}
+      onCancel={() => setConfirmDeleteOpen(false)}
+      onConfirm={() => {
+        setConfirmDeleteOpen(false);
+        onDelete(entry.id);
+      }}
+    />
+  );
+
   if (readOnly && onOpen) {
     return (
-      <button type="button" className="ed-card ed-card--entry ed-card-press" style={{ width: "100%", textAlign: "left" }} onClick={onOpen}>
-        {body}
-      </button>
+      <>
+        <button type="button" className="ed-card ed-card--entry ed-card-press" style={{ width: "100%", textAlign: "left" }} onClick={onOpen}>
+          {body}
+        </button>
+        {confirmDialog}
+      </>
     );
   }
 
@@ -159,12 +178,13 @@ export default function WealthEntryCard({
             </button>
           ) : null}
           {typeof onDelete === "function" ? (
-            <button type="button" className="ed-btn ed-btn-danger ed-btn-sm" onClick={() => onDelete(entry.id)}>
+            <button type="button" className="ed-btn ed-btn-danger ed-btn-sm" onClick={() => setConfirmDeleteOpen(true)}>
               {t("common.delete")}
             </button>
           ) : null}
         </div>
       ) : null}
+      {confirmDialog}
     </div>
   );
 }
